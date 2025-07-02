@@ -58,7 +58,7 @@ export const ThemeProvider = ({
     color: "#05df72",
   },
   defaultLoader: initialLoader = {
-    style: "spin-loader",
+    style: "bars-loader",
   },
 }: ThemeProviderProps) => {
   // State for theme configurations

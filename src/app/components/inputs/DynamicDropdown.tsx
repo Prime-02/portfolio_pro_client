@@ -1,8 +1,29 @@
 import { ChevronDown, ChevronUp, Search } from "lucide-react";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, RefObject } from "react";
 import { Textinput } from "./Textinput";
 
-const Dropdown = ({
+interface DropdownOption {
+  [key: string]: string | number;
+  id: string | number;
+  code: string;
+}
+
+interface DropdownProps {
+  options?: DropdownOption[];
+  onSelect: (value: string) => void;
+  tag?: string;
+  placeholder?: string;
+  valueKey?: string;
+  displayKey?: string;
+  className?: string;
+  divClassName?: string;
+  emptyMessage?: string;
+  onFocus?: () => void;
+  type?: string;
+  value?: string;
+}
+
+const Dropdown: React.FC<DropdownProps> = ({
   options = [],
   onSelect,
   tag = "item",
@@ -14,20 +35,21 @@ const Dropdown = ({
   emptyMessage = `No ${tag} available`,
   onFocus = () => {},
   type,
-  value, // Added value prop
+  value,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedOption, setSelectedOption] = useState(null);
+  const [selectedOption, setSelectedOption] = useState<DropdownOption | null>(
+    null
+  );
   const [searchQuery, setSearchQuery] = useState("");
-  const dropdownRef = useRef(null);
-  const searchInputRef = useRef(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   if (!Array.isArray(options)) {
     console.error("Dropdown options must be an array");
     return null;
   }
 
-  // Add this useEffect to handle the value prop
   useEffect(() => {
     if (value !== undefined && value !== null) {
       const foundOption = options.find(
@@ -44,8 +66,11 @@ const Dropdown = ({
   }, [value, options, valueKey]);
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
@@ -62,10 +87,10 @@ const Dropdown = ({
     }
   }, [isOpen, type]);
 
-  const handleSelect = (option) => {
+  const handleSelect = (option: DropdownOption) => {
     setSelectedOption(option);
     setSearchQuery("");
-    onSelect(option[valueKey]);
+    onSelect(String(option[valueKey]));
     setIsOpen(false);
   };
 
@@ -80,37 +105,40 @@ const Dropdown = ({
 
   return (
     <div
-      tabIndex={0}
-      onFocus={onFocus}
-      className={`${divClassName} min-w-24 dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer relative w-full`}
+      className={`${divClassName} min-w-24 dark:border-gray-600 dark:focus:border-[var(--accent)] focus:outline-none focus:ring-0 focus:border-[var(--accent)] peer relative w-full`}
       ref={dropdownRef}
     >
-      {/* Dropdown Trigger */}
       <div
-        className={`${className}  flex items-center justify-between p-2 cursor-pointer`}
+        tabIndex={0}
+        onFocus={onFocus}
+        className={`${className} flex items-center justify-between p-2 cursor-pointer`}
         onClick={() => {
           setIsOpen(!isOpen);
           if (type !== "datalist") setSearchQuery("");
         }}
       >
         <span>{selectedOption ? selectedOption[displayKey] : placeholder}</span>
-        <span>{isOpen ? <ChevronUp /> : <ChevronDown />}</span>
+        <span>
+          {isOpen ? (
+            <ChevronUp className="text-[var(--accent)]" />
+          ) : (
+            <ChevronDown />
+          )}
+        </span>
       </div>
 
-      {/* Dropdown Menu */}
       {isOpen && (
         <div className="absolute z-10 w-full min-w-16 mt-1 card rounded shadow-lg bg-white">
           {type === "datalist" && (
-            <div className="p-2 border-b relative w-full">
+            <div className="p-2  relative w-full">
               <Search className="mr-2 h-4 w-4 absolute right-0 top-1/3" />
               <Textinput
                 ref={searchInputRef}
                 type="text"
                 label="Search..."
-                className="w-full border-b"
+                className="w-full "
                 value={searchQuery}
-                changed={(e) => setSearchQuery(e)}
-                onClick={(e) => e.stopPropagation()}
+                changed={(e: string) => setSearchQuery(e)}
               />
             </div>
           )}
@@ -119,8 +147,8 @@ const Dropdown = ({
             <div className="max-h-60 overflow-y-auto">
               {filteredOptions.map((option) => (
                 <div
-                  key={option[valueKey]}
-                  className="p-2 hover:border-b cursor-pointer"
+                  key={String(option[valueKey])}
+                  className="p-2 hover: cursor-pointer"
                   onClick={() => handleSelect(option)}
                 >
                   {option[displayKey]}

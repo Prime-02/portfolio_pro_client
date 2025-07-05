@@ -4,7 +4,7 @@ import {
   LoaderProps,
   LoaderOptions,
 } from "@/app/components/types and interfaces/loaderTypes";
-
+import PorfolioProLoader, { LoadingAnimationProps } from "./PortfolioPro";
 // Type definitions
 
 interface LoaderContainerProps {
@@ -23,12 +23,14 @@ const LoaderContainer: React.FC<LoaderContainerProps> = ({
     className={`inline-flex items-center justify-center ${className}`}
     style={style}
   >
+    <style dangerouslySetInnerHTML={{ __html: animations }} />
+
     {children}
   </div>
 );
 
 // CSS-in-JS animations
-const animations = `
+export const animations = `
   @keyframes spin {
     to { transform: rotate(360deg); }
   }
@@ -167,7 +169,7 @@ export const SpinLoader: React.FC<LoaderProps> = ({
 }) => (
   <LoaderContainer>
     <div
-      className="animate-spin rounded-full border-solid border-opacity-25"
+      className="animate-spin rounded-full border-solid border-opacity-25 "
       style={{
         width: size,
         height: size,
@@ -719,6 +721,12 @@ export const BloomLoader: React.FC<LoaderProps> = ({
   </LoaderContainer>
 );
 
+export const PortfolioPro: React.FC<LoaderProps> = ({ size = 0.3 }) => (
+  <div>
+    <PorfolioProLoader scale={size / 100} />
+  </div>
+);
+
 // Loader registry
 const loaderRegistry: Record<string, React.FC<LoaderProps>> = {
   "spin-loader": SpinLoader,
@@ -745,6 +753,7 @@ const loaderRegistry: Record<string, React.FC<LoaderProps>> = {
   "pulse-ring": PulseRingLoader,
   "zigzag-loader": ZigzagLoader,
   "bloom-loader": BloomLoader,
+  "portfolio-pro": PortfolioPro,
 };
 
 export const getLoader = (slug: string): React.FC<LoaderProps> | null => {

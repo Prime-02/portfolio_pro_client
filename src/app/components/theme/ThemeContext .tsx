@@ -15,8 +15,9 @@ import {
   Accent,
   ThemeVariant,
 } from "@/app/components/types and interfaces/loaderTypes";
+import ThemeControlPanel from "./ThemeControlPanel";
 
-type ThemeContextType = {
+export type ThemeContextType = {
   theme: Theme;
   themeVariant: ThemeVariant;
   setThemeVariant: (variant: ThemeVariant) => void;
@@ -58,7 +59,7 @@ export const ThemeProvider = ({
     color: "#05df72",
   },
   defaultLoader: initialLoader = {
-    style: "bars-loader",
+    style: "spin-loader",
   },
 }: ThemeProviderProps) => {
   // State for theme configurations
@@ -76,6 +77,7 @@ export const ThemeProvider = ({
     const newLoader = typeof input === "string" ? input : input.style;
     _setLoader(newLoader as Loader);
   }, []);
+
   // State for the theme variant (light/dark/system)
   const [themeVariant, setThemeVariant] =
     useState<ThemeVariant>(defaultThemeVariant);
@@ -114,7 +116,7 @@ export const ThemeProvider = ({
     [accentColor.color]
   );
 
-  // Update theme based on variant - removed from useEffect dependencies
+  // Update theme based on variant
   const updateTheme = useCallback(
     (variant: ThemeVariant) => {
       let newTheme: Theme;
@@ -137,36 +139,13 @@ export const ThemeProvider = ({
       }
 
       applyTheme(newTheme, darkMode);
-
-      // Save to localStorage
-      if (typeof window !== "undefined") {
-        localStorage.setItem("themeVariant", variant);
-      }
     },
     [lightTheme, darkTheme, getSystemTheme, applyTheme]
   );
 
   // Initialize theme on mount
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      // Get saved variant or use default
-      const savedVariant = localStorage.getItem(
-        "themeVariant"
-      ) as ThemeVariant | null;
-      const savedAccent = localStorage.getItem("accentColor");
-      const initialVariant = savedVariant || defaultThemeVariant;
-
-      if (savedAccent) {
-        try {
-          setAccentColor(JSON.parse(savedAccent));
-        } catch (e) {
-          console.error("Failed to parse saved accent color", e);
-        }
-      }
-
-      setThemeVariant(initialVariant);
-      updateTheme(initialVariant);
-    }
+    updateTheme(themeVariant);
   }, []); // Only run on mount
 
   // Listen for system theme changes
@@ -184,22 +163,19 @@ export const ThemeProvider = ({
     }
   }, [themeVariant, updateTheme]);
 
-  // Update theme when variant changes (but not on initial render)
+  // Update theme when variant changes
   useEffect(() => {
     updateTheme(themeVariant);
-  }, [themeVariant]);
+  }, [themeVariant, updateTheme]);
 
   // Update theme when light/dark theme configurations change
   useEffect(() => {
     updateTheme(themeVariant);
-  }, [lightTheme, darkTheme]);
+  }, [lightTheme, darkTheme, updateTheme]);
 
-  // Update accent color in CSS and localStorage when it changes
+  // Update accent color in CSS when it changes
   useEffect(() => {
     document.documentElement.style.setProperty("--accent", accentColor.color);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("accentColor", JSON.stringify(accentColor));
-    }
   }, [accentColor]);
 
   const toggleThemeVariant = () => {
@@ -229,6 +205,7 @@ export const ThemeProvider = ({
       }}
     >
       {children}
+      <ThemeControlPanel />
     </ThemeContext.Provider>
   );
 };

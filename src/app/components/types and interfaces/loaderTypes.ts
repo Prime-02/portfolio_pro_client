@@ -33,6 +33,7 @@ export type LoaderOptions =
   | "spinner-dots"
   | "pulse-ring"
   | "zigzag-loader"
+  | "portfolio-pro"
   | "bloom-loader";
 
 export type LoaderInput = string | { style: string };
@@ -48,3 +49,10 @@ export type Accent = {
 };
 
 export type ThemeVariant = 'light' | 'dark' | 'system';
+
+
+export interface LoaderOption {
+  id: string;
+  code: string;
+}
+

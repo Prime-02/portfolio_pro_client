@@ -25,3 +25,13 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.reverse-card {
+  color: var(--background);
+  background: var(--foreground);
+}
+
+.card {
+  color: var(--foreground);
+  background: var(--background);
+}

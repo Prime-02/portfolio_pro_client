@@ -50,7 +50,9 @@ const SideBar = ({
 
   return (
     <div
-      className={`h-full z-10 flex left-0 flex-col border-r  ease-in-out ${isCollapsed ? "w-16" : "w-64"}`}
+      className={`min-h-screen h-full flex z-10 left-0 flex-col border-r transition-all duration-300 rounded-l-3xl ease-in-out ${
+        isCollapsed ? "w-16" : "w-64"
+      }`}
       style={{
         backgroundColor: getColorShade(theme.background, 5),
         borderColor: `${theme.foreground}10`,
@@ -63,7 +65,7 @@ const SideBar = ({
       >
         <button
           onClick={toggleCollapse}
-          className="p-1 rounded-md flex items-center justify-center"
+          className="p-2 rounded-lg flex items-center justify-center w-full transition-all duration-300 ease-in-out hover:bg-opacity-20 hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-opacity-50 "
           style={{ color: theme.foreground }}
         >
           {isCollapsed ? (

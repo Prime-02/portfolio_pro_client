@@ -1,4 +1,4 @@
-import { ThemePreset } from "@/app/(user)/[dashboard]/settings/themes-loaders/page";
+import { ThemePreset } from "@/app/(user)/[dashboard]/profile/themes-loaders/page";
 import { Crown, Loader, Palette } from "lucide-react";
 
 export const themePresets: ThemePreset[] = [

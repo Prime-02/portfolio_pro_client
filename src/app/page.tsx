@@ -41,7 +41,7 @@ export default function Home() {
         </SignedOut>
         <SignedIn>
           <Button
-            variant="success"
+            variant="primary"
             size="md"
             type="button"
             colorIntensity="light"

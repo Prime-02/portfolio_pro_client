@@ -73,7 +73,7 @@ const LandingPageNavbar = () => {
               <Popover
                 clicker={<BsFillGrid3X3GapFill size={25} />}
                 children={<Menu />}
-                position="bottom-left"
+                position="bottom-center"
               />
             </span>
             <Link

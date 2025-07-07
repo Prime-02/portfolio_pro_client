@@ -143,7 +143,7 @@ export const ButtonExamples = () => {
             <Button
               icon={<span>💾</span>}
               text="Save"
-              variant="success"
+              variant="primary"
               onClick={() => handleClick("icon-save")}
             />
             <Button

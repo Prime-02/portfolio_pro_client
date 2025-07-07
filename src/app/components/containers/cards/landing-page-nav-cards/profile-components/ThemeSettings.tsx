@@ -57,7 +57,7 @@ const ThemeSettings = () => {
       </div>
       <div className="w-full">
         <Link
-          href={`/${userData.username}/settings/themes-loaders`}
+          href={`/${userData.username}/profile/themes-loaders`}
           className="block w-full"
         >
           <Button

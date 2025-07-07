@@ -53,7 +53,7 @@ const ThemeControlPanel: React.FC<ThemeControlPanelProps> = () => {
   const currentTab = tabConfig.find((tab) => tab.key === activeTab);
 
   return (
-    <div className="min-h-screen flex transition-colors duration-300">
+    <div className="min-h-screen rounded-3xl border flex transition-colors duration-300">
       <div className="relative">
         <SideBar
           activeTab={activeTab}
@@ -66,7 +66,7 @@ const ThemeControlPanel: React.FC<ThemeControlPanelProps> = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 p-6 mx-auto max-w-3xl min-w-md overflow-auto">
+      <div className="flex-1 p-6 mx-auto w-full overflow-auto">
         {/* Tab Header */}
         <div className="mb-6">
           <div className="flex items-center gap-3 mb-2">
@@ -91,7 +91,7 @@ const ThemeControlPanel: React.FC<ThemeControlPanelProps> = () => {
 
         {/* Tab Content */}
         <div
-          className="space-y-6 p-4 rounded-2xl"
+          className="space-y-6 p-4 min-w-md"
           style={{
             backgroundColor: getColorShade(theme.background, 5),
           }}

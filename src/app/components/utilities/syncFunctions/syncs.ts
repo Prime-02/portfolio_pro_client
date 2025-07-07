@@ -181,3 +181,55 @@ export function isValidHexCode(hex: string) {
   const hexRegex = /^#?([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/;
   return hexRegex.test(hex);
 }
+
+export function isValidHexColorStrict(hex: string): boolean {
+  // Test for #RRGGBB or #RGB formats (with # required)
+  return /^#([0-9A-F]{3}|[0-9A-F]{6})$/i.test(hex);
+}
+
+
+
+/**
+ * Validates that all required fields in a form object are filled.
+ * Displays warning toasts for empty fields.
+ *
+ * @param {Object} form - The form object to validate
+ * @param {function} toast - The toast notification function
+ * @param {Array<string>} [allowedEmptyKeys=[]] - Array of keys that are allowed to be empty
+ * @returns {boolean} True if all required fields are valid, false otherwise
+ */
+export const validateFields = <T extends Record<string, any>>(
+  form: T | null | undefined,
+  toast: (message: string) => void,
+  allowedEmptyKeys: string[] = []
+): boolean => {
+  // Handle null/undefined form
+  if (!form) {
+    console.error("Form object is null or undefined");
+    return false;
+  }
+
+  // Convert form keys to array and validate each field
+  return Object.keys(form).every((key) => {
+    // Skip validation for allowed empty fields
+    if (allowedEmptyKeys.includes(key)) {
+      return true;
+    }
+
+    const value = form[key];
+
+    // Check for empty strings, null, or undefined
+    if (value === "" || value === null || value === undefined) {
+      toast(`Please fill in the ${key} field.`);
+      return false;
+    }
+
+    // Optional: Check for empty arrays/objects if needed
+    if (Array.isArray(value) && value.length === 0) {
+      toast(`Please provide at least one item for ${key}.`);
+      return false;
+    }
+
+    return true;
+  });
+};

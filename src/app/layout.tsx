@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { GlobalStateProvider } from "./globalStateProvider";
+import {
+  globalState,
+  GlobalStateProvider,
+  useGlobalState,
+} from "./globalStateProvider";
 import { ThemeProvider } from "./components/theme/ThemeContext ";
 import { ToastProvider } from "./components/toastify/Toastify";
 import {
@@ -131,8 +135,8 @@ export default function RootLayout({
     <ClerkProvider
       signInUrl="/login"
       signUpUrl="/signup"
-      signUpForceRedirectUrl={"/welcome"}
-      signInForceRedirectUrl={"/this-is-dynamic"}
+      signUpForceRedirectUrl={`/dashboard`}
+      signInForceRedirectUrl={"/dashboard"}
     >
       <html lang="en">
         <head>

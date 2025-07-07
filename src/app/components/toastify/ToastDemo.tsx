@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { Bell } from "lucide-react";
 import { useToast } from "./Toastify";
 import { useAuth, useUser } from "@clerk/nextjs";
@@ -7,7 +7,6 @@ export const ToastDemo: React.FC = () => {
   const toast = useToast();
   const { userId } = useAuth();
   const user = useUser().user;
-
 
   const demoToasts = [
     {
@@ -56,8 +55,9 @@ export const ToastDemo: React.FC = () => {
       action: () =>
         toast.toast("Custom message with sound!", {
           type: "default",
-          icon: <Bell className="w-5 h-5 text-purple-600" />,
-          className: "border-purple-200 bg-purple-50 text-purple-800",
+          icon: <Bell className="w-5 h-5 text-[var(--accent)]" />,
+          className:
+            "border-[var(--accent)] bg-purple-[var(--background)] text-[var(--accent)]",
           sound: true,
           animation: "scale",
           position: "bottom-center",

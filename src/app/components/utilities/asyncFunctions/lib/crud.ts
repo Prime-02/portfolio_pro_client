@@ -4,6 +4,7 @@ import {
   isNumericString,
   removeEmptyStringValues,
 } from "../../syncFunctions/syncs";
+import { toast } from "@/app/components/toastify/Toastify";
 
 export interface PostAllDataParams<T = any> {
   access?: string;
@@ -140,7 +141,9 @@ export const GetAllData = async <T = any, R = any>({
 
     const axiosError = error as AxiosError;
     if (axiosError.response?.status === 429) {
-      // toast.error("Your account was banned due to suspected malicious activity");
+      toast.error(
+        "Your account was banned due to suspected malicious activity"
+      );
       throw new Error(
         "Your account was banned due to suspected malicious activity"
       );
@@ -256,7 +259,7 @@ export const UpdateAllData = async <T = any, R = any>({
       errorMessage = axiosError.message || errorMessage;
     }
 
-    // toast.error(errorMessage);
+    toast.error(errorMessage);
     console.error("Update failed:", error);
     throw error;
   }
@@ -330,7 +333,7 @@ export const Delete = async <T = any, R = any>({
       errorMessage = axiosError.message || errorMessage;
     }
 
-    // toast.error(errorMessage);
+    toast.error(errorMessage);
     console.error("Delete failed:", error);
     throw error;
   }

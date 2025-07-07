@@ -14,6 +14,7 @@ import ThemeSettings from "./profile-components/ThemeSettings";
 import FeedBackComponent from "./profile-components/FeedBackComponent";
 import HelpComponent from "./profile-components/HelpComponent";
 import LogOutComponent from "./LogOutComponent";
+import Link from "next/link";
 
 const Profile = () => {
   const { userData } = useGlobalState();
@@ -69,7 +70,7 @@ const Profile = () => {
 
   return (
     <div
-      className="flex w-sm mx-auto rounded overflow-hidden flex-col gap-y-5 p-2 relative"
+      className="flex w-sm mx-auto rounded-xl overflow-hidden flex-col gap-y-5 p-2 relative"
       style={{
         backgroundColor: activeTab
           ? "var(--background)"
@@ -106,7 +107,14 @@ const Profile = () => {
             </div>
           </div>
           <span className="w-[80%] mx-auto h-[0.5px] bg-[var(--foreground)]"></span>
-          <Button variant="outline" size="md" text="View Your Profile" />
+          <Link href={`/${userData.username}/profile`} className="w-full flex">
+            <Button
+              variant="outline"
+              className="w-full"
+              size="md"
+              text="View Your Profile"
+            />
+          </Link>
         </div>
 
         <ul className="flex flex-col gap-y-3 mt-4">
@@ -154,7 +162,7 @@ const Profile = () => {
           </div>
 
           <div
-            className="p-4 rounded-2xl shadow-md min-h-[200px]"
+            className="p-4 rounded-2xl shadow-md auto"
             style={{
               backgroundColor: getColorShade(theme.background, 10),
             }}

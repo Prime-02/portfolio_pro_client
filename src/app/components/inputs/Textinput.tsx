@@ -199,6 +199,8 @@ interface TextAreaProps {
   className?: string;
   id?: string;
   labelStyle?: string;
+  labelBgHex?: string;
+  labelBgHexIntensity?: number;
 }
 
 export const TextArea: React.FC<TextAreaProps> = ({
@@ -208,6 +210,8 @@ export const TextArea: React.FC<TextAreaProps> = ({
   className,
   id,
   labelStyle,
+  labelBgHex,
+  labelBgHexIntensity,
 }) => {
   return (
     <div className="relative h-full">
@@ -226,6 +230,12 @@ export const TextArea: React.FC<TextAreaProps> = ({
         className={`absolute text-sm dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] px-2 peer-focus:px-2 peer-focus:text-[var(--accent)] peer-focus:dark:text-[var(--accent)] peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1 ${
           labelStyle ? labelStyle : `card`
         }`}
+        style={{
+          backgroundColor:
+            labelBgHex && labelBgHexIntensity
+              ? getColorShade(labelBgHex, labelBgHexIntensity)
+              : "none",
+        }}
       >
         {label}
       </label>

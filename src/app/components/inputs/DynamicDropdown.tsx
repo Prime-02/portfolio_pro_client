@@ -128,17 +128,16 @@ const Dropdown: React.FC<DropdownProps> = ({
       </div>
 
       {isOpen && (
-        <div className="absolute z-10 w-full min-w-16 mt-1 card rounded shadow-lg bg-white">
+        <div className="absolute w-full min-w-16 mt-1 card z-[9999] shadow-lg ">
           {type === "datalist" && (
             <div className="p-2  relative w-full">
               <Search className="mr-2 h-4 w-4 absolute right-0 top-1/3" />
               <Textinput
-                ref={searchInputRef}
                 type="text"
                 label="Search..."
                 className="w-full "
                 value={searchQuery}
-                changed={(e: string) => setSearchQuery(e)}
+                onChange={setSearchQuery}
               />
             </div>
           )}

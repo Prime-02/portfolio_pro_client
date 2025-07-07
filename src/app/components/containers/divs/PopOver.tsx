@@ -112,7 +112,7 @@ const Popover: React.FC<PopoverProps> = ({
           className={`absolute z-50 ${getPositionClass()} ${className}`}
         >
           <div
-            className="bg-[var(--background)] shadow-lg rounded-md border"
+            className="bg-[var(--background)] shadow-lg rounded-xl border"
             style={{ borderColor: accentColor.color }}
           >
             {children}

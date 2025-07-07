@@ -10,7 +10,7 @@ export function getColorShade(hex: string, percent: number = 10): string {
     throw new Error('Invalid hex color format. Use "#RRGGBB".');
   }
   if (percent < 1 || percent > 100) {
-    throw new Error('Percent must be between 1 and 100.');
+    throw new Error("Percent must be between 1 and 100.");
   }
 
   // Convert hex to RGB
@@ -29,7 +29,7 @@ export function getColorShade(hex: string, percent: number = 10): string {
   const clamp = (value: number) => Math.min(255, Math.max(0, value));
 
   let newR, newG, newB;
-  
+
   if (shouldDarken) {
     // Darken the color by reducing each component
     newR = Math.round(r * (1 - factor));
@@ -43,25 +43,24 @@ export function getColorShade(hex: string, percent: number = 10): string {
   }
 
   // Convert back to hex
-  const toHex = (value: number) => clamp(value).toString(16).padStart(2, '0');
+  const toHex = (value: number) => clamp(value).toString(16).padStart(2, "0");
   return `#${toHex(newR)}${toHex(newG)}${toHex(newB)}`;
 }
 
-
 /**
  * Recursively converts numeric strings in objects and arrays to numbers while preserving certain string formats.
- * 
+ *
  * @param input - The input value to process (can be an object, array, or primitive value)
  * @returns A new object/array with numeric strings converted to numbers, with the following exceptions:
  *          - Strings with leading zeros (e.g., "0123") are preserved as strings
  *          - Non-numeric strings remain unchanged
  *          - Other primitive values remain unchanged
- * 
+ *
  * @example
  * // Basic usage with object
  * convertNumericStrings({ price: "12.99", count: "5", code: "0123" });
  * // Returns { price: 12.99, count: 5, code: "0123" }
- * 
+ *
  * @example
  * // With nested structures
  * convertNumericStrings({
@@ -69,7 +68,7 @@ export function getColorShade(hex: string, percent: number = 10): string {
  *   meta: { version: "1.0", build: "0012" }
  * });
  * // Returns { items: [10, 20.5], meta: { version: 1.0, build: "0012" } }
- * 
+ *
  * @example
  * // Preserves non-numeric strings and special cases
  * convertNumericStrings({ id: "123a", serial: "000123", temp: "98.6" });
@@ -126,22 +125,19 @@ export function isNumericString(value: any): value is string {
   return !isNaN(value as any) && !isNaN(parseFloat(value));
 }
 
-
-
-
 /**
  * Removes all key-value pairs from an object or array of objects where the value is an empty string ("").
- * 
+ *
  * @template T - The type of the input object or array
  * @param {T} input - The input object or array to process
  * @returns {T} A new object or array with all empty string values removed
- * 
+ *
  * @example
  * // Object example
  * const input = { name: "John", age: "", city: "New York" };
  * const result = removeEmptyStringValues(input);
  * console.log(result); // Output: { name: "John", city: "New York" }
- * 
+ *
  * @example
  * // Array example
  * const input = [
@@ -151,7 +147,9 @@ export function isNumericString(value: any): value is string {
  * const result = removeEmptyStringValues(input);
  * console.log(result); // Output: [{ name: "Alice", city: "London" }, { name: "Bob", age: "30" }]
  */
-export function removeEmptyStringValues<T extends Record<string, any> | Array<Record<string, any>>>(input: T): T {
+export function removeEmptyStringValues<
+  T extends Record<string, any> | Array<Record<string, any>>,
+>(input: T): T {
   if (Array.isArray(input)) {
     // Handle array of objects
     return input.map((obj) => {
@@ -176,4 +174,10 @@ export function removeEmptyStringValues<T extends Record<string, any> | Array<Re
 
   // Return the input as-is if it's neither an object nor an array
   return input;
+}
+
+export function isValidHexCode(hex: string) {
+  // Regular expression to match valid hex color codes
+  const hexRegex = /^#?([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/;
+  return hexRegex.test(hex);
 }

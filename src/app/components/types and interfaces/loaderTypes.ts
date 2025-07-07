@@ -9,7 +9,7 @@ export interface LoaderProps {
   className?: string;
 }
 
-export type LoaderOptions = 
+export type LoaderOptions =
   | "spin-loader"
   | "dots-loader"
   | "bars-loader"
@@ -48,11 +48,14 @@ export type Accent = {
   color: string;
 };
 
-export type ThemeVariant = 'light' | 'dark' | 'system';
+export type ThemeVariant = "light" | "dark" | "system";
 
+export type LanguageProps = {
+  name: string;
+  code: string;
+};
 
 export interface LoaderOption {
   id: string;
   code: string;
 }
-

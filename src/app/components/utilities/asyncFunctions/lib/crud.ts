@@ -1,5 +1,9 @@
-import axios, { AxiosResponse, AxiosError, AxiosRequestConfig } from 'axios';
-import { convertNumericStrings, isNumericString, removeEmptyStringValues } from '../../syncFunctions/syncs';
+import axios, { AxiosResponse, AxiosError, AxiosRequestConfig } from "axios";
+import {
+  convertNumericStrings,
+  isNumericString,
+  removeEmptyStringValues,
+} from "../../syncFunctions/syncs";
 
 export interface PostAllDataParams<T = any> {
   access?: string;
@@ -16,9 +20,14 @@ export const PostAllData = async <T extends {} = any, R = any>({
   useFormData = false,
 }: PostAllDataParams<T>): Promise<R> => {
   try {
-    let requestData = data ? convertNumericStrings(removeEmptyStringValues(data)) : undefined;
+    let requestData = data
+      ? convertNumericStrings(removeEmptyStringValues(data))
+      : undefined;
     const headers: Record<string, string> = {
-      ...(access && { Authorization: `Bearer ${access}` }),
+      ...(access && {
+        Authorization: `Bearer ${access}`,
+        "ngrok-skip-browser-warning": "true",
+      }),
     };
 
     if (useFormData && data) {
@@ -28,17 +37,20 @@ export const PostAllData = async <T extends {} = any, R = any>({
         if (Object.prototype.hasOwnProperty.call(cleanedData, key)) {
           let value = cleanedData[key as keyof typeof cleanedData];
           // Convert to number if it's a numeric string
-          if (typeof value === 'string' && isNumericString(value)) {
-            value = parseInt(value, 10) as unknown as NonNullable<T>[keyof NonNullable<T>];
+          if (typeof value === "string" && isNumericString(value)) {
+            value = parseInt(
+              value,
+              10
+            ) as unknown as NonNullable<T>[keyof NonNullable<T>];
           }
           formData.append(key, value as any);
         }
       }
       requestData = formData;
-      delete headers['Content-Type'];
+      delete headers["Content-Type"];
     }
 
-    console.log('Post Data', requestData);
+    console.log("Post Data", requestData);
 
     const response: AxiosResponse<R> = await axios.post(url, requestData, {
       headers,
@@ -46,49 +58,47 @@ export const PostAllData = async <T extends {} = any, R = any>({
     return response.data;
   } catch (error) {
     let errorMessage =
-      'An error occurred. Please contact our support if this problem persists.';
+      "An error occurred. Please contact our support if this problem persists.";
 
     const axiosError = error as AxiosError;
     if (axiosError.response) {
       const responseData = axiosError.response.data;
 
-      if (typeof responseData === 'string') {
+      if (typeof responseData === "string") {
         errorMessage = responseData;
       } else if (Array.isArray(responseData)) {
         errorMessage = responseData
           .map((item) =>
-            typeof item === 'object' ? Object.values(item).join(' ') : item
+            typeof item === "object" ? Object.values(item).join(" ") : item
           )
-          .join(', ');
-      } else if (typeof responseData === 'object' && responseData !== null) {
+          .join(", ");
+      } else if (typeof responseData === "object" && responseData !== null) {
         const messages: string[] = [];
         const collectMessages = (obj: object) => {
           Object.values(obj).forEach((value) => {
-            if (typeof value === 'string') {
+            if (typeof value === "string") {
               messages.push(value);
             } else if (Array.isArray(value)) {
-              messages.push(...value.filter((i) => typeof i === 'string'));
-            } else if (typeof value === 'object' && value !== null) {
+              messages.push(...value.filter((i) => typeof i === "string"));
+            } else if (typeof value === "object" && value !== null) {
               collectMessages(value);
             }
           });
         };
         collectMessages(responseData);
         errorMessage = messages.length
-          ? messages.join(', ')
+          ? messages.join(", ")
           : JSON.stringify(responseData);
       }
     } else if (axiosError.request) {
-      errorMessage = 'No response received from server';
+      errorMessage = "No response received from server";
     } else {
       errorMessage = axiosError.message || errorMessage;
     }
-    console.error('Upload failed:', error);
+    console.error("Upload failed:", error);
     throw error;
   }
 };
-
-
 
 interface GetAllDataParams<T = any> {
   access: string;
@@ -113,7 +123,8 @@ export const GetAllData = async <T = any, R = any>({
 
     const config: AxiosRequestConfig = {
       headers: {
-        Authorization: `Bearer ${access}`
+        Authorization: `Bearer ${access}`,
+        "ngrok-skip-browser-warning": "true",
       },
     };
 
@@ -130,21 +141,21 @@ export const GetAllData = async <T = any, R = any>({
     const axiosError = error as AxiosError;
     if (axiosError.response?.status === 429) {
       // toast.error("Your account was banned due to suspected malicious activity");
-      throw new Error("Your account was banned due to suspected malicious activity");
+      throw new Error(
+        "Your account was banned due to suspected malicious activity"
+      );
     }
-    
+
     // Re-throw the error to allow further handling
     throw axiosError;
   }
 };
 
-
-
 interface UpdateParams<T = any> {
   access: string;
   field: T;
   url: string;
-  method?: 'patch' | 'put';
+  method?: "patch" | "put";
   useFormData?: boolean;
   message?: string;
 }
@@ -153,18 +164,20 @@ export const UpdateAllData = async <T = any, R = any>({
   access,
   field,
   url,
-  method = 'put',
+  method = "put",
   useFormData = false,
-  message = 'Updated successfully',
+  message = "Updated successfully",
 }: UpdateParams<T>): Promise<R> => {
   try {
     // Determine the Axios method based on the `method` parameter
-    const axiosMethod = method.toLowerCase() === 'put' ? axios.put : axios.patch;
+    const axiosMethod =
+      method.toLowerCase() === "put" ? axios.put : axios.patch;
 
     // Prepare the request data and headers
     let requestData: T | FormData;
     const headers: Record<string, string> = {
       Authorization: `Bearer ${access}`,
+      "ngrok-skip-browser-warning": "true",
     };
 
     if (useFormData) {
@@ -181,72 +194,73 @@ export const UpdateAllData = async <T = any, R = any>({
       requestData = formData;
 
       // Set headers for multipart/form-data
-      headers['Content-Type'] = 'multipart/form-data';
+      headers["Content-Type"] = "multipart/form-data";
     } else {
       // Default to application/json
       requestData = field;
-      headers['Content-Type'] = 'application/json';
+      headers["Content-Type"] = "application/json";
     }
 
     // Make the request
     const config: AxiosRequestConfig = { headers };
-    const response: AxiosResponse<R> = await axiosMethod(url, requestData, config);
+    const response: AxiosResponse<R> = await axiosMethod(
+      url,
+      requestData,
+      config
+    );
 
     // Show success toast
-    if (message !== 'custom') {
+    if (message !== "custom") {
       // toast.success(message);
     }
     return response.data;
   } catch (error) {
     let errorMessage =
-      'An error occurred. Please contact our support if this problem persists.';
+      "An error occurred. Please contact our support if this problem persists.";
 
     const axiosError = error as AxiosError;
     if (axiosError.response) {
       const responseData = axiosError.response.data;
 
-      if (typeof responseData === 'string') {
+      if (typeof responseData === "string") {
         errorMessage = responseData;
       } else if (Array.isArray(responseData)) {
         // Handle array of strings or array of objects
         errorMessage = responseData
           .map((item) =>
-            typeof item === 'object' ? Object.values(item).join(' ') : item
+            typeof item === "object" ? Object.values(item).join(" ") : item
           )
-          .join(', ');
-      } else if (typeof responseData === 'object' && responseData !== null) {
+          .join(", ");
+      } else if (typeof responseData === "object" && responseData !== null) {
         // Flatten nested error objects
         const messages: string[] = [];
         const collectMessages = (obj: object) => {
           Object.values(obj).forEach((value) => {
-            if (typeof value === 'string') {
+            if (typeof value === "string") {
               messages.push(value);
             } else if (Array.isArray(value)) {
-              messages.push(...value.filter((i) => typeof i === 'string'));
-            } else if (typeof value === 'object' && value !== null) {
+              messages.push(...value.filter((i) => typeof i === "string"));
+            } else if (typeof value === "object" && value !== null) {
               collectMessages(value);
             }
           });
         };
         collectMessages(responseData);
         errorMessage = messages.length
-          ? messages.join(', ')
+          ? messages.join(", ")
           : JSON.stringify(responseData);
       }
     } else if (axiosError.request) {
-      errorMessage = 'No response received from server';
+      errorMessage = "No response received from server";
     } else {
       errorMessage = axiosError.message || errorMessage;
     }
 
     // toast.error(errorMessage);
-    console.error('Update failed:', error);
+    console.error("Update failed:", error);
     throw error;
   }
 };
-
-
-
 
 interface DeleteParams<T = any> {
   url: string;
@@ -266,6 +280,7 @@ export const Delete = async <T = any, R = any>({
       data, // Request payload
       headers: {
         Authorization: `Bearer ${access}`,
+        "ngrok-skip-browser-warning": "true",
       },
     });
 

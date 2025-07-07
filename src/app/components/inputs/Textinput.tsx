@@ -2,6 +2,7 @@ import { Eye, EyeClosed } from "lucide-react";
 import React, { useState, useRef, useEffect, RefObject } from "react";
 import Dropdown from "./DynamicDropdown";
 import PhoneInputComponent from "./PhoneInput";
+import { getColorShade } from "../utilities/syncFunctions/syncs";
 
 interface TextInputProps {
   label?: string;
@@ -27,6 +28,8 @@ interface TextInputProps {
     | "search"
     | "decimal";
   onClick?: () => void;
+  labelBgHex?: string;
+  labelBgHexIntensity?: number;
 }
 
 export const Textinput: React.FC<TextInputProps> = ({
@@ -45,6 +48,8 @@ export const Textinput: React.FC<TextInputProps> = ({
   maxLength = 100000,
   autoComplete = "",
   inputMode = "text",
+  labelBgHex,
+  labelBgHexIntensity,
   onClick = () => {},
 }) => {
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -151,6 +156,12 @@ export const Textinput: React.FC<TextInputProps> = ({
         <label
           htmlFor={id}
           className={`absolute text-sm dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 origin-[0] px-2 peer-focus:px-2 peer-focus:text-[var(--accent)] peer-focus:dark:text-[var(--accent)] peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1 ${labelStyle}`}
+          style={{
+            backgroundColor:
+              labelBgHex && labelBgHexIntensity
+                ? getColorShade(labelBgHex, labelBgHexIntensity)
+                : "none",
+          }}
         >
           {label}
         </label>

@@ -33,8 +33,9 @@ export const metadata: Metadata = {
     default: "Portfolio Pro - Build Your Portfolios Like A Pro",
     template: "%s | Portfolio Pro", // For page-specific titles
   },
-  description: "Create stunning professional portfolios with Portfolio Pro. Build, customize, and showcase your work with our powerful portfolio builder platform.",
-  
+  description:
+    "Create stunning professional portfolios with Portfolio Pro. Build, customize, and showcase your work with our powerful portfolio builder platform.",
+
   // Keywords for SEO
   keywords: [
     "portfolio builder",
@@ -46,14 +47,14 @@ export const metadata: Metadata = {
     "creative portfolio",
     "online portfolio",
     "portfolio templates",
-    "career showcase"
+    "career showcase",
   ],
-  
+
   // Author and site info
   authors: [{ name: "Portfolio Pro Team" }],
   creator: "Portfolio Pro",
   publisher: "Portfolio Pro",
-  
+
   // Open Graph (Facebook, LinkedIn, etc.)
   openGraph: {
     type: "website",
@@ -61,7 +62,8 @@ export const metadata: Metadata = {
     url: "https://portfoliopro.com", // Replace with your actual domain
     siteName: "Portfolio Pro",
     title: "Portfolio Pro - Build Your Portfolios Like A Pro",
-    description: "Create stunning professional portfolios with Portfolio Pro. Build, customize, and showcase your work with our powerful portfolio builder platform.",
+    description:
+      "Create stunning professional portfolios with Portfolio Pro. Build, customize, and showcase your work with our powerful portfolio builder platform.",
     images: [
       {
         url: "https://portfoliopro.com/og-image.jpg", // Replace with your actual image
@@ -71,17 +73,18 @@ export const metadata: Metadata = {
       },
     ],
   },
-  
+
   // Twitter Card
   twitter: {
     card: "summary_large_image",
     title: "Portfolio Pro - Build Your Portfolios Like A Pro",
-    description: "Create stunning professional portfolios with Portfolio Pro. Build, customize, and showcase your work with our powerful portfolio builder platform.",
+    description:
+      "Create stunning professional portfolios with Portfolio Pro. Build, customize, and showcase your work with our powerful portfolio builder platform.",
     images: ["https://portfoliopro.com/twitter-image.jpg"], // Replace with your actual image
     creator: "@portfoliopro", // Replace with your Twitter handle
     site: "@portfoliopro", // Replace with your Twitter handle
   },
-  
+
   // Additional meta tags
   robots: {
     index: true,
@@ -94,22 +97,22 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
-  
+
   // Canonical URL
   alternates: {
     canonical: "https://portfoliopro.com", // Replace with your actual domain
   },
-  
+
   // App-specific metadata
   applicationName: "Portfolio Pro",
   category: "Business",
-  
+
   // Verification tokens (add these when you set up search console)
   verification: {
     google: "your-google-verification-code", // Replace with actual verification code
     // bing: "your-bing-verification-code", // Uncomment and replace if using Bing
   },
-  
+
   // Additional metadata
   other: {
     "mobile-web-app-capable": "yes",
@@ -138,22 +141,40 @@ export default function RootLayout({
           <meta name="format-detection" content="telephone=no" />
           <meta name="msapplication-TileColor" content="#000000" />
           <meta name="theme-color" content="#000000" />
-          
+
           {/* Favicon and app icons */}
           <link rel="icon" href="/favicon.ico" />
-          <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-          <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-          <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+          <link
+            rel="apple-touch-icon"
+            sizes="180x180"
+            href="/apple-touch-icon.png"
+          />
+          <link
+            rel="icon"
+            type="image/png"
+            sizes="32x32"
+            href="/favicon-32x32.png"
+          />
+          <link
+            rel="icon"
+            type="image/png"
+            sizes="16x16"
+            href="/favicon-16x16.png"
+          />
           <link rel="manifest" href="/site.webmanifest" />
-          
+
           {/* Preconnect to external domains for performance */}
           <link rel="preconnect" href="https://fonts.googleapis.com" />
-          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-          
+          <link
+            rel="preconnect"
+            href="https://fonts.gstatic.com"
+            crossOrigin="anonymous"
+          />
+
           {/* DNS prefetch for better performance */}
           <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
           <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
-          
+
           {/* JSON-LD Structured Data */}
           <script
             type="application/ld+json"
@@ -161,22 +182,23 @@ export default function RootLayout({
               __html: JSON.stringify({
                 "@context": "https://schema.org",
                 "@type": "WebApplication",
-                "name": "Portfolio Pro",
-                "description": "Create stunning professional portfolios with Portfolio Pro. Build, customize, and showcase your work with our powerful portfolio builder platform.",
-                "url": "https://portfoliopro.com",
-                "applicationCategory": "BusinessApplication",
-                "operatingSystem": "Any",
-                "offers": {
+                name: "Portfolio Pro",
+                description:
+                  "Create stunning professional portfolios with Portfolio Pro. Build, customize, and showcase your work with our powerful portfolio builder platform.",
+                url: "https://portfoliopro.com",
+                applicationCategory: "BusinessApplication",
+                operatingSystem: "Any",
+                offers: {
                   "@type": "Offer",
-                  "price": "0",
-                  "priceCurrency": "USD"
+                  price: "0",
+                  priceCurrency: "USD",
                 },
-                "creator": {
+                creator: {
                   "@type": "Organization",
-                  "name": "Portfolio Pro",
-                  "url": "https://portfoliopro.com"
-                }
-              })
+                  name: "Portfolio Pro",
+                  url: "https://portfoliopro.com",
+                },
+              }),
             }}
           />
         </head>
@@ -184,12 +206,12 @@ export default function RootLayout({
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
           <GlobalStateProvider>
-            <ThemeProvider>
-              <ToastProvider>
+            <ToastProvider>
+              <ThemeProvider>
                 {/* Header with Clerk auth buttons */}
                 <ClientLayout>{children}</ClientLayout>
-              </ToastProvider>
-            </ThemeProvider>
+              </ThemeProvider>
+            </ToastProvider>
           </GlobalStateProvider>
         </body>
       </html>

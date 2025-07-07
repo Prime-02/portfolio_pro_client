@@ -1,49 +1,113 @@
-import {
-  SignedIn,
-  SignedOut,
-  SignInButton,
-  SignUpButton,
-  UserButton,
-} from "@clerk/nextjs";
-import React from "react";
+import React, { useEffect, useState } from "react";
+import AbsoluteSearch from "../../containers/cards/AbsoluteSearch";
+import { getColorShade } from "../../utilities/syncFunctions/syncs";
+import { useTheme } from "../../theme/ThemeContext ";
+import { useGlobalState } from "@/app/globalStateProvider";
 import PortfolioProLogo from "../../logo/PortfolioProLogo";
-import Button from "../../buttons/Buttons";
-import { ArrowRight } from "lucide-react";
-import { landingPageNavItems } from "../../utilities/indices/NavigationItems";
+import Popover from "../../containers/divs/PopOver";
+import { Bell, ChevronDown, ChevronUp, Grid3X3Icon } from "lucide-react";
+import { BsFillGrid3X3GapFill } from "react-icons/bs";
+import { SignedIn, SignedOut, SignInButton, SignUpButton } from "@clerk/nextjs";
 import Link from "next/link";
+import Button from "../../buttons/Buttons";
+import Menu from "../../containers/cards/landing-page-nav-cards/Menu";
+import Profile from "../../containers/cards/landing-page-nav-cards/Profile";
 
 const LandingPageNavbar = () => {
+  const { theme } = useTheme();
+  const { userData } = useGlobalState();
+  const [viewportWidth, setViewportWidth] = useState(0);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setViewportWidth(window.innerWidth);
+
+      const handleResize = () => {
+        setViewportWidth(window.innerWidth);
+      };
+
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
+    }
+  }, []);
+
   return (
-    <nav className="flex justify-between items-center backdrop-blur-3xl fixed border-b  w-full p-4 gap-4 h-20">
-      <div>
-        {/* <PortfolioPro  scale={0.2} speed={0.5}/> */}
-        <span className="scale-50">
-          <PortfolioProLogo scale={0.23} />
-        </span>
+    <div
+      className="min-h-16 w-full h-auto  flex flex-row items-center justify-between py-3 px-4"
+      style={{
+        backgroundColor: getColorShade(theme.background, 10),
+      }}
+    >
+      {/* Left section - Logo */}
+      <div className="flex-shrink-0">
+        <Link href={"/"} className="">
+          <PortfolioProLogo scale={0.2} />
+        </Link>
       </div>
-      <div>
-        {landingPageNavItems.map((link, i) => (
-          <Link key={i} href={link.link}>
-            <span>{link.name}</span>
-          </Link>
-        ))}
+
+      {/* Center section - Search (Enhanced width) */}
+      <div className="flex-1 flex justify-center px-4 min-w-0">
+        <div className="w-full max-w-3xl lg:max-w-4xl xl:max-w-5xl">
+          <SignedIn>
+            <AbsoluteSearch />
+          </SignedIn>
+        </div>
       </div>
-      <div>
+
+      {/* Right section - Auth/User controls */}
+      <div className="flex-shrink-0 ml-4">
         <SignedOut>
-          <Button
-            variant="outline"
-            size="md"
-            colorIntensity="dark"
-            text="Proceed To Dashboard"
-            icon={<ArrowRight />}
-          />
+          <div className="flex gap-x-2 lg:gap-x-3">
+            <SignInButton>
+              <Button variant="outline" size="md" text="Sign In" />
+            </SignInButton>
+            <SignUpButton>
+              <Button variant="primary" size="md" text="Sign Up" />
+            </SignUpButton>
+          </div>
         </SignedOut>
+
         <SignedIn>
-          <SignInButton />
-          <SignUpButton />
+          <div className="flex flex-row gap-x-2 lg:gap-x-4">
+            <span title="Menu">
+              <Popover
+                clicker={<BsFillGrid3X3GapFill size={25} />}
+                children={<Menu />}
+                position="bottom-left"
+              />
+            </span>
+            <Link
+              title="Notification"
+              href={`/${userData.username}/notifications`}
+              className="cursor-pointer rounded-full w-12 h-12 flex items-center justify-center bg-[var(--background)]"
+            >
+              <Bell />
+            </Link>
+            <Popover
+              position="bottom-left"
+              clicker={
+                <div className="relative inline-block" title="Profile">
+                  <span className="overflow-hidden rounded-full block">
+                    <img
+                      src={String(userData.profile_picture)}
+                      alt="Profile Picture"
+                      width={500}
+                      height={500}
+                      className="w-12 h-12 hover:scale-110 transition duration-100 cursor-pointer rounded-full"
+                    />
+                  </span>
+                  <ChevronDown
+                    className="absolute -bottom-0.5 -right-1 z-20 bg-[var(--background)] rounded-full shadow-sm"
+                    size={16}
+                  />
+                </div>
+              }
+              children={<Profile />}
+            />
+          </div>
         </SignedIn>
       </div>
-    </nav>
+    </div>
   );
 };
 

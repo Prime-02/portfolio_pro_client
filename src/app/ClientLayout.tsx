@@ -11,22 +11,24 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
   const pathname = usePathname(); // Current route path
   // Check if the current path is one of the allowed routes
   const shouldShowNavbarAndFooter = [
-    "/",
-    "/privacy_policy",
-    "/terms_of_services",
-    "/features",
-    "/faq",
+    // "/",
+    // "/portfolios",
+    // "/projects",
+    // "/terms_of_services",
+    // "/features",
+    // "/faq",
+    ""
   ].includes(pathname || "");
 
   return (
     <main className="min-h-screen">
       {/* Only render Navbar and Footer if on allowed paths */}
-      {shouldShowNavbarAndFooter && <LandingPageNavbar />}
+      {!shouldShowNavbarAndFooter && <LandingPageNavbar />}
 
       {/* Render the page content */}
-      <div className="w-full min-h-screen">{children}</div>
+      <div className="w-full min-h-screen overflow-auto">{children}</div>
 
-      {shouldShowNavbarAndFooter && <LandingPageFooter />}
+      {!shouldShowNavbarAndFooter && <LandingPageFooter />}
     </main>
   );
 }

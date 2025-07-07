@@ -19,7 +19,7 @@ import {
 import { BASE_URL } from "./components/utilities/indices/urls";
 
 // Define types for user data
-type UserData = {
+export type UserData = {
   id: string;
   username: string;
   firstname: string;

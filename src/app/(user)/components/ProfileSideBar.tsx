@@ -18,10 +18,10 @@ const ProfileSideBar = () => {
   };
 
   const isActiveRoute = (routeLink: string) => {
-    const basePath = `/${userData.username}/profile`;
-    const fullRoutePath = `${basePath}${routeLink}`.replace(/\/+$/, "");
+    const routeWithUsername = `/${userData.username}${routeLink}`;
+    const cleanRoutePath = routeWithUsername.replace(/\/+$/, "");
     const cleanPathname = pathname.replace(/\/+$/, "");
-    return cleanPathname === fullRoutePath;
+    return cleanPathname === cleanRoutePath;
   };
 
   return (
@@ -66,14 +66,12 @@ const ProfileSideBar = () => {
           </h3>
           {privateRoutes
             .filter((route) =>
-              ["profile", "Personal Information", "socials"].includes(
-                route.slug
-              )
+              ["profile", "personal-info", "socials"].includes(route.slug)
             )
             .map((route, i) => (
               <Link
                 key={i}
-                href={`/${userData?.username || "user"}/profile${route.link}`}
+                href={`/${userData?.username || "user"}/${route.link}`}
                 className="block"
               >
                 <div
@@ -128,7 +126,7 @@ const ProfileSideBar = () => {
             .map((route, i) => (
               <Link
                 key={i}
-                href={`/${userData?.username || "user"}/profile${route.link}`}
+                href={`/${userData?.username || "user"}/${route.link}`}
                 className="block"
               >
                 <div
@@ -178,7 +176,7 @@ const ProfileSideBar = () => {
             .map((route, i) => (
               <Link
                 key={i}
-                href={`/${userData?.username || "user"}/profile${route.link}`}
+                href={`/${userData?.username || "user"}/${route.link}`}
                 className="block"
               >
                 <div
@@ -224,7 +222,7 @@ const ProfileSideBar = () => {
             .map((route, i) => (
               <Link
                 key={i}
-                href={`/${userData?.username || "user"}/profile${route.link}`}
+                href={`/${userData?.username || "user"}/${route.link}`}
                 className="block"
               >
                 <div

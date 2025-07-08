@@ -31,15 +31,15 @@ interface Route {
 export const privateRoutes: Route[] = [
   {
     slug: "profile",
-    link: "/",
+    link: "/profile/me",
     name: "Profile",
     icon: FaUser,
     description: "View and manage your personal profile information",
   },
   {
-    slug: "Personal Information",
+    name: "Personal Information",
     link: "/personal-info",
-    name: "personal-info",
+    slug: "personal-info",
     icon: FaIdCard,
     description: "Update your basic personal details and contact information",
   },
@@ -53,7 +53,7 @@ export const privateRoutes: Route[] = [
   {
     slug: "portfolios",
     link: "/portfolios",
-    name: "Portfolios",
+    name: "Portfolio Cluster",
     icon: FaBriefcase,
     description: "Manage and showcase your professional portfolio items",
   },

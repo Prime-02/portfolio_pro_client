@@ -107,7 +107,10 @@ const Profile = () => {
             </div>
           </div>
           <span className="w-[80%] mx-auto h-[0.5px] bg-[var(--foreground)]"></span>
-          <Link href={`/${userData.username}/profile`} className="w-full flex">
+          <Link
+            href={`/${userData.username}/profile/me`}
+            className="w-full flex"
+          >
             <Button
               variant="outline"
               className="w-full"

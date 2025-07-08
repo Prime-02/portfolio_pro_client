@@ -1,9 +1,8 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { Palette, Loader, Crown, Zap, Info } from "lucide-react";
-import SideBar from "../components/SideBar";
-import { ThemeVariant } from "@/app/components/types and interfaces/loaderTypes";
+import { Zap, Info } from "lucide-react";
+import SideBar from "@/app/(user)/components/SideBar";
 import Themes from "./tabs/Themes";
 import Loaders from "./tabs/Loaders";
 import Pro from "./tabs/Pro";
@@ -91,7 +90,7 @@ const ThemeControlPanel: React.FC<ThemeControlPanelProps> = () => {
 
         {/* Tab Content */}
         <div
-          className="space-y-6 p-4 min-w-md"
+          className="space-y-6 p-4 min-w-md rounded-xl"
           style={{
             backgroundColor: getColorShade(theme.background, 5),
           }}

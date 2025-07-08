@@ -10,7 +10,7 @@ import "simplebar-react/dist/simplebar.min.css";
 
 // Define your route categories
 const routeCategories = {
-  PROFILE: ["profile", "Personal Information", "socials"],
+  PROFILE: ["profile", "personal-info", "socials"],
   PROFESSIONAL: [
     "portfolios",
     "projects",
@@ -37,7 +37,7 @@ const Menu = () => {
   );
 
   const isActiveRoute = (routeLink: string) => {
-    const basePath = `/${userData.username}/profile`;
+    const basePath = `/${userData.username}/`;
     const fullRoutePath = `${basePath}${routeLink}`.replace(/\/+$/, "");
     const cleanPathname = pathname.replace(/\/+$/, "");
     return cleanPathname === fullRoutePath;
@@ -69,7 +69,7 @@ const Menu = () => {
                     {routes.map((route, i) => (
                       <Link
                         key={i}
-                        href={`/${userData?.username || "user"}/profile${route.link}`}
+                        href={`/${userData?.username || "user"}/${route.link}`}
                         className="block"
                       >
                         <div
@@ -133,7 +133,7 @@ const Menu = () => {
               .map((route, i) => (
                 <Link
                   key={i}
-                  href={`/${userData?.username || "user"}/profile${route.link}?create=true`}
+                  href={`/${userData?.username || "user"}/${route.link}?create=true`}
                   className="block"
                 >
                   <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--background-hover)] transition-colors duration-200">

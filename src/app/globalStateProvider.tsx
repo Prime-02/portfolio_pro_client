@@ -39,6 +39,7 @@ type ClerkUserData = {
 type GlobalStateContextType = {
   clerkUserData: ClerkUserData;
   userData: UserData;
+  setUser: (userData: UserData) => UserData;
   accessToken: string;
   loading: string[];
   setLoading: (
@@ -197,6 +198,7 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
       value={{
         clerkUserData,
         userData,
+        setUser,
         accessToken,
         loading,
         setLoading,

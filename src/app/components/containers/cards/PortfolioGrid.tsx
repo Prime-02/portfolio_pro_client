@@ -1,13 +1,12 @@
-import React, { ReactNode } from "react";
+import React, { useState, useEffect } from "react";
 import { RefreshCw } from "lucide-react";
 import PortfolioCard from "./PortfolioCard";
 import LoadingSkeletons from "../skeletons/LoadingSkeletons";
 import ErrorDisplay from "./ErrorDisplay";
 import EmptyState from "./EmptyState";
-import { useRouter } from "next/navigation";
 
-interface Portfolio {
-  id: string;
+export interface Portfolio {
+  id?: string;
   name?: string;
   description?: string;
   cover_image_url?: string;
@@ -36,14 +35,14 @@ interface EmptyStateProps {
   onClearFilters?: () => void;
   actionText?: string;
   action?: () => void;
-  [key: string]: any;
+  // [key: string]: any;
 }
 
 interface ErrorDisplayProps {
   error: Error | string | null;
   onRetry?: () => void;
   title?: string;
-  [key: string]: any;
+  // [key: string]: any;
 }
 
 interface PortfolioGridProps {
@@ -52,7 +51,8 @@ interface PortfolioGridProps {
   error?: Error | string | null;
   hasMore?: boolean;
   onRefetch?: () => void;
-  viewMode?: "grid" | "list";
+  viewMode?: "grid" | "list" | string;
+  setViewMode?: (viewMode: "grid" | "list") => void;
   onPortfolioClick?: (portfolio: Portfolio) => void;
   onPortfolioView?: (portfolio: Portfolio) => void;
   onPortfolioLike?: (portfolio: Portfolio) => void;
@@ -72,6 +72,7 @@ const PortfolioGrid: React.FC<PortfolioGridProps> = ({
   hasMore,
   onRefetch,
   viewMode = "grid",
+  setViewMode,
   onPortfolioClick,
   onPortfolioView,
   onPortfolioLike,
@@ -83,15 +84,34 @@ const PortfolioGrid: React.FC<PortfolioGridProps> = ({
   errorProps = {},
   className = "",
 }) => {
-  const isListView = viewMode === "list";
+  const [isListView, setIsListView] = useState(viewMode === "list");
+
+  // Sync internal state with prop
+  useEffect(() => {
+    setIsListView(viewMode === "list");
+  }, [viewMode]);
+
+  // Handle view mode changes
+  const handleViewModeChange = (newViewMode: "grid" | "list") => {
+    setIsListView(newViewMode === "list");
+    if (setViewMode) {
+      setViewMode(newViewMode);
+    }
+  };
+
   const gridClasses = isListView
     ? "grid-cols-1 max-w-4xl mx-auto"
     : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4";
 
   const hasFilters = Boolean(searchTerm || filterTag);
-  const nav = useRouter();
+
   return (
-    <div className={className}>
+    <div
+      className={className}
+      onClick={() => {
+        handleViewModeChange("list");
+      }}
+    >
       {/* Portfolio Grid/List */}
       <div className={`grid gap-6 ${gridClasses}`}>
         {/* Error State */}
@@ -116,9 +136,6 @@ const PortfolioGrid: React.FC<PortfolioGridProps> = ({
             onClearFilters={onClearFilters}
             {...emptyStateProps}
             actionText="Create Portfolio"
-            onAction={() => {
-              nav.push("/");
-            }}
           />
         )}
 
@@ -159,7 +176,8 @@ const PortfolioGrid: React.FC<PortfolioGridProps> = ({
       {!loading && !hasMore && data && data.length > 0 && (
         <div className="text-center py-8">
           <p className="text-gray-500">
-            You've reached the end of the portfolios!
+            {`You've reached the end of the portfolios!
+`}{" "}
           </p>
         </div>
       )}

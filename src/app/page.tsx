@@ -1,5 +1,4 @@
 "use client";
-import Image from "next/image";
 import Link from "next/link";
 import PortfolioPro from "./components/logo/PortfolioProTextLogo";
 import { headlines } from "./components/utilities/indices/LandingPageTexts";

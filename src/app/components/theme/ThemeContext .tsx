@@ -9,7 +9,6 @@ import {
   useRef,
 } from "react";
 import {
-  LoaderOptions,
   LoaderInput,
   Loader,
   Theme,
@@ -24,9 +23,12 @@ import {
   UpdateAllData,
 } from "../utilities/asyncFunctions/lib/crud";
 import { V1_BASE_URL } from "../utilities/indices/urls";
-import { isValidHexColorStrict } from "../utilities/syncFunctions/syncs";
-import { useToast } from "../toastify/Toastify";
-import { Palette } from "lucide-react";
+import {
+  findMatch,
+  isValidHexColorStrict,
+} from "../utilities/syncFunctions/syncs";
+import { UserPreferences } from "../types and interfaces/UserAndProfile";
+import { systemLanguages } from "../utilities/indices/DropDownItems";
 
 export type ThemeContextType = {
   theme: Theme;
@@ -81,7 +83,6 @@ export const ThemeProvider = ({
   },
 }: ThemeProviderProps) => {
   // State for theme configurations
-  const toast = useToast();
   const [lightTheme, setLightTheme] = useState<Theme>(initialLightTheme);
   const [darkTheme, setDarkTheme] = useState<Theme>(initialDarkTheme);
   const [accentColor, setAccentColor] = useState<Accent>(initialAccentColor);
@@ -93,7 +94,7 @@ export const ThemeProvider = ({
     return initialLoader.style as Loader;
   });
 
-  const { accessToken, loading, setLoading } = useGlobalState();
+  const { accessToken, setLoading } = useGlobalState();
 
   // State for the theme variant (light/dark/system)
   const [themeVariant, setThemeVariant] =
@@ -174,10 +175,9 @@ export const ThemeProvider = ({
     [lightTheme, darkTheme, getSystemTheme, applyTheme]
   );
 
-  // Initialize theme on mount
   useEffect(() => {
     updateTheme(themeVariant);
-  }, []); // Only run on mount
+  }, [themeVariant, updateTheme]); // Now handles updates
 
   // Listen for system theme changes
   useEffect(() => {
@@ -224,7 +224,7 @@ export const ThemeProvider = ({
 
     setLoading("fething_user_settings");
     try {
-      const settingsRes = await GetAllData({
+      const settingsRes: UserPreferences = await GetAllData({
         access: accessToken,
         url: `${V1_BASE_URL}/settings/`,
         type: "User Settings",
@@ -244,7 +244,9 @@ export const ThemeProvider = ({
         ];
 
         // Check if any required setting is missing or falsy
-        needsUpdate = requiredSettings.some((setting) => !settingsRes[setting]);
+        needsUpdate = requiredSettings.some(
+          (setting) => !settingsRes[setting as keyof UserPreferences]
+        );
 
         // Apply settings if they exist
         if (settingsRes.accent && isValidHexColorStrict(settingsRes.accent)) {
@@ -254,7 +256,14 @@ export const ThemeProvider = ({
         }
 
         if (settingsRes.language) {
-          setLanguage(settingsRes.language);
+          setLanguage(
+            findMatch(
+              settingsRes.language,
+              systemLanguages,
+              ["code"],
+              true
+            ) || { code: "en", name: "English" }
+          );
         } else {
           needsUpdate = true;
         }
@@ -269,24 +278,33 @@ export const ThemeProvider = ({
         }
 
         if (
-          isValidHexColorStrict(settingsRes.primary_theme) &&
-          isValidHexColorStrict(settingsRes.secondary_theme)
+          isValidHexColorStrict(
+            settingsRes.primary_theme || lightTheme.background
+          ) &&
+          isValidHexColorStrict(
+            settingsRes.secondary_theme || lightTheme.foreground
+          )
         ) {
           setLightTheme({
-            background: settingsRes.primary_theme,
-            foreground: settingsRes.secondary_theme,
+            background: settingsRes.primary_theme || lightTheme.background,
+            foreground: settingsRes.secondary_theme || lightTheme.foreground,
           });
         } else {
           needsUpdate = true;
         }
 
         if (
-          isValidHexColorStrict(settingsRes.primary_theme_dark) &&
-          isValidHexColorStrict(settingsRes.secondary_theme_dark)
+          isValidHexColorStrict(
+            settingsRes.primary_theme_dark || darkTheme.background
+          ) &&
+          isValidHexColorStrict(
+            settingsRes.secondary_theme_dark || darkTheme.foreground
+          )
         ) {
           setDarkTheme({
-            background: settingsRes.primary_theme_dark,
-            foreground: settingsRes.secondary_theme_dark,
+            background: settingsRes.primary_theme_dark || darkTheme.background,
+            foreground:
+              settingsRes.secondary_theme_dark || darkTheme.foreground,
           });
         } else {
           needsUpdate = true;
@@ -319,7 +337,7 @@ export const ThemeProvider = ({
     setLoading("fething_user_settings");
 
     try {
-      const updateRes = await UpdateAllData({
+      const updateRes: UserPreferences = await UpdateAllData({
         access: accessToken,
         field: {
           language: language.code,
@@ -335,18 +353,23 @@ export const ThemeProvider = ({
       });
 
       if (updateRes) {
-        toast.toast("Theme Updated", {
-          type: "default",
-          icon: <Palette className="w-5 h-5 text-[var(--accent)]" />,
-          className:
-            "border-[var(--accent)] bg-purple-[var(--background)] text-[var(--accent)]",
-          sound: true,
-          animation: "scale",
-          position: "bottom-center",
-          duration: 1000
-        });
+        // toast.toast("Theme Updated", {
+        //   type: "default",
+        //   icon: <Palette className="w-5 h-5 text-[var(--accent)]" />,
+        //   className:
+        //     "border-[var(--accent)] bg-purple-[var(--background)] text-[var(--accent)]",
+        //   sound: true,
+        //   animation: "scale",
+        //   position: "bottom-center",
+        //   duration: 1000
+        // });
         if (updateRes.language) {
-          setLanguage(updateRes.language);
+          setLanguage(
+            findMatch(updateRes.language, systemLanguages, ["code"], true) || {
+              code: "en",
+              name: "English",
+            }
+          );
         }
         if (updateRes.theme) {
           setThemeVariant(updateRes.theme);

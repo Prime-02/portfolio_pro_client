@@ -5,13 +5,14 @@ import { useTheme } from "../../theme/ThemeContext ";
 import { useGlobalState } from "@/app/globalStateProvider";
 import PortfolioProLogo from "../../logo/PortfolioProLogo";
 import Popover from "../../containers/divs/PopOver";
-import { Bell, ChevronDown, ChevronUp, Grid3X3Icon } from "lucide-react";
+import { Bell, ChevronDown } from "lucide-react";
 import { BsFillGrid3X3GapFill } from "react-icons/bs";
 import { SignedIn, SignedOut, SignInButton, SignUpButton } from "@clerk/nextjs";
 import Link from "next/link";
 import Button from "../../buttons/Buttons";
 import Menu from "../../containers/cards/landing-page-nav-cards/Menu";
 import Profile from "../../containers/cards/landing-page-nav-cards/Profile";
+import Image from "next/image";
 
 const LandingPageNavbar = () => {
   const { theme } = useTheme();
@@ -21,6 +22,8 @@ const LandingPageNavbar = () => {
   useEffect(() => {
     if (typeof window !== "undefined") {
       setViewportWidth(window.innerWidth);
+      if (viewportWidth) {
+      }
 
       const handleResize = () => {
         setViewportWidth(window.innerWidth);
@@ -71,10 +74,15 @@ const LandingPageNavbar = () => {
           <div className="flex flex-row gap-x-2 lg:gap-x-4">
             <span title="Menu">
               <Popover
-                clicker={<BsFillGrid3X3GapFill size={25} />}
-                children={<Menu />}
+                clicker={
+                  <div>
+                    <BsFillGrid3X3GapFill size={25} />
+                  </div>
+                }
                 position="bottom-center"
-              />
+              >
+                <Menu />
+              </Popover>
             </span>
             <Link
               title="Notification"
@@ -88,7 +96,7 @@ const LandingPageNavbar = () => {
               clicker={
                 <div className="relative inline-block" title="Profile">
                   <span className="overflow-hidden rounded-full block">
-                    <img
+                    <Image
                       src={String(userData.profile_picture)}
                       alt="Profile Picture"
                       width={500}
@@ -102,8 +110,9 @@ const LandingPageNavbar = () => {
                   />
                 </div>
               }
-              children={<Profile />}
-            />
+            >
+              <Profile />
+            </Popover>
           </div>
         </SignedIn>
       </div>

@@ -1,26 +1,26 @@
-import React, { useState } from 'react';
-import { Textinput, TextArea } from './Textinput';
+import React, { useState } from "react";
+import { Textinput, TextArea } from "./Textinput";
 
 const TextInputDemo = () => {
-  const [text, setText] = useState('');
-  const [password, setPassword] = useState('');
-  const [email, setEmail] = useState('');
-  const [number, setNumber] = useState('');
-  const [date, setDate] = useState('');
-  const [dropdownValue, setDropdownValue] = useState('');
-  const [phone, setPhone] = useState('');
-  const [textarea, setTextarea] = useState('');
+  const [text, setText] = useState("");
+  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
+  const [number, setNumber] = useState("");
+  const [date, setDate] = useState("");
+  const [dropdownValue, setDropdownValue] = useState("");
+  const [phone, setPhone] = useState("");
+  const [textarea, setTextarea] = useState("");
 
   const dropdownOptions = [
-    { id: '1', code: 'Option 1' },
-    { id: '2', code: 'Option 2' },
-    { id: '3', code: 'Option 3' },
+    { id: "1", code: "Option 1" },
+    { id: "2", code: "Option 2" },
+    { id: "3", code: "Option 3" },
   ];
 
   return (
     <div className="max-w-md mx-auto p-6 space-y-6">
       <h1 className="text-2xl font-bold mb-4">Text Input Components Demo</h1>
-      
+
       <div className="space-y-4">
         {/* Basic Text Input */}
         <Textinput
@@ -90,27 +90,30 @@ const TextInputDemo = () => {
 
         {/* TextArea */}
         <TextArea
-          label="Text Area"
           value={textarea}
           onChange={setTextarea}
           className="h-32"
-          placeholder="Enter multiline text"
+          label="Enter multiline text"
         />
       </div>
 
       <div className="p-4 border rounded bg-gray-50 dark:bg-gray-800">
         <h2 className="font-semibold mb-2">Current Values:</h2>
         <pre className="text-sm">
-          {JSON.stringify({
-            text,
-            password,
-            email,
-            number,
-            date,
-            dropdownValue,
-            phone,
-            textarea,
-          }, null, 2)}
+          {JSON.stringify(
+            {
+              text,
+              password,
+              email,
+              number,
+              date,
+              dropdownValue,
+              phone,
+              textarea,
+            },
+            null,
+            2
+          )}
         </pre>
       </div>
     </div>

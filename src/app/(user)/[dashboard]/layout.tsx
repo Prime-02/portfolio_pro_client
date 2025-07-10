@@ -1,5 +1,4 @@
 "use client";
-import { useTheme } from "@/app/components/theme/ThemeContext ";
 import React from "react";
 import ProfileSideBar from "../components/ProfileSideBar";
 
@@ -8,7 +7,6 @@ const layout = ({
 }: Readonly<{
   children: React.ReactNode;
 }>) => {
-  const { theme } = useTheme();
   return (
     <div className="flex">
       <ProfileSideBar />

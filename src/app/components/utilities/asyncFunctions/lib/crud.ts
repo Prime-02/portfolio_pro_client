@@ -6,7 +6,11 @@ import {
 } from "../../syncFunctions/syncs";
 import { toast } from "@/app/components/toastify/Toastify";
 
-export interface PostAllDataParams<T = any> {
+// Define a more specific type for form data values
+type FormDataValue = string | number | boolean | File | Blob;
+
+// Enhanced interface with better type constraints
+export interface PostAllDataParams<T = Record<string, unknown>> {
   access?: string;
   data?: T | null;
   url: string;
@@ -14,16 +18,50 @@ export interface PostAllDataParams<T = any> {
   message?: string;
 }
 
-export const PostAllData = async <T extends {} = any, R = any>({
+// Helper type to ensure data is serializable
+type SerializableData = Record<string, FormDataValue | FormDataValue[]>;
+
+// Type guard for checking if data is serializable
+function isSerializableData(data: unknown): data is SerializableData {
+  if (typeof data !== "object" || data === null) {
+    return false;
+  }
+
+  return Object.values(data).every((value) => {
+    if (Array.isArray(value)) {
+      return value.every(
+        (item) =>
+          typeof item === "string" ||
+          typeof item === "number" ||
+          typeof item === "boolean" ||
+          item instanceof File ||
+          item instanceof Blob
+      );
+    }
+    return (
+      typeof value === "string" ||
+      typeof value === "number" ||
+      typeof value === "boolean" ||
+      value instanceof File ||
+      value instanceof Blob
+    );
+  });
+}
+
+export const PostAllData = async <
+  T extends Record<string, unknown>,
+  R = unknown,
+>({
   access,
   data,
   url,
   useFormData = false,
 }: PostAllDataParams<T>): Promise<R> => {
   try {
-    let requestData = data
-      ? convertNumericStrings(removeEmptyStringValues(data))
+    let requestData: T | FormData | undefined = data
+      ? (convertNumericStrings(removeEmptyStringValues(data)) as T)
       : undefined;
+
     const headers: Record<string, string> = {
       ...(access && {
         Authorization: `Bearer ${access}`,
@@ -32,23 +70,35 @@ export const PostAllData = async <T extends {} = any, R = any>({
     };
 
     if (useFormData && data) {
+      if (!isSerializableData(data)) {
+        throw new Error("Data must be serializable for FormData conversion");
+      }
+
       const formData = new FormData();
       const cleanedData = removeEmptyStringValues(data);
-      for (const key in cleanedData) {
-        if (Object.prototype.hasOwnProperty.call(cleanedData, key)) {
-          let value = cleanedData[key as keyof typeof cleanedData];
+
+      Object.entries(cleanedData).forEach(([key, value]) => {
+        if (value != null) {
+          let processedValue: FormDataValue = value as FormDataValue;
+
           // Convert to number if it's a numeric string
           if (typeof value === "string" && isNumericString(value)) {
-            value = parseInt(
-              value,
-              10
-            ) as unknown as NonNullable<T>[keyof NonNullable<T>];
+            processedValue = parseInt(value, 10);
           }
-          formData.append(key, value as any);
+
+          // Handle different value types for FormData
+          if (typeof processedValue === "boolean") {
+            formData.append(key, processedValue.toString());
+          } else if (typeof processedValue === "number") {
+            formData.append(key, processedValue.toString());
+          } else {
+            formData.append(key, processedValue as string | File | Blob);
+          }
         }
-      }
+      });
+
       requestData = formData;
-      delete headers["Content-Type"];
+      delete headers["Content-Type"]; // Let browser set multipart boundary
     }
 
     console.log("Post Data", requestData);
@@ -58,68 +108,32 @@ export const PostAllData = async <T extends {} = any, R = any>({
     });
     return response.data;
   } catch (error) {
-    let errorMessage =
-      "An error occurred. Please contact our support if this problem persists.";
-
-    const axiosError = error as AxiosError;
-    if (axiosError.response) {
-      const responseData = axiosError.response.data;
-
-      if (typeof responseData === "string") {
-        errorMessage = responseData;
-      } else if (Array.isArray(responseData)) {
-        errorMessage = responseData
-          .map((item) =>
-            typeof item === "object" ? Object.values(item).join(" ") : item
-          )
-          .join(", ");
-      } else if (typeof responseData === "object" && responseData !== null) {
-        const messages: string[] = [];
-        const collectMessages = (obj: object) => {
-          Object.values(obj).forEach((value) => {
-            if (typeof value === "string") {
-              messages.push(value);
-            } else if (Array.isArray(value)) {
-              messages.push(...value.filter((i) => typeof i === "string"));
-            } else if (typeof value === "object" && value !== null) {
-              collectMessages(value);
-            }
-          });
-        };
-        collectMessages(responseData);
-        errorMessage = messages.length
-          ? messages.join(", ")
-          : JSON.stringify(responseData);
-      }
-    } else if (axiosError.request) {
-      errorMessage = "No response received from server";
-    } else {
-      errorMessage = axiosError.message || errorMessage;
-    }
     console.error("Upload failed:", error);
     throw error;
   }
 };
 
-interface GetAllDataParams<T = any> {
+// Enhanced interface with better type constraints
+interface GetAllDataParams<T = Record<string, unknown>> {
   access: string;
   url: string;
   type: string;
-  data?: T | object;
+  data?: T;
 }
 
-export const GetAllData = async <T = any, R = any>({
+export const GetAllData = async <T = Record<string, unknown>, R = unknown>({
   access,
   url,
   type,
-  data = {},
+  data = {} as T,
 }: GetAllDataParams<T>): Promise<R> => {
   try {
     let userTimezone = "UTC";
     try {
       userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     } catch (e) {
-      console.warn("Could not detect timezone, defaulting to UTC");
+      console.warn(`Could not detect timezone, defaulting to ${userTimezone}`);
+      console.log(e);
     }
 
     const config: AxiosRequestConfig = {
@@ -130,7 +144,7 @@ export const GetAllData = async <T = any, R = any>({
     };
 
     // Only add params if data is provided and not empty
-    if (data && Object.keys(data).length > 0) {
+    if (data && typeof data === "object" && Object.keys(data).length > 0) {
       config.params = data;
     }
 
@@ -141,12 +155,10 @@ export const GetAllData = async <T = any, R = any>({
 
     const axiosError = error as AxiosError;
     if (axiosError.response?.status === 429) {
-      toast.error(
-        "Your account was banned due to suspected malicious activity"
-      );
-      throw new Error(
-        "Your account was banned due to suspected malicious activity"
-      );
+      const banMessage =
+        "Your account was banned due to suspected malicious activity";
+      toast.error(banMessage);
+      throw new Error(banMessage);
     }
 
     // Re-throw the error to allow further handling
@@ -154,7 +166,8 @@ export const GetAllData = async <T = any, R = any>({
   }
 };
 
-interface UpdateParams<T = any> {
+// Enhanced interface with better type constraints
+interface UpdateParams<T = Record<string, unknown>> {
   access: string;
   field: T;
   url: string;
@@ -163,7 +176,10 @@ interface UpdateParams<T = any> {
   message?: string;
 }
 
-export const UpdateAllData = async <T = any, R = any>({
+export const UpdateAllData = async <
+  T extends Record<string, unknown>,
+  R = unknown,
+>({
   access,
   field,
   url,
@@ -184,20 +200,27 @@ export const UpdateAllData = async <T = any, R = any>({
     };
 
     if (useFormData) {
-      // If useFormData is true, convert the field object to FormData
+      if (!isSerializableData(field)) {
+        throw new Error(
+          "Field data must be serializable for FormData conversion"
+        );
+      }
+
+      // Convert the field object to FormData
       const formData = new FormData();
-      for (const key in field) {
-        if (Object.prototype.hasOwnProperty.call(field, key)) {
-          const value = field[key as keyof T];
-          if (value !== undefined && value !== null) {
-            formData.append(key, value as any);
+      Object.entries(field).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          if (typeof value === "boolean") {
+            formData.append(key, value.toString());
+          } else if (typeof value === "number") {
+            formData.append(key, value.toString());
+          } else {
+            formData.append(key, value as string | File | Blob);
           }
         }
-      }
+      });
       requestData = formData;
-
-      // Set headers for multipart/form-data
-      headers["Content-Type"] = "multipart/form-data";
+      // Remove Content-Type to let browser set multipart boundary
     } else {
       // Default to application/json
       requestData = field;
@@ -218,61 +241,22 @@ export const UpdateAllData = async <T = any, R = any>({
     }
     return response.data;
   } catch (error) {
-    let errorMessage =
-      "An error occurred. Please contact our support if this problem persists.";
-
-    const axiosError = error as AxiosError;
-    if (axiosError.response) {
-      const responseData = axiosError.response.data;
-
-      if (typeof responseData === "string") {
-        errorMessage = responseData;
-      } else if (Array.isArray(responseData)) {
-        // Handle array of strings or array of objects
-        errorMessage = responseData
-          .map((item) =>
-            typeof item === "object" ? Object.values(item).join(" ") : item
-          )
-          .join(", ");
-      } else if (typeof responseData === "object" && responseData !== null) {
-        // Flatten nested error objects
-        const messages: string[] = [];
-        const collectMessages = (obj: object) => {
-          Object.values(obj).forEach((value) => {
-            if (typeof value === "string") {
-              messages.push(value);
-            } else if (Array.isArray(value)) {
-              messages.push(...value.filter((i) => typeof i === "string"));
-            } else if (typeof value === "object" && value !== null) {
-              collectMessages(value);
-            }
-          });
-        };
-        collectMessages(responseData);
-        errorMessage = messages.length
-          ? messages.join(", ")
-          : JSON.stringify(responseData);
-      }
-    } else if (axiosError.request) {
-      errorMessage = "No response received from server";
-    } else {
-      errorMessage = axiosError.message || errorMessage;
-    }
-
+    const errorMessage = handleAxiosError(error as AxiosError);
     toast.error(errorMessage);
     console.error("Update failed:", error);
     throw error;
   }
 };
 
-interface DeleteParams<T = any> {
+// Enhanced interface with better type constraints
+interface DeleteParams<T = Record<string, unknown>> {
   url: string;
   access: string;
   message?: string;
   data?: T;
 }
 
-export const Delete = async <T = any, R = any>({
+export const Delete = async <T = Record<string, unknown>, R = unknown>({
   url,
   access,
   message = "Deleted",
@@ -292,49 +276,110 @@ export const Delete = async <T = any, R = any>({
     }
     return response.data;
   } catch (error) {
-    let errorMessage =
-      "An error occurred. Please contact our support if this problem persists.";
-
-    const axiosError = error as AxiosError;
-    if (axiosError.response) {
-      const responseData = axiosError.response.data;
-
-      if (typeof responseData === "string") {
-        errorMessage = responseData;
-      } else if (Array.isArray(responseData)) {
-        // Handle array of strings or array of objects
-        errorMessage = responseData
-          .map((item) =>
-            typeof item === "object" ? Object.values(item).join(" ") : item
-          )
-          .join(", ");
-      } else if (typeof responseData === "object" && responseData !== null) {
-        // Flatten nested error objects
-        const messages: string[] = [];
-        const collectMessages = (obj: object) => {
-          Object.values(obj).forEach((value) => {
-            if (typeof value === "string") {
-              messages.push(value);
-            } else if (Array.isArray(value)) {
-              messages.push(...value.filter((i) => typeof i === "string"));
-            } else if (typeof value === "object" && value !== null) {
-              collectMessages(value);
-            }
-          });
-        };
-        collectMessages(responseData);
-        errorMessage = messages.length
-          ? messages.join(", ")
-          : JSON.stringify(responseData);
-      }
-    } else if (axiosError.request) {
-      errorMessage = "No response received from server";
-    } else {
-      errorMessage = axiosError.message || errorMessage;
-    }
-
+    const errorMessage = handleAxiosError(error as AxiosError);
     toast.error(errorMessage);
     console.error("Delete failed:", error);
     throw error;
   }
+};
+
+// Helper function to handle axios errors consistently
+function handleAxiosError(axiosError: AxiosError): string {
+  let errorMessage =
+    "An error occurred. Please contact our support if this problem persists.";
+
+  if (axiosError.response) {
+    const responseData = axiosError.response.data;
+
+    if (typeof responseData === "string") {
+      errorMessage = responseData;
+    } else if (Array.isArray(responseData)) {
+      // Handle array of strings or array of objects
+      errorMessage = responseData
+        .map((item) =>
+          typeof item === "object" && item !== null
+            ? Object.values(item).join(" ")
+            : String(item)
+        )
+        .join(", ");
+    } else if (typeof responseData === "object" && responseData !== null) {
+      // Flatten nested error objects
+      const messages: string[] = [];
+      const collectMessages = (obj: Record<string, unknown>) => {
+        Object.values(obj).forEach((value) => {
+          if (typeof value === "string") {
+            messages.push(value);
+          } else if (Array.isArray(value)) {
+            messages.push(
+              ...value.filter((i): i is string => typeof i === "string")
+            );
+          } else if (typeof value === "object" && value !== null) {
+            collectMessages(value as Record<string, unknown>);
+          }
+        });
+      };
+      collectMessages(responseData as Record<string, unknown>);
+      errorMessage = messages.length
+        ? messages.join(", ")
+        : JSON.stringify(responseData);
+    }
+  } else if (axiosError.request) {
+    errorMessage = "No response received from server";
+  } else {
+    errorMessage = axiosError.message || errorMessage;
+  }
+
+  return errorMessage;
+}
+
+// Type definitions for better API responses
+export interface ApiResponse<T = unknown> {
+  data: T;
+  message?: string;
+  success: boolean;
+}
+
+export interface ApiError {
+  message: string;
+  code?: string;
+  details?: Record<string, unknown>;
+}
+
+// Enhanced wrapper with better error handling
+export const createApiClient = (
+  baseURL: string,
+  defaultHeaders: Record<string, string> = {}
+) => {
+  const client = axios.create({
+    baseURL,
+    headers: {
+      "Content-Type": "application/json",
+      ...defaultHeaders,
+    },
+  });
+
+  // Request interceptor for consistent header management
+  client.interceptors.request.use(
+    (config) => {
+      // Add any additional request processing here
+      return config;
+    },
+    (error) => Promise.reject(error)
+  );
+
+  // Response interceptor for consistent error handling
+  client.interceptors.response.use(
+    (response) => response,
+    (error: AxiosError) => {
+      // Handle common error scenarios
+      if (error.response?.status === 401) {
+        // Handle unauthorized access
+        console.warn("Unauthorized access - consider redirecting to login");
+      }
+
+      return Promise.reject(error);
+    }
+  );
+
+  return client;
 };

@@ -1,16 +1,15 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import InfiniteScrollDiv from "@/app/components/containers/divs/infinitescroll/InfiniteScrollDiv ";
 import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
-import PageHeader from "@/app/components/containers/divs/header/PageHeader";
 import PortfolioGrid from "@/app/components/containers/cards/PortfolioGrid";
 import { getColorShade } from "@/app/components/utilities/syncFunctions/syncs";
 import { useTheme } from "@/app/components/theme/ThemeContext ";
 
 const PortfolioPage = () => {
-  const [viewMode, setViewMode] = React.useState("grid");
-  const [searchTerm, setSearchTerm] = React.useState("");
-  const [filterTag, setFilterTag] = React.useState("");
+  const [viewMode, setViewMode] = useState("grid");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterTag, setFilterTag] = useState("");
   const { theme } = useTheme();
 
   const handlePortfolioClick = (portfolio = {}) => {
@@ -45,11 +44,6 @@ const PortfolioPage = () => {
         backgroundColor: getColorShade(theme.background, 8),
       }}
     >
-      {/* Header */}
-      <PageHeader
-        title="Public Portfolios"
-        subtitle="Discover amazing portfolios from our community"
-      ></PageHeader>
 
       {/* Main Content */}
       <div className="max-w-7xl h-auto  mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -74,6 +68,7 @@ const PortfolioPage = () => {
               searchTerm={searchTerm}
               filterTag={filterTag}
               onClearFilters={handleClearFilters}
+              setViewMode={setViewMode}
             />
           )}
         </InfiniteScrollDiv>

@@ -1,21 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import {
-  globalState,
-  GlobalStateProvider,
-  useGlobalState,
-} from "./globalStateProvider";
+import { GlobalStateProvider } from "./globalStateProvider";
 import { ThemeProvider } from "./components/theme/ThemeContext ";
 import { ToastProvider } from "./components/toastify/Toastify";
-import {
-  ClerkProvider,
-  SignInButton,
-  SignUpButton,
-  SignedIn,
-  SignedOut,
-  UserButton,
-} from "@clerk/nextjs";
+import { ClerkProvider } from "@clerk/nextjs";
 import ClientLayout from "./ClientLayout";
 
 const geistSans = Geist({

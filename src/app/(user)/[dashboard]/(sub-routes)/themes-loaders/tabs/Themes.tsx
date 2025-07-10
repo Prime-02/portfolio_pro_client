@@ -9,7 +9,7 @@ interface ThemesProps {
 }
 
 const Themes = ({ themePresets, applyPreset }: ThemesProps) => {
-  const { theme, lightTheme, darkTheme, accentColor } = useTheme();
+  const { theme } = useTheme();
 
   return (
     <div className="space-y-6">

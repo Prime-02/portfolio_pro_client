@@ -1,11 +1,9 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { Home, Search, ArrowLeft, Zap, Globe, Star } from "lucide-react";
-import Image from "next/image";
 
 const NotFoundPage: React.FC = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -96,9 +94,9 @@ const NotFoundPage: React.FC = () => {
                   Page Not Found
                 </h1>
                 <p className="text-lg text-white leading-relaxed">
-                  Oops! The page you're looking for seems to have vanished into
+                  {` Oops! The page you're looking for seems to have vanished into
                   the digital void. Don't worry, even the best explorers
-                  sometimes take a wrong turn.
+                  sometimes take a wrong turn.`}
                 </p>
               </div>
 
@@ -106,8 +104,6 @@ const NotFoundPage: React.FC = () => {
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
                 <button
                   onClick={() => window.history.back()}
-                  onMouseEnter={() => setIsHovered(true)}
-                  onMouseLeave={() => setIsHovered(false)}
                   className="group flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-[var(--accent)]  text font-semibold rounded-xl hover:from-[var(--accent)]  transform hover:scale-105 text-white transition-all duration-300 shadow-lg hover:shadow-[var(--accent)]/25"
                 >
                   <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform duration-300" />
@@ -139,7 +135,7 @@ const NotFoundPage: React.FC = () => {
 
           {/* Footer text */}
           <div className="mt-8 text-white text-sm">
-            <p>Lost? Don't worry, every great journey has a few detours.</p>
+            <p>{`Lost? Don't worry, every great journey has a few detours.`}</p>
           </div>
         </div>
       </div>

@@ -16,7 +16,7 @@ interface TextInputProps {
   id?: string;
   options?: Array<{ id: string | number; code: string }>;
   desc?: string;
-  ref?: RefObject<HTMLInputElement>;
+  ref?: RefObject<HTMLInputElement | null>;
   maxLength?: number;
   autoComplete?: string;
   inputMode?:

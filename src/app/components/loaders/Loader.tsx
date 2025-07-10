@@ -1,10 +1,9 @@
 import React from "react";
 import {
-  Loader,
   LoaderProps,
   LoaderOptions,
 } from "@/app/components/types and interfaces/loaderTypes";
-import PorfolioProLoader, { LoadingAnimationProps } from "./PortfolioPro";
+import PorfolioProLoader from "./PortfolioPro";
 // Type definitions
 
 interface LoaderContainerProps {
@@ -762,80 +761,3 @@ export const getLoader = (slug: string): React.FC<LoaderProps> | null => {
 
 // List of available loader slugs
 export const availableLoaders = Object.keys(loaderRegistry) as LoaderOptions[];
-
-// Demo component showing usage
-const LoaderDemo: React.FC = () => {
-  const [selectedLoader, setSelectedLoader] =
-    React.useState<Loader>("spin-loader");
-  const LoaderComponent = getLoader(selectedLoader);
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-8">
-      <style dangerouslySetInnerHTML={{ __html: animations }} />
-
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-white mb-4">
-            TSX Loader Collection
-          </h1>
-          <p className="text-slate-300">
-            24 Modern, TypeScript-ready loading animations
-          </p>
-        </div>
-
-        <div className="bg-white/10 backdrop-blur-lg rounded-xl p-8 border border-white/20 mb-8">
-          <h2 className="text-2xl font-bold text-white mb-6">Try a Loader</h2>
-
-          <div className="mb-6">
-            <select
-              value={selectedLoader}
-              onChange={(e) => setSelectedLoader(e.target.value as Loader)}
-              className="bg-slate-800 text-white px-4 py-2 rounded-lg border border-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              {availableLoaders.map((slug) => (
-                <option key={slug} value={slug}>
-                  {slug
-                    .replace("-", " ")
-                    .replace(/\b\w/g, (l) => l.toUpperCase())}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="flex justify-center items-center h-24 bg-slate-800/50 rounded-lg">
-            {LoaderComponent && <LoaderComponent size={50} color="#10b981" />}
-          </div>
-        </div>
-
-        <div className="bg-white/10 backdrop-blur-lg rounded-xl p-8 border border-white/20">
-          <h2 className="text-2xl font-bold text-white mb-6">Usage Examples</h2>
-
-          <div className="bg-slate-800/50 rounded-lg p-4 text-slate-300 font-mono text-sm">
-            <div className="mb-4">
-              <div className="text-green-400 mb-2">
-                // Import individual loaders
-              </div>
-              <div>
-                import {`{ SpinLoader, DotsLoader, getLoader }`} from
-                './loaders';
-              </div>
-            </div>
-
-            <div className="mb-4">
-              <div className="text-green-400 mb-2">// Use directly</div>
-              <div>&lt;SpinLoader size={`{40}`} color="#10b981" /&gt;</div>
-            </div>
-
-            <div>
-              <div className="text-green-400 mb-2">// Use with slug</div>
-              <div>const LoaderComponent = getLoader('spin-loader');</div>
-              <div>&lt;LoaderComponent size={`{40}`} color="#10b981" /&gt;</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default LoaderDemo;

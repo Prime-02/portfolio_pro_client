@@ -1,6 +1,5 @@
 import { IconType } from "react-icons";
 import {
-  FaPortrait,
   FaProjectDiagram,
   FaFileAlt,
   FaCertificate,
@@ -10,14 +9,12 @@ import {
   FaBriefcase,
 } from "react-icons/fa";
 import {
-  FiBook,
-  FiAward,
   FiImage,
   FiMessageSquare,
   FiGrid,
   FiShare2,
 } from "react-icons/fi";
-import { MdWork, MdSchool } from "react-icons/md";
+import { MdSchool } from "react-icons/md";
 import { GiSkills } from "react-icons/gi";
 
 interface Route {

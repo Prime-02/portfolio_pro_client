@@ -11,10 +11,16 @@ import React, {
   useCallback,
   ReactNode,
 } from "react";
-import { getColorShade } from "@/app/components/utilities/syncFunctions/syncs";
+import SimpleBarCore from "simplebar-core";
+import { toast } from "@/app/components/toastify/Toastify";
+import { PortfoliosResponseData } from "@/app/components/types and interfaces/ProjectsAndPortfolios";
+
+export interface ResponseData {
+  [key: string]: string; // Or a more specific type if you know the structure
+}
 
 interface InfiniteScrollData {
-  data: any[];
+  data: object[];
   loading: boolean;
   error: string | null;
   hasMore: boolean;
@@ -42,12 +48,12 @@ const InfiniteScrollDiv: React.FC<InfiniteScrollProps> = ({
   headers = {},
   timeout = 8000,
 }) => {
-  const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<object[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [skip, setSkip] = useState<number>(0);
-  const scrollRef = useRef<any>(null);
+  const scrollRef = useRef<SimpleBarCore | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const isInitialMount = useRef<boolean>(true);
   const { loader, accentColor } = useTheme();
@@ -60,8 +66,9 @@ const InfiniteScrollDiv: React.FC<InfiniteScrollProps> = ({
         url.searchParams.set(skipParam, skipValue.toString());
         url.searchParams.set(limitParam, limitValue.toString());
         return url.toString();
-      } catch (err) {
-        throw new Error(`Invalid base URL: ${baseUrl}`);
+      } catch (err: unknown) {
+        toast.error(`Invalid base URL: ${baseUrl}`);
+        throw err; // Re-throw the original error
       }
     },
     [baseUrl, skipParam, limitParam]
@@ -108,12 +115,9 @@ const InfiniteScrollDiv: React.FC<InfiniteScrollProps> = ({
         }
 
         // Handle different response structures
-        let items: any[] = Array.isArray(responseData)
+        const items: PortfoliosResponseData = Array.isArray(responseData)
           ? responseData
-          : responseData.data ||
-            responseData.items ||
-            responseData.results ||
-            [];
+          : [];
 
         if (items.length === 0) {
           setHasMore(false);
@@ -126,13 +130,8 @@ const InfiniteScrollDiv: React.FC<InfiniteScrollProps> = ({
             setHasMore(false);
           }
         }
-      } catch (err: any) {
-        if (err.name !== "AbortError") {
-          const errorMessage =
-            err instanceof Error ? err.message : "An unknown error occurred";
-          setError(errorMessage);
-          console.error("Error fetching data:", err);
-        }
+      } catch (err) {
+        console.error("Error fetching data:", err);
       } finally {
         clearTimeout(timeoutId);
         setLoading(false);

@@ -13,7 +13,6 @@ import {
 } from "@/app/components/utilities/indices/Themes";
 import { getColorShade } from "@/app/components/utilities/syncFunctions/syncs";
 
-// Define types for better TypeScript support
 export interface ThemeColors {
   background: string;
   foreground: string;
@@ -26,11 +25,7 @@ export interface ThemePreset {
   accent: string;
 }
 
-interface ThemeControlPanelProps {
-  onBack?: () => void;
-}
-
-const ThemeControlPanel: React.FC<ThemeControlPanelProps> = () => {
+const ThemeControlPanel = () => {
   const [activeTab, setActiveTab] = useState<string>("themes");
   const {
     theme,

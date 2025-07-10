@@ -75,7 +75,6 @@ export const ToastDemo: React.FC = () => {
         setTimeout(() => {
           toast.update(id, {
             type: "success",
-            message: "Processing complete!",
             persistent: false,
             duration: 3000,
             closable: true,

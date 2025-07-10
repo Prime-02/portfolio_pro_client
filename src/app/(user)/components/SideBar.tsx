@@ -1,7 +1,4 @@
-import {
-  ThemeContextType,
-  useTheme,
-} from "@/app/components/theme/ThemeContext ";
+import { useTheme } from "@/app/components/theme/ThemeContext ";
 import {
   Accent,
   Theme,
@@ -15,7 +12,6 @@ import {
   Zap,
   ChevronLeft,
   ChevronRight,
-  Menu,
 } from "lucide-react";
 import React, { useState } from "react";
 
@@ -40,7 +36,7 @@ const SideBar = ({
   activeTab = "",
   tabConfig = [],
   setActiveTab = () => {},
-}: ThemeContextType & SideBarProps) => {
+}: SideBarProps) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const { setThemeVariant, theme, themeVariant, accentColor } = useTheme();
 

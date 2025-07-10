@@ -1,5 +1,5 @@
 import { ChevronDown, ChevronUp, Search } from "lucide-react";
-import React, { useState, useRef, useEffect, RefObject } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Textinput } from "./Textinput";
 
 interface DropdownOption {
@@ -45,11 +45,7 @@ const Dropdown: React.FC<DropdownProps> = ({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  if (!Array.isArray(options)) {
-    console.error("Dropdown options must be an array");
-    return null;
-  }
-
+  // All hooks must be called before any early returns
   useEffect(() => {
     if (value !== undefined && value !== null) {
       const foundOption = options.find(
@@ -86,6 +82,12 @@ const Dropdown: React.FC<DropdownProps> = ({
       searchInputRef.current.focus();
     }
   }, [isOpen, type]);
+
+  // Early return check moved after all hooks
+  if (!Array.isArray(options)) {
+    console.error("Dropdown options must be an array");
+    return null;
+  }
 
   const handleSelect = (option: DropdownOption) => {
     setSelectedOption(option);

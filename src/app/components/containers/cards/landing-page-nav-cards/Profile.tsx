@@ -15,6 +15,7 @@ import FeedBackComponent from "./profile-components/FeedBackComponent";
 import HelpComponent from "./profile-components/HelpComponent";
 import LogOutComponent from "./LogOutComponent";
 import Link from "next/link";
+import Image from "next/image";
 
 const Profile = () => {
   const { userData } = useGlobalState();
@@ -92,10 +93,12 @@ const Profile = () => {
         <div className="flex flex-col gap-y-3 p-3 rounded-2xl bg-[var(--background)] shadow-md">
           <div className="flex">
             <div className="flex items-center justify-start gap-x-5">
-              <img
+              <Image
                 src={String(userData.profile_picture)}
                 alt="Profile Picture"
                 className="w-12 h-12 rounded-full"
+                width={100}
+                height={100}
               />
               <span className="flex flex-col">
                 <h3 className="text-lg font-semibold">{userData.username}</h3>

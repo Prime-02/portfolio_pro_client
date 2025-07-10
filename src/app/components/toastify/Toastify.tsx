@@ -52,11 +52,13 @@ export interface ToastOptions {
   sound?: boolean;
 }
 
-export interface Toast extends Required<Omit<ToastOptions, "onClose">> {
+export interface Toast
+  extends Required<Omit<ToastOptions, "onClose" | "action">> {
   id: string;
   message: string;
   createdAt: number;
   onClose?: () => void;
+  action?: ToastAction;
 }
 
 interface ToastContextType {
@@ -72,7 +74,9 @@ interface ToastContextType {
 }
 
 // Default configuration
-const defaultToastOptions: Required<Omit<ToastOptions, "onClose">> = {
+const defaultToastOptions: Required<
+  Omit<ToastOptions, "onClose" | "action">
+> & { action?: ToastAction } = {
   type: "default",
   duration: 5000,
   persistent: false,
@@ -82,7 +86,7 @@ const defaultToastOptions: Required<Omit<ToastOptions, "onClose">> = {
   showIcon: true,
   title: "",
   description: "",
-  action: undefined as any,
+  action: undefined,
   className: "",
   style: {},
   closable: true,
@@ -110,7 +114,9 @@ class ToastManager {
 
   subscribe(listener: (toasts: Toast[]) => void) {
     this.listeners.add(listener);
-    return () => this.listeners.delete(listener);
+    return () => {
+      this.listeners.delete(listener);
+    };
   }
 
   private notify() {
@@ -124,7 +130,12 @@ class ToastManager {
   private playSound() {
     try {
       const audioContext = new (window.AudioContext ||
-        (window as any).webkitAudioContext)();
+        (
+          window as unknown as typeof window & {
+            webkitAudioContext: typeof AudioContext;
+          }
+        ).webkitAudioContext)();
+
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
 
@@ -284,38 +295,7 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({
 
   // Subscribe to global manager
   useEffect(() => {
-    const unsubscribe = toastManager.subscribe(setToasts);
-    return unsubscribe;
-  }, []);
-
-  const generateId = useCallback(() => {
-    return Math.random().toString(36).substring(2) + Date.now().toString(36);
-  }, []);
-
-  const playSound = useCallback(() => {
-    try {
-      const audioContext = new (window.AudioContext ||
-        (window as any).webkitAudioContext)();
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-
-      oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-      oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
-
-      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(
-        0.01,
-        audioContext.currentTime + 0.2
-      );
-
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.2);
-    } catch (error) {
-      console.warn("Could not play toast sound:", error);
-    }
+    return toastManager.subscribe(setToasts);
   }, []);
 
   const dismiss = useCallback((id: string) => {
@@ -591,7 +571,7 @@ const ToastCard: React.FC<ToastCardProps> = ({ toast }) => {
           <div className="mt-3 flex gap-2">
             <button
               onClick={() => {
-                toast.action.onClick();
+                toast.action?.onClick();
                 handleDismiss();
               }}
               className={`

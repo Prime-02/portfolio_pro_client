@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { AlertCircle, Power, RotateCcw, ArrowLeft, Zap } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -10,7 +10,63 @@ type ErrorPageProps = {
 
 export default function ErrorPage({ error, reset }: ErrorPageProps) {
   const [isAnimating, setIsAnimating] = useState(false);
-  const nav = useRouter();
+  const router = useRouter();
+
+  // Handle the reset action with proper animation timing
+  const handleReset = useCallback(async () => {
+    if (isAnimating) return; // Prevent multiple clicks
+
+    setIsAnimating(true);
+
+    try {
+      // Add a small delay to show the animation
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      reset();
+    } catch (error) {
+      console.error("Error during reset:", error);
+    } finally {
+      // Reset animation state after a delay
+      setTimeout(() => {
+        setIsAnimating(false);
+      }, 500);
+    }
+  }, [isAnimating, reset]);
+
+  // Handle back navigation with error handling
+  const handleGoBack = useCallback(() => {
+    try {
+      if (window.history.length > 1) {
+        router.back();
+      } else {
+        // If no history, go to home page
+        router.push("/");
+      }
+    } catch (error) {
+      console.error("Navigation error:", error);
+      // Fallback to home page
+      router.push("/");
+    }
+  }, [router]);
+
+  // Extract error message safely
+  const getErrorMessage = useCallback(() => {
+    if (!error) return "An unexpected error occurred.";
+
+    // Handle different error types
+    if (error.message) {
+      return error.message;
+    }
+
+    if (error.digest) {
+      return `Error occurred (ID: ${error.digest})`;
+    }
+
+    if (typeof error === "string") {
+      return error;
+    }
+
+    return "An unexpected error occurred.";
+  }, [error]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-[var(--accent)] to-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
@@ -40,11 +96,12 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
             Oops!
           </h1>
           <h2 className="text-2xl font-semibold text-gray-200 mb-2">
-            Looks like you pulled a plug
+            {`Looks like you pulled a plug
+`}
           </h2>
           <p className="text-lg text-white max-w-md mx-auto leading-relaxed">
-            Don't worry, these things happen. The connection got a bit tangled,
-            but we can get everything back up and running.
+            {` Don't worry, these things happen. The connection got a bit tangled,
+            but we can get everything back up and running.`}
           </p>
         </div>
 
@@ -52,17 +109,15 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
         <div className="bg-black/20 backdrop-blur-lg rounded-2xl p-6 mb-8 border border-white/10">
           <div className="flex items-center justify-center space-x-2 mb-3">
             <AlertCircle className="text-white" size={20} />
-            <span className="text-white font-medium">Error Details</span>
+            <span className="text-white font-medium">{`Error Details`}</span>
           </div>
-          <p className="text-white text-sm">
-            {error?.message || "An unexpected error occurred."}
-          </p>
+          <p className="text-white text-sm">{getErrorMessage()}</p>
         </div>
 
         {/* Action buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
           <button
-            onClick={reset}
+            onClick={handleReset}
             disabled={isAnimating}
             className={`group bg-gradient-to-r from-blue-600 to-[var(--accent)] hover:from-blue-700 hover:to-[var(--accent)] text-white font-semibold py-4 px-8 rounded-xl shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-xl disabled:opacity-75 disabled:cursor-not-allowed flex items-center space-x-2 ${isAnimating ? "animate-pulse" : ""}`}
           >
@@ -74,7 +129,7 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
           </button>
 
           <button
-            onClick={() => nav.back()}
+            onClick={handleGoBack}
             className="group bg-white/10 hover:bg-white/20 text-white font-semibold py-4 px-8 rounded-xl backdrop-blur-sm border border-white/20 transition-all duration-300 hover:scale-105 flex items-center space-x-2"
           >
             <ArrowLeft
@@ -88,8 +143,8 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
         {/* Helpful tips */}
         <div className="mt-12 text-center">
           <p className="text-white text-sm">
-            If the problem persists, try refreshing the page or checking your
-            internet connection
+            {` If the problem persists, try refreshing the page or checking your
+            internet connection`}
           </p>
         </div>
       </div>

@@ -25,7 +25,7 @@ type ButtonProps = {
 };
 
 // Enhanced color normalization with better error handling
-const normalizeColorToHex = (color: any): string => {
+const normalizeColorToHex = (color: string): string => {
   if (!color) return "#05df72";
 
   const colorStr = String(color).trim();
@@ -324,7 +324,7 @@ const Button = ({
       className={`${baseClasses} ${sizeClasses[size]} ${className}`}
       style={{
         ...variantStyles,
-        focusRingColor: variantStyles.focusRingColor,
+        // focusRingColor: variantStyles.focusRingColor,
       }}
       onClick={onClick}
       onMouseEnter={() => !disabled && !loading && setIsHovered(true)}

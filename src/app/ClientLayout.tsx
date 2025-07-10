@@ -1,6 +1,6 @@
 "use client";
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState, ReactNode } from "react";
+import { usePathname } from "next/navigation";
+import {ReactNode } from "react";
 import LandingPageFooter from "./components/landing-page-components/footers/LandingPageFooter";
 import LandingPageNavbar from "./components/landing-page-components/navigations/LandingPageNavbar";
 interface ClientLayoutProps {

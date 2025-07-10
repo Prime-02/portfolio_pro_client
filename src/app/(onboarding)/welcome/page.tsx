@@ -2,7 +2,7 @@
 import { useTheme } from "@/app/components/theme/ThemeContext ";
 import React from "react";
 
-const page = () => {
+const WelcomePage = () => {
   const { lightTheme, darkTheme, accentColor } = useTheme();
   return (
     <div>
@@ -15,4 +15,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default WelcomePage;

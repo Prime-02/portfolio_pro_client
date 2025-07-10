@@ -16,6 +16,17 @@ type SearchComponentProps = {
   className?: string;
 };
 
+
+
+type SearchResPropData = {
+  category: string
+  name: string
+  id: string
+}
+type SearchResProp = {
+  data: SearchResPropData[]
+}
+
 const SearchPopover = ({
   querry = "",
   onQuery,
@@ -35,6 +46,52 @@ const SearchPopover = ({
   const lastSearchQueryRef = useRef<string>("");
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const searchBD = useCallback(
+    async (searchQuery: string) => {
+      if (searchQuery.length < 2) {
+        setSearchRes([]);
+        setHasSearched(true);
+        setShowPopover(false);
+        return;
+      }
+
+      abortControllerRef.current = new AbortController();
+      lastSearchQueryRef.current = searchQuery;
+
+      setLoading("absolute_searching");
+      setHasSearched(true);
+      setShowPopover(true);
+
+      try {
+        const response : SearchResProp = await GetAllData({
+          access: accessToken,
+          url: `?search=${encodeURIComponent(searchQuery)}`,
+          type: "Absolute Search",
+          // signal: abortControllerRef.current.signal,
+        });
+
+        // Ensure we have a valid array response
+        const results = Array.isArray(response?.data)
+          ? response.data
+          : Array.isArray(response)
+            ? response
+            : [];
+
+        if (searchQuery === lastSearchQueryRef.current) {
+          setSearchRes(results);
+        }
+      } catch (error) {
+        console.error("Search error:", error);
+        setSearchRes([]);
+      } finally {
+        if (searchQuery === lastSearchQueryRef.current) {
+          setLoading("");
+        }
+      }
+    },
+    [accessToken]
+  );
 
   // Debounced search function
   const debouncedSearch = useCallback(
@@ -64,56 +121,8 @@ const SearchPopover = ({
         searchBD(searchQuery);
       }, 300); // 300ms delay - adjust as needed
     },
-    [accessToken] // Dependencies for useCallback
+    [accessToken, searchBD] // Dependencies for useCallback
   );
-
-  const searchBD = async (searchQuery: string) => {
-    if (searchQuery.length < 2) {
-      setSearchRes([]);
-      setHasSearched(true);
-      setShowPopover(false);
-      return;
-    }
-
-    abortControllerRef.current = new AbortController();
-    lastSearchQueryRef.current = searchQuery;
-
-    setLoading("absolute_searching");
-    setHasSearched(true);
-    setShowPopover(true);
-
-    try {
-      const response = await GetAllData({
-        access: accessToken,
-        url: `?search=${encodeURIComponent(searchQuery)}`,
-        type: "Absolute Search",
-        signal: abortControllerRef.current.signal,
-      });
-
-      // Ensure we have a valid array response
-      const results = Array.isArray(response?.data)
-        ? response.data
-        : Array.isArray(response)
-          ? response
-          : [];
-
-      if (searchQuery === lastSearchQueryRef.current) {
-        setSearchRes(results);
-      }
-    } catch (error) {
-      if (
-        error.name !== "AbortError" &&
-        searchQuery === lastSearchQueryRef.current
-      ) {
-        console.error("Search error:", error);
-        setSearchRes([]);
-      }
-    } finally {
-      if (searchQuery === lastSearchQueryRef.current) {
-        setLoading("");
-      }
-    }
-  };
 
   const handleQueryChange = useCallback(
     (newQuery: string) => {
@@ -131,18 +140,18 @@ const SearchPopover = ({
     [onQuery, debouncedSearch]
   );
 
-  const handleInputFocus = () => {
-    if (internalQuery.length >= 2) {
-      setShowPopover(true);
-    }
-  };
+  // const handleInputFocus = () => {
+  //   if (internalQuery.length >= 2) {
+  //     setShowPopover(true);
+  //   }
+  // };
 
-  const handleInputBlur = () => {
-    // Delay hiding popover to allow for clicking on results
-    setTimeout(() => {
-      setShowPopover(false);
-    }, 200);
-  };
+  // const handleInputBlur = () => {
+  //   // Delay hiding popover to allow for clicking on results
+  //   setTimeout(() => {
+  //     setShowPopover(false);
+  //   }, 200);
+  // };
 
   const handleResultClick = () => {
     setShowPopover(false);
@@ -166,7 +175,10 @@ const SearchPopover = ({
   // Handle click outside to close popover
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
         setShowPopover(false);
       }
     };
@@ -203,8 +215,8 @@ const SearchPopover = ({
           labelBgHex={theme.background}
           labelBgHexIntensity={10}
           onChange={handleQueryChange}
-          onFocus={handleInputFocus}
-          onBlur={handleInputBlur}
+          // onFocus={handleInputFocus}
+          // onBlur={handleInputBlur}
           placeholder={placeholder}
         />
       </div>
@@ -222,7 +234,9 @@ const SearchPopover = ({
               <AbsoluteSearching />
             ) : !hasSearched ? (
               <div className="p-8 text-center">
-                <p className="text-[var(--text-secondary)]">Start typing to search...</p>
+                <p className="text-[var(--text-secondary)]">
+                  Start typing to search...
+                </p>
               </div>
             ) : searchRes.length < 1 ? (
               <EmptyState />

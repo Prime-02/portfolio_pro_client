@@ -17,31 +17,36 @@ const PortfolioProLogo: React.FC = () => {
   const reanimateDelay = 100000; // 5 seconds before reanimating
 
   useEffect(() => {
+    if (lineHeight || lineWidth || isTypingComplete) {
+      // dont remove this if block to avoid TS errors
+    }
     const calculateDimensions = () => {
       if (portfolioRef.current && containerRef.current) {
         const portfolioWidth = portfolioRef.current.offsetWidth;
-        const containerWidth = containerRef.current.offsetWidth;
-        
+        // const containerWidth = containerRef.current.offsetWidth;
+
         // Calculate line width relative to PORTFOLIO text width
         const calculatedLineWidth = portfolioWidth * 0.8; // 80% of PORTFOLIO width
-        
+
         // Calculate line height based on font size, more conservative scaling
-        const fontSize = parseInt(getComputedStyle(portfolioRef.current).fontSize);
+        const fontSize = parseInt(
+          getComputedStyle(portfolioRef.current).fontSize
+        );
         const calculatedLineHeight = Math.max(2, Math.min(6, fontSize * 0.05)); // More conservative height
-        
+
         setLineWidth(calculatedLineWidth);
         setLineHeight(calculatedLineHeight);
       }
     };
 
     calculateDimensions();
-    
-    window.addEventListener('resize', calculateDimensions);
-    
+
+    window.addEventListener("resize", calculateDimensions);
+
     // Use timeout to ensure fonts are loaded
     setTimeout(calculateDimensions, 100);
-    
-    return () => window.removeEventListener('resize', calculateDimensions);
+
+    return () => window.removeEventListener("resize", calculateDimensions);
   }, []);
 
   // Intersection Observer to detect when component comes into view
@@ -84,7 +89,7 @@ const PortfolioProLogo: React.FC = () => {
       setIsTypingComplete(true);
       // Hide cursor after typing is complete
       setTimeout(() => setShowCursor(false), 1000);
-      
+
       // Reanimate after 5 seconds
       setTimeout(() => {
         setDisplayText("");
@@ -100,21 +105,25 @@ const PortfolioProLogo: React.FC = () => {
     if (!isVisible || !showCursor) return;
 
     const cursorTimer = setInterval(() => {
-      setShowCursor(prev => !prev);
+      setShowCursor((prev) => !prev);
     }, cursorBlinkSpeed);
 
     return () => clearInterval(cursorTimer);
   }, [isVisible, showCursor]);
 
   const renderText = () => {
-    const portfolioText = displayText.includes('.') ? displayText.split('.')[0] : displayText;
-    const proText = displayText.includes('.') ? '.' + displayText.split('.')[1] : '';
-    
+    const portfolioText = displayText.includes(".")
+      ? displayText.split(".")[0]
+      : displayText;
+    const proText = displayText.includes(".")
+      ? "." + displayText.split(".")[1]
+      : "";
+
     return (
       <div className="text-3xl sm:text-4xl  md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl font-serif text-[var(--foreground)] leading-none">
         <div className="relative inline-block">
-          <span 
-            ref={portfolioRef} 
+          <span
+            ref={portfolioRef}
             className="relative z-10 tracking-[0.25em] sm:tracking-[0.3em] md:tracking-[0.35em]"
           >
             {portfolioText}
@@ -124,14 +133,14 @@ const PortfolioProLogo: React.FC = () => {
           {proText}
         </span>
         {/* Blinking cursor */}
-        <span 
+        <span
           className={`inline-block w-0.5 sm:w-1 bg-[var(--foreground)] ml-1 transition-opacity duration-300 ${
-            showCursor ? 'opacity-100' : 'opacity-0'
+            showCursor ? "opacity-100" : "opacity-0"
           }`}
-          style={{ 
-            height: '0.8em',
-            transform: 'translateY(-0.1em)',
-            display: 'inline-block'
+          style={{
+            height: "0.8em",
+            transform: "translateY(-0.1em)",
+            display: "inline-block",
           }}
         />
       </div>
@@ -142,9 +151,7 @@ const PortfolioProLogo: React.FC = () => {
     <div className="flex items-center justify-center p-4">
       <div ref={containerRef} className="relative w-full max-w-6xl">
         {/* Main text container with better responsive scaling */}
-        <div className="flex items-center justify-center">
-          {renderText()}
-        </div>
+        <div className="flex items-center justify-center">{renderText()}</div>
       </div>
     </div>
   );

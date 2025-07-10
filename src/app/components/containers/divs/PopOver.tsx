@@ -4,7 +4,7 @@ import { getColorShade } from "../../utilities/syncFunctions/syncs";
 
 interface PopoverProps {
   clicker: React.ReactNode; // The element that triggers the popover
-  children: React.ReactNode; // Content to display in the popover
+  children?: React.ReactNode; // Content to display in the popover - now optional
   position?:
     | "top-left"
     | "top-right"

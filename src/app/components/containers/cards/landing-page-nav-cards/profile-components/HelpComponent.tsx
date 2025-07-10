@@ -7,7 +7,7 @@ const HelpComponent = () => {
     <div className="space-y-4 p-4 max-w-md mx-auto">
       <div className="text-center">
         <h3 className="text-lg font-medium mb-2">Need help?</h3>
-        <p className=" mb-4">We're here to assist you</p>
+        <p className=" mb-4">{`We're here to assist you`}</p>
 
         <div className="flex flex-col gap-3">
           <Link href="/contact-us">

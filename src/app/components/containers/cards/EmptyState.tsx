@@ -1,5 +1,4 @@
 import React from "react";
-import { Search } from "lucide-react";
 import { getColorShade } from "../../utilities/syncFunctions/syncs";
 import { useTheme } from "../../theme/ThemeContext ";
 import Image from "next/image";

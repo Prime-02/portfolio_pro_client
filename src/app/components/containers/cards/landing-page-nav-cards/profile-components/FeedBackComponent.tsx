@@ -2,7 +2,7 @@ import Button from "@/app/components/buttons/Buttons";
 import Dropdown from "@/app/components/inputs/DynamicDropdown";
 import { TextArea, Textinput } from "@/app/components/inputs/Textinput";
 import { useTheme } from "@/app/components/theme/ThemeContext ";
-import { toast, useToast } from "@/app/components/toastify/Toastify";
+import { toast } from "@/app/components/toastify/Toastify";
 import { PostAllData } from "@/app/components/utilities/asyncFunctions/lib/crud";
 import { titles } from "@/app/components/utilities/indices/DropDownItems";
 import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
@@ -38,6 +38,8 @@ const FeedBackComponent = () => {
         });
       }
     } catch (error) {
+      console.log(error)
+      
     } finally {
       setLoading("making_sugestions");
     }

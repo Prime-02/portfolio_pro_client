@@ -5,7 +5,7 @@ import { getColorShade } from "@/app/components/utilities/syncFunctions/syncs";
 import { UserProfile } from "@clerk/nextjs";
 import React from "react";
 
-const page = () => {
+const ProfilePage = () => {
   const { theme, accentColor } = useTheme();
   const { foreground, background } = theme;
   const { color } = accentColor;
@@ -147,4 +147,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default ProfilePage;

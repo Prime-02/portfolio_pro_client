@@ -26,9 +26,9 @@ export function getColorShade(hex: string, percent: number = 10): string {
 
   // Calculate new color components
   const factor = percent / 100;
-  const clamp = (value: number) => Math.min(255, Math.max(0, value));
+  const clamp = (value: number): number => Math.min(255, Math.max(0, value));
 
-  let newR, newG, newB;
+  let newR: number, newG: number, newB: number;
 
   if (shouldDarken) {
     // Darken the color by reducing each component
@@ -43,8 +43,24 @@ export function getColorShade(hex: string, percent: number = 10): string {
   }
 
   // Convert back to hex
-  const toHex = (value: number) => clamp(value).toString(16).padStart(2, "0");
+  const toHex = (value: number): string =>
+    clamp(value).toString(16).padStart(2, "0");
   return `#${toHex(newR)}${toHex(newG)}${toHex(newB)}`;
+}
+
+// Helper type guards for better type safety
+function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isArray(value: unknown): value is unknown[] {
+  return Array.isArray(value);
+}
+
+// Helper function with proper typing
+export function isNumericString(value: unknown): value is string {
+  if (typeof value !== "string") return false;
+  return !isNaN(Number(value)) && !isNaN(parseFloat(value));
 }
 
 /**
@@ -74,18 +90,18 @@ export function getColorShade(hex: string, percent: number = 10): string {
  * convertNumericStrings({ id: "123a", serial: "000123", temp: "98.6" });
  * // Returns { id: "123a", serial: "000123", temp: 98.6 }
  */
-
-export const convertNumericStrings = (input: any): any => {
+export function convertNumericStrings<T>(input: T): T {
   // Handle array case
-  if (Array.isArray(input)) {
-    return input.map((item) => convertNumericStrings(item));
+  if (isArray(input)) {
+    return input.map((item) => convertNumericStrings(item)) as T;
   }
 
   // Handle object case
-  if (typeof input === "object" && input !== null) {
-    const result: Record<string, any> = {};
+  if (isObject(input)) {
+    const result: Record<string, unknown> = {};
+
     for (const key in input) {
-      if (input.hasOwnProperty(key)) {
+      if (Object.prototype.hasOwnProperty.call(input, key)) {
         const value = input[key];
 
         // Check if the value is a string with leading zeros that we should preserve
@@ -104,7 +120,7 @@ export const convertNumericStrings = (input: any): any => {
           }
         } else if (shouldPreserveAsString) {
           result[key] = value; // Preserve the string with leading zeros
-        } else if (typeof value === "object" && value !== null) {
+        } else if (isObject(value) || isArray(value)) {
           // Recursively handle nested objects or arrays
           result[key] = convertNumericStrings(value);
         } else {
@@ -112,17 +128,11 @@ export const convertNumericStrings = (input: any): any => {
         }
       }
     }
-    return result;
+    return result as T;
   }
 
   // Return non-object/array values as-is
   return input;
-};
-
-// Helper function with proper TypeScript typing
-export function isNumericString(value: any): value is string {
-  if (typeof value !== "string") return false;
-  return !isNaN(value as any) && !isNaN(parseFloat(value));
 }
 
 /**
@@ -148,24 +158,31 @@ export function isNumericString(value: any): value is string {
  * console.log(result); // Output: [{ name: "Alice", city: "London" }, { name: "Bob", age: "30" }]
  */
 export function removeEmptyStringValues<
-  T extends Record<string, any> | Array<Record<string, any>>,
+  T extends Record<string, unknown> | Record<string, unknown>[],
 >(input: T): T {
-  if (Array.isArray(input)) {
+  if (isArray(input)) {
     // Handle array of objects
     return input.map((obj) => {
-      const newObj: Record<string, any> = {};
+      if (!isObject(obj)) {
+        return obj;
+      }
+
+      const newObj: Record<string, unknown> = {};
       for (const key in obj) {
-        if (obj[key] !== "") {
+        if (Object.prototype.hasOwnProperty.call(obj, key) && obj[key] !== "") {
           newObj[key] = obj[key];
         }
       }
       return newObj;
     }) as T;
-  } else if (typeof input === "object" && input !== null) {
+  } else if (isObject(input)) {
     // Handle single object
-    const newObj: Record<string, any> = {};
+    const newObj: Record<string, unknown> = {};
     for (const key in input) {
-      if (input[key] !== "") {
+      if (
+        Object.prototype.hasOwnProperty.call(input, key) &&
+        input[key] !== ""
+      ) {
         newObj[key] = input[key];
       }
     }
@@ -176,18 +193,22 @@ export function removeEmptyStringValues<
   return input;
 }
 
-export function isValidHexCode(hex: string) {
+// More specific type for hex validation
+type HexColor = `#${string}`;
+
+export function isValidHexCode(hex: string): hex is HexColor {
   // Regular expression to match valid hex color codes
   const hexRegex = /^#?([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/;
   return hexRegex.test(hex);
 }
 
-export function isValidHexColorStrict(hex: string): boolean {
+export function isValidHexColorStrict(hex: string): hex is HexColor {
   // Test for #RRGGBB or #RGB formats (with # required)
   return /^#([0-9A-F]{3}|[0-9A-F]{6})$/i.test(hex);
 }
 
-
+// More specific typing for toast function
+type ToastFunction = (message: string) => void;
 
 /**
  * Validates that all required fields in a form object are filled.
@@ -198,11 +219,11 @@ export function isValidHexColorStrict(hex: string): boolean {
  * @param {Array<string>} [allowedEmptyKeys=[]] - Array of keys that are allowed to be empty
  * @returns {boolean} True if all required fields are valid, false otherwise
  */
-export const validateFields = <T extends Record<string, any>>(
+export function validateFields<T extends Record<string, unknown>>(
   form: T | null | undefined,
-  toast: (message: string) => void,
+  toast: ToastFunction,
   allowedEmptyKeys: string[] = []
-): boolean => {
+): form is T {
   // Handle null/undefined form
   if (!form) {
     console.error("Form object is null or undefined");
@@ -225,11 +246,89 @@ export const validateFields = <T extends Record<string, any>>(
     }
 
     // Optional: Check for empty arrays/objects if needed
-    if (Array.isArray(value) && value.length === 0) {
+    if (isArray(value) && value.length === 0) {
       toast(`Please provide at least one item for ${key}.`);
       return false;
     }
 
     return true;
   });
-};
+}
+
+// Additional type-safe utility functions for better development experience
+
+/**
+ * Type-safe object key checker
+ */
+export function hasOwnProperty<T extends Record<string, unknown>>(
+  obj: T,
+  key: string | number | symbol
+): key is keyof T {
+  return Object.prototype.hasOwnProperty.call(obj, key);
+}
+
+/**
+ * Type-safe deep clone function
+ */
+export function deepClone<T>(obj: T): T {
+  if (obj === null || typeof obj !== "object") {
+    return obj;
+  }
+
+  if (obj instanceof Date) {
+    return new Date(obj.getTime()) as T;
+  }
+
+  if (isArray(obj)) {
+    return obj.map((item) => deepClone(item)) as T;
+  }
+
+  if (isObject(obj)) {
+    const cloned: Record<string, unknown> = {};
+    for (const key in obj) {
+      if (hasOwnProperty(obj, key)) {
+        cloned[key] = deepClone(obj[key]);
+      }
+    }
+    return cloned as T;
+  }
+
+  return obj;
+}
+
+/**
+ * Searches an array of objects for matches across specified keys or all keys.
+ * @param searchString - The string to search for
+ * @param array - Array of objects to search (optional, defaults to empty array)
+ * @param keys - Key(s) to check (optional, searches all keys if omitted)
+ * @param exactMatch - If true, requires exact match (default: false, partial match)
+ * @returns First matching object or undefined
+ */
+export function findMatch<T extends Record<string, unknown>>(
+  searchString: string,
+  array: T[] = [],
+  keys?: keyof T | Array<keyof T>,
+  exactMatch: boolean = false
+): T | undefined {
+  // Early return for invalid cases
+  if (!searchString || !array.length) return undefined;
+
+  const lowerSearch = searchString.toLowerCase();
+  const keysToCheck = keys
+    ? Array.isArray(keys)
+      ? keys
+      : [keys]
+    : (Object.keys(array[0]) as Array<keyof T>); // All keys if none specified
+
+  return array.find((obj) =>
+    keysToCheck.some((key) => {
+      const value = obj[key];
+      if (typeof value !== "string") return false;
+
+      const lowerValue = value.toLowerCase();
+      return exactMatch
+        ? lowerValue === lowerSearch
+        : lowerValue.includes(lowerSearch);
+    })
+  );
+}

@@ -24,17 +24,24 @@ export default function Home() {
         </div>
         <SignedOut>
           <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-            <Link
-              href="/signup"
-              className="px-6 py-3 bg-[var(--foreground)] text-[var(--background)] font-medium rounded-lg hover:bg-gray-800 transition-colors text-center"
-            >
-              {headlines.cta}
+            <Link href="/signup">
+              <Button
+                variant="primary"
+                size="md"
+                type="button"
+                colorIntensity="dark"
+                text="Start Building Your Portfolio"
+              />
             </Link>
-            <Link
-              href="/features"
-              className="px-6 py-3 border border-gray-300 font-medium rounded-lg hover:bg-gray-50 transition-colors text-center"
-            >
-              Learn More
+            <Link href="/features">
+              <Button
+                variant="outline"
+                size="md"
+                type="button"
+                colorIntensity="light"
+                text="Learn More"
+                icon={<ArrowRight />}
+              />
             </Link>
           </div>
         </SignedOut>
@@ -45,7 +52,7 @@ export default function Home() {
             type="button"
             colorIntensity="light"
             text="Proceed To Dashboard"
-            icon={<ArrowRight/>}
+            icon={<ArrowRight />}
           />
         </SignedIn>
       </main>

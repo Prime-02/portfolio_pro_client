@@ -9,7 +9,10 @@ import {
   MapPin,
   Calendar,
 } from "lucide-react";
-import { getColorShade } from "../../utilities/syncFunctions/syncs";
+import {
+  getColorShade,
+  getImageSrc,
+} from "../../utilities/syncFunctions/syncs";
 import { useTheme } from "../../theme/ThemeContext ";
 import Button from "../../buttons/Buttons";
 import Image from "next/image";
@@ -96,14 +99,12 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
         {/* List View Image */}
         <div className="w-32 h-full flex-shrink-0 relative overflow-hidden">
           <Image
-          width={1000}
-          height={1000}
-          priority
-            src={
-              portfolio.cover_image_url ||
-              portfolio.cover_image_thumbnail ||
-              "/api/placeholder/400/300"
-            }
+            width={1000}
+            height={1000}
+            priority
+            src={getImageSrc(
+              portfolio?.cover_image_url || portfolio?.cover_image_thumbnail
+            )}
             alt={portfolio.name || "Portfolio"}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             loading="lazy"
@@ -136,9 +137,9 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
               <div className="w-5 h-5 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
                 {portfolio.owner?.profile?.profile_picture ? (
                   <Image
-                  width={100}
-                  height={100}
-                    src={portfolio.owner.profile.profile_picture}
+                    width={100}
+                    height={100}
+                    src={getImageSrc(portfolio?.owner?.profile.profile_picture)}
                     alt={portfolio.owner.username || "User"}
                     className="w-full h-full rounded-full object-cover"
                   />
@@ -211,13 +212,11 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
       {/* Portfolio Image Container */}
       <div className="relative overflow-hidden h-48">
         <Image
-        width={100}
-        height={100}
-          src={
-            portfolio.cover_image_url ||
-            portfolio.cover_image_thumbnail ||
-            "/api/placeholder/400/300"
-          }
+          width={100}
+          height={100}
+          src={getImageSrc(
+            portfolio?.cover_image_url || portfolio?.cover_image_thumbnail
+          )}
           alt={portfolio.name || "Portfolio"}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           loading="lazy"
@@ -290,9 +289,12 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
           <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
             {portfolio.owner?.profile?.profile_picture ? (
               <Image
-              width={100}
-              height={100}
-                src={portfolio.owner.profile.profile_picture}
+                width={100}
+                height={100}
+                src={
+                  portfolio?.owner?.profile?.profile_picture ||
+                  "/vectors/undraw_monitor_ypga.svg"
+                }
                 alt={portfolio.owner.username || "User"}
                 className="w-full h-full rounded-full object-cover"
               />
@@ -347,9 +349,9 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
         <Button
           className="w-full "
           onClick={(e) => handleActionClick(e, onPortfolioClick)}
-          icon={<ExternalLink/>}
+          icon={<ExternalLink />}
           text="View Portfollio"
-       />
+        />
       </div>
     </div>
   );

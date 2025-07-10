@@ -332,3 +332,33 @@ export function findMatch<T extends Record<string, unknown>>(
     })
   );
 }
+
+import { StaticImageData } from "next/image";
+
+export type ImageSource = string | StaticImageData | null | undefined;
+
+export function getImageSrc(
+  profilePicture: ImageSource
+): string | StaticImageData {
+  // Handle cases where profilePicture is null, undefined, or empty string
+  if (!profilePicture) {
+    return "/vectors/undraw_monitor_ypga.svg";
+  }
+
+  // Handle StaticImageData (imported images)
+  if (typeof profilePicture !== "string") {
+    return profilePicture;
+  }
+
+  // Handle string paths
+  if (
+    profilePicture.startsWith("/") ||
+    profilePicture.startsWith("http://") ||
+    profilePicture.startsWith("https://")
+  ) {
+    return profilePicture;
+  }
+
+  // Fallback to default image
+  return "/vectors/undraw_monitor_ypga.svg";
+}

@@ -1,6 +1,9 @@
 import Button from "@/app/components/buttons/Buttons";
 import { useTheme } from "@/app/components/theme/ThemeContext ";
-import { getColorShade } from "@/app/components/utilities/syncFunctions/syncs";
+import {
+  getColorShade,
+  getImageSrc,
+} from "@/app/components/utilities/syncFunctions/syncs";
 import { useGlobalState } from "@/app/globalStateProvider";
 import { ChevronRight, ChevronLeft } from "lucide-react";
 import React, { useState } from "react";
@@ -94,7 +97,7 @@ const Profile = () => {
           <div className="flex">
             <div className="flex items-center justify-start gap-x-5">
               <Image
-                src={String(userData.profile_picture)}
+                src={getImageSrc(String(userData?.profile_picture))}
                 alt="Profile Picture"
                 className="w-12 h-12 rounded-full"
                 width={100}

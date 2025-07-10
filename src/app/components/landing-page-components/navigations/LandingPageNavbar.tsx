@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import AbsoluteSearch from "../../containers/cards/AbsoluteSearch";
-import { getColorShade } from "../../utilities/syncFunctions/syncs";
+import {
+  getColorShade,
+  getImageSrc,
+} from "../../utilities/syncFunctions/syncs";
 import { useTheme } from "../../theme/ThemeContext ";
 import { useGlobalState } from "@/app/globalStateProvider";
 import PortfolioProLogo from "../../logo/PortfolioProLogo";
@@ -97,7 +100,7 @@ const LandingPageNavbar = () => {
                 <div className="relative inline-block" title="Profile">
                   <span className="overflow-hidden rounded-full block">
                     <Image
-                      src={String(userData.profile_picture)}
+                      src={getImageSrc(String(userData?.profile_picture))}
                       alt="Profile Picture"
                       width={500}
                       height={500}

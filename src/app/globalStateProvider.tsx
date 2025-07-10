@@ -227,7 +227,7 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
       setClerkUserData({ user });
       fetchServerAccess();
     }
-  }, [userId, user, fetchServerAccess]);
+  }, [userId, user]);
 
   // Debug logging for clerk user data
   useEffect(() => {

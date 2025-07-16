@@ -36,7 +36,7 @@ export const PortfolioPro: React.FC<LoadingAnimationProps> = ({ scale = 1, speed
   };
 
   return (
-    <div className="flex items-center justify-center p-8">
+    <div className="flex items-center justify-center">
       <div 
         className="relative"
         style={{ 

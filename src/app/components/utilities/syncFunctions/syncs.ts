@@ -362,3 +362,161 @@ export function getImageSrc(
   // Fallback to default image
   return "/vectors/undraw_monitor_ypga.svg";
 }
+
+
+
+
+/**
+ * Converts a base64 image string to a File object
+ * @param base64String - The base64-encoded image string (including data URI prefix)
+ * @param filename - The name for the resulting file
+ * @returns A Promise that resolves to a File object
+ */
+export async function base64ToFile(base64String: string, filename: string): Promise<File> {
+  // Extract the content type and base64 data from the string
+  const matches = base64String.match(/^data:(.+);base64,(.+)$/);
+  
+  if (!matches || matches.length !== 3) {
+    throw new Error('Invalid base64 string format. Expected format: data:<content-type>;base64,<data>');
+  }
+
+  const contentType = matches[1];
+  const base64Data = matches[2];
+
+  // Convert base64 to binary
+  const binaryString = atob(base64Data);
+  const bytes = new Uint8Array(binaryString.length);
+
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+
+  // Create a Blob and then a File from it
+  const blob = new Blob([bytes], { type: contentType });
+  return new File([blob], filename, { type: contentType });
+}
+
+// Example usage:
+// const base64Image = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA...';
+// base64ToFile(base64Image, 'image.png').then(file => {
+//   console.log('File created:', file);
+// });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Type definitions
+interface Geometry {
+    Point: [number, number];
+}
+
+interface Place {
+    Label: string;
+    Country: string;
+    Region: string;
+    Municipality: string | null;
+    Geometry: Geometry;
+}
+
+interface LocationData {
+    PlaceId: string;
+    Place: Place;
+}
+
+interface AddressItem {
+    id: string;
+    code: string;
+}
+
+function createAddressArray(locationData: LocationData[]): AddressItem[] {
+    return locationData.map((item: LocationData) => {
+        // Create a code from the place label - clean and format it
+        const label: string = item.Place.Label;
+        const code: string = label
+            .replace(/,/g, '_') // Replace commas with underscores
+            .replace(/\s+/g, '_') // Replace spaces with underscores
+            .replace(/[^\w_]/g, '') // Remove special characters except underscores
+            .toUpperCase(); // Convert to uppercase
+        
+        return {
+            id: code,
+            code: code
+        };
+    });
+}
+
+// Alternative version with country code suffix for better uniqueness
+function createAddressArrayWithCountry(locationData: LocationData[]): AddressItem[] {
+    return locationData.map((item: LocationData) => {
+        const label: string = item.Place.Label;
+        const country: string = item.Place.Country;
+        
+        // Create base code from label
+        const baseCode: string = label
+            .replace(/,/g, '_')
+            .replace(/\s+/g, '_')
+            .replace(/[^\w_]/g, '')
+            .toUpperCase();
+        
+        // Append country code for uniqueness
+        const code: string = `${baseCode}_${country}`;
+        
+        return {
+            id: code,
+            code: code
+        };
+    });
+}
+
+// Version with custom ID generation (UUID-style)
+function createAddressArrayWithUUID(locationData: LocationData[]): AddressItem[] {
+    function generateSimpleId(): string {
+        return 'addr_' + Math.random().toString(36).substr(2, 9);
+    }
+    
+    return locationData.map((item: LocationData) => {
+        const label: string = item.Place.Label;
+        
+        const code: string = label
+            .replace(/,/g, '_')
+            .replace(/\s+/g, '_')
+            .replace(/[^\w_]/g, '')
+            .toUpperCase();
+        
+        return {
+            id: code,
+            code: code
+        };
+    });
+}
+
+// Usage example:
+// Assuming your data is stored in a variable called 'locationData'
+const locationData: LocationData[] = [
+    {
+        "PlaceId": "",
+        "Place": {
+            "Label": "Niger Road, Umuahia, Abia, NGA",
+            "Country": "NGA",
+            "Region": "Abia",
+            "Municipality": "Umuahia",
+            "Geometry": {
+                "Point": [7.497642532431, 5.534536500671]
+            }
+        }
+    }
+    // ... rest of your data
+];
+
+// Call the function
+const addressArray: AddressItem[] = createAddressArray(locationData);

@@ -55,6 +55,7 @@ export const titles = [
   },
 ];
 
+
 export const systemLanguages: LanguageProps[] = [
   { code: "en", name: "English" },
   { code: "es", name: "Spanish" },
@@ -311,3 +312,5 @@ export const systemLanguages: LanguageProps[] = [
   { code: "zmi", name: "Negeri Sembilan Malay" },
   { code: "zsm", name: "Standard Malay" },
 ];
+
+

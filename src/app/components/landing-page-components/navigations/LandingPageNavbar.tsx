@@ -21,6 +21,7 @@ const LandingPageNavbar = () => {
   const { theme } = useTheme();
   const { userData } = useGlobalState();
   const [viewportWidth, setViewportWidth] = useState(0);
+  const [mobileSearchOverlay, setMobileSearchOverlay] = useState(false)
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -54,9 +55,7 @@ const LandingPageNavbar = () => {
       {/* Center section - Search (Enhanced width) */}
       <div className="flex-1 flex justify-center px-4 min-w-0">
         <div className="w-full max-w-3xl lg:max-w-4xl xl:max-w-5xl">
-          <SignedIn>
-            <AbsoluteSearch />
-          </SignedIn>
+          <AbsoluteSearch />
         </div>
       </div>
 

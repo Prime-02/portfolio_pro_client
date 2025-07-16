@@ -201,6 +201,8 @@ interface TextAreaProps {
   labelStyle?: string;
   labelBgHex?: string;
   labelBgHexIntensity?: number;
+  maxLength?: number;
+  showLimit?: string;
 }
 
 export const TextArea: React.FC<TextAreaProps> = ({
@@ -212,10 +214,13 @@ export const TextArea: React.FC<TextAreaProps> = ({
   labelStyle,
   labelBgHex,
   labelBgHexIntensity,
+  maxLength = 500,
+  showLimit = true,
 }) => {
   return (
     <div className="relative h-full">
       <textarea
+        maxLength={maxLength}
         value={value}
         onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
           onChange(e.target.value)
@@ -239,6 +244,9 @@ export const TextArea: React.FC<TextAreaProps> = ({
       >
         {label}
       </label>
+      {showLimit && <span className={`absolute bottom-2 right-4 font-thin  text-xs ${value?.length === maxLength ? "text-red-500" : "opacity-25"} `}>
+        {value?.length}/{maxLength}
+        </span>}
     </div>
   );
 };

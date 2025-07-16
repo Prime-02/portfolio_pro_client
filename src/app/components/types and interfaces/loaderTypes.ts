@@ -1,5 +1,8 @@
 // Shared types for loaders and theme system
 
+import { ModalType } from "@/app/(user)/[dashboard]/(sub-routes)/personal-info/page-components/DisplayPictures";
+import { IconType } from "react-icons";
+
 export interface LoaderProps {
   size?: number;
   color?: string;
@@ -59,3 +62,10 @@ export interface LoaderOption {
   id: string;
   code: string;
 }
+
+export type ImageAction = {
+  name: string;
+  action?: (e?: ModalType) => void;
+  icon: IconType;
+  tab: string
+};

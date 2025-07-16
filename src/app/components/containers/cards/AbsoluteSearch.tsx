@@ -246,7 +246,7 @@ const SearchPopover = ({
                   <div className="divide-y divide-[var(--accent)]">
                     {searchRes.map((res, i) => (
                       <Link
-                        href={`/${userData.id}/${res.id || res.name || res.slug || ""}`}
+                        href={`/${userData.username}/${res.id || res.name || res.slug || ""}`}
                         key={i}
                         className="block hover:bg-[var(--accent)] hover:bg-opacity-10 transition-colors duration-200"
                         onClick={handleResultClick}

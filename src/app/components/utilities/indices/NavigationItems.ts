@@ -17,6 +17,7 @@ import {
 import { MdSchool } from "react-icons/md";
 import { GiSkills } from "react-icons/gi";
 
+
 interface Route {
   slug: string;
   link: string;
@@ -26,19 +27,19 @@ interface Route {
 }
 
 export const privateRoutes: Route[] = [
+  // {
+  //   slug: "profile",
+  //   link: "/profile/me",
+  //   name: "Profile",
+  //   icon: FaUser,
+  //   description: "View and manage your personal profile information",
+  // },
   {
-    slug: "profile",
-    link: "/profile/me",
-    name: "Profile",
-    icon: FaUser,
-    description: "View and manage your personal profile information",
-  },
-  {
-    name: "Personal Information",
+    name: "Personal Profile",
     link: "/personal-info",
     slug: "personal-info",
     icon: FaIdCard,
-    description: "Update your basic personal details and contact information",
+    description: "View and manage your personal profile information",
   },
   {
     slug: "preference",

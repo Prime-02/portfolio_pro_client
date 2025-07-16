@@ -14,23 +14,15 @@ import React, {
 import {
   GetAllData,
   PostAllData,
-  UpdateAllData,
 } from "./components/utilities/asyncFunctions/lib/crud";
 import { BASE_URL } from "./components/utilities/indices/urls";
-import { AuthTokenResponse } from "./components/types and interfaces/UserAndProfile";
+import {
+  AuthTokenResponse,
+  User,
+} from "./components/types and interfaces/UserAndProfile";
 
 // Define types for user data
-export interface UserData {
-  id: string;
-  username: string;
-  firstname: string;
-  middlename: string;
-  lastname: string;
-  profile_picture: string | null;
-  phone_number: string | null;
-  is_active: boolean;
-  role: string;
-}
+export interface UserData extends User {}
 
 // Define the default user data
 const defaultUserData: UserData = {
@@ -40,23 +32,15 @@ const defaultUserData: UserData = {
   middlename: "",
   lastname: "",
   profile_picture: null,
-  phone_number: null,
+  profile_picture_id: "",
+  phone_number: "",
   is_active: true,
   role: "user",
+  email: "",
+  is_superuser: false,
+  created_at: "",
+  updated_at: "",
 };
-
-// Define types for API responses
-interface UserDataResponse {
-  id?: string;
-  username?: string;
-  firstname?: string;
-  middlename?: string;
-  lastname?: string;
-  profile_picture?: string | null;
-  phone_number?: string | null;
-  is_active?: boolean;
-  role?: string;
-}
 
 // Define clerk user data type
 interface ClerkUserData {
@@ -67,7 +51,7 @@ interface ClerkUserData {
 interface GlobalStateContextType {
   clerkUserData: ClerkUserData;
   userData: UserData;
-  setUser: (userData: UserData) => void;
+  setUserData: (userData: UserData | ((prev: UserData) => UserData)) => void;
   accessToken: string;
   loading: string[];
   setLoading: (
@@ -76,6 +60,7 @@ interface GlobalStateContextType {
   ) => void;
   fetchUserData: () => Promise<void>;
   fetchServerAccess: () => Promise<void>;
+  updateUserData: () => Promise<void>;
 }
 
 // Context initialization
@@ -95,11 +80,6 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
   const { userId } = useAuth();
   const { user } = useUser();
 
-  // Memoized setUser function to prevent unnecessary re-renders
-  const setUser = useCallback((newUserData: UserData): void => {
-    setUserData(newUserData);
-  }, []);
-
   // Type-safe user data fetching
   const fetchUserData = useCallback(
     async (access: string = accessToken): Promise<void> => {
@@ -110,7 +90,7 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
 
       setLoading("fetching_user_data");
       try {
-        const userDataRes = await GetAllData<undefined, UserDataResponse>({
+        const userDataRes = await GetAllData<undefined, UserData>({
           access,
           url: `${BASE_URL}/api/v1/settings/info`,
           type: "User Data",
@@ -120,16 +100,21 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
           const newUserData: UserData = {
             id: userDataRes.id ?? "",
             username: userDataRes.username ?? "",
+            email: userDataRes.email ?? "",
+            is_superuser: userDataRes.is_superuser ?? false,
             firstname: userDataRes.firstname ?? "",
             middlename: userDataRes.middlename ?? "",
             lastname: userDataRes.lastname ?? "",
             profile_picture: userDataRes.profile_picture ?? null,
-            phone_number: userDataRes.phone_number ?? null,
+            profile_picture_id: userDataRes.profile_picture_id ?? "",
+            phone_number: userDataRes.phone_number ?? "",
             is_active: userDataRes.is_active ?? true,
             role: userDataRes.role ?? "user",
+            created_at: userDataRes.created_at ?? "",
+            updated_at: userDataRes.updated_at ?? "",
           };
 
-          setUser(newUserData);
+          setUserData(newUserData);
           console.log("Client User Data: ", userDataRes);
         } else {
           console.log("No User Info Recovered");
@@ -140,53 +125,18 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
         setLoading("fetching_user_data");
       }
     },
-    [accessToken, setUser]
+    [accessToken]
   );
 
-  // Type-safe user data updating
-  const updateUserData = useCallback(
-    async (access: string = accessToken): Promise<void> => {
-      if (!access) {
-        console.warn("No access token provided for updateUserData");
-        return;
-      }
+  // Simple user data update function to be used by other components
+  const updateUserData = useCallback(async (): Promise<void> => {
+    if (!accessToken) {
+      console.warn("No access token available for updateUserData");
+      return;
+    }
 
-      if (!user) {
-        console.warn("No clerk user data available for update");
-        return;
-      }
-
-      setLoading("updating_user_data");
-      try {
-        const updatePayload = {
-          username: user.username ?? undefined,
-          firstname: user.firstName ?? undefined,
-          lastname: user.lastName ?? undefined,
-          profile_picture: user.imageUrl ?? undefined,
-          phone_number: user.phoneNumbers?.[0]?.phoneNumber ?? undefined,
-        };
-
-        const updateRes = await UpdateAllData<
-          typeof updatePayload,
-          UserDataResponse
-        >({
-          access,
-          field: updatePayload,
-          url: `${BASE_URL}/api/v1/settings/info`,
-          message: "custom", // Prevent automatic toast
-        });
-
-        if (updateRes) {
-          await fetchUserData(access);
-        }
-      } catch (error) {
-        console.error("Error updating user data:", error);
-      } finally {
-        setLoading("updating_user_data");
-      }
-    },
-    [accessToken, user, fetchUserData]
-  );
+    await fetchUserData(accessToken);
+  }, [accessToken, fetchUserData]);
 
   // Type-safe server access fetching
   const fetchServerAccess = useCallback(async (): Promise<void> => {
@@ -206,11 +156,8 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
         setAccessToken(serverAccessRes.access_token);
         console.log("Access Token: ", serverAccessRes.access_token);
 
-        // Fetch user data immediately after getting access token
-        await Promise.all([
-          fetchUserData(serverAccessRes.access_token),
-          updateUserData(serverAccessRes.access_token),
-        ]);
+        // Fetch user data after getting access token
+        await fetchUserData(serverAccessRes.access_token);
       } else {
         console.warn("No access token received from server");
       }
@@ -219,7 +166,7 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setLoading("fetching_access_token");
     }
-  }, [userId, fetchUserData, updateUserData]);
+  }, [userId, fetchUserData]);
 
   // Initialize clerk user data and fetch server access
   useEffect(() => {
@@ -257,12 +204,13 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
   const contextValue: GlobalStateContextType = {
     clerkUserData,
     userData,
-    setUser,
+    setUserData,
     accessToken,
     loading,
     setLoading,
     fetchUserData,
     fetchServerAccess,
+    updateUserData,
   };
 
   return (
@@ -300,4 +248,9 @@ export const useLoading = (): [string[], (value: string) => void] => {
 export const useClerkUserData = (): ClerkUserData => {
   const { clerkUserData } = useGlobalState();
   return clerkUserData;
+};
+
+export const useUpdateUserData = (): (() => Promise<void>) => {
+  const { updateUserData } = useGlobalState();
+  return updateUserData;
 };

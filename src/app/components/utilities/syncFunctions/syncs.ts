@@ -334,6 +334,7 @@ export function findMatch<T extends Record<string, unknown>>(
 }
 
 import { StaticImageData } from "next/image";
+import { toast } from "../../toastify/Toastify";
 
 export type ImageSource = string | StaticImageData | null | undefined;
 
@@ -363,21 +364,23 @@ export function getImageSrc(
   return "/vectors/undraw_monitor_ypga.svg";
 }
 
-
-
-
 /**
  * Converts a base64 image string to a File object
  * @param base64String - The base64-encoded image string (including data URI prefix)
  * @param filename - The name for the resulting file
  * @returns A Promise that resolves to a File object
  */
-export async function base64ToFile(base64String: string, filename: string): Promise<File> {
+export async function base64ToFile(
+  base64String: string,
+  filename: string
+): Promise<File> {
   // Extract the content type and base64 data from the string
   const matches = base64String.match(/^data:(.+);base64,(.+)$/);
-  
+
   if (!matches || matches.length !== 3) {
-    throw new Error('Invalid base64 string format. Expected format: data:<content-type>;base64,<data>');
+    throw new Error(
+      "Invalid base64 string format. Expected format: data:<content-type>;base64,<data>"
+    );
   }
 
   const contentType = matches[1];
@@ -402,121 +405,193 @@ export async function base64ToFile(base64String: string, filename: string): Prom
 //   console.log('File created:', file);
 // });
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 // Type definitions
 interface Geometry {
-    Point: [number, number];
+  Point: [number, number];
 }
 
 interface Place {
-    Label: string;
-    Country: string;
-    Region: string;
-    Municipality: string | null;
-    Geometry: Geometry;
+  Label: string;
+  Country: string;
+  Region: string;
+  Municipality: string | null;
+  Geometry: Geometry;
 }
 
 interface LocationData {
-    PlaceId: string;
-    Place: Place;
+  PlaceId: string;
+  Place: Place;
 }
 
 interface AddressItem {
-    id: string;
-    code: string;
+  id: string;
+  code: string;
 }
 
 function createAddressArray(locationData: LocationData[]): AddressItem[] {
-    return locationData.map((item: LocationData) => {
-        // Create a code from the place label - clean and format it
-        const label: string = item.Place.Label;
-        const code: string = label
-            .replace(/,/g, '_') // Replace commas with underscores
-            .replace(/\s+/g, '_') // Replace spaces with underscores
-            .replace(/[^\w_]/g, '') // Remove special characters except underscores
-            .toUpperCase(); // Convert to uppercase
-        
-        return {
-            id: code,
-            code: code
-        };
-    });
+  return locationData.map((item: LocationData) => {
+    // Create a code from the place label - clean and format it
+    const label: string = item.Place.Label;
+    const code: string = label
+      .replace(/,/g, "_") // Replace commas with underscores
+      .replace(/\s+/g, "_") // Replace spaces with underscores
+      .replace(/[^\w_]/g, "") // Remove special characters except underscores
+      .toUpperCase(); // Convert to uppercase
+
+    return {
+      id: code,
+      code: code,
+    };
+  });
 }
 
 // Alternative version with country code suffix for better uniqueness
-function createAddressArrayWithCountry(locationData: LocationData[]): AddressItem[] {
-    return locationData.map((item: LocationData) => {
-        const label: string = item.Place.Label;
-        const country: string = item.Place.Country;
-        
-        // Create base code from label
-        const baseCode: string = label
-            .replace(/,/g, '_')
-            .replace(/\s+/g, '_')
-            .replace(/[^\w_]/g, '')
-            .toUpperCase();
-        
-        // Append country code for uniqueness
-        const code: string = `${baseCode}_${country}`;
-        
-        return {
-            id: code,
-            code: code
-        };
-    });
+export function createAddressArrayWithCountry(
+  locationData: LocationData[]
+): AddressItem[] {
+  return locationData.map((item: LocationData) => {
+    const label: string = item.Place.Label;
+    const country: string = item.Place.Country;
+
+    // Create base code from label
+    const baseCode: string = label
+      .replace(/,/g, "_")
+      .replace(/\s+/g, "_")
+      .replace(/[^\w_]/g, "")
+      .toUpperCase();
+
+    // Append country code for uniqueness
+    const code: string = `${baseCode}_${country}`;
+
+    return {
+      id: code,
+      code: code,
+    };
+  });
 }
 
+export function generateSimpleId(): string {
+  return "addr_" + Math.random().toString(36).substr(2, 9);
+}
 // Version with custom ID generation (UUID-style)
-function createAddressArrayWithUUID(locationData: LocationData[]): AddressItem[] {
-    function generateSimpleId(): string {
-        return 'addr_' + Math.random().toString(36).substr(2, 9);
-    }
-    
-    return locationData.map((item: LocationData) => {
-        const label: string = item.Place.Label;
-        
-        const code: string = label
-            .replace(/,/g, '_')
-            .replace(/\s+/g, '_')
-            .replace(/[^\w_]/g, '')
-            .toUpperCase();
-        
-        return {
-            id: code,
-            code: code
-        };
-    });
+export function createAddressArrayWithUUID(
+  locationData: LocationData[]
+): AddressItem[] {
+
+  return locationData.map((item: LocationData) => {
+    const label: string = item.Place.Label;
+
+    const code: string = label
+      .replace(/,/g, "_")
+      .replace(/\s+/g, "_")
+      .replace(/[^\w_]/g, "")
+      .toUpperCase();
+
+    return {
+      id: code,
+      code: code,
+    };
+  });
 }
 
 // Usage example:
 // Assuming your data is stored in a variable called 'locationData'
 const locationData: LocationData[] = [
-    {
-        "PlaceId": "",
-        "Place": {
-            "Label": "Niger Road, Umuahia, Abia, NGA",
-            "Country": "NGA",
-            "Region": "Abia",
-            "Municipality": "Umuahia",
-            "Geometry": {
-                "Point": [7.497642532431, 5.534536500671]
-            }
-        }
-    }
-    // ... rest of your data
+  {
+    PlaceId: "",
+    Place: {
+      Label: "Niger Road, Umuahia, Abia, NGA",
+      Country: "NGA",
+      Region: "Abia",
+      Municipality: "Umuahia",
+      Geometry: {
+        Point: [7.497642532431, 5.534536500671],
+      },
+    },
+  },
+  // ... rest of your data
 ];
 
 // Call the function
-const addressArray: AddressItem[] = createAddressArray(locationData);
+export const addressArray: AddressItem[] = createAddressArray(locationData);
+
+/**
+ * Copies text to clipboard using the Clipboard API and logs success/error.
+ * @param text - The string to copy to clipboard
+ */
+export function copyToClipboard(text: string): void {
+  if (!navigator.clipboard) {
+    console.error("Clipboard API not supported in this browser");
+    return;
+  }
+
+  // Since Clipboard API is async, we handle success/error inside
+  navigator.clipboard
+    .writeText(text)
+    .then(() => {
+      toast.info("Successfully copied to clipboard!");
+    })
+    .catch((err) => {
+      console.error("❌ Failed to copy:", err);
+    });
+}
+
+
+
+type UrlPart = 'full' | 'host' | 'path' | 'pathSegment' | 'origin' | 'search' | 'hash';
+
+/**
+ * Gets specific parts of the current page URL
+ * @param part - What part of the URL to return
+ * @param segmentIndex - When part='pathSegment', the index to retrieve (0-based)
+ * @returns The requested URL part as a string
+ */
+export function getCurrentUrl(part: UrlPart = 'full', segmentIndex?: number): string {
+  const url = new URL(window.location.href);
+  
+  switch (part) {
+    case 'full':
+      return url.href;
+    case 'host':
+      return url.host;
+    case 'origin':
+      return url.origin;
+    case 'path':
+      return url.pathname;
+    case 'pathSegment':
+      return getPathSegment(url.pathname, segmentIndex);
+    case 'search':
+      return url.search;
+    case 'hash':
+      return url.hash;
+    default:
+      throw new Error(`Invalid URL part requested: ${part}`);
+  }
+}
+
+function getPathSegment(pathname: string, index?: number): string {
+  const segments = pathname.split('/').filter(segment => segment !== '');
+  
+  if (index === undefined) {
+    return segments.join('/');
+  }
+  
+  if (index < 0 || index >= segments.length) {
+    throw new Error(`Invalid path segment index: ${index}`);
+  }
+  
+  return segments[index];
+}
+
+// // For URL: https://example.com/products/electronics/123?sort=price#reviews
+
+// getCurrentUrl('full');      // "https://example.com/products/electronics/123?sort=price#reviews"
+// getCurrentUrl('host');      // "example.com"
+// getCurrentUrl('origin');    // "https://example.com"
+// getCurrentUrl('path');      // "/products/electronics/123"
+// getCurrentUrl('pathSegment');       // "products/electronics/123"
+// getCurrentUrl('pathSegment', 0);    // "products"
+// getCurrentUrl('pathSegment', 1);    // "electronics"
+// getCurrentUrl('pathSegment', 2);    // "123"
+// getCurrentUrl('search');    // "?sort=price"
+// getCurrentUrl('hash');      // "#reviews"

@@ -157,7 +157,7 @@ export const GetAllData = async <T = Record<string, unknown>, R = unknown>({
     if (axiosError.response?.status === 429) {
       const banMessage =
         "Your account was banned due to suspected malicious activity";
-      toast.error(banMessage);
+      // toast.error(banMessage);
       throw new Error(banMessage);
     }
 
@@ -193,7 +193,9 @@ export const UpdateAllData = async <
       method.toLowerCase() === "put" ? axios.put : axios.patch;
 
     // Prepare the request data and headers
-    let requestData: T | FormData;
+    let requestData: T | FormData | undefined = field
+      ? (convertNumericStrings(removeEmptyStringValues(field)) as T)
+      : undefined;
     const headers: Record<string, string> = {
       Authorization: `Bearer ${access}`,
       "ngrok-skip-browser-warning": "true",

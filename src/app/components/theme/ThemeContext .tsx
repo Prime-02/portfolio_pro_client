@@ -16,7 +16,6 @@ import {
   ThemeVariant,
   LanguageProps,
 } from "@/app/components/types and interfaces/loaderTypes";
-import ThemeControlPanel from "./ThemeControlPanel";
 import { useGlobalState } from "@/app/globalStateProvider";
 import {
   GetAllData,
@@ -454,7 +453,6 @@ export const ThemeProvider = ({
       }}
     >
       {children}
-      <ThemeControlPanel />
     </ThemeContext.Provider>
   );
 };

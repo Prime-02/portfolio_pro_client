@@ -1,6 +1,6 @@
 // Shared types for loaders and theme system
 
-import { ModalType } from "@/app/(user)/[dashboard]/(sub-routes)/personal-info/page-components/DisplayPictures";
+import { ModalType } from "@/app/(user)/[dashboard]/(sub-routes)/profile/page-components/DisplayPictures";
 import { IconType } from "react-icons";
 
 export interface LoaderProps {

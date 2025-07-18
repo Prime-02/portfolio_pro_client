@@ -50,7 +50,7 @@ const DataList = ({
   const [hasSearched, setHasSearched] = useState(false);
   const [isItemSelected, setIsItemSelected] = useState(false);
 
-  const debounceRef = useRef<NodeJS.Timeout>();
+  const debounceRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const LoaderComponent = getLoader(loader);
 
@@ -193,6 +193,10 @@ const DataList = ({
 
   const handleItemSelect = (item: SearchItem, index: number) => {
     const displayText = formatDisplayText(item);
+    if (index) {
+      console.log(index);
+    }
+
     setIsItemSelected(true); // Flag that an item was selected
     setQuery(displayText);
     onSetValue(displayText);

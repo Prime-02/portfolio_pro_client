@@ -1,5 +1,11 @@
 import { Eye, EyeClosed } from "lucide-react";
-import React, { useState, useRef, useEffect, RefObject } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  RefObject,
+  ReactNode,
+} from "react";
 import Dropdown from "./DynamicDropdown";
 import PhoneInputComponent from "./PhoneInput";
 import { getColorShade } from "../utilities/syncFunctions/syncs";
@@ -28,6 +34,7 @@ interface TextInputProps {
     | "search"
     | "decimal";
   onClick?: () => void;
+  onKeyDown?: (e: React.KeyboardEvent) => void;
   labelBgHex?: string;
   labelBgHexIntensity?: number;
 }
@@ -51,6 +58,7 @@ export const Textinput: React.FC<TextInputProps> = ({
   labelBgHex,
   labelBgHexIntensity,
   onClick = () => {},
+  onKeyDown = () => {},
 }) => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [showDesc, setShowDesc] = useState(false);
@@ -120,6 +128,7 @@ export const Textinput: React.FC<TextInputProps> = ({
         maxLength={maxLength}
         autoComplete={autoComplete}
         inputMode={inputMode}
+        onKeyDown={onKeyDown}
         onClick={onClick}
         ref={ref}
         value={value || ""}
@@ -203,6 +212,7 @@ interface TextAreaProps {
   labelBgHexIntensity?: number;
   maxLength?: number;
   showLimit?: string;
+  desc?: string | Element;
 }
 
 export const TextArea: React.FC<TextAreaProps> = ({
@@ -216,6 +226,7 @@ export const TextArea: React.FC<TextAreaProps> = ({
   labelBgHexIntensity,
   maxLength = 500,
   showLimit = true,
+  desc,
 }) => {
   return (
     <div className="relative h-full">
@@ -244,9 +255,14 @@ export const TextArea: React.FC<TextAreaProps> = ({
       >
         {label}
       </label>
-      {showLimit && <span className={`absolute bottom-2 right-4 font-thin  text-xs ${value?.length === maxLength ? "text-red-500" : "opacity-25"} `}>
-        {value?.length}/{maxLength}
-        </span>}
+      {showLimit && (
+        <span
+          className={`absolute bottom-2 right-4 font-thin  text-xs ${value?.length === maxLength ? "text-red-500" : "opacity-25"} `}
+        >
+          {value?.length}/{maxLength}
+        </span>
+      )}
+      <p className="text-xs opacity-80">{desc as ReactNode}</p>
     </div>
   );
 };

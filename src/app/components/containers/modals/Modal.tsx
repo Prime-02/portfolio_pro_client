@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { ReactNode, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { useTheme } from "../../theme/ThemeContext ";
@@ -11,7 +11,7 @@ interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   children: React.ReactNode;
-  title?: string;
+  title?: string | Element;
   size?: "sm" | "md" | "lg" | "xl" | "full";
   showCloseButton?: boolean;
   closeOnBackdropClick?: boolean;
@@ -265,19 +265,23 @@ const Modal: React.FC<ModalProps> = ({
                 transition={{ delay: 0.1, duration: 0.3 }}
               >
                 {title && (
-                  <motion.h2
-                    className="text-xl font-semibold  truncate pr-4"
+                  <motion.div
+                    className={
+                      typeof title === "string"
+                        ? "text-xl font-semibold truncate pr-4"
+                        : undefined
+                    }
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.15, duration: 0.3 }}
                   >
-                    {title}
-                  </motion.h2>
+                    {title as ReactNode}
+                  </motion.div>
                 )}
                 {showCloseButton && (
                   <motion.button
                     onClick={onClose}
-                    className="flex-shrink-0 p-2  hover:text-[var(--accent)] hover:bg-[var(--foreground)] rounded-full transition-colors duration-150"
+                    className="flex-shrink-0 p-2  hover:text-[var(--accent)] hover:bg-[var(--background)] rounded-full transition-colors duration-150"
                     aria-label="Close modal"
                     variants={closeButtonVariants}
                     initial="rest"

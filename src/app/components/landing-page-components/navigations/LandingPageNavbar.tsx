@@ -21,7 +21,6 @@ const LandingPageNavbar = () => {
   const { theme } = useTheme();
   const { userData } = useGlobalState();
   const [viewportWidth, setViewportWidth] = useState(0);
-  const [mobileSearchOverlay, setMobileSearchOverlay] = useState(false)
 
   useEffect(() => {
     if (typeof window !== "undefined") {

@@ -1,17 +1,17 @@
 import { useCallback, useState, useRef, useEffect } from "react";
-import { useDropzone } from "react-dropzone";
+import { FileRejection, useDropzone } from "react-dropzone";
 import ReactCrop, { Crop } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
 import {
   Upload,
   X,
-  Download,
   RotateCcw,
   Settings,
   Square,
   Maximize,
   Smartphone,
   Monitor,
+  Download,
 } from "lucide-react";
 import { getColorShade } from "../utilities/syncFunctions/syncs";
 import { useTheme } from "../theme/ThemeContext ";
@@ -76,12 +76,13 @@ export default function ImageCropper({
   // Effect to handle aspect ratio changes and reset crop
   useEffect(() => {
     if (currentImage && imgRef.current) {
+      setQuality(0.9);
+      setFormat("jpeg");
       // Reset crop when aspect ratio changes
       setCrop(undefined);
       // Give time for the image to render with new aspect ratio
       setTimeout(() => {
         if (imgRef.current) {
-          const { width, height } = imgRef.current.getBoundingClientRect();
           const newCrop: Crop = {
             unit: "%",
             x: 10,
@@ -95,54 +96,57 @@ export default function ImageCropper({
     }
   }, [cropAspect, currentImage]);
 
-  const onDrop = useCallback((acceptedFiles: File[], fileRejections: any[]) => {
-    setError(null);
+  const onDrop = useCallback(
+    (acceptedFiles: File[], fileRejections: FileRejection[]) => {
+      setError(null);
 
-    if (fileRejections.length > 0) {
-      const rejection = fileRejections[0];
-      if (rejection.file.size > MAX_FILE_SIZE) {
-        setError("File size exceeds 5MB limit");
-      } else {
-        setError("Invalid file type");
-      }
-      return;
-    }
-
-    const file = acceptedFiles[0];
-    if (file) {
-      setFileName(file.name);
-      setCurrentFile(file); // Store the file
-
-      const reader = new FileReader();
-
-      reader.onloadstart = () => setIsProcessing(true);
-      reader.onerror = () => {
-        setError("Failed to read file");
-        setIsProcessing(false);
-      };
-
-      reader.onload = () => {
-        try {
-          const imageData = reader.result as string;
-          setImage(imageData);
-          setCroppedImage(null);
-          setCrop(undefined); // Reset crop
-          setRotation(0);
-          setBrightness(100);
-          setContrast(100);
-          setSaturation(100);
-          setFlipH(false);
-          setFlipV(false);
-        } catch (err) {
-          setError("Error processing image");
-        } finally {
-          setIsProcessing(false);
+      if (fileRejections.length > 0) {
+        const rejection = fileRejections[0];
+        if (rejection.file.size > MAX_FILE_SIZE) {
+          setError("File size exceeds 5MB limit");
+        } else {
+          setError("Invalid file type");
         }
-      };
-      reader.readAsDataURL(file);
-    }
-  }, []);
+        return;
+      }
 
+      const file = acceptedFiles[0];
+      if (file) {
+        setFileName(file.name);
+        setCurrentFile(file); // Store the file
+
+        const reader = new FileReader();
+
+        reader.onloadstart = () => setIsProcessing(true);
+        reader.onerror = () => {
+          setError("Failed to read file");
+          setIsProcessing(false);
+        };
+
+        reader.onload = () => {
+          try {
+            const imageData = reader.result as string;
+            setImage(imageData);
+            setCroppedImage(null);
+            setCrop(undefined); // Reset crop
+            setRotation(0);
+            setBrightness(100);
+            setContrast(100);
+            setSaturation(100);
+            setFlipH(false);
+            setFlipV(false);
+          } catch (err) {
+            setError("Error processing image");
+            console.log(err);
+          } finally {
+            setIsProcessing(false);
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+    },
+    []
+  );
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
@@ -284,6 +288,7 @@ export default function ImageCropper({
           }
         } catch (err) {
           setError("Error processing image");
+          console.log(err);
         } finally {
           setIsProcessing(false);
         }
@@ -314,6 +319,7 @@ export default function ImageCropper({
       document.body.removeChild(link);
     } catch (err) {
       setError("Failed to download image");
+      console.log(err);
     }
   };
 
@@ -477,7 +483,6 @@ export default function ImageCropper({
                   ))}
                 </div>
               </div>
-
               {/* Transform Controls */}
               <div className="grid grid-cols-2 gap-2">
                 <button
@@ -499,7 +504,6 @@ export default function ImageCropper({
                   Flip V
                 </button>
               </div>
-
               {/* Adjustment Sliders */}
               <div className="space-y-2">
                 <div>
@@ -557,8 +561,7 @@ export default function ImageCropper({
                   />
                 </div>
               </div>
-
-              {/* Export Settings
+              Export Settings
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="text-xs block mb-1">Format</label>
@@ -589,7 +592,7 @@ export default function ImageCropper({
                     aria-label="Set image quality"
                   />
                 </div>
-              </div> */}
+              </div>
             </div>
           )}
 
@@ -611,8 +614,6 @@ export default function ImageCropper({
                 onLoad={() => {
                   // Initialize crop after image loads
                   if (!crop && imgRef.current) {
-                    const { width, height } =
-                      imgRef.current.getBoundingClientRect();
                     const newCrop: Crop = {
                       unit: "%",
                       x: 10,
@@ -638,7 +639,7 @@ export default function ImageCropper({
             <div className="space-y-2">
               {/* Action buttons */}
               <div className="flex space-x-2">
-                {/* <Button
+                <Button
                   onClick={downloadImage}
                   disabled={isProcessing}
                   variant="primary"
@@ -646,7 +647,7 @@ export default function ImageCropper({
                   aria-label="Download cropped image"
                   icon={<Download size={16} />}
                   text="Download"
-                /> */}
+                />
                 <span
                   onClick={resetUploader}
                   className="flex items-center justify-center space-x-1 card px-3 py-2 rounded text-sm hover: transition-colors"
@@ -660,7 +661,12 @@ export default function ImageCropper({
                     className="flex items-center justify-center space-x-1 card px-3 py-2 rounded text-sm hover: transition-colors"
                     aria-label="Finish"
                   >
-                    <Button variant="primary" text="Finish" loading={loading} disabled={loading} />
+                    <Button
+                      variant="primary"
+                      text="Finish"
+                      loading={loading || isProcessing}
+                      disabled={loading}
+                    />
                   </span>
                 )}
               </div>

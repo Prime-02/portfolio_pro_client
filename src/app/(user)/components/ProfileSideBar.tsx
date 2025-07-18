@@ -176,7 +176,7 @@ const ProfileSideBar = () => {
             .map((route, i) => (
               <Link
                 key={i}
-                href={`/${userData?.username || "user"}/${route.link}`}
+                href={`/${userData?.username || "user"}${route.link}`}
                 className="block"
               >
                 <div

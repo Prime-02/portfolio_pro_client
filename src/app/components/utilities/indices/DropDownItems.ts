@@ -55,7 +55,6 @@ export const titles = [
   },
 ];
 
-
 export const systemLanguages: LanguageProps[] = [
   { code: "en", name: "English" },
   { code: "es", name: "Spanish" },
@@ -314,3 +313,52 @@ export const systemLanguages: LanguageProps[] = [
 ];
 
 
+export const availabilityOptions = [
+  // 1. Availability Status
+  {
+    id: "available",
+    code: "Available for work",
+  },
+  {
+    id: "limited",
+    code: "Limited availability",
+  },
+  {
+    id: "not-available",
+    code: "Currently unavailable",
+  },
+
+  // 2. Work Schedule
+  {
+    id: "full-time",
+    code: "Full-time (40+ hours/week)",
+  },
+  {
+    id: "part-time",
+    code: "Part-time (10-30 hours/week)",
+  },
+  {
+    id: "timezone-remote",
+    code: "Remote (time zone based)",
+  },
+
+  // 3. Job Types
+  {
+    id: "long-term",
+    code: "Open to long-term contracts",
+  },
+  {
+    id: "short-term",
+    code: "Open to short-term projects",
+  },
+
+  // 4. Special Badges
+  {
+    id: "ready-to-interview",
+    code: "Ready to interview",
+  },
+  {
+    id: "top-rated-plus",
+    code: "Top Rated Plus",
+  },
+];

@@ -3,11 +3,10 @@ import ProfileImageSkeleton from "@/app/components/containers/skeletons/ProfileI
 import { Profile } from "@/app/components/types and interfaces/UserAndProfile";
 import {
   GetAllData,
-  PostAllData,
   UpdateAllData,
 } from "@/app/components/utilities/asyncFunctions/lib/crud";
 import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
-import { useGlobalState, UserData } from "@/app/globalStateProvider";
+import { useGlobalState } from "@/app/globalStateProvider";
 import {
   Camera,
   CameraIcon,
@@ -15,7 +14,6 @@ import {
   ChevronRight,
   Trash2,
   Upload,
-  X,
 } from "lucide-react";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
@@ -38,7 +36,6 @@ const UserDisplayPictures = () => {
     loading,
     setLoading,
     fetchUserData,
-    setUserData,
   } = useGlobalState();
   const [profileImages, setProfileImages] = useState<ModalType>({
     type: null,
@@ -160,7 +157,7 @@ const UserDisplayPictures = () => {
     croppedImage: string | null;
   }) => {
     setLoading("uploading_image");
-    const { croppedImage, file } = data;
+    const { croppedImage } = data;
     if (!croppedImage) {
       toast.warning("No image was provided");
       return;
@@ -234,9 +231,11 @@ const UserDisplayPictures = () => {
           fetchUserData();
         }
       }
-    } catch (error) {
+    } catch (err) {
+      console.log(err);
     } finally {
       setLoading(`deleting_${profileImages.type}_image`);
+      
     }
   };
 

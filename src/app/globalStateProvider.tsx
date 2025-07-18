@@ -22,7 +22,9 @@ import {
 } from "./components/types and interfaces/UserAndProfile";
 
 // Define types for user data
-export interface UserData extends User {}
+export interface UserData extends User {
+  auth_id?: string
+}
 
 // Define the default user data
 const defaultUserData: UserData = {

@@ -3,20 +3,13 @@ import {
   FaProjectDiagram,
   FaFileAlt,
   FaCertificate,
-  FaUser,
   FaIdCard,
   FaCog,
   FaBriefcase,
 } from "react-icons/fa";
-import {
-  FiImage,
-  FiMessageSquare,
-  FiGrid,
-  FiShare2,
-} from "react-icons/fi";
+import { FiImage, FiMessageSquare, FiGrid, FiShare2 } from "react-icons/fi";
 import { MdSchool } from "react-icons/md";
 import { GiSkills } from "react-icons/gi";
-
 
 interface Route {
   slug: string;
@@ -36,14 +29,14 @@ export const privateRoutes: Route[] = [
   // },
   {
     name: "Personal Profile",
-    link: "/personal-info",
+    link: "/profile",
     slug: "personal-info",
     icon: FaIdCard,
     description: "View and manage your personal profile information",
   },
   {
     slug: "preference",
-    link: "/themes-loaders",
+    link: "/preference",
     name: "Preference",
     icon: FaCog,
     description: "Customize your theme preferences and loading settings",

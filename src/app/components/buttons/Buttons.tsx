@@ -1,4 +1,4 @@
-import React, { ReactNode, MouseEvent, useState } from "react";
+import React, { ReactNode, MouseEvent, useState, useMemo } from "react";
 import { getLoader, SpinLoader } from "../loaders/Loader";
 import { useTheme } from "../theme/ThemeContext ";
 import { getColorShade } from "../utilities/syncFunctions/syncs";
@@ -20,8 +20,8 @@ type ButtonProps = {
     | "danger"
     | "success";
   size?: "sm" | "md" | "lg";
-  customColor?: string; // Allow custom color override
-  colorIntensity?: "light" | "medium" | "dark"; // Color intensity options
+  customColor?: string;
+  colorIntensity?: "light" | "medium" | "dark";
 };
 
 // Enhanced color normalization with better error handling
@@ -112,19 +112,19 @@ const generateColorPalette = (
   baseColor: string,
   intensity: "light" | "medium" | "dark" = "medium"
 ) => {
-  const intensityMultipliers = {
-    light: { hover: 10, active: 20, veryLight: 3 },
-    medium: { hover: 15, active: 25, veryLight: 5 },
-    dark: { hover: 20, active: 30, veryLight: 8 },
+  const intensityValues = {
+    light: { hover: 85, active: 70, veryLight: 10 },
+    medium: { hover: 80, active: 65, veryLight: 15 },
+    dark: { hover: 75, active: 60, veryLight: 20 },
   };
 
-  const multipliers = intensityMultipliers[intensity];
+  const values = intensityValues[intensity];
 
   return {
     base: baseColor,
-    hover: getColorShade(baseColor, 100 - multipliers.hover),
-    active: getColorShade(baseColor, 100 - multipliers.active),
-    veryLight: getColorShade(baseColor, multipliers.veryLight),
+    hover: getColorShade(baseColor, values.hover),
+    active: getColorShade(baseColor, values.active),
+    veryLight: getColorShade(baseColor, values.veryLight),
     disabled: "#9ca3af",
     disabledText: "#6b7280",
   };
@@ -147,15 +147,34 @@ const Button = ({
   const { accentColor, loader } = useTheme();
   const Loader = getLoader(loader) || SpinLoader;
 
-  // State to track hover and active states for better control
+  // State for interaction tracking
   const [isHovered, setIsHovered] = useState(false);
   const [isActive, setIsActive] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
 
-  // Use custom color if provided, otherwise use theme accent color
-  const baseColor = normalizeColorToHex(customColor || accentColor.color);
-  const colorPalette = generateColorPalette(baseColor, colorIntensity);
+  // Memoize color calculations to prevent unnecessary recalculations
+  const colorPalette = useMemo(() => {
+    const baseColor = normalizeColorToHex(customColor || accentColor.color);
+    return generateColorPalette(baseColor, colorIntensity);
+  }, [customColor, accentColor.color, colorIntensity]);
 
-  // Size configurations with better spacing
+  // Memoize variant-specific color palettes
+  const variantColorPalettes = useMemo(
+    () => ({
+      danger: {
+        base: "#ef4444",
+        hover: getColorShade("#ef4444", 25), // Much darker on hover
+        active: getColorShade("#ef4444", 15), // Even darker on active
+        veryLight: getColorShade("#ef4444", 10),
+        disabled: "#9ca3af",
+        disabledText: "#6b7280",
+      },
+      success: generateColorPalette("#10b981", colorIntensity),
+    }),
+    [colorIntensity]
+  );
+
+  // Size configurations
   const sizeClasses = {
     sm: "px-3 py-1.5 text-sm min-h-8 gap-1.5",
     md: "px-4 py-2 text-base min-h-10 gap-2",
@@ -165,148 +184,137 @@ const Button = ({
   // Base classes for all variants
   const baseClasses = `
     cursor-pointer min-w-fit flex items-center justify-center rounded-lg 
-    focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-opacity-50
-    transition-all duration-200 font-medium border-2 disabled:cursor-not-allowed
-    active:scale-95 transform
+    focus:outline-none transition-all duration-200 font-medium border-2 
+    disabled:cursor-not-allowed active:scale-95 transform
   `
     .replace(/\s+/g, " ")
     .trim();
 
-  // Get variant-specific styles
-  const getVariantStyles = () => {
-    if (disabled) {
+  // Get current interaction state
+  const getCurrentState = () => {
+    if (disabled || loading) return "disabled";
+    if (isActive) return "active";
+    if (isHovered) return "hovered";
+    if (isFocused) return "focused";
+    return "default";
+  };
+
+  // Generate dynamic styles based on variant and state
+  const getDynamicStyles = () => {
+    const currentState = getCurrentState();
+    let palette = colorPalette;
+
+    // Use specific palette for danger and success variants
+    if (variant === "danger") palette = variantColorPalettes.danger;
+    if (variant === "success") palette = variantColorPalettes.success;
+
+    // Common disabled styles
+    if (currentState === "disabled") {
       return {
         backgroundColor:
           variant === "outline" || variant === "ghost"
             ? "transparent"
-            : colorPalette.disabled,
+            : palette.disabled,
         borderColor:
           variant === "outline" || variant === "secondary"
-            ? colorPalette.disabled
+            ? palette.disabled
             : "transparent",
         color:
           variant === "outline" || variant === "ghost"
-            ? colorPalette.disabledText
+            ? palette.disabledText
             : "#ffffff",
         boxShadow: "none",
+        opacity: variant === "ghost" ? 0.5 : 1,
       };
     }
 
-    // Determine current state colors
-    const getCurrentColors = () => {
-      if (isActive) {
-        return {
-          bg: colorPalette.active,
-          border: colorPalette.active,
-          text: "#ffffff",
-        };
-      } else if (isHovered) {
-        return {
-          bg: colorPalette.hover,
-          border: colorPalette.hover,
-          text: "#ffffff",
-        };
-      } else {
-        return {
-          bg: colorPalette.base,
-          border: colorPalette.base,
-          text: colorPalette.base,
-        };
+    // Get state-specific colors
+    const getStateColor = (state: string) => {
+      switch (state) {
+        case "active":
+          return palette.active;
+        case "hovered":
+          return palette.hover;
+        case "focused":
+          return palette.base;
+        default:
+          return palette.base;
       }
     };
 
-    const currentColors = getCurrentColors();
+    const stateColor = getStateColor(currentState);
+    const isInteractive =
+      currentState === "hovered" || currentState === "active";
 
+    // Variant-specific styles
     switch (variant) {
       case "primary":
         return {
-          backgroundColor: currentColors.bg,
-          borderColor: currentColors.border,
+          backgroundColor: stateColor,
+          borderColor: stateColor,
           color: "#ffffff",
-          boxShadow: isHovered
-            ? "0 4px 12px rgba(0,0,0,0.15)"
-            : "0 2px 4px rgba(0,0,0,0.1)",
-          focusRingColor: colorPalette.base,
+          boxShadow: isInteractive
+            ? `0 4px 12px ${palette.base}40, 0 2px 4px ${palette.base}20`
+            : `0 2px 4px ${palette.base}20`,
+          transform: currentState === "active" ? "scale(0.95)" : "scale(1)",
         };
 
       case "secondary":
         return {
-          backgroundColor:
-            isHovered || isActive ? currentColors.bg : colorPalette.veryLight,
-          borderColor: currentColors.border,
-          color: isHovered || isActive ? "#ffffff" : colorPalette.base,
-          boxShadow: isHovered
-            ? "0 4px 12px rgba(0,0,0,0.15)"
-            : "0 1px 3px rgba(0,0,0,0.1)",
-          focusRingColor: colorPalette.base,
+          backgroundColor: isInteractive ? palette.veryLight : stateColor,
+          borderColor: stateColor,
+          color: "#ffffff",
+          boxShadow: isInteractive
+            ? `0 4px 12px ${palette.base}30, 0 2px 4px ${palette.base}15`
+            : `0 1px 3px ${palette.base}15`,
+          transform: currentState === "active" ? "scale(0.95)" : "scale(1)",
         };
 
       case "outline":
         return {
-          backgroundColor:
-            isHovered || isActive ? currentColors.bg : "transparent",
-          borderColor: currentColors.border,
-          color: isHovered || isActive ? "#ffffff" : colorPalette.base,
-          boxShadow: isHovered ? "0 2px 8px rgba(0,0,0,0.1)" : "none",
-          focusRingColor: colorPalette.base,
+          backgroundColor: isInteractive ? stateColor : "transparent",
+          borderColor: stateColor,
+          color: isInteractive ? "#ffffff" : palette.base,
+          boxShadow: isInteractive ? `0 2px 8px ${palette.base}20` : "none",
+          transform: currentState === "active" ? "scale(0.95)" : "scale(1)",
         };
 
       case "ghost":
         return {
-          backgroundColor:
-            isHovered || isActive ? colorPalette.veryLight : "transparent",
+          backgroundColor: "transparent",
           borderColor: "transparent",
-          color: colorPalette.base,
+          color: palette.base,
           boxShadow: "none",
-          focusRingColor: colorPalette.base,
+          textDecoration: isInteractive ? "underline" : "none",
+          transform: currentState === "active" ? "scale(0.95)" : "scale(1)",
         };
 
       case "danger":
-        const dangerColors = generateColorPalette("#ef4444", colorIntensity);
         return {
-          backgroundColor: isActive
-            ? dangerColors.active
-            : isHovered
-              ? dangerColors.hover
-              : dangerColors.base,
-          borderColor: isActive
-            ? dangerColors.active
-            : isHovered
-              ? dangerColors.hover
-              : dangerColors.base,
+          backgroundColor: stateColor,
+          borderColor: stateColor,
           color: "#ffffff",
-          boxShadow: isHovered
-            ? "0 4px 12px rgba(239,68,68,0.3)"
-            : "0 2px 4px rgba(239,68,68,0.2)",
-          focusRingColor: dangerColors.base,
+          boxShadow: isInteractive
+            ? `0 4px 12px ${palette.base}40, 0 2px 4px ${palette.base}20`
+            : `0 2px 4px ${palette.base}20`,
+          transform: currentState === "active" ? "scale(0.95)" : "scale(1)",
         };
 
       case "success":
-        const successColors = generateColorPalette("#10b981", colorIntensity);
         return {
-          backgroundColor: isActive
-            ? successColors.active
-            : isHovered
-              ? successColors.hover
-              : successColors.base,
-          borderColor: isActive
-            ? successColors.active
-            : isHovered
-              ? successColors.hover
-              : successColors.base,
+          backgroundColor: stateColor,
+          borderColor: stateColor,
           color: "#ffffff",
-          boxShadow: isHovered
-            ? "0 4px 12px rgba(16,185,129,0.3)"
-            : "0 2px 4px rgba(16,185,129,0.2)",
-          focusRingColor: successColors.base,
+          boxShadow: isInteractive
+            ? `0 4px 12px ${palette.base}40, 0 2px 4px ${palette.base}20`
+            : `0 2px 4px ${palette.base}20`,
+          transform: currentState === "active" ? "scale(0.95)" : "scale(1)",
         };
 
       default:
         return {};
     }
   };
-
-  const variantStyles = getVariantStyles();
 
   // Get loader color based on variant and state
   const getLoaderColor = () => {
@@ -316,6 +324,15 @@ const Button = ({
     return "#ffffff";
   };
 
+  // Get focus ring color for accessibility
+  const getFocusRingColor = () => {
+    if (variant === "danger") return variantColorPalettes.danger.base;
+    if (variant === "success") return variantColorPalettes.success.base;
+    return colorPalette.base;
+  };
+
+  const dynamicStyles = getDynamicStyles();
+
   return (
     <button
       title={title}
@@ -323,8 +340,8 @@ const Button = ({
       disabled={disabled || loading}
       className={`${baseClasses} ${sizeClasses[size]} ${className}`}
       style={{
-        ...variantStyles,
-        // focusRingColor: variantStyles.focusRingColor,
+        ...dynamicStyles,
+        // Add CSS custom properties for better focus handling
       }}
       onClick={onClick}
       onMouseEnter={() => !disabled && !loading && setIsHovered(true)}
@@ -334,13 +351,20 @@ const Button = ({
       }}
       onMouseDown={() => !disabled && !loading && setIsActive(true)}
       onMouseUp={() => setIsActive(false)}
-      onFocus={(e) => {
-        if (variantStyles.focusRingColor) {
-          e.currentTarget.style.setProperty(
-            "--tw-ring-color",
-            variantStyles.focusRingColor
-          );
-        }
+      onFocus={() => setIsFocused(true)}
+      onBlur={() => setIsFocused(false)}
+      // Enhanced focus styles using CSS custom properties
+      onFocusCapture={(e) => {
+        e.currentTarget.style.setProperty(
+          "box-shadow",
+          `${dynamicStyles.boxShadow}, 0 0 0 3px ${getFocusRingColor()}40`
+        );
+      }}
+      onBlurCapture={(e) => {
+        e.currentTarget.style.setProperty(
+          "box-shadow",
+          dynamicStyles.boxShadow || "none"
+        );
       }}
     >
       {loading ? (
@@ -350,8 +374,28 @@ const Button = ({
         />
       ) : (
         <>
-          {icon && <span className="flex-shrink-0">{icon}</span>}
-          {text && <span className="flex-shrink-0">{text}</span>}
+          {icon && (
+            <span
+              className="flex-shrink-0 transition-transform duration-200"
+              style={{
+                transform:
+                  getCurrentState() === "active" ? "scale(0.9)" : "scale(1)",
+              }}
+            >
+              {icon}
+            </span>
+          )}
+          {text && (
+            <span
+              className="flex-shrink-0 transition-transform duration-200"
+              style={{
+                transform:
+                  getCurrentState() === "active" ? "scale(0.9)" : "scale(1)",
+              }}
+            >
+              {text}
+            </span>
+          )}
         </>
       )}
     </button>

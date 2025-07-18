@@ -1,6 +1,8 @@
 import { ChevronDown, ChevronUp, Search } from "lucide-react";
 import React, { useState, useRef, useEffect } from "react";
 import { Textinput } from "./Textinput";
+import { useTheme } from "../theme/ThemeContext ";
+import { getColorShade } from "../utilities/syncFunctions/syncs";
 
 interface DropdownOption {
   [key: string]: string | number;
@@ -37,6 +39,7 @@ const Dropdown: React.FC<DropdownProps> = ({
   type,
   value,
 }) => {
+  const { theme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState<DropdownOption | null>(
     null
@@ -45,7 +48,6 @@ const Dropdown: React.FC<DropdownProps> = ({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // All hooks must be called before any early returns
   useEffect(() => {
     if (value !== undefined && value !== null) {
       const foundOption = options.find(
@@ -83,7 +85,6 @@ const Dropdown: React.FC<DropdownProps> = ({
     }
   }, [isOpen, type]);
 
-  // Early return check moved after all hooks
   if (!Array.isArray(options)) {
     console.error("Dropdown options must be an array");
     return null;
@@ -107,16 +108,20 @@ const Dropdown: React.FC<DropdownProps> = ({
 
   return (
     <div
-      className={`${divClassName} min-w-24 dark:border-gray-600 dark:focus:border-[var(--accent)] focus:outline-none focus:ring-0 focus:border-[var(--accent)] peer relative w-full`}
+      tabIndex={0}
+      onFocus={onFocus}
+      className={`${divClassName} min-w-24 peer relative w-full`}
       ref={dropdownRef}
     >
       <div
-        tabIndex={0}
-        onFocus={onFocus}
-        className={`${className} flex items-center justify-between p-2 cursor-pointer`}
+        className={`${className} flex items-center justify-between p-3 text-sm cursor-pointer rounded-full border border-gray-500 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent`}
         onClick={() => {
           setIsOpen(!isOpen);
           if (type !== "datalist") setSearchQuery("");
+        }}
+        style={{
+          backgroundColor: getColorShade(theme.background, 10),
+          borderColor: isOpen ? `var(--accent)` : undefined,
         }}
       >
         <span>{selectedOption ? selectedOption[displayKey] : placeholder}</span>
@@ -130,14 +135,19 @@ const Dropdown: React.FC<DropdownProps> = ({
       </div>
 
       {isOpen && (
-        <div className="absolute w-full min-w-16 mt-1 card z-[9999] shadow-lg ">
+        <div
+          className="absolute rounded-2xl w-full min-w-16 overflow-auto mt-1 z-[9999] shadow-lg "
+          style={{
+            backgroundColor: getColorShade(theme.background, 10),
+          }}
+        >
           {type === "datalist" && (
-            <div className="p-2  relative w-full">
+            <div className="p-2 relative w-full">
               <Search className="mr-2 h-4 w-4 absolute right-0 top-1/3" />
               <Textinput
                 type="text"
                 label="Search..."
-                className="w-full "
+                className="w-full"
                 value={searchQuery}
                 onChange={setSearchQuery}
               />
@@ -149,7 +159,7 @@ const Dropdown: React.FC<DropdownProps> = ({
               {filteredOptions.map((option) => (
                 <div
                   key={String(option[valueKey])}
-                  className="p-2 hover: cursor-pointer"
+                  className="p-2 hover:bg-[var(--accent)] cursor-pointer"
                   onClick={() => handleSelect(option)}
                 >
                   {option[displayKey]}

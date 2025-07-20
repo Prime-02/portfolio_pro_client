@@ -370,3 +370,8 @@ export const socialMediaPlatforms = [
   { code: "Facebook", id: "facebook" },
   { code: "Telegram", id: "telegram" },
 ];
+
+export const urlType = [
+  { code: "Link", id: "link" },
+  { code: "Handle", id: "handle" },
+];

@@ -1,3 +1,6 @@
+import { DeleteData } from "@/app/components/utilities/asyncFunctions/lib/crud";
+import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
+import { useGlobalState } from "@/app/globalStateProvider";
 import React from "react";
 
 export type SocialCardProps = {
@@ -6,10 +9,12 @@ export type SocialCardProps = {
   screenshot_id: string;
   platform_name: string;
   profile_url: string;
+  onRefresh: () => void;
 };
 
 const SocialCard = (props: SocialCardProps) => {
-  const { platform_name, profile_screenshot, profile_url } = props;
+  const { platform_name, profile_screenshot, profile_url, onRefresh } = props;
+  const { accessToken, loading, setLoading } = useGlobalState();
 
   const getPlatformIcon = (platform: string) => {
     switch (platform.toLowerCase()) {
@@ -23,6 +28,21 @@ const SocialCard = (props: SocialCardProps) => {
         return "linkedin-icon";
       default:
         return "social-icon";
+    }
+  };
+
+  const deleteSocial = async () => {
+    setLoading("deleting_social");
+    try {
+      await DeleteData({
+        access: accessToken,
+        url: `${V1_BASE_URL}/socials/${props.id}`,
+      });
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading("fetching_socials");
+      onRefresh();
     }
   };
 
@@ -49,6 +69,9 @@ const SocialCard = (props: SocialCardProps) => {
           />
           <h3 className="font-medium text-gray-800 capitalize">
             {platform_name}
+            <span className="btn btn-danger" onClick={deleteSocial}>
+              delete
+            </span>
           </h3>
         </div>
 
@@ -66,9 +89,9 @@ const SocialCard = (props: SocialCardProps) => {
           target="_blank"
           rel="noopener noreferrer"
           className="text-sm text-blue-600 hover:text-blue-800 truncate block"
-          title={profile_url}
+          title={profile_screenshot}
         >
-          {profile_url}
+          {profile_screenshot}
         </a>
 
         <button

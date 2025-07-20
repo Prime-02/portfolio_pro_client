@@ -3,7 +3,10 @@ import { Textinput } from "@/app/components/inputs/Textinput";
 import { useTheme } from "@/app/components/theme/ThemeContext ";
 import { toast } from "@/app/components/toastify/Toastify";
 import { PostAllData } from "@/app/components/utilities/asyncFunctions/lib/crud";
-import { socialMediaPlatforms } from "@/app/components/utilities/indices/DropDownItems";
+import {
+  socialMediaPlatforms,
+  urlType,
+} from "@/app/components/utilities/indices/DropDownItems";
 import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
 import { useGlobalState } from "@/app/globalStateProvider";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -12,6 +15,8 @@ import React, { useState } from "react";
 export type SocialType = {
   platform_name: string;
   profile_url: string;
+  profile_headline: string;
+  url_type: string;
 };
 
 const AddSocials = () => {
@@ -20,6 +25,8 @@ const AddSocials = () => {
   const [addSocial, setAddSocial] = useState<SocialType>({
     platform_name: "",
     profile_url: "",
+    profile_headline: "",
+    url_type: "",
   });
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -74,11 +81,43 @@ const AddSocials = () => {
         </div>
         <div>
           <Textinput
+            value={addSocial.url_type}
+            onChange={(e) => {
+              setAddSocial((prev) => ({
+                ...prev,
+                url_type: e,
+              }));
+            }}
+            label="Platform"
+            labelBgHex={theme.background}
+            labelBgHexIntensity={10}
+            type="dropdown"
+            options={urlType}
+          />
+        </div>
+        <div>
+          <Textinput
             value={addSocial.profile_url}
             onChange={(e) => {
               setAddSocial((prev) => ({
                 ...prev,
                 profile_url: e,
+              }));
+            }}
+            label="Prolfile Link"
+            labelBgHex={theme.background}
+            labelBgHexIntensity={10}
+            type="text"
+            desc={`Head over to your account profile and copy the link`}
+          />
+        </div>
+        <div>
+          <Textinput
+            value={addSocial.profile_headline}
+            onChange={(e) => {
+              setAddSocial((prev) => ({
+                ...prev,
+                profile_headline: e,
               }));
             }}
             label="Prolfile Link"

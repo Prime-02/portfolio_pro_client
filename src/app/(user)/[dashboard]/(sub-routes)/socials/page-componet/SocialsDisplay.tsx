@@ -82,6 +82,7 @@ function SocialsDisplay() {
                 profile_screenshot={socialCard.profile_screenshot}
                 screenshot_id={socialCard.screenshot_id}
                 profile_url={socialCard.profile_url}
+                onRefresh={fetchUserSocialLinks}
               />
             ))
           )}

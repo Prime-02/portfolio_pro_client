@@ -258,7 +258,7 @@ interface DeleteParams<T = Record<string, unknown>> {
   data?: T;
 }
 
-export const Delete = async <T = Record<string, unknown>, R = unknown>({
+export const DeleteData = async <T = Record<string, unknown>, R = unknown>({
   url,
   access,
   message = "Deleted",

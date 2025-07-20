@@ -312,7 +312,6 @@ export const systemLanguages: LanguageProps[] = [
   { code: "zsm", name: "Standard Malay" },
 ];
 
-
 export const availabilityOptions = [
   // 1. Availability Status
   {
@@ -361,4 +360,13 @@ export const availabilityOptions = [
     id: "top-rated-plus",
     code: "Top Rated Plus",
   },
+];
+
+export const socialMediaPlatforms = [
+  { code: "LinkedIn", id: "linkedin" },
+  { code: "Twitter/X", id: "twitter" },
+  { code: "GitHub", id: "github" },
+  { code: "Discord", id: "discord" },
+  { code: "Facebook", id: "facebook" },
+  { code: "Telegram", id: "telegram" },
 ];

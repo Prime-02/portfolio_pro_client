@@ -136,7 +136,7 @@ const Dropdown: React.FC<DropdownProps> = ({
 
       {isOpen && (
         <div
-          className="absolute rounded-2xl w-full min-w-16 overflow-auto mt-1 z-[9999] shadow-lg "
+          className="absolute border border-[var(--accent)] rounded-2xl w-full min-w-16 overflow-auto mt-1 z-[9999] shadow-lg "
           style={{
             backgroundColor: getColorShade(theme.background, 10),
           }}

@@ -47,19 +47,20 @@ const Menu = () => {
     <div
       style={{
         backgroundColor: getColorShade(theme.background, 10),
+         maxHeight: "65dvh" 
       }}
-      className="border rounded-xl p-2 min-w-md max-w-lg h-full flex flex-col"
+      //          style={{ maxHeight: "65dvh" }}
+      className="border rounded-xl p-2 overflow-auto min-w-md max-w-lg h-full flex flex-col"
     >
       <h2 className="font-semibold text-xl mb-3">{"Menu"}</h2>
       <div className="flex gap-x-2 ">
         <SimpleBar
           className="flex-1  overflow-y-auto md:hidden max-w-2/3 rounded-2xl"
-          style={{ maxHeight: "65dvh" }}
           autoHide={false}
           scrollbarMinSize={48}
         >
-          <div className="flex ">
-            <div className="bg-[var(--background)] w-full">
+          <div className="flex h-full">
+            <div className="bg-[var(--background)] h-full w-full">
               <div className="flex-1 py-4 pr-2">
                 {groupedRoutes.map(({ category, routes }) => (
                   <div key={category} className="mb-4">
@@ -116,7 +117,7 @@ const Menu = () => {
             </div>
           </div>
         </SimpleBar>
-        <div className="bg-[var(--background)] overflow-auto min-h-[50dvh] rounded-2xl shadow-xl p-4 md:w-full min-w-1/3">
+        <div className="bg-[var(--background)] overflow-auto min-h-[50dvh] h-fit rounded-2xl shadow-xl p-4 md:w-full min-w-1/3">
           <h3 className="font-semibold text-lg mb-4">Create New</h3>
           <div className="flex flex-col gap-3">
             {privateRoutes
@@ -126,6 +127,7 @@ const Menu = () => {
                   "projects",
                   "resume",
                   "certification",
+                  "socials",
                   "education",
                   "skills",
                 ].includes(route.slug)
@@ -133,7 +135,7 @@ const Menu = () => {
               .map((route, i) => (
                 <Link
                   key={i}
-                  href={`/${userData?.username || "user"}/${route.link}?create=true`}
+                  href={`/${userData?.username}/${route.link}?create=true`}
                   className="block"
                 >
                   <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--background-hover)] transition-colors duration-200">

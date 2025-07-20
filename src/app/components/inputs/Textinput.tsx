@@ -55,7 +55,7 @@ export const Textinput: React.FC<TextInputProps> = ({
   maxLength = 100000,
   autoComplete = "",
   inputMode = "text",
-  labelBgHex,
+  labelBgHex ,
   labelBgHexIntensity,
   onClick = () => {},
   onKeyDown = () => {},

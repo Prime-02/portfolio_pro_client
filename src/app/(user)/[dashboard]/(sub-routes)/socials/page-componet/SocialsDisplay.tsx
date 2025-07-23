@@ -37,6 +37,7 @@ function SocialsDisplay() {
       });
       if (socialRes && socialRes.length > 0) {
         setSocials(socialRes);
+        console.log(`Fetched Social Links: ${JSON.stringify(socialRes)}`);
       }
     } catch (error) {
       console.log(error);
@@ -58,11 +59,18 @@ function SocialsDisplay() {
         onClose={handleClose}
         title={"Upload your social handle"}
       >
-        <AddSocials />
+        <AddSocials onRefresh={fetchUserSocialLinks} />
       </Modal>
-      <div className="flex w-full min-h-screen h-auto items-center justify-center">
-        <div></div>
-        <div className="flex flex-wrap gap-4">
+      <div className="p-8">
+        <div>
+          <h2 className="text-3xl font-semibold mb-4">
+            {`Social Links & Handles`}
+          </h2>
+          <p className="opacity-70 mb-6">
+            {`Add your social media links and handles to showcase your online presence.`}
+          </p>
+        </div>
+        <div className="flex flex-col   gap-4 w-full ">
           {socials.length < 1 ? (
             <EmptyState />
           ) : loading.includes("fetching_socials") ? (
@@ -79,9 +87,9 @@ function SocialsDisplay() {
                 key={socialCard.id}
                 platform_name={socialCard.platform_name}
                 id={socialCard.id}
-                profile_screenshot={socialCard.profile_screenshot}
-                screenshot_id={socialCard.screenshot_id}
+                url_type={socialCard.url_type}
                 profile_url={socialCard.profile_url}
+                profile_headline={socialCard.profile_headline}
                 onRefresh={fetchUserSocialLinks}
               />
             ))

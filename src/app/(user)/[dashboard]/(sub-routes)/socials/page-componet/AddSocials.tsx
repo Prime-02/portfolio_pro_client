@@ -11,22 +11,17 @@ import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
 import { useGlobalState } from "@/app/globalStateProvider";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import React, { useState } from "react";
+import { SocialCardProps } from "./SocialCard";
 
-export type SocialType = {
-  platform_name: string;
-  profile_url: string;
-  profile_headline: string;
-  url_type: string;
-};
-
-const AddSocials = () => {
+const AddSocials = ({ onRefresh }: { onRefresh: () => void }) => {
   const { theme } = useTheme();
   const { loading, setLoading, accessToken } = useGlobalState();
-  const [addSocial, setAddSocial] = useState<SocialType>({
+  const [addSocial, setAddSocial] = useState<SocialCardProps>({
     platform_name: "",
     profile_url: "",
     profile_headline: "",
     url_type: "",
+    id: "",
   });
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -53,6 +48,7 @@ const AddSocials = () => {
       });
       if (socialRes) {
         handleClose();
+        onRefresh();
       }
     } catch (error) {
     } finally {
@@ -104,7 +100,7 @@ const AddSocials = () => {
                 profile_url: e,
               }));
             }}
-            label="Prolfile Link"
+            label="Profile Link"
             labelBgHex={theme.background}
             labelBgHexIntensity={10}
             type="text"
@@ -120,7 +116,7 @@ const AddSocials = () => {
                 profile_headline: e,
               }));
             }}
-            label="Prolfile Link"
+            label="Profile Headline"
             labelBgHex={theme.background}
             labelBgHexIntensity={10}
             type="text"

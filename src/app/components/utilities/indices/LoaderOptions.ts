@@ -25,5 +25,5 @@ export const loaderOptions: LoaderOption[] = [
     { id: "pulse-ring", code: "Pulse Ring" },
     { id: "zigzag-loader", code: "Zigzag Loader" },
     { id: "bloom-loader", code: "Bloom Loader" },
-    { id: "portfolio-pro", code: "Portfolio Pro" },
+    // { id: "portfolio-pro", code: "Portfolio Pro" },
   ];

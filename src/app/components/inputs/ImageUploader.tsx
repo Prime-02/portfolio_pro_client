@@ -642,11 +642,10 @@ export default function ImageCropper({
                 <Button
                   onClick={downloadImage}
                   disabled={isProcessing}
-                  variant="primary"
-                  className="flex-1 flex items-center justify-center space-x-1 "
+                  variant="ghost"
+                  className="w-8 h-8 hidden"
                   aria-label="Download cropped image"
                   icon={<Download size={16} />}
-                  text="Download"
                 />
                 <span
                   onClick={resetUploader}

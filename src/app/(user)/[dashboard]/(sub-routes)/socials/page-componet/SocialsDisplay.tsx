@@ -9,15 +9,28 @@ import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
 import EmptyState from "@/app/components/containers/cards/EmptyState";
 import { getLoader } from "@/app/components/loaders/Loader";
 import { useTheme } from "@/app/components/theme/ThemeContext ";
+import Button from "@/app/components/buttons/Buttons";
+import { Plus } from "lucide-react";
 
 function SocialsDisplay() {
-  const { loading, setLoading, accessToken } = useGlobalState();
+  const {
+    loading,
+    setLoading,
+    accessToken,
+    extendRouteWithQuery,
+    searchParams,
+    router,
+  } = useGlobalState();
   const { loader, accentColor } = useTheme();
   const LoaderComponent = getLoader(loader) || null;
-  const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const showModal = searchParams.get("create") === "true";
+  const updateParam = searchParams.get("update");
+  const updateSocial =
+    updateParam !== null &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      updateParam
+    );
   const [socials, setSocials] = useState<SocialCardProps[]>([]);
 
   const handleClose = () => {
@@ -54,25 +67,44 @@ function SocialsDisplay() {
   return (
     <>
       <Modal
-        isOpen={showModal}
+        isOpen={showModal || updateSocial}
         centered
         onClose={handleClose}
-        title={"Upload your social handle"}
+        title={`${updateSocial ? "Update" : "Upload"} your social handle`}
+        loading={loading.includes("fetching_a_social_detail")}
       >
         <AddSocials onRefresh={fetchUserSocialLinks} />
       </Modal>
       <div className="p-8">
-        <div>
-          <h2 className="text-3xl font-semibold mb-4">
-            {`Social Links & Handles`}
-          </h2>
-          <p className="opacity-70 mb-6">
-            {`Add your social media links and handles to showcase your online presence.`}
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4 mb-6">
+          <div>
+            <h2 className="text-2xl sm:text-3xl font-semibold">
+              {`Social Links & Handles`}
+            </h2>
+            <p className="opacity-70 mt-2">
+              {`Add your social media links and handles to showcase your online presence.`}
+            </p>
+          </div>
+          <Button
+            icon={<Plus />}
+            variant="ghost"
+            className="self-end sm:self-auto"
+            onClick={() => {
+              extendRouteWithQuery({ create: "true" });
+            }}
+          />
         </div>
         <div className="flex flex-col   gap-4 w-full ">
           {socials.length < 1 ? (
-            <EmptyState />
+            <EmptyState
+              description=""
+              actionText="Add you first handle/social link"
+              onAction={() => {
+                extendRouteWithQuery({ create: "true" });
+              }}
+              title="No social links or handle found"
+              className="border-[var(--accent)] border "
+            />
           ) : loading.includes("fetching_socials") ? (
             LoaderComponent ? (
               <div className="flex justify-center items-center py-4 w-full">

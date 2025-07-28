@@ -595,11 +595,11 @@ const ProfileDetails = ({
                         location: e,
                       }));
                     }}
-                    dataPath=""
+                    dataPath="results"
                     displayKeys={[
-                      "Place.Municipality",
-                      "Place.Region",
-                      "Place.Country",
+                      "place.Municipality",
+                      "place.Region",
+                      "place.Country",
                     ]}
                     separator=", "
                     placeholder="Search for a location..."

@@ -20,10 +20,17 @@ import {
   AuthTokenResponse,
   User,
 } from "./components/types and interfaces/UserAndProfile";
+import {
+  ReadonlyURLSearchParams,
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
+import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
 // Define types for user data
 export interface UserData extends User {
-  auth_id?: string
+  auth_id?: string;
 }
 
 // Define the default user data
@@ -63,6 +70,11 @@ interface GlobalStateContextType {
   fetchUserData: () => Promise<void>;
   fetchServerAccess: () => Promise<void>;
   updateUserData: () => Promise<void>;
+  router: AppRouterInstance;
+  currentPath: string;
+  extendRoute: (segment: string) => void;
+  searchParams: ReadonlyURLSearchParams;
+  extendRouteWithQuery: (newParams: Record<string, string>) => void;
 }
 
 // Context initialization
@@ -81,6 +93,10 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
 
   const { userId } = useAuth();
   const { user } = useUser();
+  const searchParams = useSearchParams(); // current query params
+  const router = useRouter();
+  const currentPath = usePathname();
+  const pathname = usePathname();
 
   // Type-safe user data fetching
   const fetchUserData = useCallback(
@@ -203,6 +219,24 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
     []
   );
 
+  const extendRoute = (segment: string) => {
+    const newPath = `${currentPath}/${segment}`; // Constructs '/desktop/home'
+    router.push(newPath); // Navigates to the new path
+  };
+
+  const extendRouteWithQuery = (newParams: Record<string, string>) => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    // Append new query params
+    Object.entries(newParams).forEach(([key, value]) => {
+      params.set(key, value);
+    });
+
+    // Construct the new URL
+    const newUrl = `${pathname}?${params.toString()}`;
+    router.push(newUrl);
+  };
+
   const contextValue: GlobalStateContextType = {
     clerkUserData,
     userData,
@@ -213,6 +247,11 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
     fetchUserData,
     fetchServerAccess,
     updateUserData,
+    router,
+    currentPath,
+    extendRoute,
+    searchParams,
+    extendRouteWithQuery,
   };
 
   return (

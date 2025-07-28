@@ -54,7 +54,14 @@ const EmptyState: React.FC<EmptyStateProps> = ({
           )}
 
           {actionText && onAction && (
-            <Button variant="primary" size="md" text={actionText} />
+            <Button
+              variant="primary"
+              size="md"
+              text={actionText}
+              onClick={() => {
+                onAction();
+              }}
+            />
           )}
         </div>
       </div>

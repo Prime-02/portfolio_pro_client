@@ -22,6 +22,7 @@ interface ModalProps {
   preventScroll?: boolean;
   zIndex?: number;
   centered?: boolean;
+  loading?: boolean;
   springConfig?: {
     type?: "spring" | "tween";
     stiffness?: number;
@@ -45,6 +46,7 @@ const Modal: React.FC<ModalProps> = ({
   preventScroll = true,
   zIndex = 1000,
   centered = false,
+  loading = false,
   springConfig = {
     type: "spring",
     stiffness: 300,
@@ -281,7 +283,7 @@ const Modal: React.FC<ModalProps> = ({
                 {showCloseButton && (
                   <motion.button
                     onClick={onClose}
-                    className="flex-shrink-0 p-2  hover:text-[var(--accent)] hover:bg-[var(--background)] rounded-full transition-colors duration-150"
+                    className={`flex-shrink-0 p-2 ${loading && "animate-spin"}  hover:text-[var(--accent)] hover:bg-[var(--background)] rounded-full transition-colors duration-150`}
                     aria-label="Close modal"
                     variants={closeButtonVariants}
                     initial="rest"

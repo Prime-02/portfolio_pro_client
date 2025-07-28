@@ -247,7 +247,7 @@ const UserDisplayPictures = () => {
 
   return (
     <>
-      <div className="bg-gradient-to-br animated-gradient from-slate-900 via-[var(--accent)] to-slate-900 relative h-64 w-full rounded-t-3xl">
+      <div className="bg-gradient-to-br animated-gradient from-slate-900 via-[var(--accent)] to-slate-900 relative h-64 w-full rounded-3xl">
         {/* Cover photo */}
         {userProfile.profile_picture && (
           <Image
@@ -255,7 +255,7 @@ const UserDisplayPictures = () => {
             width={1000}
             height={1000}
             alt="Cover Photo"
-            className="w-full h-full object-cover object-center rounded-t-3xl"
+            className="w-full h-full object-cover object-center rounded-3xl"
           />
         )}
         {/* Cover photo camera icon */}

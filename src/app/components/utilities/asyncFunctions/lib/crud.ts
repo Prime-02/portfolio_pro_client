@@ -16,6 +16,7 @@ export interface PostAllDataParams<T = Record<string, unknown>> {
   url: string;
   useFormData?: boolean;
   message?: string;
+  intToString?: boolean;
 }
 
 // Helper type to ensure data is serializable
@@ -56,10 +57,13 @@ export const PostAllData = async <
   data,
   url,
   useFormData = false,
+  intToString = true,
 }: PostAllDataParams<T>): Promise<R> => {
   try {
     let requestData: T | FormData | undefined = data
-      ? (convertNumericStrings(removeEmptyStringValues(data)) as T)
+      ? intToString
+        ? (convertNumericStrings(removeEmptyStringValues(data)) as T)
+        : (removeEmptyStringValues(data) as T)
       : undefined;
 
     const headers: Record<string, string> = {

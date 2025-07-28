@@ -2,20 +2,32 @@ import Button from "@/app/components/buttons/Buttons";
 import { Textinput } from "@/app/components/inputs/Textinput";
 import { useTheme } from "@/app/components/theme/ThemeContext ";
 import { toast } from "@/app/components/toastify/Toastify";
-import { PostAllData } from "@/app/components/utilities/asyncFunctions/lib/crud";
+import {
+  GetAllData,
+  PostAllData,
+  UpdateAllData,
+} from "@/app/components/utilities/asyncFunctions/lib/crud";
 import {
   socialMediaPlatforms,
   urlType,
 } from "@/app/components/utilities/indices/DropDownItems";
 import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
 import { useGlobalState } from "@/app/globalStateProvider";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import React, { useState } from "react";
+import { usePathname } from "next/navigation";
+import React, { useEffect, useState } from "react";
 import { SocialCardProps } from "./SocialCard";
 
 const AddSocials = ({ onRefresh }: { onRefresh: () => void }) => {
   const { theme } = useTheme();
-  const { loading, setLoading, accessToken } = useGlobalState();
+  const { loading, setLoading, accessToken, searchParams, router } =
+    useGlobalState();
+  const updateParam = searchParams.get("update");
+  const updateSocial =
+    updateParam !== null &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      updateParam
+    );
+
   const [addSocial, setAddSocial] = useState<SocialCardProps>({
     platform_name: "",
     profile_url: "",
@@ -24,12 +36,8 @@ const AddSocials = ({ onRefresh }: { onRefresh: () => void }) => {
     id: "",
   });
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const router = useRouter();
   const handleClose = () => {
-    const newSearchParams = new URLSearchParams(searchParams.toString());
-    newSearchParams.delete("create");
-    router.replace(`${pathname}?${newSearchParams.toString()}`);
+    router.replace(pathname, { scroll: false });
   };
 
   const postSocialData = async () => {
@@ -45,6 +53,7 @@ const AddSocials = ({ onRefresh }: { onRefresh: () => void }) => {
         access: accessToken,
         data: addSocial,
         url: `${V1_BASE_URL}/socials/`,
+        intToString: false,
       });
       if (socialRes) {
         handleClose();
@@ -55,6 +64,55 @@ const AddSocials = ({ onRefresh }: { onRefresh: () => void }) => {
       setLoading("adding_social_profile");
     }
   };
+
+  const updateSocialDetail = async () => {
+    setLoading("updating_social_datail");
+    try {
+      const updateRes: SocialCardProps = await UpdateAllData({
+        access: accessToken,
+        url: `${V1_BASE_URL}/socials/${updateParam}`,
+        field: addSocial,
+      });
+      if (updateRes && updateRes.platform_name) {
+        handleClose();
+        onRefresh();
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading("updating_social_datail");
+    }
+  };
+
+  const getASocialDetail = async () => {
+    setLoading("fetching_a_social_detail");
+    try {
+      const socialRes: SocialCardProps = await GetAllData({
+        access: accessToken,
+        url: `${V1_BASE_URL}/socials/${updateParam}`,
+        type: "Single Social Datail",
+      });
+      if (socialRes && socialRes.platform_name) {
+        setAddSocial((prev) => ({
+          ...prev,
+          platform_name: socialRes.platform_name,
+          profile_url: socialRes.profile_url,
+          profile_headline: socialRes.profile_headline,
+          url_type: socialRes.url_type,
+        }));
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading("fetching_a_social_detail");
+    }
+  };
+
+  useEffect(() => {
+    if (updateParam && updateSocial && accessToken) {
+      getASocialDetail();
+    }
+  }, [updateParam, updateSocial, accessToken]);
 
   return (
     <div className="min-h-32 h-auto">
@@ -125,10 +183,19 @@ const AddSocials = ({ onRefresh }: { onRefresh: () => void }) => {
         </div>
         <div className="w-full ">
           <Button
-            text="Upload"
-            loading={loading.includes("adding_social_profile")}
+            text={`${updateParam && updateSocial ? "Update" : "Upload"} Social Detail`}
+            loading={
+              loading.includes("adding_social_profile") ||
+              loading.includes("updating_social_datail")
+            }
             className="w-full"
-            onClick={postSocialData}
+            onClick={() => {
+              if (updateParam && updateSocial) {
+                updateSocialDetail();
+              } else {
+                postSocialData();
+              }
+            }}
           />
         </div>
       </div>

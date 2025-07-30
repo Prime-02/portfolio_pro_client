@@ -1,9 +1,13 @@
-import React from 'react'
+"use client";
+import React from "react";
+import CertDisplay from "./page-components/CertDisplay";
 
 const Cert = () => {
   return (
-    <div>Cert</div>
-  )
-}
+    <div className="w-full min-h-screen h-auto">
+      <CertDisplay />
+    </div>
+  );
+};
 
-export default Cert
+export default Cert;

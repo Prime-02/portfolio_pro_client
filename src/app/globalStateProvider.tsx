@@ -27,6 +27,7 @@ import {
   useSearchParams,
 } from "next/navigation";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { toast } from "./components/toastify/Toastify";
 
 // Define types for user data
 export interface UserData extends User {
@@ -72,9 +73,12 @@ interface GlobalStateContextType {
   updateUserData: () => Promise<void>;
   router: AppRouterInstance;
   currentPath: string;
+  pathname: string;
   extendRoute: (segment: string) => void;
   searchParams: ReadonlyURLSearchParams;
   extendRouteWithQuery: (newParams: Record<string, string>) => void;
+  clearQuerryParam: () => void;
+  unauthorizedWarning: () => void;
 }
 
 // Context initialization
@@ -237,6 +241,19 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
     router.push(newUrl);
   };
 
+  const clearQuerryParam = () => {
+    router.replace(pathname, { scroll: false });
+  };
+
+  const unauthorizedWarning = () => {
+    if (!accessToken) {
+      toast.warning(
+        "You're not supposed to be here without permission, please proceed to logn or sign up "
+      );
+      return;
+    }
+  };
+
   const contextValue: GlobalStateContextType = {
     clerkUserData,
     userData,
@@ -249,9 +266,12 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
     updateUserData,
     router,
     currentPath,
+    pathname,
     extendRoute,
     searchParams,
     extendRouteWithQuery,
+    clearQuerryParam,
+    unauthorizedWarning,
   };
 
   return (

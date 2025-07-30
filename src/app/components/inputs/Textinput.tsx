@@ -9,6 +9,7 @@ import React, {
 import Dropdown from "./DynamicDropdown";
 import PhoneInputComponent from "./PhoneInput";
 import { getColorShade } from "../utilities/syncFunctions/syncs";
+import { useTheme } from "../theme/ThemeContext ";
 
 interface TextInputProps {
   label?: string;
@@ -55,12 +56,13 @@ export const Textinput: React.FC<TextInputProps> = ({
   maxLength = 100000,
   autoComplete = "",
   inputMode = "text",
-  labelBgHex ,
-  labelBgHexIntensity,
+  labelBgHex,
+  labelBgHexIntensity = 10,
   onClick = () => {},
   onKeyDown = () => {},
 }) => {
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const { theme } = useTheme();
   const [showDesc, setShowDesc] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const descRef = useRef<HTMLDivElement>(null);
@@ -167,8 +169,11 @@ export const Textinput: React.FC<TextInputProps> = ({
           className={`absolute text-sm dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 origin-[0] px-2 peer-focus:px-2 peer-focus:text-[var(--accent)] peer-focus:dark:text-[var(--accent)] peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1 ${labelStyle}`}
           style={{
             backgroundColor:
-              labelBgHex && labelBgHexIntensity
-                ? getColorShade(labelBgHex, labelBgHexIntensity)
+              (labelBgHex || theme.background) && labelBgHexIntensity
+                ? getColorShade(
+                    labelBgHex || theme.background,
+                    labelBgHexIntensity
+                  )
                 : "none",
           }}
         >

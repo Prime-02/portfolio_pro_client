@@ -1,7 +1,6 @@
 import Button from "@/app/components/buttons/Buttons";
 import { Textinput } from "@/app/components/inputs/Textinput";
 import { useTheme } from "@/app/components/theme/ThemeContext ";
-import { toast } from "@/app/components/toastify/Toastify";
 import {
   GetAllData,
   PostAllData,
@@ -13,14 +12,20 @@ import {
 } from "@/app/components/utilities/indices/DropDownItems";
 import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
 import { useGlobalState } from "@/app/globalStateProvider";
-import { usePathname } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { SocialCardProps } from "./SocialCard";
 
 const AddSocials = ({ onRefresh }: { onRefresh: () => void }) => {
   const { theme } = useTheme();
-  const { loading, setLoading, accessToken, searchParams, router } =
-    useGlobalState();
+  const {
+    loading,
+    setLoading,
+    accessToken,
+    searchParams,
+    router,
+    pathname,
+    unauthorizedWarning,
+  } = useGlobalState();
   const updateParam = searchParams.get("update");
   const updateSocial =
     updateParam !== null &&
@@ -35,19 +40,13 @@ const AddSocials = ({ onRefresh }: { onRefresh: () => void }) => {
     url_type: "",
     id: "",
   });
-  const pathname = usePathname();
   const handleClose = () => {
     router.replace(pathname, { scroll: false });
   };
 
   const postSocialData = async () => {
     setLoading("adding_social_profile");
-    if (!accessToken) {
-      toast.warning(
-        "You're not supposed to be here without permission, please proceed to logn or sign up "
-      );
-      return;
-    }
+    unauthorizedWarning();
     try {
       const socialRes = await PostAllData({
         access: accessToken,

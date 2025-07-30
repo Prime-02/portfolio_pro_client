@@ -5,8 +5,7 @@ import { socialMediaPlatforms } from "@/app/components/utilities/indices/DropDow
 import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
 import { copyToClipboard } from "@/app/components/utilities/syncFunctions/syncs";
 import { useGlobalState } from "@/app/globalStateProvider";
-import { update } from "lodash";
-import { Trash, ExternalLink, Globe, Copy, Edit } from "lucide-react";
+import { Trash, Globe, Copy, Edit } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 

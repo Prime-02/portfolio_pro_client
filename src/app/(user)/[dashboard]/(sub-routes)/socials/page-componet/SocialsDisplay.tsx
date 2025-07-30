@@ -20,10 +20,10 @@ function SocialsDisplay() {
     extendRouteWithQuery,
     searchParams,
     router,
+    pathname
   } = useGlobalState();
   const { loader, accentColor } = useTheme();
   const LoaderComponent = getLoader(loader) || null;
-  const pathname = usePathname();
   const showModal = searchParams.get("create") === "true";
   const updateParam = searchParams.get("update");
   const updateSocial =

@@ -228,11 +228,12 @@ export const TextArea: React.FC<TextAreaProps> = ({
   id,
   labelStyle,
   labelBgHex,
-  labelBgHexIntensity,
+  labelBgHexIntensity = 10,
   maxLength = 500,
   showLimit = true,
   desc,
 }) => {
+  const { theme } = useTheme();
   return (
     <div className="relative h-full">
       <textarea
@@ -253,8 +254,11 @@ export const TextArea: React.FC<TextAreaProps> = ({
         }`}
         style={{
           backgroundColor:
-            labelBgHex && labelBgHexIntensity
-              ? getColorShade(labelBgHex, labelBgHexIntensity)
+            (labelBgHex || theme.background) && labelBgHexIntensity
+              ? getColorShade(
+                  labelBgHex || theme.background,
+                  labelBgHexIntensity
+                )
               : "none",
         }}
       >

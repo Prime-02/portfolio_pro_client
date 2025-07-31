@@ -871,3 +871,12 @@ export const socialMediaPlatforms = [
     darkColor: "#FF1B3B",
   },
 ];
+
+export const proficiencyLevel = [
+  { id: "novice", code: "Novice (0-1 years)" },
+  { id: "beginner", code: "Beginner (1-3 years)" },
+  { id: "intermediate", code: "Intermediate (3-5 years)" },
+  { id: "proficient", code: "Proficient (5-7 years)" },
+  { id: "advanced", code: "Advanced (7-10 years)" },
+  { id: "master", code: "Master (10+ years)" },
+];

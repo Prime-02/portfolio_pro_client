@@ -58,7 +58,6 @@ const CertDisplay = () => {
       });
       if (certsRes && certsRes.length > 0) {
         setCertificates(certsRes);
-        console.log(`Fetched Social Links: ${JSON.stringify(certsRes)}`);
       }
     } catch (error) {
       console.log("error fetching user cert: ", error);

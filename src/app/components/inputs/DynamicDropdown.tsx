@@ -1,5 +1,6 @@
 import { ChevronDown, ChevronUp, Search } from "lucide-react";
 import React, { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Textinput } from "./Textinput";
 import { useTheme } from "../theme/ThemeContext ";
 import { getColorShade } from "../utilities/syncFunctions/syncs";
@@ -25,6 +26,116 @@ interface DropdownProps {
   value?: string;
 }
 
+interface DropdownMenuProps {
+  isOpen: boolean;
+  triggerRect: DOMRect | null;
+  options: DropdownOption[];
+  filteredOptions: DropdownOption[];
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  handleSelect: (option: DropdownOption) => void;
+  theme: any;
+  type?: string;
+  emptyMessage: string;
+  valueKey: string;
+  displayKey: string;
+  searchInputRef: React.RefObject<HTMLInputElement>;
+}
+
+const DropdownMenu: React.FC<DropdownMenuProps> = ({
+  isOpen,
+  triggerRect,
+  options,
+  filteredOptions,
+  searchQuery,
+  setSearchQuery,
+  handleSelect,
+  theme,
+  type,
+  emptyMessage,
+  valueKey,
+  displayKey,
+  searchInputRef,
+}) => {
+  const [position, setPosition] = useState<"top" | "bottom">("bottom");
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isOpen && triggerRect && menuRef.current) {
+      const menuHeight = menuRef.current.offsetHeight || 250;
+      const viewportHeight = window.innerHeight;
+      const spaceBelow = viewportHeight - triggerRect.bottom;
+      const spaceAbove = triggerRect.top;
+
+      if (spaceBelow < menuHeight && spaceAbove > menuHeight) {
+        setPosition("top");
+      } else {
+        setPosition("bottom");
+      }
+    }
+  }, [isOpen, triggerRect]);
+
+  useEffect(() => {
+    if (isOpen && type === "datalist" && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [isOpen, type, searchInputRef]);
+
+  if (!isOpen || !triggerRect) return null;
+
+  const menuStyle: React.CSSProperties = {
+    position: "fixed",
+    left: triggerRect.left,
+    width: triggerRect.width,
+    minWidth: "4rem",
+    zIndex: 999999, // Extremely high z-index
+    backgroundColor: getColorShade(theme.background, 10),
+    ...(position === "top"
+      ? { bottom: window.innerHeight - triggerRect.top + 4 }
+      : { top: triggerRect.bottom + 4 }),
+  };
+
+  return (
+    <div
+      ref={menuRef}
+      className="border border-[var(--accent)] rounded-2xl overflow-auto shadow-lg"
+      style={menuStyle}
+    >
+      {type === "datalist" && (
+        <div className="p-2 relative w-full">
+          <Search className="mr-2 h-4 w-4 absolute right-0 top-1/3" />
+          <Textinput
+            ref={searchInputRef}
+            type="text"
+            label="Search..."
+            className="w-full"
+            value={searchQuery}
+            onChange={setSearchQuery}
+          />
+        </div>
+      )}
+
+      {filteredOptions.length > 0 ? (
+        <div className="max-h-60 p-2 overflow-y-auto">
+          {filteredOptions.map((option) => (
+            <div
+              key={String(option[valueKey])}
+              className="p-2 hover:bg-[var(--accent)] cursor-pointer rounded-lg"
+              onClick={() => handleSelect(option)}
+            >
+              {option[displayKey]}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="p-2 text-gray-500">
+          {options.length === 0 ? emptyMessage : "No matches found"}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const Dropdown: React.FC<DropdownProps> = ({
   options = [],
   onSelect,
@@ -45,6 +156,7 @@ const Dropdown: React.FC<DropdownProps> = ({
     null
   );
   const [searchQuery, setSearchQuery] = useState("");
+  const [triggerRect, setTriggerRect] = useState<DOMRect | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -67,7 +179,10 @@ const Dropdown: React.FC<DropdownProps> = ({
     const handleClickOutside = (event: MouseEvent) => {
       if (
         dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
+        !dropdownRef.current.contains(event.target as Node) &&
+        !document
+          .querySelector("[data-dropdown-portal]")
+          ?.contains(event.target as Node)
       ) {
         setIsOpen(false);
       }
@@ -79,11 +194,30 @@ const Dropdown: React.FC<DropdownProps> = ({
     };
   }, []);
 
+  // Update trigger position when opening or on scroll/resize
   useEffect(() => {
-    if (isOpen && type === "datalist" && searchInputRef.current) {
-      searchInputRef.current.focus();
+    const updateTriggerRect = () => {
+      if (dropdownRef.current) {
+        setTriggerRect(dropdownRef.current.getBoundingClientRect());
+      }
+    };
+
+    if (isOpen) {
+      updateTriggerRect();
+
+      const handleReposition = () => {
+        updateTriggerRect();
+      };
+
+      window.addEventListener("scroll", handleReposition, true);
+      window.addEventListener("resize", handleReposition);
+
+      return () => {
+        window.removeEventListener("scroll", handleReposition, true);
+        window.removeEventListener("resize", handleReposition);
+      };
     }
-  }, [isOpen, type]);
+  }, [isOpen]);
 
   if (!Array.isArray(options)) {
     console.error("Dropdown options must be an array");
@@ -97,6 +231,14 @@ const Dropdown: React.FC<DropdownProps> = ({
     setIsOpen(false);
   };
 
+  const handleToggle = () => {
+    if (!isOpen && dropdownRef.current) {
+      setTriggerRect(dropdownRef.current.getBoundingClientRect());
+    }
+    setIsOpen(!isOpen);
+    if (type !== "datalist") setSearchQuery("");
+  };
+
   const filteredOptions = options.filter((option) => {
     if (!searchQuery) return true;
     const searchLower = searchQuery.toLowerCase();
@@ -107,73 +249,57 @@ const Dropdown: React.FC<DropdownProps> = ({
   });
 
   return (
-    <div
-      tabIndex={0}
-      onFocus={onFocus}
-      className={`${divClassName} min-w-24 peer relative w-full`}
-      ref={dropdownRef}
-    >
+    <>
       <div
-        className={`${className} flex items-center justify-between p-3 text-sm cursor-pointer rounded-full border border-gray-500 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent`}
-        onClick={() => {
-          setIsOpen(!isOpen);
-          if (type !== "datalist") setSearchQuery("");
-        }}
-        style={{
-          backgroundColor: getColorShade(theme.background, 10),
-          borderColor: isOpen ? `var(--accent)` : undefined,
-        }}
+        tabIndex={0}
+        onFocus={onFocus}
+        className={`${divClassName} min-w-24 peer relative w-full`}
+        ref={dropdownRef}
       >
-        <span>{selectedOption ? selectedOption[displayKey] : placeholder}</span>
-        <span>
-          {isOpen ? (
-            <ChevronUp className="text-[var(--accent)]" />
-          ) : (
-            <ChevronDown />
-          )}
-        </span>
-      </div>
-
-      {isOpen && (
         <div
-          className="absolute border border-[var(--accent)] rounded-2xl w-full min-w-16 overflow-auto mt-1 z-[9999] shadow-lg "
+          className={`${className} flex items-center justify-between p-3 text-sm cursor-pointer rounded-full border border-gray-500 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent`}
+          onClick={handleToggle}
           style={{
             backgroundColor: getColorShade(theme.background, 10),
+            borderColor: isOpen ? `var(--accent)` : undefined,
           }}
         >
-          {type === "datalist" && (
-            <div className="p-2 relative w-full">
-              <Search className="mr-2 h-4 w-4 absolute right-0 top-1/3" />
-              <Textinput
-                type="text"
-                label="Search..."
-                className="w-full"
-                value={searchQuery}
-                onChange={setSearchQuery}
-              />
-            </div>
-          )}
-
-          {filteredOptions.length > 0 ? (
-            <div className="max-h-60 overflow-y-auto">
-              {filteredOptions.map((option) => (
-                <div
-                  key={String(option[valueKey])}
-                  className="p-2 hover:bg-[var(--accent)] cursor-pointer"
-                  onClick={() => handleSelect(option)}
-                >
-                  {option[displayKey]}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="p-2 text-gray-500">
-              {options.length === 0 ? emptyMessage : "No matches found"}
-            </div>
-          )}
+          <span>
+            {selectedOption ? selectedOption[displayKey] : placeholder}
+          </span>
+          <span>
+            {isOpen ? (
+              <ChevronUp className="text-[var(--accent)]" />
+            ) : (
+              <ChevronDown />
+            )}
+          </span>
         </div>
-      )}
-    </div>
+      </div>
+
+      {/* Portal for dropdown menu */}
+      {typeof document !== "undefined" &&
+        createPortal(
+          <div data-dropdown-portal>
+            <DropdownMenu
+              isOpen={isOpen}
+              triggerRect={triggerRect}
+              options={options}
+              filteredOptions={filteredOptions}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              handleSelect={handleSelect}
+              theme={theme}
+              type={type}
+              emptyMessage={emptyMessage}
+              valueKey={valueKey}
+              displayKey={displayKey}
+              searchInputRef={searchInputRef}
+            />
+          </div>,
+          document.body
+        )}
+    </>
   );
 };
 

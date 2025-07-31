@@ -55,8 +55,8 @@ const AddSocials = ({ onRefresh }: { onRefresh: () => void }) => {
         intToString: false,
       });
       if (socialRes) {
-        handleClose();
         onRefresh();
+        handleClose();
       }
     } catch (error) {
     } finally {
@@ -83,6 +83,7 @@ const AddSocials = ({ onRefresh }: { onRefresh: () => void }) => {
     }
   };
 
+  
   const getASocialDetail = async () => {
     setLoading("fetching_a_social_detail");
     try {

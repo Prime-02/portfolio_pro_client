@@ -1,6 +1,6 @@
 "use client";
 
-import React, { ReactNode, useEffect, useRef } from "react";
+import React, { ReactNode, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { useTheme } from "../../theme/ThemeContext ";
@@ -56,21 +56,36 @@ const Modal: React.FC<ModalProps> = ({
 }) => {
   const { theme } = useTheme();
   const modalRef = useRef<HTMLDivElement>(null);
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Prevent hydration mismatch by only rendering after mount
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Handle body scroll prevention
   useEffect(() => {
-    if (typeof window === "undefined" || !preventScroll || !isOpen) return;
+    if (!isMounted || !preventScroll || !isOpen) return;
 
     const originalOverflow = document.body.style.overflow;
+    const originalPaddingRight = document.body.style.paddingRight;
+
+    // Calculate scrollbar width to prevent layout shift
+    const scrollbarWidth =
+      window.innerWidth - document.documentElement.clientWidth;
+
     document.body.style.overflow = "hidden";
+    document.body.style.paddingRight = `${scrollbarWidth}px`;
+
     return () => {
       document.body.style.overflow = originalOverflow;
+      document.body.style.paddingRight = originalPaddingRight;
     };
-  }, [isOpen, preventScroll]);
+  }, [isOpen, preventScroll, isMounted]);
 
   // Handle escape key
   useEffect(() => {
-    if (typeof window === "undefined" || !closeOnEscape) return;
+    if (!isMounted || !closeOnEscape) return;
 
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
@@ -80,7 +95,7 @@ const Modal: React.FC<ModalProps> = ({
 
     document.addEventListener("keydown", handleEscape);
     return () => document.removeEventListener("keydown", handleEscape);
-  }, [isOpen, closeOnEscape, onClose]);
+  }, [isOpen, closeOnEscape, onClose, isMounted]);
 
   // Handle backdrop click
   const handleBackdropClick = (e: React.MouseEvent) => {
@@ -91,7 +106,7 @@ const Modal: React.FC<ModalProps> = ({
 
   // Handle focus trap
   useEffect(() => {
-    if (typeof window === "undefined" || !isOpen) return;
+    if (!isMounted || !isOpen) return;
 
     const modal = modalRef.current;
     if (!modal) return;
@@ -121,10 +136,17 @@ const Modal: React.FC<ModalProps> = ({
     };
 
     document.addEventListener("keydown", handleTab);
-    firstElement?.focus();
 
-    return () => document.removeEventListener("keydown", handleTab);
-  }, [isOpen]);
+    // Use setTimeout to ensure DOM is ready
+    const timeoutId = setTimeout(() => {
+      firstElement?.focus();
+    }, 0);
+
+    return () => {
+      document.removeEventListener("keydown", handleTab);
+      clearTimeout(timeoutId);
+    };
+  }, [isOpen, isMounted]);
 
   const sizeClasses = {
     sm: "max-w-sm",
@@ -251,8 +273,8 @@ const Modal: React.FC<ModalProps> = ({
               backgroundColor: getColorShade(theme.background, 10),
             }}
             className={`
-              relative  w-full ${sizeClasses[size]} 
-               shadow-2xl
+              relative w-full ${sizeClasses[size]} 
+              shadow-2xl
               ${centered ? "rounded-2xl" : "rounded-2xl"}
               ${className}
             `}
@@ -283,7 +305,7 @@ const Modal: React.FC<ModalProps> = ({
                 {showCloseButton && (
                   <motion.button
                     onClick={onClose}
-                    className={`flex-shrink-0 p-2 ${loading && "animate-spin"}  hover:text-[var(--accent)] hover:bg-[var(--background)] rounded-full transition-colors duration-150`}
+                    className={`flex-shrink-0 p-2 ${loading ? "animate-spin" : ""} hover:text-[var(--accent)] hover:bg-[var(--background)] rounded-full transition-colors duration-150`}
                     aria-label="Close modal"
                     variants={closeButtonVariants}
                     initial="rest"
@@ -311,8 +333,8 @@ const Modal: React.FC<ModalProps> = ({
     </AnimatePresence>
   );
 
-  // Render to portal
-  if (typeof window === "undefined") {
+  // Only render if mounted (prevents hydration mismatch)
+  if (!isMounted) {
     return null;
   }
 
@@ -320,233 +342,3 @@ const Modal: React.FC<ModalProps> = ({
 };
 
 export default Modal;
-
-// Enhanced usage example with multiple modal types
-export const ModalExample: React.FC = () => {
-  const [basicModal, setBasicModal] = React.useState(false);
-  const [centeredModal, setCenteredModal] = React.useState(false);
-  const [fullModal, setFullModal] = React.useState(false);
-  const [customModal, setCustomModal] = React.useState(false);
-
-  return (
-    <div className="p-8 space-y-6">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <h1 className="text-3xl font-bold  mb-2">
-          Sophisticated Modal with Framer Motion
-        </h1>
-        <p className=" mb-6">
-          Experience buttery smooth animations powered by Framer Motion
-        </p>
-      </motion.div>
-
-      <motion.div
-        className="grid grid-cols-1 md:grid-cols-2 gap-4"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.3, duration: 0.5 }}
-      >
-        <motion.button
-          onClick={() => setBasicModal(true)}
-          className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
-          whileHover={{ scale: 1.02, y: -2 }}
-          whileTap={{ scale: 0.98 }}
-        >
-          Basic Slide-up Modal
-        </motion.button>
-
-        <motion.button
-          onClick={() => setCenteredModal(true)}
-          className="px-6 py-3 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
-          whileHover={{ scale: 1.02, y: -2 }}
-          whileTap={{ scale: 0.98 }}
-        >
-          Centered Modal
-        </motion.button>
-
-        <motion.button
-          onClick={() => setFullModal(true)}
-          className="px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
-          whileHover={{ scale: 1.02, y: -2 }}
-          whileTap={{ scale: 0.98 }}
-        >
-          Full Width Modal
-        </motion.button>
-
-        <motion.button
-          onClick={() => setCustomModal(true)}
-          className="px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
-          whileHover={{ scale: 1.02, y: -2 }}
-          whileTap={{ scale: 0.98 }}
-        >
-          Custom Animation
-        </motion.button>
-      </motion.div>
-
-      <motion.div
-        className="p-6 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5, duration: 0.5 }}
-      >
-        <h3 className="font-bold text-lg mb-3 ">✨ Framer Motion Features:</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm ">
-          <div className="flex items-center space-x-2">
-            <span className="text-green-500">•</span>
-            <span>Spring physics animations</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <span className="text-green-500">•</span>
-            <span>Smooth slide-up transitions</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <span className="text-green-500">•</span>
-            <span>Backdrop blur animations</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <span className="text-green-500">•</span>
-            <span>Staggered content reveals</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <span className="text-green-500">•</span>
-            <span>Interactive button animations</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <span className="text-green-500">•</span>
-            <span>Customizable spring configs</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <span className="text-green-500">•</span>
-            <span>AnimatePresence for smooth exits</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <span className="text-green-500">•</span>
-            <span>Performance optimized</span>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Basic Modal */}
-      <Modal
-        isOpen={basicModal}
-        onClose={() => setBasicModal(false)}
-        title="Basic Slide-up Modal"
-        size="md"
-      >
-        <div className="space-y-4">
-          <p className="">
-            This modal slides up from the bottom with smooth Framer Motion
-            animations. The height automatically adjusts to fit the content.
-          </p>
-          <div className="flex gap-2"></div>
-        </div>
-      </Modal>
-
-      {/* Centered Modal */}
-      <Modal
-        isOpen={centeredModal}
-        onClose={() => setCenteredModal(false)}
-        title="Centered Modal"
-        size="lg"
-        centered={true}
-      >
-        <div className="space-y-4">
-          <p className="">
-            This modal appears in the center of the screen with a scale and fade
-            animation. Perfect for important confirmations or focused content.
-          </p>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="p-4 bg-blue-50 rounded-lg">
-              <h4 className="font-semibold text-blue-900">Feature 1</h4>
-              <p className="text-sm text-blue-700">Description here</p>
-            </div>
-            <div className="p-4 bg-green-50 rounded-lg">
-              <h4 className="font-semibold text-green-900">Feature 2</h4>
-              <p className="text-sm text-green-700">Description here</p>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setCenteredModal(false)}
-              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-            >
-              Got it!
-            </button>
-          </div>
-        </div>
-      </Modal>
-
-      {/* Full Width Modal */}
-      <Modal
-        isOpen={fullModal}
-        onClose={() => setFullModal(false)}
-        title="Full Width Modal"
-        size="full"
-      >
-        <div className="space-y-6">
-          <p className="">
-            This modal takes up the full width of the screen, great for forms or
-            detailed content.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="p-4 bg-gray-50 rounded-lg">
-                <h4 className="font-semibold">Column {i}</h4>
-                <p className="text-sm ">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                </p>
-              </div>
-            ))}
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setFullModal(false)}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      </Modal>
-
-      {/* Custom Animation Modal */}
-      <Modal
-        isOpen={customModal}
-        onClose={() => setCustomModal(false)}
-        title="Custom Spring Animation"
-        size="md"
-        springConfig={{
-          type: "spring",
-          stiffness: 200,
-          damping: 25,
-          mass: 1.2,
-        }}
-      >
-        <div className="space-y-4">
-          <p className="">
-            This modal uses custom spring configuration for a more bouncy,
-            playful animation. You can customize stiffness, damping, and mass
-            values.
-          </p>
-          <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <h4 className="font-semibold text-yellow-800">Custom Springs</h4>
-            <p className="text-sm text-yellow-700">
-              Stiffness: 200, Damping: 25, Mass: 1.2
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setCustomModal(false)}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      </Modal>
-    </div>
-  );
-};

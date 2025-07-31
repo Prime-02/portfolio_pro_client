@@ -119,9 +119,9 @@ export const PostAllData = async <
 
 // Enhanced interface with better type constraints
 interface GetAllDataParams<T = Record<string, unknown>> {
-  access: string;
+  access?: string;
   url: string;
-  type: string;
+  type?: string;
   data?: T;
 }
 

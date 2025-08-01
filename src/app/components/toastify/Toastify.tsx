@@ -7,6 +7,7 @@ import React, {
   useEffect,
   ReactNode,
 } from "react";
+import { createPortal } from "react-dom";
 import {
   X,
   CheckCircle,
@@ -360,9 +361,55 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({
   return (
     <ToastContext.Provider value={contextValue}>
       {children}
-      <ToastContainer />
+      <ToastPortal />
     </ToastContext.Provider>
   );
+};
+
+// Portal Hook for creating portal root
+const usePortalRoot = () => {
+  const [portalRoot, setPortalRoot] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    // Check if portal root already exists
+    let root = document.getElementById("toast-portal-root");
+
+    if (!root) {
+      // Create portal root if it doesn't exist
+      root = document.createElement("div");
+      root.id = "toast-portal-root";
+      root.style.position = "fixed";
+      root.style.top = "0";
+      root.style.left = "0";
+      root.style.width = "100%";
+      root.style.height = "100%";
+      root.style.pointerEvents = "none";
+      root.style.zIndex = "9999"; // Extremely high z-index
+      document.body.appendChild(root);
+    }
+
+    setPortalRoot(root);
+
+    // Cleanup function to remove the portal root when no longer needed
+    return () => {
+      // We don't remove the root here because other toast instances might be using it
+      // The root will be cleaned up when the page unloads
+    };
+  }, []);
+
+  return portalRoot;
+};
+
+// Toast Portal Component
+const ToastPortal: React.FC = () => {
+  const { toasts } = useToast();
+  const portalRoot = usePortalRoot();
+
+  if (!portalRoot) {
+    return null;
+  }
+
+  return createPortal(<ToastContainer />, portalRoot);
 };
 
 // Toast Container Component
@@ -382,7 +429,7 @@ const ToastContainer: React.FC = () => {
   );
 
   const getPositionClasses = (position: ToastPosition): string => {
-    const baseClasses = "fixed z-50 pointer-events-none";
+    const baseClasses = "absolute pointer-events-none";
     const positionClasses = {
       "top-left": "top-4 left-4",
       "top-right": "top-4 right-4",

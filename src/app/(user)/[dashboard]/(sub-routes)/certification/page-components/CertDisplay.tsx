@@ -35,6 +35,7 @@ const CertDisplay = () => {
 
   // Theme-based classes
   const getThemeClasses = () => {
+    if (typeof window === "undefined") return;
     const isDark =
       themeVariant === "dark" ||
       (themeVariant === "system" &&
@@ -91,12 +92,10 @@ const CertDisplay = () => {
         <header className="p-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4 mb-6">
             <div>
-              <h2
-                className={`text-2xl sm:text-3xl font-semibold ${theme.headerTitle}`}
-              >
+              <h2 className={`text-2xl sm:text-3xl font-semibold`}>
                 {`Certificates & Awards`}
               </h2>
-              <p className={`opacity-70 mt-2 ${theme.headerSubtitle}`}>
+              <p className={`opacity-70 mt-2`}>
                 {`Boost Your Credibility – Upload Verified Certificates & Awards`}
               </p>
             </div>

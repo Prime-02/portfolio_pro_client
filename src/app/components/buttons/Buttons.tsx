@@ -184,7 +184,7 @@ const Button = ({
   // Base classes for all variants
   const baseClasses = `
     cursor-pointer min-w-fit flex items-center justify-center rounded-lg 
-    focus:outline-none transition-all duration-200 font-medium border-2 
+    focus:outline-none transition-all duration-200 font-medium border 
     disabled:cursor-not-allowed active:scale-95 transform
   `
     .replace(/\s+/g, " ")

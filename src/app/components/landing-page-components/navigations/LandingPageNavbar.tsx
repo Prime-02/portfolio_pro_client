@@ -10,7 +10,7 @@ import PortfolioProLogo from "../../logo/PortfolioProLogo";
 import Popover from "../../containers/divs/PopOver";
 import { Bell, ChevronDown } from "lucide-react";
 import { BsFillGrid3X3GapFill } from "react-icons/bs";
-import { SignedIn, SignedOut, SignInButton, SignUpButton } from "@clerk/nextjs";
+import { useAuth } from "@clerk/nextjs";
 import Link from "next/link";
 import Button from "../../buttons/Buttons";
 import Menu from "../../containers/cards/landing-page-nav-cards/Menu";
@@ -21,17 +21,14 @@ const LandingPageNavbar = () => {
   const { theme } = useTheme();
   const { userData } = useGlobalState();
   const [viewportWidth, setViewportWidth] = useState(0);
+  const { isSignedIn } = useAuth();
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       setViewportWidth(window.innerWidth);
-      if (viewportWidth) {
-      }
-
       const handleResize = () => {
         setViewportWidth(window.innerWidth);
       };
-
       window.addEventListener("resize", handleResize);
       return () => window.removeEventListener("resize", handleResize);
     }
@@ -39,14 +36,14 @@ const LandingPageNavbar = () => {
 
   return (
     <div
-      className="min-h-16 w-full h-auto  flex flex-row items-center justify-between py-3 px-4"
+      className="min-h-16 w-full h-auto flex flex-row items-center justify-between py- px-4"
       style={{
         backgroundColor: getColorShade(theme.background, 10),
       }}
     >
       {/* Left section - Logo */}
       <div className="flex-shrink-0">
-        <Link href={"/"} className="">
+        <Link href="/">
           <PortfolioProLogo scale={0.2} />
         </Link>
       </div>
@@ -59,20 +56,9 @@ const LandingPageNavbar = () => {
       </div>
 
       {/* Right section - Auth/User controls */}
-      <div className="flex-shrink-0 ml-4">
-        <SignedOut>
-          <div className="flex gap-x-2 lg:gap-x-3">
-            <SignInButton>
-              <Button variant="outline" size="md" text="Sign In" />
-            </SignInButton>
-            <SignUpButton>
-              <Button variant="primary" size="md" text="Sign Up" />
-            </SignUpButton>
-          </div>
-        </SignedOut>
-
-        <SignedIn>
-          <div className="flex flex-row gap-x-2 lg:gap-x-4">
+      <div className="flex-shrink-0 ml-4 flex flex-row items-center gap-x-2 lg:gap-x-4">
+        {isSignedIn ? (
+          <>
             <span title="Menu">
               <Popover
                 clicker={
@@ -87,7 +73,7 @@ const LandingPageNavbar = () => {
             </span>
             <Link
               title="Notification"
-              href={`/${userData.username}/notifications`}
+              href={`/${userData?.username}/notifications`}
               className="cursor-pointer rounded-full w-12 h-12 flex items-center justify-center bg-[var(--background)]"
             >
               <Bell />
@@ -98,7 +84,7 @@ const LandingPageNavbar = () => {
                 <div className="relative inline-block" title="Profile">
                   <span className="overflow-hidden rounded-full block">
                     <Image
-                      src={getImageSrc(String(userData?.profile_picture))}
+                      src={getImageSrc(userData?.profile_picture || "")}
                       alt="Profile Picture"
                       width={500}
                       height={500}
@@ -114,8 +100,17 @@ const LandingPageNavbar = () => {
             >
               <Profile />
             </Popover>
-          </div>
-        </SignedIn>
+          </>
+        ) : (
+          <>
+            <Link href="/user-auth?auth_mode=login">
+              <Button variant="primary" size="md" text="Sign In" />
+            </Link>
+            <Link href="/user-auth?auth_mode=signup">
+              <Button variant="secondary" size="md" text="Sign Up" />
+            </Link>
+          </>
+        )}
       </div>
     </div>
   );

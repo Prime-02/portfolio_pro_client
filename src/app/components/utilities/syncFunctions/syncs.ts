@@ -221,7 +221,6 @@ type ToastFunction = (message: string) => void;
  */
 export function validateFields<T extends Record<string, unknown>>(
   form: T | null | undefined,
-  toast: ToastFunction,
   allowedEmptyKeys: string[] = []
 ): form is T {
   // Handle null/undefined form
@@ -241,13 +240,13 @@ export function validateFields<T extends Record<string, unknown>>(
 
     // Check for empty strings, null, or undefined
     if (value === "" || value === null || value === undefined) {
-      toast(`Please fill in the ${key} field.`);
+      toast.warning(`Please fill in the ${key} field.`);
       return false;
     }
 
     // Optional: Check for empty arrays/objects if needed
     if (isArray(value) && value.length === 0) {
-      toast(`Please provide at least one item for ${key}.`);
+      toast.warning(`Please provide at least one item for ${key}.`);
       return false;
     }
 
@@ -477,7 +476,6 @@ export function generateSimpleId(): string {
 export function createAddressArrayWithUUID(
   locationData: LocationData[]
 ): AddressItem[] {
-
   return locationData.map((item: LocationData) => {
     const label: string = item.Place.Label;
 
@@ -536,9 +534,14 @@ export function copyToClipboard(text: string): void {
     });
 }
 
-
-
-type UrlPart = 'full' | 'host' | 'path' | 'pathSegment' | 'origin' | 'search' | 'hash';
+type UrlPart =
+  | "full"
+  | "host"
+  | "path"
+  | "pathSegment"
+  | "origin"
+  | "search"
+  | "hash";
 
 /**
  * Gets specific parts of the current page URL
@@ -546,23 +549,26 @@ type UrlPart = 'full' | 'host' | 'path' | 'pathSegment' | 'origin' | 'search' | 
  * @param segmentIndex - When part='pathSegment', the index to retrieve (0-based)
  * @returns The requested URL part as a string
  */
-export function getCurrentUrl(part: UrlPart = 'full', segmentIndex?: number): string {
+export function getCurrentUrl(
+  part: UrlPart = "full",
+  segmentIndex?: number
+): string {
   const url = new URL(window.location.href);
-  
+
   switch (part) {
-    case 'full':
+    case "full":
       return url.href;
-    case 'host':
+    case "host":
       return url.host;
-    case 'origin':
+    case "origin":
       return url.origin;
-    case 'path':
+    case "path":
       return url.pathname;
-    case 'pathSegment':
+    case "pathSegment":
       return getPathSegment(url.pathname, segmentIndex);
-    case 'search':
+    case "search":
       return url.search;
-    case 'hash':
+    case "hash":
       return url.hash;
     default:
       throw new Error(`Invalid URL part requested: ${part}`);
@@ -570,16 +576,16 @@ export function getCurrentUrl(part: UrlPart = 'full', segmentIndex?: number): st
 }
 
 function getPathSegment(pathname: string, index?: number): string {
-  const segments = pathname.split('/').filter(segment => segment !== '');
-  
+  const segments = pathname.split("/").filter((segment) => segment !== "");
+
   if (index === undefined) {
-    return segments.join('/');
+    return segments.join("/");
   }
-  
+
   if (index < 0 || index >= segments.length) {
     throw new Error(`Invalid path segment index: ${index}`);
   }
-  
+
   return segments[index];
 }
 

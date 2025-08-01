@@ -1,4 +1,3 @@
-import { useTheme } from "@/app/components/theme/ThemeContext ";
 import { useGlobalState } from "@/app/globalStateProvider";
 import React, { useEffect, useState } from "react";
 import { SkillsProp } from "./SkillCard";
@@ -7,17 +6,16 @@ import {
   PostAllData,
   UpdateAllData,
 } from "@/app/components/utilities/asyncFunctions/lib/crud";
-import { BASE_URL, V1_BASE_URL } from "@/app/components/utilities/indices/urls";
+import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
 import DataList from "@/app/components/inputs/DataList";
 import { TextArea, Textinput } from "@/app/components/inputs/Textinput";
 import CheckBox from "@/app/components/inputs/CheckBox";
 import { proficiencyLevel } from "@/app/components/utilities/indices/DropDownItems";
 import Dropdown from "@/app/components/inputs/DynamicDropdown";
 import Button from "@/app/components/buttons/Buttons";
+import { validateFields } from "@/app/components/utilities/syncFunctions/syncs";
+import { useTheme } from "@/app/components/theme/ThemeContext ";
 
-interface AddSkillProps extends SkillsProp {
-  onRefresh: () => void;
-}
 const AddSkill = ({ onRefresh }: { onRefresh: () => void }) => {
   const {} = useTheme();
   const {
@@ -37,12 +35,22 @@ const AddSkill = ({ onRefresh }: { onRefresh: () => void }) => {
     category: "",
     subcategory: "",
     description: "",
-    is_trending: false,
-    difficulty_level: "",
     is_major: false,
   });
 
   const addSkill = async () => {
+    if (
+      !validateFields(skillData, [
+        "subcategory",
+        "category",
+        "description",
+        "is_trending",
+        "difficulty_level",
+        "is_major",
+      ])
+    ) {
+      return;
+    }
     setLoading("adding_skill");
     try {
       const skillRes = await PostAllData({
@@ -69,18 +77,15 @@ const AddSkill = ({ onRefresh }: { onRefresh: () => void }) => {
         field: skillData,
         url: `${V1_BASE_URL}/skills/${skillId}`,
       });
+      if (updateRes) {
+        onRefresh();
+        clearQuerryParam();
+      }
     } catch (error) {
       console.log("Error updating skill: ", error);
     } finally {
       setLoading("updating_skill");
     }
-  };
-
-  const handleFeildControl = (field: string, value: string | boolean) => {
-    setSkillData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
   };
 
   const getSkillData = async () => {
@@ -98,8 +103,6 @@ const AddSkill = ({ onRefresh }: { onRefresh: () => void }) => {
           category: skillRes.category || "",
           subcategory: skillRes.subcategory || "",
           description: skillRes.description || "",
-          is_trending: skillRes.is_trending || false,
-          difficulty_level: skillRes.difficulty_level || "",
           is_major: skillRes.is_major || false,
         });
       }
@@ -111,6 +114,7 @@ const AddSkill = ({ onRefresh }: { onRefresh: () => void }) => {
   };
 
   useEffect(() => {
+    unauthorizedWarning();
     if (accessToken && skillId) {
       getSkillData();
     }
@@ -237,7 +241,7 @@ const AddSkill = ({ onRefresh }: { onRefresh: () => void }) => {
           onClick={() => {
             setManualEntry(!manualEntry);
           }}
-          className="text-xs cursor-pointer opacity-80 text-center underline hover:text-[var(--accent)] "
+          className="text-xs cursor-pointer text-center underline text-[var(--accent)] "
         >
           {!manualEntry
             ? "Couldn't find what you do? Enter manully"
@@ -274,8 +278,19 @@ const AddSkill = ({ onRefresh }: { onRefresh: () => void }) => {
       </div>
       <div className="mt-3 w-full flex items-center">
         <Button
-        className="w-full"
-        text="Finish"
+          className="w-full"
+          text={`${skillId ? "Update" : "Upload"}`}
+          onClick={() => {
+            if (skillId) {
+              updateSkillDetail();
+            } else {
+              addSkill();
+            }
+          }}
+          loading={
+            loading.includes("updating_skill") ||
+            loading.includes("adding_skill")
+          }
         />
       </div>
     </div>

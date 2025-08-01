@@ -25,6 +25,7 @@ interface TextInputProps {
   desc?: string;
   ref?: RefObject<HTMLInputElement | null>;
   maxLength?: number;
+  minLength?: number;
   autoComplete?: string;
   inputMode?:
     | "text"
@@ -54,6 +55,7 @@ export const Textinput: React.FC<TextInputProps> = ({
   desc,
   ref,
   maxLength = 100000,
+  minLength = 3,
   autoComplete = "",
   inputMode = "text",
   labelBgHex,
@@ -128,6 +130,7 @@ export const Textinput: React.FC<TextInputProps> = ({
     return (
       <input
         maxLength={maxLength}
+        minLength={minLength}
         autoComplete={autoComplete}
         inputMode={inputMode}
         onKeyDown={onKeyDown}
@@ -184,7 +187,7 @@ export const Textinput: React.FC<TextInputProps> = ({
       {type === "password" && (
         <button
           type="button"
-          className="absolute top-2 right-5 cursor-pointer"
+          className="absolute top-3 right-5 cursor-pointer"
           onClick={toggleShowPassword}
           aria-label={passwordVisible ? "Hide password" : "Show password"}
         >

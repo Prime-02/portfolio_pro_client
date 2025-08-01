@@ -13,7 +13,7 @@ const layout = ({
   return (
     <div className="flex">
       <ProfileSideBar />
-      <div className="px-2  flex-1 mx-auto  max-w-5xl min-w-md overflow-auto mt-5 ">
+      <div className="flex-1 mx-auto  max-w-5xl min-w-md overflow-auto mt-5 ">
         <div
           className="rounded-3xl"
           style={{

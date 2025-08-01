@@ -39,7 +39,7 @@ interface DropdownMenuProps {
   emptyMessage: string;
   valueKey: string;
   displayKey: string;
-  searchInputRef: React.RefObject<HTMLInputElement>;
+  searchInputRef: React.RefObject<HTMLInputElement | null>;
 }
 
 const DropdownMenu: React.FC<DropdownMenuProps> = ({
@@ -88,7 +88,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
     left: triggerRect.left,
     width: triggerRect.width,
     minWidth: "4rem",
-    zIndex: 999999, // Extremely high z-index
+    zIndex: 999999,
     backgroundColor: getColorShade(theme.background, 10),
     ...(position === "top"
       ? { bottom: window.innerHeight - triggerRect.top + 4 }
@@ -105,7 +105,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
         <div className="p-2 relative w-full">
           <Search className="mr-2 h-4 w-4 absolute right-0 top-1/3" />
           <Textinput
-            ref={searchInputRef}
+            ref={searchInputRef as React.RefObject<HTMLInputElement>}
             type="text"
             label="Search..."
             className="w-full"
@@ -158,7 +158,10 @@ const Dropdown: React.FC<DropdownProps> = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [triggerRect, setTriggerRect] = useState<DOMRect | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const [dropdownId] = useState(
+    () => `dropdown-${Math.random().toString(36).substr(2, 9)}`
+  );
 
   useEffect(() => {
     if (value !== undefined && value !== null) {
@@ -181,7 +184,7 @@ const Dropdown: React.FC<DropdownProps> = ({
         dropdownRef.current &&
         !dropdownRef.current.contains(event.target as Node) &&
         !document
-          .querySelector("[data-dropdown-portal]")
+          .querySelector(`[data-dropdown-portal="${dropdownId}"]`)
           ?.contains(event.target as Node)
       ) {
         setIsOpen(false);
@@ -192,9 +195,8 @@ const Dropdown: React.FC<DropdownProps> = ({
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, []);
+  }, [dropdownId]);
 
-  // Update trigger position when opening or on scroll/resize
   useEffect(() => {
     const updateTriggerRect = () => {
       if (dropdownRef.current) {
@@ -277,10 +279,9 @@ const Dropdown: React.FC<DropdownProps> = ({
         </div>
       </div>
 
-      {/* Portal for dropdown menu */}
       {typeof document !== "undefined" &&
         createPortal(
-          <div data-dropdown-portal>
+          <div data-dropdown-portal={dropdownId}>
             <DropdownMenu
               isOpen={isOpen}
               triggerRect={triggerRect}

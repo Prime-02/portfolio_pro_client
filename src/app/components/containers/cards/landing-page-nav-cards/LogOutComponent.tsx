@@ -7,7 +7,7 @@ const LogOutComponent = () => {
     <div className="flex flex-col items-center min-h-full h-auto justify-around">
       <p className="mb-6 font-semibold">Are you sure you want to log out?</p>
       <div>
-        <SignOutButton redirectUrl="/">
+        <SignOutButton redirectUrl="/user-auth?auth_mode=login">
           <Button variant="danger" size="md" text="Proceed?" />
         </SignOutButton>
       </div>

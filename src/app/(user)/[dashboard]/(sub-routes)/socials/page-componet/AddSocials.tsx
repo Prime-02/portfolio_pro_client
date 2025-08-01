@@ -126,7 +126,7 @@ const AddSocials = ({ onRefresh }: { onRefresh: () => void }) => {
                 platform_name: e,
               }));
             }}
-            label="Platform"
+            placeholder="Platform"
             labelBgHex={theme.background}
             labelBgHexIntensity={10}
             type="dropdown"
@@ -142,7 +142,7 @@ const AddSocials = ({ onRefresh }: { onRefresh: () => void }) => {
                 url_type: e,
               }));
             }}
-            label="Platform"
+            placeholder="Url Type"
             labelBgHex={theme.background}
             labelBgHexIntensity={10}
             type="dropdown"

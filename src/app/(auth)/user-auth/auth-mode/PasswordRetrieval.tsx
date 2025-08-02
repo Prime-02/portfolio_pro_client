@@ -208,6 +208,8 @@ const PasswordRetrieval = () => {
 
       {/* Password Reset Modal */}
       <Modal
+        showCloseButton={false}
+        closeOnBackdropClick={false}
         isOpen={showResetModal}
         onClose={handleModalClose}
         title="Create New Password"

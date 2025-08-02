@@ -138,6 +138,8 @@ const SignUp = () => {
     <>
       {/* Verification Modal */}
       <Modal
+        showCloseButton={false}
+        closeOnBackdropClick={false}
         isOpen={verifyEmail}
         onClose={handleModalClose}
         title="Verify Your Email"

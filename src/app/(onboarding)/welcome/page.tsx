@@ -1,16 +1,11 @@
 "use client"
-import { useTheme } from "@/app/components/theme/ThemeContext ";
 import React from "react";
+import Main from "./page-components/Main";
 
 const WelcomePage = () => {
-  const { lightTheme, darkTheme, accentColor } = useTheme();
   return (
     <div>
-      {accentColor.color}
-      {lightTheme.background}
-      {lightTheme.foreground}
-      {darkTheme.background}
-      {darkTheme.foreground}
+      <Main/>
     </div>
   );
 };

@@ -1,39 +1,52 @@
 import { FaCheck } from "react-icons/fa"; // Import the check icon from react-icons
+import { useTheme } from "../theme/ThemeContext ";
 
 interface CheckBoxProps {
   isChecked: boolean;
   setIsChecked: (checked: boolean) => void;
   target?: boolean;
+  id?: string;
 }
 
-const CheckBox = ({ isChecked, setIsChecked, target = false }: CheckBoxProps) => {
+const CheckBox = ({
+  isChecked,
+  setIsChecked,
+  target = false,
+  id = "check",
+}: CheckBoxProps) => {
   const handleCheckboxChange = () => {
     setIsChecked(!isChecked);
   };
-  
+
   const handleCheckboxTarget = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedDate = e.target.checked;
     setIsChecked(selectedDate);
   };
+  const { theme, accentColor } = useTheme();
 
   return (
     <div className="container">
       <div className="checkboxes">
         <div className="check ">
           <input
-            id="check"
+            id={id}
             type="checkbox"
             checked={isChecked}
             onChange={!target ? handleCheckboxChange : handleCheckboxTarget}
             aria-checked={isChecked}
           />
-          <label htmlFor="check" aria-label="Toggle checkbox">
+          <label htmlFor={id} aria-label="Toggle checkbox">
             <div
               className={`box ${
                 isChecked ? "checked" : ""
               } flex items-center justify-center`}
             >
-              {isChecked && <FaCheck className="check-icon" size={15} />}
+              {isChecked && (
+                <FaCheck
+                  className="check-icon text-[var(--accent)] "
+                  size={15}
+                />
+              )}
             </div>
           </label>
         </div>
@@ -59,7 +72,7 @@ const CheckBox = ({ isChecked, setIsChecked, target = false }: CheckBoxProps) =>
 
             &:checked + label .box {
               animation: animOnTransform 0.5s 1 forwards;
-              background: rgba(0, 0, 0, 0.5);
+              background: ${theme.background};
 
               .check-icon {
                 transform: translate(-50%, -50%) scale(1);
@@ -77,7 +90,7 @@ const CheckBox = ({ isChecked, setIsChecked, target = false }: CheckBoxProps) =>
             cursor: pointer;
 
             .box {
-              background: rgba(0, 0, 0, 0.3);
+              background: ${theme.background};
               border-radius: 5px;
               position: relative;
               width: 25px;
@@ -85,7 +98,7 @@ const CheckBox = ({ isChecked, setIsChecked, target = false }: CheckBoxProps) =>
               transition: background 300ms ease;
 
               &:hover {
-                background: rgba(0, 0, 0, 0.5);
+                background: ${theme.background};
               }
 
               .check-icon {

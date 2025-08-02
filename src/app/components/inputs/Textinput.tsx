@@ -39,6 +39,9 @@ interface TextInputProps {
   onKeyDown?: (e: React.KeyboardEvent) => void;
   labelBgHex?: string;
   labelBgHexIntensity?: number;
+  error?: string;
+  loading?: boolean;
+  required?: boolean;
 }
 
 export const Textinput: React.FC<TextInputProps> = ({
@@ -62,6 +65,9 @@ export const Textinput: React.FC<TextInputProps> = ({
   labelBgHexIntensity = 10,
   onClick = () => {},
   onKeyDown = () => {},
+  error = "",
+  loading = false,
+  required = false,
 }) => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const { theme } = useTheme();
@@ -97,6 +103,14 @@ export const Textinput: React.FC<TextInputProps> = ({
   }, []);
 
   const renderInput = () => {
+    if (loading) {
+      return (
+        <div
+          className={`${className} block px-2.5 pb-2.5 pt-4 h-10 w-full text-sm bg-gray-200 dark:bg-gray-700 animate-pulse border-1 border-gray-300 dark:border-gray-600 rounded-full`}
+        />
+      );
+    }
+
     if (type === "dropdown") {
       return (
         <Dropdown
@@ -129,6 +143,7 @@ export const Textinput: React.FC<TextInputProps> = ({
 
     return (
       <input
+        required={required}
         maxLength={maxLength}
         minLength={minLength}
         autoComplete={autoComplete}
@@ -165,6 +180,7 @@ export const Textinput: React.FC<TextInputProps> = ({
   return (
     <div className="relative" ref={wrapperRef}>
       {renderInput()}
+      {error && <span className={"text-red-500 text-xs"}>{error}</span>}
 
       {type !== "dropdown" && type !== "phone" && (
         <label
@@ -184,7 +200,7 @@ export const Textinput: React.FC<TextInputProps> = ({
         </label>
       )}
 
-      {type === "password" && (
+      {type === "password" && !loading && (
         <button
           type="button"
           className="absolute top-3 right-5 cursor-pointer"
@@ -198,11 +214,11 @@ export const Textinput: React.FC<TextInputProps> = ({
       {desc && showDesc && (
         <div
           ref={descRef}
-          className="absolute z-10 w-64 p-3 mt-1 text-sm text-gray-700 bg-white border border-gray-200 rounded-lg shadow-lg dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600"
+          className="absolute z-10 w-64 p-3 mt-1 text-sm rounded-lg shadow-lg bg-[var(--background)] border-[var(--accent)] border "
           style={{ bottom: "100%", left: 0 }}
         >
           {desc}
-          <div className="absolute w-4 h-4 transform rotate-45 bg-white dark:bg-gray-800 -bottom-1 left-4 border-b border-r border-gray-200 dark:border-gray-600"></div>
+          <div className="absolute w-4 h-4 transform rotate-45  bg-[var(--background)] border-[var(--accent)]  -bottom-1 left-4 border-b border-r "></div>
         </div>
       )}
     </div>
@@ -221,6 +237,7 @@ interface TextAreaProps {
   maxLength?: number;
   showLimit?: string;
   desc?: string | Element;
+  loading?: boolean;
 }
 
 export const TextArea: React.FC<TextAreaProps> = ({
@@ -235,46 +252,57 @@ export const TextArea: React.FC<TextAreaProps> = ({
   maxLength = 500,
   showLimit = true,
   desc,
+  loading = false,
 }) => {
   const { theme } = useTheme();
   return (
     <div className="relative h-full">
-      <textarea
-        maxLength={maxLength}
-        value={value}
-        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-          onChange(e.target.value)
-        }
-        id={id}
-        className={`${className} rounded-2xl  block px-2.5 pb-2.5 pt-4 w-full text-sm bg-transparent border-1 border-gray-300 appearance-none dark:border-gray-600 dark:focus:border-[var(--accent)] focus:outline-none focus:ring-0 focus:border-[var(--accent)] peer`}
-        placeholder=" "
-        required
-      ></textarea>
-      <label
-        htmlFor={id}
-        className={`absolute text-sm dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] px-2 peer-focus:px-2 peer-focus:text-[var(--accent)] peer-focus:dark:text-[var(--accent)] peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1 ${
-          labelStyle ? labelStyle : `card`
-        }`}
-        style={{
-          backgroundColor:
-            (labelBgHex || theme.background) && labelBgHexIntensity
-              ? getColorShade(
-                  labelBgHex || theme.background,
-                  labelBgHexIntensity
-                )
-              : "none",
-        }}
-      >
-        {label}
-      </label>
-      {showLimit && (
-        <span
-          className={`absolute bottom-2 right-4 font-thin  text-xs ${value?.length === maxLength ? "text-red-500" : "opacity-25"} `}
-        >
-          {value?.length}/{maxLength}
-        </span>
+      {loading ? (
+        <div
+          className={`${className} rounded-2xl block px-2.5 pb-2.5 pt-4 w-full h-24 text-sm bg-gray-200 dark:bg-gray-700 animate-pulse border-1 border-gray-600`}
+        />
+      ) : (
+        <>
+          <textarea
+            maxLength={maxLength}
+            value={value}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+              onChange(e.target.value)
+            }
+            id={id}
+            className={`${className} rounded-2xl block px-2.5 pb-2.5 pt-4 w-full text-sm bg-transparent border-1 border-gray-300 appearance-none dark:border-gray-600 dark:focus:border-[var(--accent)] focus:outline-none focus:ring-0 focus:border-[var(--accent)] peer`}
+            placeholder=" "
+            required
+          ></textarea>
+          <label
+            htmlFor={id}
+            className={`absolute text-sm dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] px-2 peer-focus:px-2 peer-focus:text-[var(--accent)] peer-focus:dark:text-[var(--accent)] peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1 ${
+              labelStyle ? labelStyle : `card`
+            }`}
+            style={{
+              backgroundColor:
+                (labelBgHex || theme.background) && labelBgHexIntensity
+                  ? getColorShade(
+                      labelBgHex || theme.background,
+                      labelBgHexIntensity
+                    )
+                  : "none",
+            }}
+          >
+            {label}
+          </label>
+          {showLimit && (
+            <span
+              className={`absolute bottom-2 right-4 font-thin text-xs ${
+                value?.length === maxLength ? "text-red-500" : "opacity-25"
+              } `}
+            >
+              {value?.length}/{maxLength}
+            </span>
+          )}
+          <p className="text-xs opacity-80">{desc as ReactNode}</p>
+        </>
       )}
-      <p className="text-xs opacity-80">{desc as ReactNode}</p>
     </div>
   );
 };

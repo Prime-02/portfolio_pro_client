@@ -5,6 +5,7 @@ import { getColorShade } from "../utilities/syncFunctions/syncs";
 
 type ButtonProps = {
   icon?: ReactNode;
+  icon2?: ReactNode;
   onClick?: (event: MouseEvent<HTMLButtonElement>) => void;
   className?: string;
   text?: string;
@@ -132,6 +133,7 @@ const generateColorPalette = (
 
 const Button = ({
   icon,
+  icon2,
   onClick,
   className = "",
   text = "",
@@ -176,6 +178,9 @@ const Button = ({
 
   // Size configurations
   const sizeClasses = {
+    "3xs": "px-1 py-0.5 text-2xs min-h-4 gap-0.5",
+    xxs: "px-1.5 py-0.75 text-2xs min-h-5 gap-0.75",
+    xs: "px-2 py-1 text-xs min-h-6 gap-1",
     sm: "px-3 py-1.5 text-sm min-h-8 gap-1.5",
     md: "px-4 py-2 text-base min-h-10 gap-2",
     lg: "px-6 py-3 text-lg min-h-12 gap-2.5",
@@ -192,13 +197,12 @@ const Button = ({
 
   // Get current interaction state
   const getCurrentState = () => {
-    if (disabled || loading) return "disabled";
+    if (disabled) return "disabled"; // Only disabled prop triggers "disabled" state
     if (isActive) return "active";
     if (isHovered) return "hovered";
     if (isFocused) return "focused";
     return "default";
   };
-
   // Generate dynamic styles based on variant and state
   const getDynamicStyles = () => {
     const currentState = getCurrentState();
@@ -394,6 +398,17 @@ const Button = ({
               }}
             >
               {text}
+            </span>
+          )}
+          {icon2 && (
+            <span
+              className="flex-shrink-0 transition-transform duration-200"
+              style={{
+                transform:
+                  getCurrentState() === "active" ? "scale(0.9)" : "scale(1)",
+              }}
+            >
+              {icon2}
             </span>
           )}
         </>

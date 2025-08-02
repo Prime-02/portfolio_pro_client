@@ -15,7 +15,7 @@ import {
   GetAllData,
   PostAllData,
 } from "./components/utilities/asyncFunctions/lib/crud";
-import { BASE_URL } from "./components/utilities/indices/urls";
+import { BASE_URL, V1_BASE_URL } from "./components/utilities/indices/urls";
 import {
   AuthTokenResponse,
   User,
@@ -79,6 +79,7 @@ interface GlobalStateContextType {
   extendRouteWithQuery: (newParams: Record<string, string>) => void;
   clearQuerryParam: () => void;
   unauthorizedWarning: () => void;
+  checkUsernameAvailability: (username: string) => Promise<boolean | undefined>;
 }
 
 // Context initialization
@@ -254,6 +255,28 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const checkUsernameAvailability = async (username: string) => {
+    if (!username) {
+      toast.error("No username provided");
+      return;
+    }
+    setLoading("checking_username");
+    try {
+      const isAvailable: { available: boolean } = await GetAllData({
+        access: accessToken,
+        url: `${V1_BASE_URL}/user-multistep-form/check-username?username=${username}`,
+      });
+      if (isAvailable && isAvailable.available) {
+        return isAvailable.available;
+      }
+    } catch (error) {
+      console.log("Error checking username:", error);
+      return false;
+    } finally {
+      setLoading("checking_username");
+    }
+  };
+
   const contextValue: GlobalStateContextType = {
     clerkUserData,
     userData,
@@ -272,6 +295,7 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
     extendRouteWithQuery,
     clearQuerryParam,
     unauthorizedWarning,
+    checkUsernameAvailability,
   };
 
   return (

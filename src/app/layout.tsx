@@ -121,12 +121,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider
-      signInUrl="/login"
-      signUpUrl="/signup"
-      signUpForceRedirectUrl={`/dashboard`}
-      signInForceRedirectUrl={"/dashboard"}
-    >
+    <ClerkProvider>
       <html lang="en">
         <head>
           {/* Additional SEO meta tags */}

@@ -24,7 +24,7 @@ export default function Home() {
         </div>
         <SignedOut>
           <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-            <Link href="/user-auth">
+            <Link href="/user-auth?auth_mode=signup">
               <Button
                 variant="primary"
                 size="md"

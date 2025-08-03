@@ -11,14 +11,10 @@ import { accountBasics } from "@/app/components/utilities/indices/MultiStepWrite
 import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
 import { removeEmptyStringValues } from "@/app/components/utilities/syncFunctions/syncs";
 import { useGlobalState } from "@/app/globalStateProvider";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import React, { useEffect, useState, useCallback } from "react";
+import TemplateStructure from "./TemplateStructure";
 
-type Props = {
-  setStep: (step: string) => void;
-};
-
-const Step1 = (props: Props) => {
+const Step1 = () => {
   const {
     accessToken,
     extendRouteWithQuery,
@@ -84,39 +80,38 @@ const Step1 = (props: Props) => {
     }
   };
 
-  // Debounced username checking
-  const checkUsername = useCallback(async (username: string) => {
-    if (!username || username.length < 3) {
-      setUsernameAvailable("");
-      return;
-    }
-    try {
-      const isAvailable = await checkUsernameAvailability(username);
-      console.log(isAvailable);
-
-      if (!isAvailable) {
-        setUsernameAvailable("This username is already taken");
-        setFormErrors((prev) => ({
-          ...prev,
-          username: "This username is already taken",
-        }));
-      } else {
+  const checkUsername = useCallback(
+    async (username: string) => {
+      if (!username || username.length < 3) {
         setUsernameAvailable("");
+        return;
+      }
+      try {
+        const isAvailable = await checkUsernameAvailability(username);
+        if (!isAvailable && formData.username !== userData.username) {
+          setUsernameAvailable("This username is already taken");
+          setFormErrors((prev) => ({
+            ...prev,
+            username: "This username is already taken",
+          }));
+        } else {
+          setUsernameAvailable("");
+          setFormErrors((prev) => ({
+            ...prev,
+            username: "",
+          }));
+        }
+      } catch (error) {
+        console.error("Error checking username:", error);
+        setUsernameAvailable("Error checking username availability");
         setFormErrors((prev) => ({
           ...prev,
-          username: "",
+          username: "Error checking username availability",
         }));
       }
-    } catch (error) {
-      console.error("Error checking username:", error);
-      setUsernameAvailable("Error checking username availability");
-      setFormErrors((prev) => ({
-        ...prev,
-        username: "Error checking username availability",
-      }));
-    } finally {
-    }
-  }, []);
+    },
+    [formData.username]
+  );
 
   // Debounce username checking
   useEffect(() => {
@@ -159,6 +154,7 @@ const Step1 = (props: Props) => {
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
+
   const updateStepOneData = async () => {
     // Validate form before submission
     if (!validateForm()) {
@@ -195,8 +191,6 @@ const Step1 = (props: Props) => {
           title: "Success",
         });
 
-        // Navigate to next step
-        props.setStep("2");
         extendRouteWithQuery({ step: "2" });
       }
     } catch (error) {
@@ -244,49 +238,22 @@ const Step1 = (props: Props) => {
   };
 
   return (
-    <div className="h-auto p-4 md:p-8 flex flex-col gap-y-5">
-      <nav className="w-full h-auto flex items-center justify-between">
-        <Button
-          icon={<ChevronLeft size={14} />}
-          text="Back"
-          onClick={handleBack}
-          variant="outline"
-          size="sm"
-        />
-
-        <Button
-          icon2={<ChevronRight size={14} />}
-          text="Skip"
-          onClick={handleSkip}
-          variant="outline"
-          size="sm"
-        />
-      </nav>
-
-      <div className="w-full flex items-center justify-between">
-        <span className="flex flex-col justify-start">
-          <p className="text-sm opacity-65">Step {accountBasics.step}/5</p>
-          <h1 className="text-4xl md:text-6xl font-semibold">
-            {accountBasics.title}
-          </h1>
-          <h3 className="text-sm opacity-65">{accountBasics.description}</h3>
-        </span>
-        <span></span>
-      </div>
-
-      <span className="h-[0.2px] w-full bg-[var(--accent)]"></span>
-
-      <div className="flex flex-col md:flex-row items-center justify-between gap-x-4">
-        <div className="hidden md:flex max-w-sm flex-col gap-y-3">
-          <h3 className="font-semibold">{accountBasics.greeting}</h3>
-          <div className="font-thin opacity-70 text-sm">
-            {accountBasics.page_writeup}
-          </div>
-        </div>
-
+    <TemplateStructure
+      step={String(accountBasics.step)}
+      title={accountBasics.title}
+      headerDescription={accountBasics.description}
+      headerAlignment="left" // Align header to the left as per original Step1
+      greeting={accountBasics.greeting}
+      pageWriteup={accountBasics.page_writeup}
+      additionalContent={<div className="border h-full w-full"></div>}
+      onBack={handleBack}
+      onSkip={handleSkip}
+      arrangement="A-D-B-C" // Default arrangement: Header top, Description left, Form right
+      children={
         <div className="w-full md:w-md flex flex-col gap-y-4 p-4">
           <div className="w-full">
             <Textinput
+              loading={loading.includes("fetching_step1_data")}
               labelBgHexIntensity={1}
               value={formData.username}
               onChange={(e: string) => {
@@ -303,13 +270,16 @@ const Step1 = (props: Props) => {
               minLength={accountBasics.fields[0]?.constraints?.min_length}
               maxLength={accountBasics.fields[0]?.constraints?.max_length}
               desc={accountBasics.fields[0]?.description}
-              error={formErrors.username || usernameAvailable}
+              error={formErrors.username}
             />
           </div>
+
+          {/* {String(formData.username === userData.username)} */}
 
           <div className="flex flex-col gap-y-4 md:gap-x-1 md:flex-row justify-between w-full">
             <span className="min-w-1/2">
               <Textinput
+                loading={loading.includes("fetching_step1_data")}
                 labelBgHexIntensity={1}
                 value={formData.firstname}
                 onChange={(e: string) => {
@@ -327,6 +297,7 @@ const Step1 = (props: Props) => {
             </span>
             <span>
               <Textinput
+                loading={loading.includes("fetching_step1_data")}
                 labelBgHexIntensity={1}
                 value={formData.lastname}
                 onChange={(e: string) => {
@@ -346,6 +317,7 @@ const Step1 = (props: Props) => {
 
           <div className="w-full">
             <Textinput
+              loading={loading.includes("fetching_step1_data")}
               labelBgHexIntensity={1}
               value={formData.phone_number}
               onChange={(e: string) => {
@@ -387,24 +359,22 @@ const Step1 = (props: Props) => {
               </p>
             )}
 
-            <span className="w-full mt-4 flex-1 flex items-center justify-end">
-              <Button
-                variant="primary"
-                size="md"
-                icon2={<ChevronRight size={20} />}
-                text="Next"
-                disabled={
-                  !isFormValid() || loading.includes("updating_step1_data")
-                }
-                loading={loading.includes("updating_step1_data")}
-                onClick={updateStepOneData}
-              />
-            </span>
+            <span className="w-full mt-4 flex-1 flex items-center justify-end"></span>
+            <Button
+              variant="primary"
+              size="md"
+              text="Submit & Continue"
+              className="w-full"
+              disabled={
+                !isFormValid() || loading.includes("updating_step1_data")
+              }
+              loading={loading.includes("updating_step1_data")}
+              onClick={updateStepOneData}
+            />
           </div>
         </div>
-        <div></div>
-      </div>
-    </div>
+      }
+    />
   );
 };
 

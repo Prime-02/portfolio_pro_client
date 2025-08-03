@@ -238,6 +238,7 @@ interface TextAreaProps {
   showLimit?: string;
   desc?: string | Element;
   loading?: boolean;
+  required?: boolean;
 }
 
 export const TextArea: React.FC<TextAreaProps> = ({
@@ -253,6 +254,7 @@ export const TextArea: React.FC<TextAreaProps> = ({
   showLimit = true,
   desc,
   loading = false,
+  required = false,
 }) => {
   const { theme } = useTheme();
   return (
@@ -272,7 +274,7 @@ export const TextArea: React.FC<TextAreaProps> = ({
             id={id}
             className={`${className} rounded-2xl block px-2.5 pb-2.5 pt-4 w-full text-sm bg-transparent border-1 border-gray-300 appearance-none dark:border-gray-600 dark:focus:border-[var(--accent)] focus:outline-none focus:ring-0 focus:border-[var(--accent)] peer`}
             placeholder=" "
-            required
+            required={required}
           ></textarea>
           <label
             htmlFor={id}
@@ -293,8 +295,8 @@ export const TextArea: React.FC<TextAreaProps> = ({
           </label>
           {showLimit && (
             <span
-              className={`absolute bottom-2 right-4 font-thin text-xs ${
-                value?.length === maxLength ? "text-red-500" : "opacity-25"
+              className={`absolute z-10 bg-[var(--background)] bottom-4.5 right-4 font-thin text-xs ${
+                value?.length === maxLength ? "text-red-500" : "px-1 rounded-sm "
               } `}
             >
               {value?.length}/{maxLength}

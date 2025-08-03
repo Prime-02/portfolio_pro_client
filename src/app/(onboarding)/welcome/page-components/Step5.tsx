@@ -1,9 +1,7 @@
 import React from "react";
 
-type Props = {
-  setStep: (step: string) => void;
-};
-const Step5 = (props: Props) => {
+
+const Step5 = () => {
   return <div>Step5</div>;
 };
 

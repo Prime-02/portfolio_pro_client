@@ -37,7 +37,7 @@ const CheckBox = ({
           />
           <label htmlFor={id} aria-label="Toggle checkbox">
             <div
-              className={`box ${
+              className={`box border border-[var(--accent)] ${
                 isChecked ? "checked" : ""
               } flex items-center justify-center`}
             >

@@ -6,35 +6,24 @@ import Step3 from "./Step3";
 import Step4 from "./Step4";
 import Step5 from "./Step5";
 
-type Props = {};
-
-const Main = (props: Props) => {
-  const { searchParams, extendRouteWithQuery } = useGlobalState();
-  const [currentStep, setCurrentStep] = useState(
-    searchParams.get("step") || "1"
-  );
-
-  useEffect(() => {
-    if (!searchParams.get("step")) {
-      extendRouteWithQuery({ step: "1" });
-      setCurrentStep("1");
-    }
-  }, [searchParams, extendRouteWithQuery]);
+const Main = () => {
+  const { searchParams } = useGlobalState();
+  const currentStep = searchParams.get("step") || "1";
 
   const renderStep = () => {
     switch (currentStep) {
       case "1":
-        return <Step1 setStep={setCurrentStep} />;
+        return <Step1 />;
       case "2":
-        return <Step2 setStep={setCurrentStep} />;
+        return <Step2 />;
       case "3":
-        return <Step3 setStep={setCurrentStep} />;
+        return <Step3 />;
       case "4":
-        return <Step4 setStep={setCurrentStep} />;
+        return <Step4 />;
       case "5":
-        return <Step5 setStep={setCurrentStep} />;
+        return <Step5 />;
       default:
-        return <Step1 setStep={setCurrentStep} />;
+        return <Step1 />;
     }
   };
 

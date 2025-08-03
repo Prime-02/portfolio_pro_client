@@ -84,10 +84,13 @@ export const professionalInformation = {
   step: 2,
   title: "Professional Information",
   description: "Share your professional background to showcase your expertise.",
+  greeting:
+    "Congratulations on making it to the second step of creating your professional portfolio!",
   page_writeup:
     "In this step, tell us about your professional journey. Whether you're a seasoned expert or just starting out, these details help potential employers or collaborators understand your skills and career goals. Only your job seeking status is required; other fields can be filled in to enhance your profile's appeal.",
   fields: [
     {
+      index: 0,
       name: "profession",
       type: "string",
       required: false,
@@ -98,6 +101,7 @@ export const professionalInformation = {
       },
     },
     {
+      index: 1,
       name: "job_title",
       type: "string",
       required: false,
@@ -108,6 +112,7 @@ export const professionalInformation = {
       },
     },
     {
+      index: 2,
       name: "years_of_experience",
       type: "number",
       required: false,
@@ -118,6 +123,7 @@ export const professionalInformation = {
       },
     },
     {
+      index: 3,
       name: "bio",
       type: "string",
       required: false,
@@ -128,28 +134,51 @@ export const professionalInformation = {
       },
     },
     {
+      index: 4,
       name: "job_seeking_status",
-      type: "enum",
+      type: "dropdown",
       required: true,
       description: "Your current job seeking status.",
       constraints: {
         enum_values: [
-          "not_seeking",
-          "open_to_opportunities",
-          "actively_seeking",
+          { id: "actively_looking", code: "Actively Looking" },
+          { id: "open_to_opportunities", code: "Open to Opportunities" },
+          { id: "passively_looking", code: "Passively Looking" },
+          { id: "not_looking_but_open", code: "Not Looking, But Open" },
+          { id: "not_seeking", code: "Not Seeking" },
+          { id: "available_immediately", code: "Available Immediately" },
+          { id: "seeking_internship", code: "Seeking Internship" },
+          { id: "freelance", code: "Freelance" },
+          { id: "exploring_career_change", code: "Exploring Career Change" },
+          { id: "networking_only", code: "Networking Only" },
+          { id: "on_hold", code: "On Hold" },
         ],
       },
     },
     {
+      index: 5,
       name: "preferred_work_type",
       type: "enum",
       required: false,
       description: "Preferred type of work (e.g., full-time, freelance).",
       constraints: {
-        enum_values: ["full_time", "part_time", "contract", "freelance"],
+        enum_values: [
+          { id: "full_time", code: "Full Time" },
+          { id: "part_time", code: "Part Time" },
+          { id: "contract", code: "Contract" },
+          { id: "freelance", code: "Freelance" },
+          { id: "internship", code: "Internship" },
+          { id: "temporary", code: "Temporary" },
+          { id: "seasonal", code: "Seasonal" },
+          { id: "volunteer", code: "Volunteer" },
+          { id: "apprenticeship", code: "Apprenticeship" },
+          { id: "remote", code: "Remote" },
+          { id: "hybrid", code: "Hybrid" },
+        ],
       },
     },
     {
+      index: 6,
       name: "open_to_work",
       type: "boolean",
       required: false,
@@ -157,13 +186,40 @@ export const professionalInformation = {
       constraints: {},
     },
     {
+      index: 7,
       name: "availability",
-      type: "string",
+      type: "dropdown",
       required: false,
       description:
-        "Your availability (e.g., 'Immediate' or '1 month notice'). Maximum 255 characters.",
+        "Your availability (e.g., 'Immediate', '1 month notice', etc.). Maximum 255 characters.",
       constraints: {
         max_length: 255,
+        enum: [
+          {
+            id: "immediate",
+            code: "Immediate",
+          },
+          {
+            id: "1_month",
+            code: "1 month notice",
+          },
+          {
+            id: "2_months",
+            code: "2 months notice",
+          },
+          {
+            id: "3_months",
+            code: "3 months notice",
+          },
+          {
+            id: "negotiable",
+            code: "Negotiable",
+          },
+          {
+            id: "unavailable",
+            code: "Currently unavailable",
+          },
+        ],
       },
     },
   ],
@@ -448,14 +504,14 @@ export const onboardingSteps = [
     ],
   },
   {
-    step: 5,
+    step: "5",
     title: "Appearance and Finalization",
     description: "Personalize the look and feel of your profile.",
     icons: [
       { icon: FaPalette, label: "Theme" },
       { icon: FaLanguage, label: "Language" },
       { icon: FaCheckCircle, label: "Completion" },
-      { icon: FaBrush, label: "Completion" },
+      { icon: FaBrush, label: "Customization" }, // Changed label to avoid duplication
     ],
   },
 ];

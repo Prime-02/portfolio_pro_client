@@ -38,6 +38,7 @@ interface DropdownMenuProps {
   type?: string;
   emptyMessage: string;
   valueKey: string;
+  placeholder: string;
   displayKey: string;
   searchInputRef: React.RefObject<HTMLInputElement | null>;
 }
@@ -56,6 +57,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
   valueKey,
   displayKey,
   searchInputRef,
+  placeholder,
 }) => {
   const [position, setPosition] = useState<"top" | "bottom">("bottom");
   const menuRef = useRef<HTMLDivElement>(null);
@@ -117,6 +119,18 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
 
       {filteredOptions.length > 0 ? (
         <div className="max-h-60 p-2 overflow-y-auto">
+          <div
+            key="none"
+            className="p-2 hover:bg-[var(--accent)] cursor-pointer rounded-lg"
+            onClick={() =>
+              handleSelect({
+                [valueKey]: "",
+                [displayKey]: `${placeholder}`,
+              } as DropdownOption)
+            }
+          >
+            None
+          </div>
           {filteredOptions.map((option) => (
             <div
               key={String(option[valueKey])}
@@ -157,6 +171,7 @@ const Dropdown: React.FC<DropdownProps> = ({
   );
   const [searchQuery, setSearchQuery] = useState("");
   const [triggerRect, setTriggerRect] = useState<DOMRect | null>(null);
+  const [mounted, setMounted] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const [dropdownId] = useState(
@@ -164,14 +179,25 @@ const Dropdown: React.FC<DropdownProps> = ({
   );
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
     if (value !== undefined && value !== null) {
-      const foundOption = options.find(
-        (option) => String(option[valueKey]) === String(value)
-      );
-      if (foundOption) {
-        setSelectedOption(foundOption);
+      if (value === "") {
+        setSelectedOption({
+          [valueKey]: "",
+          [displayKey]: placeholder,
+        } as DropdownOption);
       } else {
-        setSelectedOption(null);
+        const foundOption = options.find(
+          (option) => String(option[valueKey]) === String(value)
+        );
+        if (foundOption) {
+          setSelectedOption(foundOption);
+        } else {
+          setSelectedOption(null);
+        }
       }
     } else {
       setSelectedOption(null);
@@ -179,6 +205,8 @@ const Dropdown: React.FC<DropdownProps> = ({
   }, [value, options, valueKey]);
 
   useEffect(() => {
+    if (!mounted) return;
+
     const handleClickOutside = (event: MouseEvent) => {
       if (
         dropdownRef.current &&
@@ -195,9 +223,11 @@ const Dropdown: React.FC<DropdownProps> = ({
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [dropdownId]);
+  }, [dropdownId, mounted]);
 
   useEffect(() => {
+    if (!mounted) return;
+
     const updateTriggerRect = () => {
       if (dropdownRef.current) {
         setTriggerRect(dropdownRef.current.getBoundingClientRect());
@@ -219,7 +249,7 @@ const Dropdown: React.FC<DropdownProps> = ({
         window.removeEventListener("resize", handleReposition);
       };
     }
-  }, [isOpen]);
+  }, [isOpen, mounted]);
 
   if (!Array.isArray(options)) {
     console.error("Dropdown options must be an array");
@@ -279,10 +309,12 @@ const Dropdown: React.FC<DropdownProps> = ({
         </div>
       </div>
 
-      {typeof document !== "undefined" &&
+      {mounted &&
+        typeof document !== "undefined" &&
         createPortal(
           <div data-dropdown-portal={dropdownId}>
             <DropdownMenu
+              placeholder={placeholder}
               isOpen={isOpen}
               triggerRect={triggerRect}
               options={options}

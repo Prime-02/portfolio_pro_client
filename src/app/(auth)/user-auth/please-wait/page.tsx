@@ -16,7 +16,12 @@ export default function Page() {
         </div>
         <div className="h-auto mx-auto flex flex-col items-center">
           <div>
-            <PortfolioProLogo reanimateDelay={1000} />
+            <PortfolioProLogo
+            tracking={0.2}
+            scale={0.75}
+            fontWeight={"extrabold"}
+            reanimateDelay={3000}
+          />
           </div>
           <p className="font-semibold">
             {"Please wait... we are validating your credentials  "}

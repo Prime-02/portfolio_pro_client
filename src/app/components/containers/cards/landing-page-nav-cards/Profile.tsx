@@ -21,7 +21,7 @@ import Link from "next/link";
 import Image from "next/image";
 
 const Profile = () => {
-  const { userData } = useGlobalState();
+  const { userData, clerkUserData } = useGlobalState();
   const { theme } = useTheme();
   const [activeTab, setActiveTab] = useState("");
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -104,7 +104,13 @@ const Profile = () => {
                 height={100}
               />
               <span className="flex flex-col">
-                <h3 className="text-lg font-semibold">{userData.username}</h3>
+                <h3 className="text-lg font-semibold">
+                  {userData.username
+                    ? userData.username
+                    : clerkUserData.user?.id && !userData.username
+                      ? "Your Porfile Is Incomplete"
+                      : "Sign Up"}
+                </h3>
                 <span className="flex gap-x-2">
                   <p>{userData.firstname}</p>
                   <p>{userData.lastname}</p>
@@ -114,14 +120,20 @@ const Profile = () => {
           </div>
           <span className="w-[80%] mx-auto h-[0.5px] bg-[var(--foreground)]"></span>
           <Link
-            href={`/${userData.username}/profile`}
+            href={`/${
+              userData.username
+                ? userData.username
+                : clerkUserData.user?.id && !userData.username
+                  ? "welcome"
+                  : "/user-auth?auth_mode=signup"
+            }`}
             className="w-full flex"
           >
             <Button
               variant="outline"
               className="w-full"
               size="md"
-              text="View Your Profile"
+              text={`${userData.username ? "View Your Profile" : "Set Up Your Profile"}`}
             />
           </Link>
         </div>

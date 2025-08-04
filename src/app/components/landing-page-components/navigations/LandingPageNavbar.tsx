@@ -8,7 +8,7 @@ import { useTheme } from "../../theme/ThemeContext ";
 import { useGlobalState } from "@/app/globalStateProvider";
 import PortfolioProLogo from "../../logo/PortfolioProLogo";
 import Popover from "../../containers/divs/PopOver";
-import { Bell, ChevronDown } from "lucide-react";
+import { Bell, ChevronDown, Search, X } from "lucide-react";
 import { BsFillGrid3X3GapFill } from "react-icons/bs";
 import { useAuth } from "@clerk/nextjs";
 import Link from "next/link";
@@ -21,7 +21,10 @@ const LandingPageNavbar = () => {
   const { theme } = useTheme();
   const { userData } = useGlobalState();
   const [viewportWidth, setViewportWidth] = useState(0);
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
   const { isSignedIn } = useAuth();
+
+  const isMobile = viewportWidth < 768; // md breakpoint
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -34,29 +37,71 @@ const LandingPageNavbar = () => {
     }
   }, []);
 
+  // Close mobile search when viewport changes to desktop
+  useEffect(() => {
+    if (!isMobile && showMobileSearch) {
+      setShowMobileSearch(false);
+    }
+  }, [isMobile, showMobileSearch]);
+
   return (
     <div
-      className="min-h-16 w-full h-auto flex flex-row items-center justify-between py- px-4"
+      className="min-h-16 w-full h-auto flex flex-row items-center justify-between px-4 md:px-8"
       style={{
         backgroundColor: getColorShade(theme.background, 10),
       }}
     >
+      {/* Mobile Search Overlay */}
+      {isMobile && showMobileSearch && (
+        <div
+          className="absolute top-0 left-0 right-0 z-50 p-4 flex items-center gap-2"
+          style={{
+            backgroundColor: getColorShade(theme.background, 10),
+            minHeight: "4rem",
+          }}
+        >
+          <div className="flex-1">
+            <AbsoluteSearch />
+          </div>
+          <button
+            onClick={() => setShowMobileSearch(false)}
+            className="p-2 rounded-full hover:bg-opacity-80 transition-colors"
+            title="Close search"
+          >
+            <X size={24} />
+          </button>
+        </div>
+      )}
+
       {/* Left section - Logo */}
-      <div className="flex-shrink-0">
+      <div className="flex items-center">
         <Link href="/">
           <PortfolioProLogo scale={0.2} />
         </Link>
-      </div>
 
-      {/* Center section - Search (Enhanced width) */}
-      <div className="flex-1 flex justify-center px-4 min-w-0">
-        <div className="w-full max-w-3xl lg:max-w-4xl xl:max-w-5xl">
-          <AbsoluteSearch />
-        </div>
+        {/* Desktop Search - Hidden on mobile */}
+        {!isMobile && (
+          <div className="flex-1 flex justify-center px-4 min-w-0">
+            <div className="w-full max-w-3xl lg:max-w-4xl xl:max-w-5xl">
+              <AbsoluteSearch />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Right section - Auth/User controls */}
       <div className="flex-shrink-0 ml-4 flex flex-row items-center gap-x-2 lg:gap-x-4">
+        {/* Mobile Search Icon - Only visible on mobile */}
+        {isMobile && (
+          <button
+            onClick={() => setShowMobileSearch(true)}
+            className="p-2 rounded-full hover:bg-opacity-80 transition-colors"
+            title="Search"
+          >
+            <Search size={24} />
+          </button>
+        )}
+
         {isSignedIn ? (
           <>
             <span title="Menu">
@@ -104,7 +149,7 @@ const LandingPageNavbar = () => {
         ) : (
           <>
             <Link href="/user-auth?auth_mode=login">
-              <Button variant="ghost" size="md" text="Sign in to console" />
+              <Button variant="outline" size="md" text="Sign in to console" />
             </Link>
             <Link href="/user-auth?auth_mode=signup">
               <Button variant="secondary" size="md" text="Sign Up" />

@@ -240,6 +240,7 @@ export const contactAndLocation = {
   title: "Contact and Location",
   description:
     "Provide your contact details and location to connect with others.",
+  greeting: "Hey there! You’ve made it to Step 3—awesome job! Now...",
   page_writeup:
     "Let’s make it easy for others to reach you! In this step, add your website, GitHub, and location to enhance your profile’s visibility. Specify how you prefer to be contacted to streamline communication with potential collaborators or employers.",
   fields: [
@@ -276,11 +277,15 @@ export const contactAndLocation = {
     },
     {
       name: "preferred_contact_method",
-      type: "enum",
+      type: "dropdown",
       required: true,
       description: "Your preferred method of contact.",
       constraints: {
-        enum_values: ["email", "phone", "website"],
+        enum_values: [
+          { id: "email", code: "Email" },
+          { id: "phone", code: "Phone" },
+          { id: "website", code: "Website" },
+        ],
       },
     },
     {
@@ -304,10 +309,13 @@ export const privacyAndNotification = {
   step: 4,
   title: "Privacy and Notifications",
   description: "Customize your privacy settings and notification preferences.",
+  greeting:
+    "Great job making it this far! Now, let’s customize your privacy and notifications—so you’re always in control.",
   page_writeup:
     "Control how your information is shared and stay informed with your preferred notifications. In this step, you can decide who sees your contact details, whether search engines can index your profile, and how we communicate with you. These settings ensure your profile aligns with your privacy and engagement preferences.",
   fields: [
     {
+      index: 1,
       name: "show_email",
       type: "boolean",
       required: true,
@@ -315,6 +323,7 @@ export const privacyAndNotification = {
       constraints: {},
     },
     {
+      index: 2,
       name: "show_phone",
       type: "boolean",
       required: true,
@@ -323,6 +332,7 @@ export const privacyAndNotification = {
       constraints: {},
     },
     {
+      index: 3,
       name: "allow_indexing",
       type: "boolean",
       required: true,
@@ -331,6 +341,7 @@ export const privacyAndNotification = {
       constraints: {},
     },
     {
+      index: 4,
       name: "show_last_active",
       type: "boolean",
       required: true,
@@ -338,6 +349,7 @@ export const privacyAndNotification = {
       constraints: {},
     },
     {
+      index: 5,
       name: "email_notifications",
       type: "boolean",
       required: true,
@@ -346,6 +358,7 @@ export const privacyAndNotification = {
       constraints: {},
     },
     {
+      index: 6,
       name: "push_notifications",
       type: "boolean",
       required: true,
@@ -353,6 +366,7 @@ export const privacyAndNotification = {
       constraints: {},
     },
     {
+      index: 7,
       name: "marketing_emails",
       type: "boolean",
       required: true,
@@ -361,6 +375,7 @@ export const privacyAndNotification = {
       constraints: {},
     },
     {
+      index: 8,
       name: "weekly_digest",
       type: "boolean",
       required: true,
@@ -368,12 +383,17 @@ export const privacyAndNotification = {
       constraints: {},
     },
     {
+      index: 9,
       name: "profile_visibility",
       type: "enum",
       required: true,
       description: "Control who can view your profile.",
       constraints: {
-        enum_values: ["public", "private", "network_only"],
+        enum_values: [
+          { id: "public", code: "Public" },
+          { id: "private", code: "Private" },
+          { id: "network_only", code: "Network Only" },
+        ],
       },
     },
   ],

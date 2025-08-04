@@ -1,8 +1,9 @@
+import ThemeControlPanel from "@/app/(user)/[dashboard]/(sub-routes)/preference/page";
 import React from "react";
 
 
 const Step5 = () => {
-  return <div>Step5</div>;
+  return <ThemeControlPanel/>
 };
 
 export default Step5;

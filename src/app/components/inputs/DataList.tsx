@@ -39,6 +39,9 @@ type DataListProps = {
   requestMethod?: "GET" | "POST"; // Request method (default: POST)
   queryParam?: string; // Query parameter name for GET requests (default: 'query')
   additionalParams?: Record<string, any>; // Additional query parameters for GET requests
+  labelBgHexIntensity?: number;
+  desc?: string;
+  maxLength?: number;
 };
 
 interface DropdownContentProps {
@@ -285,6 +288,9 @@ const DataList = ({
   requestMethod = "POST",
   queryParam = "query",
   additionalParams = {},
+  labelBgHexIntensity = 0,
+  desc,
+  maxLength
 }: DataListProps) => {
   const { theme, loader, accentColor } = useTheme();
   const { loading, setLoading } = useGlobalState();
@@ -598,7 +604,9 @@ const DataList = ({
           onKeyDown={handleKeyDown}
           label={placeholder}
           labelBgHex={theme.background}
-          labelBgHexIntensity={10}
+          labelBgHexIntensity={labelBgHexIntensity ? labelBgHexIntensity : 10}
+          desc={desc}
+          maxLength={maxLength}
         />
       </div>
 

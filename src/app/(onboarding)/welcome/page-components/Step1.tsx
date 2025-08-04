@@ -12,7 +12,8 @@ import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
 import { removeEmptyStringValues } from "@/app/components/utilities/syncFunctions/syncs";
 import { useGlobalState } from "@/app/globalStateProvider";
 import React, { useEffect, useState, useCallback } from "react";
-import TemplateStructure from "./TemplateStructure";
+import TemplateStructure, { ComponentArrangement } from "./TemplateStructure";
+import Image from "next/image";
 
 const Step1 = () => {
   const {
@@ -38,6 +39,8 @@ const Step1 = () => {
   const [usernameAvailable, setUsernameAvailable] = useState<string>("");
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [currentArrangement, setCurrentArrangement] =
+    useState<ComponentArrangement>("A-D-B-C");
 
   // Fetch existing data on component mount
   useEffect(() => {
@@ -187,9 +190,12 @@ const Step1 = () => {
         });
         setHasUnsavedChanges(false);
 
-        toast.success("Account basics saved successfully!", {
-          title: "Success",
-        });
+        toast.success(
+          "Your basic account information has been updated. Proceeding...",
+          {
+            title: "Success",
+          }
+        );
 
         extendRouteWithQuery({ step: "2" });
       }
@@ -239,18 +245,29 @@ const Step1 = () => {
 
   return (
     <TemplateStructure
-      step={String(accountBasics.step)}
+      onArrangementChange={(newArrangement) => {
+        console.log(newArrangement);
+        setCurrentArrangement(newArrangement); // Update the state
+      }}
+      arrangement={currentArrangement}
+      step={String(accountBasics.step) + "/5"}
       title={accountBasics.title}
       headerDescription={accountBasics.description}
       headerAlignment="left" // Align header to the left as per original Step1
       greeting={accountBasics.greeting}
       pageWriteup={accountBasics.page_writeup}
-      additionalContent={<div className="border h-full w-full"></div>}
+      additionalContent={<div className=" h-full w-full">
+        <Image
+        alt="Step 1"
+        src={"/vectors/undraw_applications_h0mq.svg"}
+        width={1000}
+        height={1000}
+        />
+      </div>}
       onBack={handleBack}
       onSkip={handleSkip}
-      arrangement="A-D-B-C" // Default arrangement: Header top, Description left, Form right
       children={
-        <div className="w-full md:w-md flex flex-col gap-y-4 p-4">
+        <div className="w-full  flex flex-col gap-y-4 ">
           <div className="w-full">
             <Textinput
               loading={loading.includes("fetching_step1_data")}
@@ -295,7 +312,7 @@ const Step1 = () => {
                 error={formErrors.firstname}
               />
             </span>
-            <span>
+            <span className="min-w-1/2">
               <Textinput
                 loading={loading.includes("fetching_step1_data")}
                 labelBgHexIntensity={1}

@@ -20,7 +20,7 @@ enum PreferredContactMethod {
 }
 
 // Enums for Step 4: Privacy and Notifications
-enum ProfileVisibility {
+export enum ProfileVisibility {
   Public = "public",
   Private = "private",
   NetworkOnly = "network_only"

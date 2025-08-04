@@ -26,7 +26,7 @@ const Sidebar: React.FC = () => {
   const { theme } = useTheme() as { theme: Theme | undefined };
 
   // Initialize with SSR-safe defaults
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
   const [currentStep, setCurrentStep] = useState("1");
   const [isClient, setIsClient] = useState(false);
 
@@ -111,7 +111,7 @@ const Sidebar: React.FC = () => {
               ? getColorShade(theme.background, 10)
               : "transparent",
           }}
-          className="h-full rounded-2xl transition-all duration-300 ease-in-out w-80 md:w-80 md:flex-shrink-0 relative"
+          className="h-full rounded-2xl  transition-all duration-300 ease-in-out w-80 md:w-80 md:flex-shrink-0 relative"
         >
           <div className="p-4">
             <div className="space-y-4">
@@ -192,7 +192,10 @@ const Sidebar: React.FC = () => {
   }
 
   return (
-    <div className="flex h-auto min-h-screen p-4 relative">
+    <div
+      onClick={toggleSidebar}
+      className="flex h-auto min-h-screen p-4 relative"
+    >
       <span
         style={{
           backgroundColor: theme?.background

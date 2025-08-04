@@ -7,10 +7,7 @@ import Themes from "./tabs/Themes";
 import Loaders from "./tabs/Loaders";
 import Pro from "./tabs/Pro";
 import { useTheme } from "@/app/components/theme/ThemeContext ";
-import {
-  tabConfig,
-  themePresets,
-} from "@/app/components/utilities/indices/Themes";
+import { tabConfig } from "@/app/components/utilities/indices/Themes";
 import { getColorShade } from "@/app/components/utilities/syncFunctions/syncs";
 
 export interface ThemeColors {
@@ -27,22 +24,9 @@ export interface ThemePreset {
 
 const ThemeControlPanel = () => {
   const [activeTab, setActiveTab] = useState<string>("themes");
-  const {
-    theme,
-    themeVariant,
-    setLightTheme,
-    setDarkTheme,
-    accentColor,
-    setAccentColor,
-  } = useTheme();
+  const { theme, themeVariant, accentColor } = useTheme();
 
   const loaderRef = useRef<HTMLDivElement>(null);
-
-  const applyPreset = (preset: ThemePreset): void => {
-    setLightTheme(preset.light);
-    setDarkTheme(preset.dark);
-    setAccentColor({ color: preset.accent });
-  };
 
   const currentTab = tabConfig.find((tab) => tab.key === activeTab);
 
@@ -90,9 +74,7 @@ const ThemeControlPanel = () => {
             backgroundColor: getColorShade(theme.background, 5),
           }}
         >
-          {activeTab === "themes" && (
-            <Themes themePresets={themePresets} applyPreset={applyPreset} />
-          )}
+          {activeTab === "themes" && <Themes />}
 
           {activeTab === "loaders" && <Loaders loaderRef={loaderRef} />}
 

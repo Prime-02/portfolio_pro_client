@@ -5,13 +5,14 @@ import { toast } from "@/app/components/toastify/Toastify";
 import { professionalInformation } from "@/app/components/utilities/indices/MultiStepWriteUp";
 import { useGlobalState } from "@/app/globalStateProvider";
 import React, { FormEvent, useEffect, useState } from "react";
-import TemplateStructure from "./TemplateStructure"; // Import the new component
+import TemplateStructure, { ComponentArrangement } from "./TemplateStructure"; // Import the new component
 import {
   GetAllData,
   UpdateAllData,
 } from "@/app/components/utilities/asyncFunctions/lib/crud";
 import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
 import { removeEmptyStringValues } from "@/app/components/utilities/syncFunctions/syncs";
+import Image from "next/image";
 interface ProfessionalInformation {
   open_to_work: boolean;
   job_title: string | null;
@@ -42,6 +43,8 @@ const Step2 = () => {
     job_seeking_status: "",
     bio: "",
   });
+  const [currentArrangement, setCurrentArrangement] =
+    useState<ComponentArrangement>("D-A-C-B");
 
   const handleBack = () => {
     router.back();
@@ -93,6 +96,12 @@ const Step2 = () => {
           job_seeking_status: updateRes.job_seeking_status || "",
           bio: updateRes.bio || "",
         }));
+        toast.success(
+          "Your professional information has been updated. Proceeding...",
+          {
+            title: "Success",
+          }
+        );
         extendRouteWithQuery({ step: "3" });
       }
     } catch (error) {
@@ -136,7 +145,7 @@ const Step2 = () => {
 
   return (
     <TemplateStructure
-      headerAlignment="left"
+      headerAlignment="right"
       // Header (A) Props
       step={professionalInformation.step + "/5"}
       title={professionalInformation.title}
@@ -147,8 +156,21 @@ const Step2 = () => {
       // Navigation
       onBack={handleBack}
       onSkip={handleSkip}
-      additionalContent={<div className="border h-full w-full"></div>}
-      arrangement="D-A-C-B"
+      additionalContent={
+        <div className="h-full w-full">
+          <Image
+            alt="Step 2"
+            src={"/vectors/undraw_profile_d7qw.svg"}
+            width={1000}
+            height={1000}
+          />
+        </div>
+      }
+      onArrangementChange={(newArrangement) => {
+        console.log(newArrangement);
+        setCurrentArrangement(newArrangement); // Update the state
+      }}
+      arrangement={currentArrangement}
       // Optional: Change arrangement here (default is "A-B-C")
       // arrangement="A-C-B"
     >
@@ -271,7 +293,7 @@ const Step2 = () => {
           type="submit"
           loading={loading.includes("submitting_pro_info")}
           disabled={loading.includes("submitting_pro_info")}
-          text="Submit & Continue"
+          text="Continue"
         />
       </form>
     </TemplateStructure>

@@ -42,6 +42,7 @@ interface TextInputProps {
   error?: string;
   loading?: boolean;
   required?: boolean;
+  pattern?: string;
 }
 
 export const Textinput: React.FC<TextInputProps> = ({
@@ -68,6 +69,7 @@ export const Textinput: React.FC<TextInputProps> = ({
   error = "",
   loading = false,
   required = false,
+  pattern,
 }) => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const { theme } = useTheme();
@@ -143,6 +145,7 @@ export const Textinput: React.FC<TextInputProps> = ({
 
     return (
       <input
+      pattern={pattern}
         required={required}
         maxLength={maxLength}
         minLength={minLength}
@@ -296,7 +299,9 @@ export const TextArea: React.FC<TextAreaProps> = ({
           {showLimit && (
             <span
               className={`absolute z-10 bg-[var(--background)] bottom-4.5 right-4 font-thin text-xs ${
-                value?.length === maxLength ? "text-red-500" : "px-1 rounded-sm "
+                value?.length === maxLength
+                  ? "text-red-500"
+                  : "px-1 rounded-sm "
               } `}
             >
               {value?.length}/{maxLength}

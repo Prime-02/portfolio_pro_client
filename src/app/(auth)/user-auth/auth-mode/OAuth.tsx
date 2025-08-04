@@ -11,8 +11,8 @@ const OAuth = () => {
   ) => {
     signIn?.authenticateWithRedirect({
       strategy,
-      redirectUrl: "/sso-callback", // Must match Clerk Dashboard
-      redirectUrlComplete: "/", // Redirect after success
+      redirectUrl: "/user-auth/sso-callback", // Must match Clerk Dashboard
+      redirectUrlComplete: "/welcome", // Redirect after success
     });
   };
 

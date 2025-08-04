@@ -10,6 +10,7 @@ import {
   Settings,
   Palette,
   Grid3X3,
+  AlertCircle,
 } from "lucide-react";
 
 interface ContributionDay {
@@ -27,6 +28,7 @@ const GitHubCalendar: React.FC<GitHubCalendarProps> = ({ username }) => {
     ContributionDay[] | null
   >(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [hoveredDay, setHoveredDay] = useState<ContributionDay | null>(null);
   const [totalContributions, setTotalContributions] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
@@ -100,39 +102,135 @@ const GitHubCalendar: React.FC<GitHubCalendarProps> = ({ username }) => {
   ];
   const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-  useEffect(() => {
-    const generateMockData = () => {
+  const fetchGitHubContributions = async (username: string, year: number) => {
+    try {
       setIsLoading(true);
-      setTimeout(() => {
-        const data: ContributionDay[] = [];
-        const startDate = new Date(year, 0, 1);
-        const endDate = new Date(year, 11, 31);
-        let total = 0;
+      setError(null);
 
-        for (
-          let d = new Date(startDate);
-          d <= endDate;
-          d.setDate(d.getDate() + 1)
-        ) {
-          const contributions = Math.floor(Math.random() * 15);
-          total += contributions;
-          data.push({
-            date: new Date(d).toISOString().split("T")[0],
-            contributionCount: contributions,
-            level:
-              contributions === 0
-                ? 0
-                : Math.min(Math.ceil(contributions / 4), 4),
-          });
+      // First, check if user exists using GitHub API
+      const userResponse = await fetch(
+        `https://api.github.com/users/${username}`
+      );
+      if (!userResponse.ok) {
+        if (userResponse.status === 404) {
+          throw new Error(`GitHub user "${username}" not found`);
+        } else if (userResponse.status === 403) {
+          throw new Error(
+            "GitHub API rate limit exceeded. Please try again later."
+          );
+        } else {
+          throw new Error(`Failed to fetch user data: ${userResponse.status}`);
         }
+      }
 
-        setContributionData(data);
-        setTotalContributions(total);
-        setIsLoading(false);
-      }, 1000);
+      const userData = await userResponse.json();
+
+      // Note: GitHub's GraphQL API requires authentication for contribution data
+      // In a real implementation, you would need to set up a backend service
+      // or use GitHub's GraphQL API with proper authentication
+
+      // For now, we'll generate realistic mock data based on the user's profile
+      const joinDate = new Date(userData.created_at);
+      const isActiveUser = userData.public_repos > 5;
+
+      generateRealisticMockData(username, year, joinDate, isActiveUser);
+
+      setError(
+        "Using mock data - GitHub's contribution API requires authentication"
+      );
+    } catch (error) {
+      setError(
+        error instanceof Error ? error.message : "An unknown error occurred"
+      );
+      generateRealisticMockData(username, year, new Date(), true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const generateRealisticMockData = (
+    username: string,
+    year: number,
+    joinDate: Date,
+    isActive: boolean
+  ) => {
+    const data: ContributionDay[] = [];
+    const startDate = new Date(year, 0, 1);
+    const endDate = new Date(year, 11, 31);
+    let total = 0;
+
+    // Create more realistic patterns based on user characteristics
+    const seed =
+      username.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0) +
+      year;
+    const random = (index: number) => {
+      const x = Math.sin(seed + index) * 10000;
+      return x - Math.floor(x);
     };
 
-    generateMockData();
+    const userJoinedThisYear = joinDate.getFullYear() === year;
+    const startFromJoinDate =
+      userJoinedThisYear && joinDate > startDate ? joinDate : startDate;
+
+    for (
+      let d = new Date(startDate), index = 0;
+      d <= endDate;
+      d.setDate(d.getDate() + 1), index++
+    ) {
+      const dayOfWeek = d.getDay();
+      const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
+      // Skip days before user joined
+      if (d < startFromJoinDate) {
+        data.push({
+          date: new Date(d).toISOString().split("T")[0],
+          contributionCount: 0,
+          level: 0,
+        });
+        continue;
+      }
+
+      // Base activity level based on user characteristics
+      let baseActivity = isActive ? 0.6 : 0.3;
+
+      // Lower activity on weekends
+      if (isWeekend) baseActivity *= 0.4;
+
+      // Add some seasonal variation (higher activity in fall/winter)
+      const dayOfYear = Math.floor(
+        (d.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+      );
+      const seasonalMultiplier =
+        0.7 + 0.6 * Math.cos((dayOfYear / 365) * 2 * Math.PI + Math.PI);
+      baseActivity *= seasonalMultiplier;
+
+      // Add some weekly patterns (busy periods and quiet periods)
+      const weekOfYear = Math.floor(dayOfYear / 7);
+      const weeklyPattern = 0.8 + 0.4 * Math.sin((weekOfYear / 4) * Math.PI);
+      baseActivity *= weeklyPattern;
+
+      const shouldHaveActivity = random(index) < baseActivity;
+      const contributions = shouldHaveActivity
+        ? Math.floor(random(index + 1000) * (isActive ? 20 : 10))
+        : 0;
+
+      total += contributions;
+      data.push({
+        date: new Date(d).toISOString().split("T")[0],
+        contributionCount: contributions,
+        level:
+          contributions === 0 ? 0 : Math.min(Math.ceil(contributions / 5), 4),
+      });
+    }
+
+    setContributionData(data);
+    setTotalContributions(total);
+  };
+
+  useEffect(() => {
+    if (username.trim()) {
+      fetchGitHubContributions(username.trim(), year);
+    }
   }, [username, year]);
 
   const formatDate = (dateString: string) =>
@@ -142,6 +240,7 @@ const GitHubCalendar: React.FC<GitHubCalendarProps> = ({ username }) => {
       month: "long",
       day: "numeric",
     });
+
   const getContributionText = (count: number) =>
     count === 0
       ? "No contributions"
@@ -154,17 +253,26 @@ const GitHubCalendar: React.FC<GitHubCalendarProps> = ({ username }) => {
       longest = 0,
       tempStreak = 0;
 
-    [...contributionData].reverse().forEach((day) => {
-      if (new Date(day.date) <= today && day.contributionCount > 0) current++;
-      else if (current === 0) return;
-      else current = 0;
-    });
+    // Calculate current streak (from today backwards)
+    const sortedData = [...contributionData].reverse();
+    for (const day of sortedData) {
+      if (new Date(day.date) <= today) {
+        if (day.contributionCount > 0) {
+          current++;
+        } else if (current > 0) {
+          break;
+        }
+      }
+    }
 
+    // Calculate longest streak
     contributionData.forEach((day) => {
       if (day.contributionCount > 0) {
         tempStreak++;
         longest = Math.max(longest, tempStreak);
-      } else tempStreak = 0;
+      } else {
+        tempStreak = 0;
+      }
     });
 
     return { current, longest };
@@ -229,7 +337,6 @@ const GitHubCalendar: React.FC<GitHubCalendarProps> = ({ username }) => {
                         : "transparent",
                       borderRadius: 2,
                     }}
-                    onClick={() => day && console.log("Day clicked:", day)}
                     onMouseEnter={() => day && setHoveredDay(day)}
                     onMouseLeave={() => setHoveredDay(null)}
                   >
@@ -438,6 +545,22 @@ const GitHubCalendar: React.FC<GitHubCalendarProps> = ({ username }) => {
 
   return (
     <div className="p-6 bg-white rounded-lg border">
+      {error && (
+        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg flex items-start gap-2">
+          <AlertCircle
+            size={16}
+            className="text-yellow-600 mt-0.5 flex-shrink-0"
+          />
+          <div className="text-sm">
+            <p className="text-yellow-800 font-medium">Note:</p>
+            <p className="text-yellow-700">{error}</p>
+            <p className="text-yellow-600 text-xs mt-1">
+              Showing realistic mock data instead.
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center justify-between mb-4">
         <div>
           <h2 className="text-lg font-semibold text-gray-900 mb-1">
@@ -466,39 +589,4 @@ const GitHubCalendar: React.FC<GitHubCalendarProps> = ({ username }) => {
   );
 };
 
-const App: React.FC = () => {
-  const [username, setUsername] = useState("grubersjoe");
-
-  return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-6xl mx-auto space-y-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            GitHub Calendar Component
-          </h1>
-          <p className="text-gray-600 mb-4">
-            A comprehensive GitHub contribution calendar - just pass in a
-            username!
-          </p>
-
-          <div className="flex items-center gap-4 mb-6">
-            <label className="text-sm font-medium text-gray-700">
-              Username:
-            </label>
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="px-3 py-2 border rounded-lg text-sm"
-              placeholder="Enter GitHub username"
-            />
-          </div>
-        </div>
-
-        <GitHubCalendar username={username} />
-      </div>
-    </div>
-  );
-};
-
-export default App;
+export default GitHubCalendar;

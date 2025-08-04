@@ -2,14 +2,16 @@ import { useTheme } from "@/app/components/theme/ThemeContext ";
 import { Sun, Moon } from "lucide-react";
 import React from "react";
 import { ThemePreset } from "../page";
+import { themePresets } from "@/app/components/utilities/indices/Themes";
 
-interface ThemesProps {
-  themePresets: ThemePreset[];
-  applyPreset: (preset: ThemePreset) => void;
-}
+const Themes = () => {
+  const { theme, setLightTheme, setDarkTheme, setAccentColor } = useTheme();
 
-const Themes = ({ themePresets, applyPreset }: ThemesProps) => {
-  const { theme } = useTheme();
+  const applyPreset = (preset: ThemePreset): void => {
+    setLightTheme(preset.light);
+    setDarkTheme(preset.dark);
+    setAccentColor({ color: preset.accent });
+  };
 
   return (
     <div className="space-y-6">

@@ -7,7 +7,7 @@ import { Textinput } from "@/app/components/inputs/Textinput";
 import { useGlobalState } from "@/app/globalStateProvider";
 
 const Login = () => {
-  const { loading, setLoading } = useGlobalState();
+  const { loading, setLoading, userData } = useGlobalState();
   const { isLoaded, signIn, setActive } = useSignIn();
   const router = useRouter();
   const [formData, setFormData] = useState({
@@ -45,7 +45,7 @@ const Login = () => {
       if (result.status === "complete") {
         // If MFA is not , set the active session and redirect
         await setActive({ session: result.createdSessionId });
-        router.push("/dashboard"); // Redirect to your dashboard or home page
+        router.push(`/${userData?.username || "dashboard"}`); // Redirect to your dashboard or home page
       } else if (result.status === "needs_second_factor") {
         // Handle MFA if needed
         setShowVerification(true);
@@ -75,7 +75,7 @@ const Login = () => {
 
       if (completeSignIn.status === "complete") {
         await setActive({ session: completeSignIn.createdSessionId });
-        router.push("/dashboard");
+        router.push(`/${userData?.username || "dashboard"}`);
       }
     } catch (err: any) {
       setError(

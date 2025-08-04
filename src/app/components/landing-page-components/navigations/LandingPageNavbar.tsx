@@ -104,7 +104,7 @@ const LandingPageNavbar = () => {
         ) : (
           <>
             <Link href="/user-auth?auth_mode=login">
-              <Button variant="primary" size="md" text="Sign In" />
+              <Button variant="ghost" size="md" text="Sign in to console" />
             </Link>
             <Link href="/user-auth?auth_mode=signup">
               <Button variant="secondary" size="md" text="Sign Up" />

@@ -3,12 +3,14 @@ import React from "react";
 import { useAuth } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
 import UserAuth from "./auth-mode/UserAuth";
+import { useGlobalState } from "@/app/globalStateProvider";
 
 const MainAuth = () => {
   const { isSignedIn } = useAuth();
+  const { userData } = useGlobalState();
 
   if (isSignedIn) {
-    redirect("/dashboard");
+    redirect(`/${userData?.username || "dashboard"}`);
   }
 
   return (

@@ -116,7 +116,7 @@ const UserAuth = () => {
         <span className="w-[40%] h-[0.25px] bg-[var(--accent)]"></span>
       </div>
       <div className="w-sm">
-        <OAuth />
+        <OAuth isSignUp={authMode.mode === "signup"} />
       </div>
       <div className="flex flex-col items-center gap-y-2">
         <p className="text-sm">

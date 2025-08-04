@@ -17,7 +17,7 @@ export default function VerifyEmail() {
       const completeSignUp = await signUp.attemptEmailAddressVerification({ code });
       if (completeSignUp.status === "complete") {
         await setActive({ session: completeSignUp.createdSessionId });
-        router.push("/");
+        router.push("/welcome");
       }
     } catch (err: any) {
       setError(err.errors[0].message);

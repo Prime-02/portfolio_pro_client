@@ -1,3 +1,13 @@
+export const gettingStarted = {
+  step: 0,
+  title: "Welcome to Portfolio Pro",
+  description:
+    "Your journey to a stunning portfolio starts here. Follow these simple steps to showcase your work like a pro.",
+  greeting:
+    "Hey there, creative! 👋 Ready to build a portfolio that stands out? Let’s make it happen in just a few easy steps.",
+  page_writeup:
+    "A great portfolio is your gateway to new opportunities. Whether you're a designer, developer, writer, or artist, Portfolio Pro helps you present your best work professionally. Start by adding your projects, customize your layout, and share your unique story with the world. Let’s create something amazing together!",
+};
 export const accountBasics = {
   step: 1,
   title: "Account Basics",
@@ -452,29 +462,43 @@ export const appearance = {
   },
 };
 
+export const completionMessage = {
+  step: 6,
+  title: "Your Profile is Ready to Shine! ✨",
+  description: "Congratulations—you've created something impressive.",
+  page_writeup:
+    "You've just taken a huge step toward presenting your professional identity to the world. Your profile is now live, polished, and showcases your unique skills, experience, porfolios and projects. Share it proudly, and let it open doors to new opportunities, connections, and career growth.",
+  cta: {
+    primary: "Share Your Profile",
+    secondary: "Proceed to console",
+  },
+  greeting:
+    "Pro tip: Keep your profile current by regularly updating your achievements and skills. A strong profile helps you stand out! 🚀",
+};
+
 import {
   FaUser,
-  FaUserEdit,
-  FaPhone,
-  FaCheckCircle,
   FaBriefcase,
-  FaChartLine,
-  FaFileAlt,
-  FaSearch,
   FaGlobe,
-  FaGithub,
-  FaMapMarkerAlt,
-  FaEnvelope,
   FaEye,
-  FaEyeSlash,
-  FaBell,
-  FaShieldAlt,
   FaPalette,
-  FaLanguage,
-  FaBrush,
+  FaLeaf,
+  FaRocket,
 } from "react-icons/fa";
 
 export const onboardingSteps = [
+  {
+    step: "0",
+    title: "Getting Started",
+    description:
+      "To ensure you get the most out of your experience, please follow these simple steps",
+    icons: [
+      { icon: FaLeaf, label: "Getting Started" },
+      // { icon: FaUserEdit, label: "Name" },
+      // { icon: FaPhone, label: "Phone" },
+      // { icon: FaCheckCircle, label: "Consent" },
+    ],
+  },
   {
     step: "1",
     title: "Account Basics",
@@ -482,9 +506,9 @@ export const onboardingSteps = [
       "Provide your basic account information to set up your profile.",
     icons: [
       { icon: FaUser, label: "Username" },
-      { icon: FaUserEdit, label: "Name" },
-      { icon: FaPhone, label: "Phone" },
-      { icon: FaCheckCircle, label: "Consent" },
+      // { icon: FaUserEdit, label: "Name" },
+      // { icon: FaPhone, label: "Phone" },
+      // { icon: FaCheckCircle, label: "Consent" },
     ],
   },
   {
@@ -494,9 +518,9 @@ export const onboardingSteps = [
       "Share your professional background to showcase your expertise.",
     icons: [
       { icon: FaBriefcase, label: "Profession" },
-      { icon: FaChartLine, label: "Experience" },
-      { icon: FaFileAlt, label: "Bio" },
-      { icon: FaSearch, label: "Job Status" },
+      // { icon: FaChartLine, label: "Experience" },
+      // { icon: FaFileAlt, label: "Bio" },
+      // { icon: FaSearch, label: "Job Status" },
     ],
   },
   {
@@ -506,9 +530,9 @@ export const onboardingSteps = [
       "Provide your contact details and location to connect with others.",
     icons: [
       { icon: FaGlobe, label: "Website" },
-      { icon: FaGithub, label: "GitHub" },
-      { icon: FaMapMarkerAlt, label: "Location" },
-      { icon: FaEnvelope, label: "Contact Method" },
+      // { icon: FaGithub, label: "GitHub" },
+      // { icon: FaMapMarkerAlt, label: "Location" },
+      // { icon: FaEnvelope, label: "Contact Method" },
     ],
   },
   {
@@ -518,9 +542,9 @@ export const onboardingSteps = [
       "Customize your privacy settings and notification preferences.",
     icons: [
       { icon: FaEye, label: "Visibility" },
-      { icon: FaEyeSlash, label: "Privacy" },
-      { icon: FaBell, label: "Notifications" },
-      { icon: FaShieldAlt, label: "Security" },
+      // { icon: FaEyeSlash, label: "Privacy" },
+      // { icon: FaBell, label: "Notifications" },
+      // { icon: FaShieldAlt, label: "Security" },
     ],
   },
   {
@@ -529,9 +553,16 @@ export const onboardingSteps = [
     description: "Personalize the look and feel of your profile.",
     icons: [
       { icon: FaPalette, label: "Theme" },
-      { icon: FaLanguage, label: "Language" },
-      { icon: FaCheckCircle, label: "Completion" },
-      { icon: FaBrush, label: "Customization" }, // Changed label to avoid duplication
+      // { icon: FaLanguage, label: "Language" },
+      // { icon: FaCheckCircle, label: "Completion" },
+      // { icon: FaBrush, label: "Customization" }, // Changed label to avoid duplication
     ],
+  },
+  {
+    step: "6",
+    title: "You're All Set!",
+    description:
+      "Congratulations! Your profile is complete and ready to make an impact.",
+    icons: [{ icon: FaRocket, label: "Profile Published" }],
   },
 ];

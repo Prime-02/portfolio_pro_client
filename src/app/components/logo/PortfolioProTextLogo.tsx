@@ -1,6 +1,43 @@
+"use client";
 import React, { useEffect, useRef, useState } from "react";
 
-const PortfolioProLogo: React.FC = () => {
+interface PortfolioProLogoProps {
+  scale?: number;
+  fullText?: string;
+  typingSpeed?: number;
+  reanimateDelay?: number;
+  fontWeight?:
+    | 100
+    | 200
+    | 300
+    | 400
+    | 500
+    | 600
+    | 700
+    | 800
+    | 900
+    | "thin"
+    | "extralight"
+    | "light"
+    | "normal"
+    | "medium"
+    | "semibold"
+    | "bold"
+    | "extrabold"
+    | "black";
+  tracking?: number; // Custom tracking value in em units
+  reduceSize?: boolean;
+}
+
+const PortfolioProLogo: React.FC<PortfolioProLogoProps> = ({
+  scale = 1,
+  fullText = "PORTFOLIO.pro",
+  typingSpeed = 170,
+  reanimateDelay = 100000,
+  fontWeight = "normal",
+  tracking = 0.25, // Default tracking in em units
+  reduceSize = false,
+}) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const portfolioRef = useRef<HTMLSpanElement>(null);
   const [lineWidth, setLineWidth] = useState(0);
@@ -11,10 +48,10 @@ const PortfolioProLogo: React.FC = () => {
   const [isTypingComplete, setIsTypingComplete] = useState(false);
   const [showCursor, setShowCursor] = useState(true);
 
-  const fullText = "PORTFOLIO.pro";
-  const typingSpeed = 170; // milliseconds per character (smoother)
-  const cursorBlinkSpeed = 400; // milliseconds
-  const reanimateDelay = 100000; // 5 seconds before reanimating
+  const cursorBlinkSpeed = typingSpeed * 2.5; // Standard relationship: cursor blinks slower than typing
+
+  // Apply size reduction factor
+  const sizeMultiplier = reduceSize ? 0.7 : 1;
 
   useEffect(() => {
     if (lineHeight || lineWidth || isTypingComplete) {
@@ -79,37 +116,40 @@ const PortfolioProLogo: React.FC = () => {
     if (!isVisible) return;
 
     if (currentIndex < fullText.length) {
+      const currentChar = fullText[currentIndex];
+      const isAlphanumeric = /[a-zA-Z0-9]/.test(currentChar);
+
+      // Add extra delay for non-alphanumeric characters (punctuation, symbols, etc.)
+      const delay = isAlphanumeric ? typingSpeed : typingSpeed * 2;
+
       const timer = setTimeout(() => {
         setDisplayText(fullText.slice(0, currentIndex + 1));
         setCurrentIndex(currentIndex + 1);
-      }, typingSpeed);
+      }, delay);
 
       return () => clearTimeout(timer);
     } else {
       setIsTypingComplete(true);
-      // Hide cursor after typing is complete
-      setTimeout(() => setShowCursor(false), 1000);
 
-      // Reanimate after 5 seconds
+      // Reanimate after specified delay
       setTimeout(() => {
         setDisplayText("");
         setCurrentIndex(0);
         setIsTypingComplete(false);
-        setShowCursor(true);
       }, reanimateDelay);
     }
-  }, [currentIndex, isVisible, fullText]);
+  }, [currentIndex, isVisible, fullText, typingSpeed, reanimateDelay]);
 
-  // Cursor blinking effect
+  // Cursor blinking effect - always active when visible
   useEffect(() => {
-    if (!isVisible || !showCursor) return;
+    if (!isVisible) return;
 
     const cursorTimer = setInterval(() => {
       setShowCursor((prev) => !prev);
     }, cursorBlinkSpeed);
 
     return () => clearInterval(cursorTimer);
-  }, [isVisible, showCursor]);
+  }, [isVisible, cursorBlinkSpeed]);
 
   const renderText = () => {
     const portfolioText = displayText.includes(".")
@@ -119,28 +159,84 @@ const PortfolioProLogo: React.FC = () => {
       ? "." + displayText.split(".")[1]
       : "";
 
+    // Calculate font sizes with size multiplier
+    const mainFontSize = 3 * scale * sizeMultiplier;
+    const proFontSize = 1.5 * scale * sizeMultiplier;
+
+    // Calculate cursor dimensions based on the current text context
+    let cursorHeight, cursorWidth;
+    if (proText) {
+      // If we're showing .pro text, cursor should match .pro size
+      cursorHeight = 0.8 * proFontSize;
+      cursorWidth = 0.08 * scale * sizeMultiplier;
+    } else {
+      // If we're still on PORTFOLIO text, cursor should match main size
+      cursorHeight = 0.8 * mainFontSize;
+      cursorWidth = 0.125 * scale * sizeMultiplier;
+    }
+
+    // Convert font weight to CSS style
+    const getFontWeightStyle = () => {
+      if (typeof fontWeight === "number") {
+        return { fontWeight: fontWeight };
+      }
+
+      const weightMap = {
+        thin: 100,
+        extralight: 200,
+        light: 300,
+        normal: 400,
+        medium: 500,
+        semibold: 600,
+        bold: 700,
+        extrabold: 800,
+        black: 900,
+      };
+
+      return { fontWeight: weightMap[fontWeight] || 400 };
+    };
+
+    const fontWeightStyle = getFontWeightStyle();
+
     return (
-      <div className="text-3xl sm:text-4xl  md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl font-serif text-[var(--foreground)] leading-none">
-        <div className="relative inline-block">
-          <span
-            ref={portfolioRef}
-            className="relative z-10 tracking-[0.25em] sm:tracking-[0.3em] md:tracking-[0.35em]"
-          >
-            {portfolioText}
-          </span>
-        </div>
-        <span className="text-[1.5rem] sm:text-[2rem] md:text-[2.5rem] lg:text-[3rem] xl:text-[3.5rem] 2xl:text-[4rem] font-normal tracking-[0.25em] sm:tracking-[0.3em] md:tracking-[0.35em]">
+      <div
+        className={`font-serif text-[var(--foreground)] leading-tight`}
+        style={{
+          fontSize: `${mainFontSize}rem`,
+          ...fontWeightStyle,
+        }}
+      >
+        {/* Use inline elements to ensure natural text flow and wrapping */}
+        <span
+          ref={portfolioRef}
+          className={`relative z-10`}
+          style={{
+            fontSize: `${mainFontSize}rem`,
+            letterSpacing: `${tracking}em`,
+            ...fontWeightStyle,
+          }}
+        >
+          {portfolioText}
+        </span>
+        <span
+          style={{
+            fontSize: `${proFontSize}rem`,
+            letterSpacing: `${tracking}em`,
+            ...fontWeightStyle,
+          }}
+        >
           {proText}
         </span>
-        {/* Blinking cursor */}
+        {/* Blinking cursor as inline element to follow natural text flow */}
         <span
-          className={`inline-block w-0.5 sm:w-1 bg-[var(--foreground)] ml-1 transition-opacity duration-300 ${
-            showCursor ? "opacity-100" : "opacity-0"
-          }`}
+          className={`inline-block bg-[var(--foreground)] transition-opacity duration-100`}
           style={{
-            height: "0.8em",
-            transform: "translateY(-0.1em)",
-            display: "inline-block",
+            width: `${cursorWidth}rem`,
+            height: `${cursorHeight}rem`,
+            marginLeft: `${0.1 * scale * sizeMultiplier}rem`,
+            display: showCursor ? "inline-block" : "none",
+            opacity: showCursor ? 1 : 0,
+            verticalAlign: "baseline",
           }}
         />
       </div>
@@ -149,7 +245,11 @@ const PortfolioProLogo: React.FC = () => {
 
   return (
     <div className="flex items-center justify-center p-4">
-      <div ref={containerRef} className="relative w-full max-w-6xl">
+      <div
+        ref={containerRef}
+        className="relative w-full max-w-6xl"
+        style={{ transform: `scale(${scale})` }}
+      >
         {/* Main text container with better responsive scaling */}
         <div className="flex items-center justify-center">{renderText()}</div>
       </div>

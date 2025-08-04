@@ -517,6 +517,7 @@ export const addressArray: AddressItem[] = createAddressArray(locationData);
  * Copies text to clipboard using the Clipboard API and logs success/error.
  * @param text - The string to copy to clipboard
  */
+
 export function copyToClipboard(text: string): void {
   if (!navigator.clipboard) {
     console.error("Clipboard API not supported in this browser");
@@ -527,7 +528,9 @@ export function copyToClipboard(text: string): void {
   navigator.clipboard
     .writeText(text)
     .then(() => {
-      toast.info("Successfully copied to clipboard!");
+      toast.info("Successfully copied to clipboard!", {
+        title: "Text Copied",
+      });
     })
     .catch((err) => {
       console.error("❌ Failed to copy:", err);
@@ -553,25 +556,35 @@ export function getCurrentUrl(
   part: UrlPart = "full",
   segmentIndex?: number
 ): string {
-  const url = new URL(window.location.href);
+  // Check if running in a browser environment
+  if (typeof window === "undefined") {
+    return "";
+  }
 
-  switch (part) {
-    case "full":
-      return url.href;
-    case "host":
-      return url.host;
-    case "origin":
-      return url.origin;
-    case "path":
-      return url.pathname;
-    case "pathSegment":
-      return getPathSegment(url.pathname, segmentIndex);
-    case "search":
-      return url.search;
-    case "hash":
-      return url.hash;
-    default:
-      throw new Error(`Invalid URL part requested: ${part}`);
+  try {
+    const url = new URL(window.location.href);
+
+    switch (part) {
+      case "full":
+        return url.href;
+      case "host":
+        return url.host;
+      case "origin":
+        return url.origin;
+      case "path":
+        return url.pathname;
+      case "pathSegment":
+        return getPathSegment(url.pathname, segmentIndex);
+      case "search":
+        return url.search;
+      case "hash":
+        return url.hash;
+      default:
+        throw new Error(`Invalid URL part requested: ${part}`);
+    }
+  } catch (error) {
+    console.error("Error parsing URL:", error);
+    return "";
   }
 }
 

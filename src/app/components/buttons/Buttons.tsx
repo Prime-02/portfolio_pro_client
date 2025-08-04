@@ -1,4 +1,11 @@
-import React, { ReactNode, MouseEvent, useState, useMemo } from "react";
+import React, {
+  ReactNode,
+  MouseEvent,
+  useState,
+  useMemo,
+  useRef,
+  useEffect,
+} from "react";
 import { getLoader, SpinLoader } from "../loaders/Loader";
 import { useTheme } from "../theme/ThemeContext ";
 import { getColorShade } from "../utilities/syncFunctions/syncs";
@@ -104,7 +111,10 @@ const normalizeColorToHex = (color: string): string => {
   const lowerColor = colorStr.toLowerCase();
   if (namedColors[lowerColor]) return namedColors[lowerColor];
 
-  console.warn(`Could not parse color format: "${colorStr}", using fallback`);
+  // Only log warning on client side to prevent hydration mismatch
+  if (typeof window !== "undefined") {
+    console.warn(`Could not parse color format: "${colorStr}", using fallback`);
+  }
   return "#05df72";
 };
 
@@ -148,11 +158,18 @@ const Button = ({
 }: ButtonProps) => {
   const { accentColor, loader } = useTheme();
   const Loader = getLoader(loader) || SpinLoader;
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
-  // State for interaction tracking
+  // State for interaction tracking - initialized to false for consistent SSR
   const [isHovered, setIsHovered] = useState(false);
   const [isActive, setIsActive] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  // Track hydration to prevent mismatches
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   // Memoize color calculations to prevent unnecessary recalculations
   const colorPalette = useMemo(() => {
@@ -165,8 +182,8 @@ const Button = ({
     () => ({
       danger: {
         base: "#ef4444",
-        hover: getColorShade("#ef4444", 25), // Much darker on hover
-        active: getColorShade("#ef4444", 15), // Even darker on active
+        hover: getColorShade("#ef4444", 25),
+        active: getColorShade("#ef4444", 15),
         veryLight: getColorShade("#ef4444", 10),
         disabled: "#9ca3af",
         disabledText: "#6b7280",
@@ -176,33 +193,42 @@ const Button = ({
     [colorIntensity]
   );
 
-  // Size configurations
-  const sizeClasses = {
-    "3xs": "px-1 py-0.5 text-2xs min-h-4 gap-0.5",
-    xxs: "px-1.5 py-0.75 text-2xs min-h-5 gap-0.75",
-    xs: "px-2 py-1 text-xs min-h-6 gap-1",
-    sm: "px-3 py-1.5 text-sm min-h-8 gap-1.5",
-    md: "px-4 py-2 text-base min-h-10 gap-2",
-    lg: "px-6 py-3 text-lg min-h-12 gap-2.5",
-  };
+  // Size configurations - stable object to prevent re-renders
+  const sizeClasses = useMemo(
+    () => ({
+      "3xs": "px-1 py-0.5 text-2xs min-h-4 gap-0.5",
+      xxs: "px-1.5 py-0.75 text-2xs min-h-5 gap-0.75",
+      xs: "px-2 py-1 text-xs min-h-6 gap-1",
+      sm: "px-3 py-1.5 text-sm min-h-8 gap-1.5",
+      md: "px-4 py-2 text-base min-h-10 gap-2",
+      lg: "px-6 py-3 text-lg min-h-12 gap-2.5",
+    }),
+    []
+  );
 
-  // Base classes for all variants
-  const baseClasses = `
+  // Base classes for all variants - memoized for consistency
+  const baseClasses = useMemo(
+    () =>
+      `
     cursor-pointer min-w-fit flex items-center justify-center rounded-lg 
     focus:outline-none transition-all duration-200 font-medium border 
     disabled:cursor-not-allowed active:scale-95 transform
   `
-    .replace(/\s+/g, " ")
-    .trim();
+        .replace(/\s+/g, " ")
+        .trim(),
+    []
+  );
 
-  // Get current interaction state
+  // Get current interaction state - only use interactive states after hydration
   const getCurrentState = () => {
-    if (disabled) return "disabled"; // Only disabled prop triggers "disabled" state
+    if (disabled) return "disabled";
+    if (!isHydrated) return "default"; // Always return default during SSR
     if (isActive) return "active";
     if (isHovered) return "hovered";
     if (isFocused) return "focused";
     return "default";
   };
+
   // Generate dynamic styles based on variant and state
   const getDynamicStyles = () => {
     const currentState = getCurrentState();
@@ -337,39 +363,64 @@ const Button = ({
 
   const dynamicStyles = getDynamicStyles();
 
-  return (
-    <button
-      title={title}
-      type={type}
-      disabled={disabled || loading}
-      className={`${baseClasses} ${sizeClasses[size]} ${className}`}
-      style={{
-        ...dynamicStyles,
-        // Add CSS custom properties for better focus handling
-      }}
-      onClick={onClick}
-      onMouseEnter={() => !disabled && !loading && setIsHovered(true)}
-      onMouseLeave={() => {
-        setIsHovered(false);
-        setIsActive(false);
-      }}
-      onMouseDown={() => !disabled && !loading && setIsActive(true)}
-      onMouseUp={() => setIsActive(false)}
-      onFocus={() => setIsFocused(true)}
-      onBlur={() => setIsFocused(false)}
-      // Enhanced focus styles using CSS custom properties
-      onFocusCapture={(e) => {
+  // Handle focus styles without direct DOM manipulation during render
+  const handleFocusCapture = (e: React.FocusEvent<HTMLButtonElement>) => {
+    if (!isHydrated) return;
+
+    const focusRingColor = getFocusRingColor();
+    const currentBoxShadow = dynamicStyles.boxShadow || "none";
+
+    // Use setTimeout to avoid hydration issues
+    setTimeout(() => {
+      if (e.currentTarget) {
         e.currentTarget.style.setProperty(
           "box-shadow",
-          `${dynamicStyles.boxShadow}, 0 0 0 3px ${getFocusRingColor()}40`
+          `${currentBoxShadow}, 0 0 0 3px ${focusRingColor}40`
         );
-      }}
-      onBlurCapture={(e) => {
+      }
+    }, 0);
+  };
+
+  const handleBlurCapture = (e: React.FocusEvent<HTMLButtonElement>) => {
+    if (!isHydrated) return;
+
+    // Use setTimeout to avoid hydration issues
+    setTimeout(() => {
+      if (e.currentTarget) {
         e.currentTarget.style.setProperty(
           "box-shadow",
           dynamicStyles.boxShadow || "none"
         );
+      }
+    }, 0);
+  };
+
+  return (
+    <button
+      ref={buttonRef}
+      title={title}
+      type={type}
+      disabled={disabled || loading}
+      className={`${baseClasses} ${sizeClasses[size]} ${className}`}
+      style={dynamicStyles}
+      onClick={onClick}
+      onMouseEnter={() =>
+        isHydrated && !disabled && !loading && setIsHovered(true)
+      }
+      onMouseLeave={() => {
+        if (isHydrated) {
+          setIsHovered(false);
+          setIsActive(false);
+        }
       }}
+      onMouseDown={() =>
+        isHydrated && !disabled && !loading && setIsActive(true)
+      }
+      onMouseUp={() => isHydrated && setIsActive(false)}
+      onFocus={() => isHydrated && setIsFocused(true)}
+      onBlur={() => isHydrated && setIsFocused(false)}
+      onFocusCapture={handleFocusCapture}
+      onBlurCapture={handleBlurCapture}
     >
       {loading ? (
         <Loader

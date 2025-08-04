@@ -202,7 +202,6 @@ const Sidebar: React.FC = () => {
             ? getColorShade(theme.background, 10)
             : "transparent",
         }}
-        onClick={toggleSidebar}
         className="absolute z-10 top-1/2 -right-2 rounded-md cursor-pointer w-fit h-8 focus:outline-none transition-colors flex items-center justify-center"
       >
         {!isCollapsed ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}

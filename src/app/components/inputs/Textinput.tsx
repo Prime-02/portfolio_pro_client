@@ -145,7 +145,7 @@ export const Textinput: React.FC<TextInputProps> = ({
 
     return (
       <input
-      pattern={pattern}
+        pattern={pattern}
         required={required}
         maxLength={maxLength}
         minLength={minLength}
@@ -183,7 +183,7 @@ export const Textinput: React.FC<TextInputProps> = ({
   return (
     <div className="relative" ref={wrapperRef}>
       {renderInput()}
-      {error && <span className={"text-red-500 text-xs"}>{error}</span>}
+      {error && <span className="text-red-500 text-xs">{error}</span>}
 
       {type !== "dropdown" && type !== "phone" && (
         <label

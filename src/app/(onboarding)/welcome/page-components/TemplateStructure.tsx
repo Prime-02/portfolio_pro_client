@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Button from "@/app/components/buttons/Buttons";
 import { ChevronLeft, ChevronRight, Grid3X3 } from "lucide-react";
 import Modal from "@/app/components/containers/modals/Modal";
+import PortfolioPro from "@/app/components/logo/PortfolioProTextLogo";
 
 export type ComponentArrangement =
   | "A-D-B-C" // A and D on top row, B and C on bottom row
@@ -184,7 +185,12 @@ const TemplateStructure = ({
           className={`flex flex-col ${headerAlignment === "left" ? "justify-start text-left" : "justify-start text-right"}`}
         >
           <p className="text-sm opacity-65">Step {step}</p>
-          <h1 className="text-4xl md:text-6xl font-semibold">{title}</h1>
+          <PortfolioPro
+            tracking={0.1}
+            fontWeight={"bold"}
+            fullText={title}
+            scale={1}
+          />
           <h3 className="text-sm opacity-65">{headerDescription}</h3>
         </span>
       </div>
@@ -196,7 +202,9 @@ const TemplateStructure = ({
       </div>
     ),
     C: (
-      <div className="w-full md:w-md flex flex-col gap-y-4 p-4 ">{children}</div>
+      <div className="w-full md:w-md flex flex-col gap-y-4 p-4 ">
+        {children}
+      </div>
     ),
     D: additionalContent ? (
       <div className="w-full md:max-w-sm flex flex-col gap-y-3">
@@ -396,13 +404,17 @@ const TemplateStructure = ({
           variant="outline"
           size="sm"
         />
-        <Button
-          icon2={<ChevronRight size={14} />}
-          text="Skip"
-          onClick={onSkip}
-          variant="outline"
-          size="sm"
-        />
+        <span>
+          {Number(step) < 6 && (
+            <Button
+              icon2={<ChevronRight size={14} />}
+              text="Skip"
+              onClick={onSkip}
+              variant="outline"
+              size="sm"
+            />
+          )}
+        </span>
       </motion.nav>
 
       {/* Top Row - Two Components Side by Side */}

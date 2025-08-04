@@ -1,19 +1,35 @@
 "use client"; // Required for hooks
 import Button from "@/app/components/buttons/Buttons";
-import { useSignIn } from "@clerk/nextjs";
+import { useGlobalState } from "@/app/globalStateProvider";
+import { useSignIn, useSignUp } from "@clerk/nextjs";
 
-const OAuth = () => {
+const OAuth = ({ isSignUp = false }: { isSignUp?: boolean }) => {
   const { signIn } = useSignIn();
+  const { signUp } = useSignUp();
+  const { userData } = useGlobalState();
 
-  // Handle OAuth sign-in
-  const handleOAuthSignIn = (
+  // Handle OAuth sign-in/sign-up
+  const handleOAuth = (
     strategy: "oauth_google" | "oauth_linkedin_oidc" | "oauth_github"
   ) => {
-    signIn?.authenticateWithRedirect({
-      strategy,
-      redirectUrl: "/user-auth/sso-callback", // Must match Clerk Dashboard
-      redirectUrlComplete: "/welcome", // Redirect after success
-    });
+    const redirectUrl = "/user-auth/please-wait"; // Must match Clerk Dashboard
+    const redirectUrlComplete = isSignUp
+      ? "/welcome"
+      : `/${userData.username || "dashboard"}`;
+
+    if (isSignUp) {
+      signUp?.authenticateWithRedirect({
+        strategy,
+        redirectUrl,
+        redirectUrlComplete,
+      });
+    } else {
+      signIn?.authenticateWithRedirect({
+        strategy,
+        redirectUrl,
+        redirectUrlComplete,
+      });
+    }
   };
 
   return (
@@ -21,27 +37,27 @@ const OAuth = () => {
       <Button
         variant="outline"
         size="sm"
-        onClick={() => handleOAuthSignIn("oauth_google")}
+        onClick={() => handleOAuth("oauth_google")}
         icon={<GoogleIcon />}
         className="flex items-center gap-2 w-full"
-        text="Sign in with Google"
+        text={isSignUp ? "Sign up with Google" : "Sign in with Google"}
       />
       <div className="flex gap-2">
         <Button
           variant="outline"
           size="sm"
-          onClick={() => handleOAuthSignIn("oauth_linkedin_oidc")}
+          onClick={() => handleOAuth("oauth_linkedin_oidc")}
           className="flex items-center gap-2 flex-1"
           icon={<LinkedInIcon />}
-          text="Sign in with LinkedIn"
+          text={isSignUp ? "Sign up with LinkedIn" : "Sign in with LinkedIn"}
         />
         <Button
           variant="outline"
           size="sm"
-          onClick={() => handleOAuthSignIn("oauth_github")}
+          onClick={() => handleOAuth("oauth_github")}
           className="flex items-center gap-2 flex-1"
           icon={<GitHubIcon />}
-          text="Sign in with GitHub"
+          text={isSignUp ? "Sign up with GitHub" : "Sign in with GitHub"}
         />
       </div>
     </div>

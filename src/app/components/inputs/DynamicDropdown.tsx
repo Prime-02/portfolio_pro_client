@@ -25,6 +25,7 @@ interface DropdownProps {
   onFocus?: () => void;
   type?: string;
   value?: string;
+  label?: string;
 }
 
 interface DropdownMenuProps {
@@ -164,6 +165,7 @@ const Dropdown: React.FC<DropdownProps> = ({
   onFocus = () => {},
   type,
   value,
+  label,
 }) => {
   const { theme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
@@ -283,6 +285,7 @@ const Dropdown: React.FC<DropdownProps> = ({
 
   return (
     <>
+      <span>{label}</span>
       <div
         tabIndex={0}
         onFocus={onFocus}

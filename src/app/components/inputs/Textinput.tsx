@@ -117,6 +117,7 @@ export const Textinput: React.FC<TextInputProps> = ({
       return (
         <Dropdown
           type={type}
+          label={label}
           options={options || []}
           onSelect={(selectedValue: string) => onChange(selectedValue)}
           placeholder={placeholder}

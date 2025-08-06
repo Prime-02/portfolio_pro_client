@@ -81,8 +81,18 @@ const SignUp = () => {
 
       await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
       extendRouteWithQuery({ verify_email: "true" });
-    } catch (err: any) {
-      setError(err.errors?.[0]?.message || "Sign-up failed. Please try again.");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else if (typeof err === "object" && err !== null && "errors" in err) {
+        const errorWithErrors = err as { errors?: Array<{ message?: string }> };
+        setError(
+          errorWithErrors.errors?.[0]?.message ||
+            "Sign up failed prease try again "
+        );
+      } else {
+        setError("Sign up failed prease try again ");
+      }
     } finally {
       setLoading("signup_in_progress");
     }
@@ -117,10 +127,18 @@ const SignUp = () => {
         await setActive({ session: completeSignUp.createdSessionId });
         router.push("/welcome");
       }
-    } catch (err: any) {
-      setError(
-        err.errors?.[0]?.message || "Verification failed. Please try again."
-      );
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else if (typeof err === "object" && err !== null && "errors" in err) {
+        const errorWithErrors = err as { errors?: Array<{ message?: string }> };
+        setError(
+          errorWithErrors.errors?.[0]?.message ||
+            "Verification failed. Please try again."
+        );
+      } else {
+        setError("Verification failed. Please try again.");
+      }
     } finally {
       setLoading("email_verification_in_progress");
     }
@@ -146,7 +164,7 @@ const SignUp = () => {
       >
         <div className="p-4">
           <p className="mb-4">
-            We've sent a verification code to {formData.email}
+            {`We've sent a verification code to`} {formData.email}
           </p>
           <form onSubmit={handleVerify} className="space-y-4">
             <Textinput

@@ -269,14 +269,14 @@ const UserDisplayPictures = () => {
         </span>
 
         {/* Profile picture container */}
-        <span className="absolute bottom-0 left-8 w-32 h-32 rounded-full border border-white z-10 bg-gradient-to-br animated-gradient from-slate-900 via-[var(--accent)] to-slate-900 transform translate-y-1/2">
+        <span className="absolute bottom-0 left-8 w-32 h-32 border border-white z-10 bg-gradient-to-br animated-gradient from-slate-900 via-[var(--accent)] to-slate-900 transform translate-y-1/2">
           {userData.profile_picture ? (
             <Image
               src={userData.profile_picture}
               width={1000}
               height={1000}
               alt="Profile Picture"
-              className="w-full h-full rounded-full object-cover object-center"
+              className="w-full h-full object-cover object-center"
             />
           ) : (
             <ProfileImageSkeleton

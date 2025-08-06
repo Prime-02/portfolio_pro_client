@@ -14,13 +14,25 @@ export default function VerifyEmail() {
     if (!isLoaded) return;
 
     try {
-      const completeSignUp = await signUp.attemptEmailAddressVerification({ code });
+      const completeSignUp = await signUp.attemptEmailAddressVerification({
+        code,
+      });
       if (completeSignUp.status === "complete") {
         await setActive({ session: completeSignUp.createdSessionId });
         router.push("/welcome");
       }
-    } catch (err: any) {
-      setError(err.errors[0].message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else if (typeof err === "object" && err !== null && "errors" in err) {
+        const errorWithErrors = err as { errors?: Array<{ message?: string }> };
+        setError(
+          errorWithErrors.errors?.[0]?.message ||
+            ""
+        );
+      } else {
+        setError("");
+      }
     }
   };
 
@@ -36,7 +48,10 @@ export default function VerifyEmail() {
           className="w-full p-2 border rounded"
           required
         />
-        <button type="submit" className="bg-blue-600 text-white py-2 px-4 rounded">
+        <button
+          type="submit"
+          className="bg-blue-600 text-white py-2 px-4 rounded"
+        >
           Verify
         </button>
         {error && <p className="text-red-500">{error}</p>}

@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useGlobalState } from "@/app/globalStateProvider";
 import { toast } from "@/app/components/toastify/Toastify";
 import Button from "@/app/components/buttons/Buttons";
-import { ArrowRight, ChevronRight, Share2 } from "lucide-react";
+import { ArrowRight, Share2 } from "lucide-react";
 import {
   copyToClipboard,
   getCurrentUrl,
@@ -72,7 +72,7 @@ const Step6 = () => {
         <div className="flex md:flex-row gap-1 justify-between items-center ">
           <span className="min-w-1/2 flex">
             <Button
-              size="md"
+              size="sm"
               variant="outline"
               text={completionMessage.cta.primary}
               onClick={() => {
@@ -99,7 +99,7 @@ const Step6 = () => {
                 extendRouteWithQuery({ step: "1" });
               }}
               className="w-full"
-              size="md"
+              size="sm"
               variant="outline"
               text={completionMessage.cta.secondary}
               icon2={<ArrowRight size={16} />}

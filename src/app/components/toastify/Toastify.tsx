@@ -402,7 +402,6 @@ const usePortalRoot = () => {
 
 // Toast Portal Component
 const ToastPortal: React.FC = () => {
-  const { toasts } = useToast();
   const portalRoot = usePortalRoot();
 
   if (!portalRoot) {

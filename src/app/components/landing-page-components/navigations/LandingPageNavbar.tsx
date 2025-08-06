@@ -73,15 +73,26 @@ const LandingPageNavbar = () => {
         </div>
       )}
 
-      {/* Left section - Logo */}
-      <div className="flex items-center">
+      {/* Left section - Logo and Search */}
+      <div className="flex items-center gap-4">
         <Link href="/">
           <PortfolioProLogo scale={0.2} />
         </Link>
 
+        {/* Mobile Search Icon - Only visible on mobile */}
+        {isMobile && (
+          <button
+            onClick={() => setShowMobileSearch(true)}
+            className="cursor-pointer rounded-full w-12 h-12 flex items-center justify-center bg-[var(--background)]"
+            title="Search"
+          >
+            <Search size={24} />
+          </button>
+        )}
+
         {/* Desktop Search - Hidden on mobile */}
         {!isMobile && (
-          <div className="flex-1 flex justify-center px-4 min-w-0">
+          <div className="min-w-0">
             <div className="w-full max-w-3xl lg:max-w-4xl xl:max-w-5xl">
               <AbsoluteSearch />
             </div>
@@ -90,18 +101,7 @@ const LandingPageNavbar = () => {
       </div>
 
       {/* Right section - Auth/User controls */}
-      <div className="flex-shrink-0 ml-4 flex flex-row items-center gap-x-2 lg:gap-x-4">
-        {/* Mobile Search Icon - Only visible on mobile */}
-        {isMobile && (
-          <button
-            onClick={() => setShowMobileSearch(true)}
-            className="p-2 rounded-full hover:bg-opacity-80 transition-colors"
-            title="Search"
-          >
-            <Search size={24} />
-          </button>
-        )}
-
+      <div className="flex-shrink-0 flex flex-row items-center gap-x-2 lg:gap-x-4">
         {isSignedIn ? (
           <>
             <span title="Menu">
@@ -133,7 +133,7 @@ const LandingPageNavbar = () => {
                       alt="Profile Picture"
                       width={500}
                       height={500}
-                      className="w-12 h-12 hover:scale-110 transition duration-100 cursor-pointer rounded-full"
+                      className="w-12 h-12 hover:scale-110 transition object-cover duration-100 cursor-pointer rounded-full"
                     />
                   </span>
                   <ChevronDown
@@ -149,7 +149,7 @@ const LandingPageNavbar = () => {
         ) : (
           <>
             <Link href="/user-auth?auth_mode=login">
-              <Button variant="outline" size="md" text="Sign in to console" />
+              <Button variant="ghost" size="md" text="Sign in to console" />
             </Link>
             <Link href="/user-auth?auth_mode=signup">
               <Button variant="secondary" size="md" text="Sign Up" />

@@ -5,11 +5,14 @@ import {
   Check,
   X,
   Palette,
-  Eye,
-  Settings,
 } from "lucide-react";
 import { useTheme } from "@/app/components/theme/ThemeContext ";
-
+import {
+  Theme,
+  Accent,
+  ThemeVariant,
+  Loader,
+} from "@/app/components/types and interfaces/loaderTypes";
 
 interface ThemeImportExportProps {
   onImportSuccess?: () => void;
@@ -22,6 +25,38 @@ interface DetectedColor {
   name?: string;
   rgb?: [number, number, number];
   assigned?: "lightBg" | "lightFg" | "darkBg" | "darkFg" | "accent" | null;
+}
+
+// Updated JSON types to include undefined
+type JSONValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | JSONObject
+  | JSONArray;
+type JSONObject = { [key: string]: JSONValue };
+type JSONArray = JSONValue[];
+
+// Fixed interfaces to properly extend JSONObject
+interface ThemeData extends JSONObject {
+  lightTheme?: Theme;
+  darkTheme?: Theme;
+  accentColor?: Accent;
+  loader?: Loader;
+  themeVariant?: ThemeVariant;
+}
+
+interface ColorItem extends JSONObject {
+  hex: string;
+  name?: string;
+}
+
+// Fixed TailwindColorObject to handle undefined values properly
+interface TailwindColorObject {
+  DEFAULT?: string;
+  [key: string]: string | undefined;
 }
 
 const ThemeImportExport: React.FC<ThemeImportExportProps> = ({
@@ -136,17 +171,17 @@ const ThemeImportExport: React.FC<ThemeImportExportProps> = ({
     const fileExt = filename.split(".").pop()?.toLowerCase();
 
     // Helper function to parse JSON sections safely
-    const tryParseJSON = (jsonStr: string): any => {
+    const tryParseJSON = (jsonStr: string): JSONValue | null => {
       try {
-        return JSON.parse(jsonStr);
+        return JSON.parse(jsonStr) as JSONValue;
       } catch {
         return null;
       }
     };
 
     // Helper function to extract JSON objects/arrays from mixed content
-    const extractJSONSections = (text: string): any[] => {
-      const sections: any[] = [];
+    const extractJSONSections = (text: string): JSONValue[] => {
+      const sections: JSONValue[] = [];
 
       // Find JSON objects
       const objectMatches =
@@ -173,7 +208,7 @@ const ThemeImportExport: React.FC<ThemeImportExportProps> = ({
         const data = tryParseJSON(content);
         if (data) {
           // Existing theme format
-          if (data.lightTheme || data.darkTheme || data.accentColor) {
+          if (isThemeData(data)) {
             return parseExistingTheme(data);
           }
 
@@ -294,40 +329,82 @@ const ThemeImportExport: React.FC<ThemeImportExportProps> = ({
     return autoAssignColors(uniqueColors);
   };
 
+  // Type guard for theme data
+  const isThemeData = (data: JSONValue): data is ThemeData => {
+    if (typeof data !== "object" || data === null || Array.isArray(data)) {
+      return false;
+    }
+    const obj = data as JSONObject;
+    return "lightTheme" in obj || "darkTheme" in obj || "accentColor" in obj;
+  };
+
+  // Type guard for color item
+  const isColorItem = (item: JSONValue): item is ColorItem => {
+    if (typeof item !== "object" || item === null || Array.isArray(item)) {
+      return false;
+    }
+    const obj = item as JSONObject;
+    return typeof obj.hex === "string";
+  };
+
+  // Updated type guard for Tailwind color object
+  const isTailwindColorObject = (
+    value: JSONValue
+  ): value is TailwindColorObject => {
+    if (typeof value !== "object" || value === null || Array.isArray(value)) {
+      return false;
+    }
+    const obj = value as Record<string, unknown>;
+    return (
+      typeof obj.DEFAULT === "string" ||
+      Object.values(obj).some((v) => typeof v === "string")
+    );
+  };
+
   // Helper function to process JSON data
-  const processJSONData = (data: any, colors: DetectedColor[]): void => {
+  const processJSONData = (
+    data: JSONValue,
+    colors: DetectedColor[]
+  ): DetectedColor[] => {
     // Extended array format
-    if (Array.isArray(data) && data[0]?.hex) {
-      data.forEach((item: any) => {
-        const hex = normalizeHex(item.hex);
-        if (hex) {
-          colors.push({ hex, name: item.name });
+    if (Array.isArray(data) && data.length > 0 && isColorItem(data[0])) {
+      data.forEach((item) => {
+        if (isColorItem(item)) {
+          const hex = normalizeHex(item.hex);
+          if (hex) {
+            colors.push({ hex, name: item.name });
+          }
         }
       });
     }
 
     // Object format
-    else if (typeof data === "object" && !Array.isArray(data)) {
-      Object.entries(data).forEach(([name, value]: [string, any]) => {
+    else if (
+      typeof data === "object" &&
+      data !== null &&
+      !Array.isArray(data)
+    ) {
+      const obj = data as JSONObject;
+      Object.entries(obj).forEach(([name, value]) => {
         // Handle nested objects (like Tailwind format)
-        if (typeof value === "object" && value.DEFAULT) {
-          const hex = normalizeHex(String(value.DEFAULT));
-          if (hex) {
-            colors.push({ hex, name });
+        if (isTailwindColorObject(value)) {
+          if (value.DEFAULT) {
+            const hex = normalizeHex(String(value.DEFAULT));
+            if (hex) {
+              colors.push({ hex, name });
+            }
           }
           // Also extract other color variants
-          Object.entries(value).forEach(
-            ([variant, variantValue]: [string, any]) => {
-              if (variant !== "DEFAULT") {
-                const variantHex = normalizeHex(String(variantValue));
-                if (variantHex) {
-                  colors.push({ hex: variantHex, name: `${name}-${variant}` });
-                }
+          Object.entries(value).forEach(([variant, variantValue]) => {
+            if (variant !== "DEFAULT" && typeof variantValue === "string") {
+              const variantHex = normalizeHex(variantValue);
+              if (variantHex) {
+                colors.push({ hex: variantHex, name: `${name}-${variant}` });
               }
             }
-          );
-        } else {
-          const hex = normalizeHex(String(value));
+          });
+        } else if (typeof value === "string") {
+          const hex = normalizeHex(value);
           if (hex) {
             colors.push({ hex, name });
           }
@@ -337,16 +414,20 @@ const ThemeImportExport: React.FC<ThemeImportExportProps> = ({
 
     // Simple array
     else if (Array.isArray(data)) {
-      data.forEach((item: any) => {
-        const hex = normalizeHex(String(item));
-        if (hex) {
-          colors.push({ hex });
+      data.forEach((item) => {
+        if (typeof item === "string") {
+          const hex = normalizeHex(item);
+          if (hex) {
+            colors.push({ hex });
+          }
         }
       });
     }
+
+    return colors;
   };
 
-  const parseExistingTheme = (data: any): DetectedColor[] => {
+  const parseExistingTheme = (data: ThemeData): DetectedColor[] => {
     // For existing theme format, directly apply and return empty array
     if (data.lightTheme) setLightTheme(data.lightTheme);
     if (data.darkTheme) setDarkTheme(data.darkTheme);
@@ -373,7 +454,7 @@ const ThemeImportExport: React.FC<ThemeImportExportProps> = ({
 
   const exportTheme = (): void => {
     try {
-      const themeData = {
+      const themeData: ThemeData = {
         lightTheme,
         darkTheme,
         accentColor,
@@ -412,14 +493,17 @@ const ThemeImportExport: React.FC<ThemeImportExportProps> = ({
               setImportStatus("success");
             } else {
               // Fallback to original JSON theme import
-              const themeData = JSON.parse(result);
-              if (themeData.lightTheme) setLightTheme(themeData.lightTheme);
-              if (themeData.darkTheme) setDarkTheme(themeData.darkTheme);
-              if (themeData.accentColor) setAccentColor(themeData.accentColor);
-              if (themeData.loader) setLoader(themeData.loader);
-              if (themeData.themeVariant)
-                setThemeVariant(themeData.themeVariant);
-              setImportStatus("success");
+              const parsedData = JSON.parse(result);
+              if (isThemeData(parsedData)) {
+                if (parsedData.lightTheme) setLightTheme(parsedData.lightTheme);
+                if (parsedData.darkTheme) setDarkTheme(parsedData.darkTheme);
+                if (parsedData.accentColor)
+                  setAccentColor(parsedData.accentColor);
+                if (parsedData.loader) setLoader(parsedData.loader);
+                if (parsedData.themeVariant)
+                  setThemeVariant(parsedData.themeVariant);
+                setImportStatus("success");
+              }
             }
             onImportSuccess?.();
           }

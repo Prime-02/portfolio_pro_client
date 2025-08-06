@@ -1,5 +1,4 @@
 import Modal from "@/app/components/containers/modals/Modal";
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import AddSocials from "./AddSocials";
 import SocialCard, { SocialCardProps } from "./SocialCard";
@@ -114,7 +113,7 @@ function SocialsDisplay() {
               "Loading..."
             )
           ) : (
-            socials.map((socialCard, i) => (
+            socials.map((socialCard) => (
               <SocialCard
                 key={socialCard.id}
                 platform_name={socialCard.platform_name}

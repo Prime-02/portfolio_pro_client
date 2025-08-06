@@ -7,6 +7,7 @@ import { getColorShade } from "../utilities/syncFunctions/syncs";
 import { PostAllData, GetAllData } from "../utilities/asyncFunctions/lib/crud";
 import { getLoader } from "../loaders/Loader";
 import Button from "../buttons/Buttons";
+import { Accent, Theme } from "../types and interfaces/loaderTypes";
 
 interface SearchItem {
   [key: string]: string | number | boolean | null | undefined;
@@ -14,7 +15,7 @@ interface SearchItem {
 
 // Type for multiple state setters
 type StateSetters = {
-  [key: string]: (value: any) => void;
+  [key: string]: (value: string) => void;
 };
 
 type DataListProps = {
@@ -38,7 +39,7 @@ type DataListProps = {
   // New props for GET request support
   requestMethod?: "GET" | "POST"; // Request method (default: POST)
   queryParam?: string; // Query parameter name for GET requests (default: 'query')
-  additionalParams?: Record<string, any>; // Additional query parameters for GET requests
+  additionalParams?: Record<string, number | boolean | null>; // Additional query parameters for GET requests
   labelBgHexIntensity?: number;
   desc?: string;
   maxLength?: number;
@@ -59,10 +60,9 @@ interface DropdownContentProps {
   query: string;
   onSetValue: (value: string) => void;
   setShowDropdown: (show: boolean) => void;
-  theme: any;
-  accentColor: any;
+  theme: Theme;
+  accentColor: Accent;
   loading: string[];
-  LoaderComponent: any;
 }
 
 // Dropdown component to be rendered in portal
@@ -81,11 +81,10 @@ const DropdownContent: React.FC<DropdownContentProps> = ({
   query,
   onSetValue,
   setShowDropdown,
-  theme,
-  accentColor,
   loading,
-  LoaderComponent,
 }) => {
+  const { theme, loader, accentColor } = useTheme();
+  const LoaderComponent = getLoader(loader);
   const [position, setPosition] = useState<"top" | "bottom">("bottom");
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -290,9 +289,9 @@ const DataList = ({
   additionalParams = {},
   labelBgHexIntensity = 0,
   desc,
-  maxLength
+  maxLength,
 }: DataListProps) => {
-  const { theme, loader, accentColor } = useTheme();
+  const { theme, accentColor } = useTheme();
   const { loading, setLoading } = useGlobalState();
   const [searchResult, setSearchResults] = useState<SearchItem[]>([]);
   const [query, setQuery] = useState<string>("");
@@ -306,7 +305,6 @@ const DataList = ({
 
   const debounceRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const inputRef = useRef<HTMLDivElement>(null);
-  const LoaderComponent = getLoader(loader);
 
   // Use valueKeys if provided, otherwise fallback to displayKeys
   const effectiveValueKeys = valueKeys || displayKeys;
@@ -458,7 +456,7 @@ const DataList = ({
 
       // Set state if setter exists for this key
       if (stateSetters[stateKey] && value !== undefined && value !== null) {
-        stateSetters[stateKey](value);
+        stateSetters[stateKey](String(value));
       }
     });
   };
@@ -593,7 +591,7 @@ const DataList = ({
   };
 
   return (
-    <>
+    <div>
       <div className="relative w-full" ref={inputRef} data-datalist-trigger>
         <Textinput
           value={query}
@@ -633,11 +631,10 @@ const DataList = ({
             theme={theme}
             accentColor={accentColor}
             loading={loading}
-            LoaderComponent={LoaderComponent}
           />,
           document.body
         )}
-    </>
+    </div>
   );
 };
 

@@ -18,11 +18,9 @@ const CertDisplay = () => {
     accessToken,
     extendRouteWithQuery,
     searchParams,
-    router,
-    pathname,
     clearQuerryParam,
   } = useGlobalState();
-  const { loader, accentColor, themeVariant } = useTheme();
+  const { loader, accentColor } = useTheme();
   const LoaderComponent = getLoader(loader) || null;
   const addCert = searchParams.get("create") === "true";
   const updateCert = searchParams.get("update");
@@ -33,21 +31,7 @@ const CertDisplay = () => {
     );
   const [certificates, setCertificates] = useState<CertificateCardProps[]>([]);
 
-  // Theme-based classes
-  const getThemeClasses = () => {
-    if (typeof window === "undefined") return;
-    const isDark =
-      themeVariant === "dark" ||
-      (themeVariant === "system" &&
-        window.matchMedia("(prefers-color-scheme: dark)").matches);
-
-    return {
-      headerTitle: isDark ? "text-gray-100" : "text-gray-900",
-      headerSubtitle: isDark ? "text-gray-400" : "text-gray-600",
-    };
-  };
-
-  const theme = getThemeClasses();
+  // const theme = getThemeClasses();
 
   const fetchUserCertifications = async () => {
     setLoading("fetching_certs");

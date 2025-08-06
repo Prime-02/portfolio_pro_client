@@ -51,7 +51,7 @@ const CertCard = (props: CertificateCardProps) => {
     certification_name,
     certificate_external_url,
     certificate_internal_url,
-    certificate_internal_url_id,
+    // certificate_internal_url_id,
     expiration_date,
     is_public,
     issue_date,

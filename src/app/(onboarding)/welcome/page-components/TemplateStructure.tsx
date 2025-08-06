@@ -222,6 +222,8 @@ const TemplateStructure = ({
 
   // Helper function to get responsive classes for components
   const getComponentClasses = (position: PositionType) => {
+    if (position) {
+    }
     const baseClasses = "w-full";
     return `${baseClasses} md:w-1/2`;
   };
@@ -309,7 +311,9 @@ const TemplateStructure = ({
       key={component}
       layoutId={getLayoutId(component)}
       layout="position"
-      ref={(el) => (componentRefs.current[component] = el)}
+      ref={(el) => {
+        componentRefs.current[component] = el;
+      }}
       initial={
         hasAnimated
           ? { opacity: 1, x: 0, y: 0 }

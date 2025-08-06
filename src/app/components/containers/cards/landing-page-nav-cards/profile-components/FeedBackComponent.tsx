@@ -20,7 +20,7 @@ const FeedBackComponent = () => {
   });
 
   const makeSuggestions = async () => {
-    if (!validateFields(sugestion, toast.warning)) return;
+    if (!validateFields(sugestion)) return;
     setLoading("making_sugestions");
     try {
       const sugestionRes = await PostAllData({

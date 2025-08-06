@@ -70,11 +70,18 @@ const PasswordRetrieval = () => {
       setResetPhase("verify");
       // Update URL with new phase
       extendRouteWithQuery({ reset_phase: "verify" });
-    } catch (err: any) {
-      setError(
-        err.errors?.[0]?.message ||
-          "Failed to send reset code. Please try again."
-      );
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else if (typeof err === "object" && err !== null && "errors" in err) {
+        const errorWithErrors = err as { errors?: Array<{ message?: string }> };
+        setError(
+          errorWithErrors.errors?.[0]?.message ||
+            "Failed to send reset code please try again."
+        );
+      } else {
+        setError("Failed to send reset code please try again.");
+      }
     } finally {
       setLoading("awaiting_request_code");
     }
@@ -104,11 +111,18 @@ const PasswordRetrieval = () => {
         // Update URL with new phase
         extendRouteWithQuery({ reset_phase: "reset" });
       }
-    } catch (err: any) {
-      setError(
-        err.errors?.[0]?.message ||
-          "Invalid verification code. Please try again."
-      );
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else if (typeof err === "object" && err !== null && "errors" in err) {
+        const errorWithErrors = err as { errors?: Array<{ message?: string }> };
+        setError(
+          errorWithErrors.errors?.[0]?.message ||
+            "Invalid verification code please try again"
+        );
+      } else {
+        setError("Invalid verification code please try again");
+      }
     } finally {
       setLoading("verifying_code");
     }
@@ -140,10 +154,16 @@ const PasswordRetrieval = () => {
 
       // Clear query parameter after successful reset
       extendRouteWithQuery({ auth_mode: "login" });
-    } catch (err: any) {
-      setError(
-        err.errors?.[0]?.message || "Password reset failed. Please try again."
-      );
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else if (typeof err === "object" && err !== null && "errors" in err) {
+        const errorWithErrors = err as { errors?: Array<{ message?: string }> };
+        setError(
+          errorWithErrors.errors?.[0]?.message ||
+            "Password Reset failed failed prease try again "
+        );
+      }
     } finally {
       setLoading("resetting_password");
     }

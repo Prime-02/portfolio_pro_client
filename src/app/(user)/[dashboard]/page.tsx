@@ -1,9 +1,19 @@
-import React from 'react'
+"use client";
+import { toast } from "@/app/components/toastify/Toastify";
+import { useGlobalState } from "@/app/globalStateProvider";
+import React, { useEffect } from "react";
 
-const page = () => {
-  return (
-    <div>page</div>
-  )
-}
+const UsersDashboard = () => {
+  const { userData } = useGlobalState();
 
-export default page
+  useEffect(() => {
+    if (!userData.username) {
+      toast.warning("Your profile is incomplete... Redirecting...", {
+        title: "Incomplete profile",
+      });
+    }
+  }, [userData.username]);
+  return <div>UsersDashboard</div>;
+};
+
+export default UsersDashboard;

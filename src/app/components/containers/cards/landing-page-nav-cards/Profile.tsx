@@ -99,7 +99,7 @@ const Profile = () => {
               <Image
                 src={getImageSrc(String(userData?.profile_picture))}
                 alt="Profile Picture"
-                className="w-12 h-12 rounded-full"
+                className="w-12 h-12 rounded-full object-cover"
                 width={100}
                 height={100}
               />
@@ -122,7 +122,7 @@ const Profile = () => {
           <Link
             href={`/${
               userData.username
-                ? userData.username
+                ? `${userData.username}/profile`
                 : clerkUserData.user?.id && !userData.username
                   ? "welcome"
                   : "/user-auth?auth_mode=signup"

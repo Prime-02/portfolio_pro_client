@@ -50,8 +50,18 @@ const Login = () => {
         // Handle MFA if needed
         setShowVerification(true);
       }
-    } catch (err: any) {
-      setError(err.errors?.[0]?.message || "Login failed. Please try again.");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else if (typeof err === "object" && err !== null && "errors" in err) {
+        const errorWithErrors = err as { errors?: Array<{ message?: string }> };
+        setError(
+          errorWithErrors.errors?.[0]?.message ||
+            "Login failed. Please try again."
+        );
+      } else {
+        setError("Login failed. Please try again.");
+      }
     } finally {
       setLoading("login_in_progress");
     }
@@ -77,10 +87,18 @@ const Login = () => {
         await setActive({ session: completeSignIn.createdSessionId });
         router.push(`/${userData?.username || "dashboard"}`);
       }
-    } catch (err: any) {
-      setError(
-        err.errors?.[0]?.message || "Verification failed. Please try again."
-      );
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else if (typeof err === "object" && err !== null && "errors" in err) {
+        const errorWithErrors = err as { errors?: Array<{ message?: string }> };
+        setError(
+          errorWithErrors.errors?.[0]?.message ||
+            "Sign up failed. Please try again."
+        );
+      } else {
+        setError("Login failed. Please try again.");
+      }
     }
   };
 

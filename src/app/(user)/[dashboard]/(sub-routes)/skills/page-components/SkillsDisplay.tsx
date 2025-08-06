@@ -18,8 +18,6 @@ const SkillsDisplay = () => {
     accessToken,
     extendRouteWithQuery,
     searchParams,
-    router,
-    pathname,
     clearQuerryParam,
   } = useGlobalState();
   const { loader, accentColor } = useTheme();

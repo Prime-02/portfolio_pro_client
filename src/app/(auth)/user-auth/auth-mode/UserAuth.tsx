@@ -134,7 +134,7 @@ const UserAuth = () => {
         </p>
         {authMode.mode !== "password-retrieval" && (
           <p className="text-sm">
-            Can't remember your credentials?
+            {`Can't remember your credentials?`}
             <strong
               onClick={() => handleModeChange("password-retrieval")}
               className="text-[var(--accent)] cursor-pointer hover:underline ml-1"

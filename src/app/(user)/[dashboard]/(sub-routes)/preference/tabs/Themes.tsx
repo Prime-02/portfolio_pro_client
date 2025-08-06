@@ -1,8 +1,8 @@
 import { useTheme } from "@/app/components/theme/ThemeContext ";
 import { Sun, Moon } from "lucide-react";
 import React from "react";
-import { ThemePreset } from "../page";
 import { themePresets } from "@/app/components/utilities/indices/Themes";
+import { ThemePreset } from "../ThemeControlPanel";
 
 const Themes = () => {
   const { theme, setLightTheme, setDarkTheme, setAccentColor } = useTheme();

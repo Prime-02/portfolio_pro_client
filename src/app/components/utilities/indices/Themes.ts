@@ -1,4 +1,4 @@
-import { ThemePreset } from "@/app/(user)/[dashboard]/(sub-routes)/preference/page";
+import { ThemePreset } from "@/app/(user)/[dashboard]/(sub-routes)/preference/ThemeControlPanel";
 import { Crown, Loader, Palette } from "lucide-react";
 
 export const themePresets: ThemePreset[] = [

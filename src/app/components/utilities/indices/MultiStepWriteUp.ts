@@ -425,7 +425,7 @@ export const appearance = {
   title: "Appearance and Finalization",
   description: "Personalize the look and feel of your profile.",
   page_writeup:
-    "You’re almost done! In this final step, choose your preferred language and the visual style of your profile. These settings let you customize how your profile appears to others, making it uniquely yours. After this, you can review your profile and make it live!",
+    "You’re almost done! In this final step, choose your preferred language and the visual style of your profile. These settings let you customize how your profile appears to others, making it uniquely yours. After this, you can review your dashboard and profile and make it live!",
   fields: [
     {
       name: "language",

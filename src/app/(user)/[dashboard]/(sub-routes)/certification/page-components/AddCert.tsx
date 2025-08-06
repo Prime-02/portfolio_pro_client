@@ -11,7 +11,6 @@ import { Textinput } from "@/app/components/inputs/Textinput";
 import CheckBox from "@/app/components/inputs/CheckBox";
 import { FileInput } from "@/app/components/inputs/FileInput";
 import Button from "@/app/components/buttons/Buttons";
-import { useTheme } from "@/app/components/theme/ThemeContext ";
 
 // Create a type for your certificate state that matches what you need
 type CertificateState = {
@@ -37,18 +36,18 @@ type FieldChangeTracker = {
 };
 
 const AddCert = ({ onRefresh }: { onRefresh: () => void }) => {
-  const { theme } = useTheme();
+  // const { theme } = useTheme();
   const {
     loading,
     setLoading,
     accessToken,
     searchParams,
-    router,
-    pathname,
+    // router,
+    // pathname,
     clearQuerryParam,
   } = useGlobalState();
 
-  const addCert = searchParams.get("create") === "true";
+  // const addCert = searchParams.get("create") === "true";
   const updateCert = searchParams.get("update");
   const isValidCertId =
     updateCert !== null &&
@@ -121,42 +120,6 @@ const AddCert = ({ onRefresh }: { onRefresh: () => void }) => {
       }
     } catch (error) {
       console.log("Failed to upload certificate: ", error);
-    } finally {
-      setLoading("");
-    }
-  };
-
-  const updateCertificate = async () => {
-    setLoading("updating_certificate");
-    try {
-      const updateRes: CertificateCardProps = await UpdateAllData({
-        access: accessToken,
-        url: `${V1_BASE_URL}/certification/${updateCert}`,
-        field: {
-          certification_name: certificate.certification_name,
-          issuing_organization: certificate.issuing_organization,
-          issue_date: certificate.issue_date,
-          expiration_date: certificate.expiration_date,
-          certificate_external_url: certificate.certificate_external_url,
-          certificate_internal_url: certificate.certificate_internal_url,
-          is_public: certificate.is_public,
-        },
-      });
-      if (updateRes && updateRes.certification_name) {
-        clearQuerryParam();
-        onRefresh();
-        // Reset change tracking
-        setChangedFields({
-          certification_name: false,
-          issuing_organization: false,
-          issue_date: false,
-          expiration_date: false,
-          certificate_external_url: false,
-          certificate_internal_url: false,
-        });
-      }
-    } catch (error) {
-      console.log("Error updating certificate: ", error);
     } finally {
       setLoading("");
     }
@@ -253,7 +216,7 @@ const AddCert = ({ onRefresh }: { onRefresh: () => void }) => {
 
   const handleFieldChange = (
     fieldName: keyof FieldChangeTracker,
-    value: any
+    value: string | File | null
   ) => {
     setCertificate((prev) => ({
       ...prev,
@@ -297,9 +260,7 @@ const AddCert = ({ onRefresh }: { onRefresh: () => void }) => {
     );
   };
 
-  const hasAnyChanges = () => {
-    return Object.values(changedFields).some((changed) => changed);
-  };
+
 
   return (
     <div className="flex flex-col w-full gap-y-4 p-4">

@@ -6,6 +6,8 @@ import { ThemeProvider } from "./components/theme/ThemeContext ";
 import { ToastProvider } from "./components/toastify/Toastify";
 import { ClerkProvider } from "@clerk/nextjs";
 import ClientLayout from "./ClientLayout";
+import { Suspense } from "react";
+import PortfolioProLogo from "./components/logo/PortfolioProTextLogo";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -193,14 +195,25 @@ export default function RootLayout({
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
-          <GlobalStateProvider>
-            <ToastProvider>
-              <ThemeProvider>
-                {/* Header with Clerk auth buttons */}
-                <ClientLayout>{children}</ClientLayout>
-              </ThemeProvider>
-            </ToastProvider>
-          </GlobalStateProvider>
+          <Suspense
+            fallback={
+              <PortfolioProLogo
+                tracking={0.2}
+                scale={0.75}
+                fontWeight={"extrabold"}
+                reanimateDelay={3000}
+              />
+            }
+          >
+            <GlobalStateProvider>
+              <ToastProvider>
+                <ThemeProvider>
+                  {/* Header with Clerk auth buttons */}
+                  <ClientLayout>{children}</ClientLayout>
+                </ThemeProvider>
+              </ToastProvider>
+            </GlobalStateProvider>
+          </Suspense>
         </body>
       </html>
     </ClerkProvider>

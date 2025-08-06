@@ -4,6 +4,7 @@ import { createPortal } from "react-dom";
 import { Textinput } from "./Textinput";
 import { useTheme } from "../theme/ThemeContext ";
 import { getColorShade } from "../utilities/syncFunctions/syncs";
+import { Theme } from "../types and interfaces/loaderTypes";
 
 interface DropdownOption {
   [key: string]: string | number;
@@ -34,7 +35,7 @@ interface DropdownMenuProps {
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   handleSelect: (option: DropdownOption) => void;
-  theme: any;
+  theme: Theme;
   type?: string;
   emptyMessage: string;
   valueKey: string;

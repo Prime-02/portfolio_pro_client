@@ -41,7 +41,7 @@ const SocialCard = (props: SocialCardProps) => {
     if (!platform) {
       platform = socialMediaPlatforms.find((p) => {
         const code = p.code.toLowerCase();
-        const id = p.id.toLowerCase();
+        // const id = p.id.toLowerCase();
 
         // Handle common variations
         return (
@@ -90,7 +90,9 @@ const SocialCard = (props: SocialCardProps) => {
       console.log(error);
     } finally {
       setLoading(`deleting_social_${props.id}`);
-      onRefresh && onRefresh();
+      if (onRefresh) {
+        onRefresh();
+      }
     }
   };
 

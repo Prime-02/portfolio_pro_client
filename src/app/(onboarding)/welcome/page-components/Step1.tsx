@@ -9,7 +9,10 @@ import {
 } from "@/app/components/utilities/asyncFunctions/lib/crud";
 import { accountBasics } from "@/app/components/utilities/indices/MultiStepWriteUp";
 import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
-import { removeEmptyStringValues } from "@/app/components/utilities/syncFunctions/syncs";
+import {
+  removeEmptyStringValues,
+  validateUsername,
+} from "@/app/components/utilities/syncFunctions/syncs";
 import { useGlobalState } from "@/app/globalStateProvider";
 import React, { useEffect, useState, useCallback } from "react";
 import TemplateStructure, { ComponentArrangement } from "./TemplateStructure";
@@ -89,6 +92,14 @@ const Step1 = () => {
         setUsernameAvailable("");
         return;
       }
+      // First validate the username format
+      const validationResult = validateUsername(username);
+      if (!validationResult.valid) {
+        setUsernameAvailable(
+          validationResult.message || "Invalid username format"
+        );
+        return;
+      }
       try {
         const isAvailable = await checkUsernameAvailability(username);
         if (!isAvailable && formData.username !== userData.username) {
@@ -125,6 +136,8 @@ const Step1 = () => {
         setUsernameAvailable("");
         setFormErrors((prev) => {
           const { username, ...rest } = prev;
+          if (username) {
+          }
           return rest;
         });
       }
@@ -256,142 +269,141 @@ const Step1 = () => {
       headerAlignment="left" // Align header to the left as per original Step1
       greeting={accountBasics.greeting}
       pageWriteup={accountBasics.page_writeup}
-      additionalContent={<div className=" h-full w-full">
-        <Image
-        alt="Step 1"
-        src={"/vectors/undraw_applications_h0mq.svg"}
-        width={1000}
-        height={1000}
-        />
-      </div>}
-      onBack={handleBack}
-      onSkip={handleSkip}
-      children={
-        <div className="w-full  flex flex-col gap-y-4 ">
-          <div className="w-full">
-            <Textinput
-              loading={loading.includes("fetching_step1_data")}
-              labelBgHexIntensity={1}
-              value={formData.username}
-              onChange={(e: string) => {
-                setFormData((prev) => ({
-                  ...prev,
-                  username: e,
-                }));
-              }}
-              label={
-                loading.includes("checking_username")
-                  ? "Checking username..."
-                  : "Username *"
-              }
-              minLength={accountBasics.fields[0]?.constraints?.min_length}
-              maxLength={accountBasics.fields[0]?.constraints?.max_length}
-              desc={accountBasics.fields[0]?.description}
-              error={formErrors.username}
-            />
-          </div>
-
-          {/* {String(formData.username === userData.username)} */}
-
-          <div className="flex flex-col gap-y-4 md:gap-x-1 md:flex-row justify-between w-full">
-            <span className="min-w-1/2">
-              <Textinput
-                loading={loading.includes("fetching_step1_data")}
-                labelBgHexIntensity={1}
-                value={formData.firstname}
-                onChange={(e: string) => {
-                  setFormData((prev) => ({
-                    ...prev,
-                    firstname: e,
-                  }));
-                }}
-                minLength={accountBasics.fields[1]?.constraints?.min_length}
-                maxLength={accountBasics.fields[1]?.constraints?.max_length}
-                desc={accountBasics.fields[1]?.description}
-                label="Firstname"
-                error={formErrors.firstname}
-              />
-            </span>
-            <span className="min-w-1/2">
-              <Textinput
-                loading={loading.includes("fetching_step1_data")}
-                labelBgHexIntensity={1}
-                value={formData.lastname}
-                onChange={(e: string) => {
-                  setFormData((prev) => ({
-                    ...prev,
-                    lastname: e,
-                  }));
-                }}
-                label="Lastname"
-                minLength={accountBasics.fields[2]?.constraints?.min_length}
-                maxLength={accountBasics.fields[2]?.constraints?.max_length}
-                desc={accountBasics.fields[2]?.description}
-                error={formErrors.lastname}
-              />
-            </span>
-          </div>
-
-          <div className="w-full">
-            <Textinput
-              loading={loading.includes("fetching_step1_data")}
-              labelBgHexIntensity={1}
-              value={formData.phone_number}
-              onChange={(e: string) => {
-                setFormData((prev) => ({
-                  ...prev,
-                  phone_number: e,
-                }));
-              }}
-              label="Phone"
-              type="tel"
-              minLength={accountBasics.fields[3]?.constraints?.min_length}
-              maxLength={accountBasics.fields[3]?.constraints?.max_length}
-              desc={accountBasics.fields[3]?.description}
-              error={formErrors.phone_number}
-            />
-          </div>
-
-          <div>
-            <div className="flex w-full justify-start gap-x-4 items-center">
-              <span>
-                <CheckBox
-                  id="data_processing"
-                  isChecked={formData.data_processing_consent}
-                  setIsChecked={(checked: boolean) => {
-                    setFormData((prev) => ({
-                      ...prev,
-                      data_processing_consent: checked,
-                    }));
-                  }}
-                />
-              </span>
-              <span className="text-xs max-w-xs text-[var(--accent)]">
-                {accountBasics.fields[4]?.description}
-              </span>
-            </div>
-            {formErrors.data_processing_consent && (
-              <p className="text-red-500 text-xs mt-1">
-                {formErrors.data_processing_consent}
-              </p>
-            )}
-
-            <span className="w-full mt-4 flex-1 flex items-center justify-end"></span>
-            <Button
-              variant="primary"
-              size="md"
-              text="Submit & Continue"
-              className="w-full"
-              disabled={
-                !isFormValid() || loading.includes("updating_step1_data")
-              }
-              loading={loading.includes("updating_step1_data")}
-              onClick={updateStepOneData}
-            />
-          </div>
+      additionalContent={
+        <div className=" h-full w-full">
+          <Image
+            alt="Step 1"
+            src={"/vectors/undraw_applications_h0mq.svg"}
+            width={1000}
+            height={1000}
+          />
         </div>
       }
-    />
+      onBack={handleBack}
+      onSkip={handleSkip}
+    >
+      <div className="w-full  flex flex-col gap-y-4 ">
+        <div className="w-full">
+          <Textinput
+            loading={loading.includes("fetching_step1_data")}
+            labelBgHexIntensity={1}
+            value={formData.username}
+            onChange={(e: string) => {
+              setFormData((prev) => ({
+                ...prev,
+                username: e,
+              }));
+            }}
+            label={
+              loading.includes("checking_username")
+                ? "Checking username..."
+                : "Username *"
+            }
+            minLength={accountBasics.fields[0]?.constraints?.min_length}
+            maxLength={accountBasics.fields[0]?.constraints?.max_length}
+            desc={accountBasics.fields[0]?.description}
+            error={formErrors.username}
+          />
+        </div>
+
+        {/* {String(formData.username === userData.username)} */}
+
+        <div className="flex flex-col gap-y-4 md:gap-x-1 md:flex-row justify-between w-full">
+          <span className="min-w-1/2">
+            <Textinput
+              loading={loading.includes("fetching_step1_data")}
+              labelBgHexIntensity={1}
+              value={formData.firstname}
+              onChange={(e: string) => {
+                setFormData((prev) => ({
+                  ...prev,
+                  firstname: e,
+                }));
+              }}
+              minLength={accountBasics.fields[1]?.constraints?.min_length}
+              maxLength={accountBasics.fields[1]?.constraints?.max_length}
+              desc={accountBasics.fields[1]?.description}
+              label="Firstname"
+              error={formErrors.firstname}
+            />
+          </span>
+          <span className="min-w-1/2">
+            <Textinput
+              loading={loading.includes("fetching_step1_data")}
+              labelBgHexIntensity={1}
+              value={formData.lastname}
+              onChange={(e: string) => {
+                setFormData((prev) => ({
+                  ...prev,
+                  lastname: e,
+                }));
+              }}
+              label="Lastname"
+              minLength={accountBasics.fields[2]?.constraints?.min_length}
+              maxLength={accountBasics.fields[2]?.constraints?.max_length}
+              desc={accountBasics.fields[2]?.description}
+              error={formErrors.lastname}
+            />
+          </span>
+        </div>
+
+        <div className="w-full">
+          <Textinput
+            loading={loading.includes("fetching_step1_data")}
+            labelBgHexIntensity={1}
+            value={formData.phone_number}
+            onChange={(e: string) => {
+              setFormData((prev) => ({
+                ...prev,
+                phone_number: e,
+              }));
+            }}
+            label="Phone"
+            type="tel"
+            minLength={accountBasics.fields[3]?.constraints?.min_length}
+            maxLength={accountBasics.fields[3]?.constraints?.max_length}
+            desc={accountBasics.fields[3]?.description}
+            error={formErrors.phone_number}
+          />
+        </div>
+
+        <div>
+          <div className="flex w-full justify-start gap-x-4 items-center">
+            <span>
+              <CheckBox
+                id="data_processing"
+                isChecked={formData.data_processing_consent}
+                setIsChecked={(checked: boolean) => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    data_processing_consent: checked,
+                  }));
+                }}
+              />
+            </span>
+            <span className="text-xs max-w-xs text-[var(--accent)]">
+              {accountBasics.fields[4]?.description}
+            </span>
+          </div>
+          {formErrors.data_processing_consent && (
+            <p className="text-red-500 text-xs mt-1">
+              {formErrors.data_processing_consent}
+            </p>
+          )}
+
+          <span className="w-full mt-4 flex-1 flex items-center justify-end"></span>
+          <Button
+            variant="primary"
+            size="md"
+            text="Submit & Continue"
+            className="w-full"
+            disabled={!isFormValid() || loading.includes("updating_step1_data")}
+            loading={loading.includes("updating_step1_data")}
+            onClick={updateStepOneData}
+          />
+        </div>
+      </div>
+    </TemplateStructure>
   );
 };
 

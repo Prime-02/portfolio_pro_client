@@ -59,6 +59,8 @@ const AddSocials = ({ onRefresh }: { onRefresh: () => void }) => {
         handleClose();
       }
     } catch (error) {
+      console.log("error adding socials: ", error );
+      
     } finally {
       setLoading("adding_social_profile");
     }

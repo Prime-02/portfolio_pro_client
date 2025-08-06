@@ -370,7 +370,6 @@ export const urlType = [
 // Import React Icons (install with: npm install react-icons)
 import {
   FaLinkedin,
-  FaTwitter,
   FaGithub,
   FaDiscord,
   FaFacebook,

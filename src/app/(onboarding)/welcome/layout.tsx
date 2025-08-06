@@ -4,7 +4,7 @@ import { useTheme } from "@/app/components/theme/ThemeContext ";
 import { getColorShade } from "@/app/components/utilities/syncFunctions/syncs";
 import StepsMap from "./page-components/StepsMap";
 
-const layout = ({
+const OnBoardingLayout = ({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -27,4 +27,4 @@ const layout = ({
   );
 };
 
-export default layout;
+export default OnBoardingLayout;

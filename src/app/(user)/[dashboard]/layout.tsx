@@ -4,7 +4,7 @@ import ProfileSideBar from "../components/ProfileSideBar";
 import { useTheme } from "@/app/components/theme/ThemeContext ";
 import { getColorShade } from "@/app/components/utilities/syncFunctions/syncs";
 
-const layout = ({
+const UsersLayout = ({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -27,4 +27,4 @@ const layout = ({
   );
 };
 
-export default layout;
+export default UsersLayout;

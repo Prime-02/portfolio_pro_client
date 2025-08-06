@@ -133,9 +133,9 @@ const AddSkill = ({ onRefresh }: { onRefresh: () => void }) => {
   };
 
   // Handler for when an item is selected
-  const handleSelectItem = (item: any) => {
-    // You can do additional processing here if needed
-  };
+  // const handleSelectItem = (item: string) => {
+  //   // You can do additional processing here if needed
+  // };
   useEffect(() => {
     console.log("Selected item:", skillData);
   }, [skillData]);
@@ -149,7 +149,7 @@ const AddSkill = ({ onRefresh }: { onRefresh: () => void }) => {
               onSetValue={(value) =>
                 setSkillData((prev) => ({ ...prev, skill_name: value }))
               }
-              onSelectItem={handleSelectItem}
+              // onSelectItem={handleSelectItem}
               dataPath="items" // Path to the array in the response
               displayKeys={["category", "subcategory", "skill_name"]} // Fields to display in the dropdown
               valueKeys={[

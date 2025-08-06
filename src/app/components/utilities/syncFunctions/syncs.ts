@@ -208,7 +208,6 @@ export function isValidHexColorStrict(hex: string): hex is HexColor {
 }
 
 // More specific typing for toast function
-type ToastFunction = (message: string) => void;
 
 /**
  * Validates that all required fields in a form object are filled.
@@ -518,23 +517,20 @@ export const addressArray: AddressItem[] = createAddressArray(locationData);
  * @param text - The string to copy to clipboard
  */
 
-export function copyToClipboard(text: string): void {
-  if (!navigator.clipboard) {
-    console.error("Clipboard API not supported in this browser");
-    return;
-  }
+import copy from "clipboard-copy";
 
-  // Since Clipboard API is async, we handle success/error inside
-  navigator.clipboard
-    .writeText(text)
-    .then(() => {
-      toast.info("Successfully copied to clipboard!", {
-        title: "Text Copied",
-      });
-    })
-    .catch((err) => {
-      console.error("❌ Failed to copy:", err);
+export async function copyToClipboard(text: string): Promise<void> {
+  try {
+    await copy(text);
+    toast.info("Successfully copied to clipboard!", {
+      title: "Text Copied",
     });
+  } catch (err) {
+    console.error("❌ Failed to copy:", err);
+    toast.error("Failed to copy to clipboard", {
+      title: "Copy Failed",
+    });
+  }
 }
 
 type UrlPart =
@@ -614,3 +610,70 @@ function getPathSegment(pathname: string, index?: number): string {
 // getCurrentUrl('pathSegment', 2);    // "123"
 // getCurrentUrl('search');    // "?sort=price"
 // getCurrentUrl('hash');      // "#reviews"
+
+export function validateUsername(username: string): {
+  valid: boolean;
+  message?: string;
+} {
+  // Check if input is a string
+  if (typeof username !== "string") {
+    return { valid: false, message: "Username must be a string" };
+  }
+
+  username = username.trim();
+
+  // Length check (2-32 chars)
+  if (username.length < 2 || username.length > 32) {
+    return {
+      valid: false,
+      message: "Username must be between 2-32 characters",
+    };
+  }
+
+  // Allowed characters (alphanumeric + common special chars)
+  const allowedCharsRegex = /^[a-zA-Z0-9_\-\.@!#$%&*+=\[\]\^|~: ]+$/;
+  if (!allowedCharsRegex.test(username)) {
+    return {
+      valid: false,
+      message:
+        "Contains invalid characters. Only letters, numbers, and _-.@!#$%&*+=[]^|~: are allowed",
+    };
+  }
+
+  // Cannot start/end with certain special chars (., -, _, @)
+  const invalidStartEndRegex = /^[.\-_@]|.*[.\-_@]$/;
+  if (invalidStartEndRegex.test(username)) {
+    return { valid: false, message: "Cannot start or end with ., -, _, or @" };
+  }
+
+  // No consecutive spaces
+  if (username.includes("  ")) {
+    return { valid: false, message: "Cannot contain consecutive spaces" };
+  }
+
+  // Reserved words (case-insensitive check)
+  const reservedWords = new Set([
+    "admin",
+    "administrator",
+    "root",
+    "system",
+    "null",
+    "undefined",
+    "moderator",
+    "guest",
+    "user",
+    "owner",
+    "me",
+    "self",
+  ]);
+  if (reservedWords.has(username.toLowerCase())) {
+    return {
+      valid: false,
+      message: "This username is reserved and cannot be used",
+    };
+  }
+
+  return { valid: true };
+}
+
+

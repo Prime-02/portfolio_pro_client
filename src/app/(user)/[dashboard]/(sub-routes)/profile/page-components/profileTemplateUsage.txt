@@ -1,0 +1,43 @@
+
+ 1. Default Layout
+ <ProfileTemplate />
+
+ 2. Compact Layout
+ <ProfileTemplate 
+   layout="compact" 
+   coverHeight="h-48" 
+   profilePictureSize="w-24 h-24" 
+ />
+
+ 3. Card Layout
+ <ProfileTemplate 
+   layout="card" 
+   className="max-w-2xl mx-auto" 
+ />
+
+ 4. Custom Layout with Additional Content
+ <ProfileTemplate 
+   layout="default"
+   showCover={true}
+   showActions={true}
+ >
+   <div className="mt-6">
+     <h3 className="text-lg font-semibold mb-4">Additional Content</h3>
+     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+       {/* Your custom content here */}
+     </div>
+   </div>
+ </ProfileTemplate>
+
+ 5. Profile without cover photo
+ <ProfileTemplate 
+   showCover={false}
+   showActions={true}
+ />
+
+ 6. Minimal profile display
+ <ProfileTemplate 
+   showCover={false}
+   showActions={false}
+   layout="compact"
+ />

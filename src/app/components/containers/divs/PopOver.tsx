@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useTheme } from "../../theme/ThemeContext ";
 import { getColorShade } from "../../utilities/syncFunctions/syncs";
-import { X } from "lucide-react";
 
 interface PopoverProps {
   clicker: React.ReactNode; // The element that triggers the popover

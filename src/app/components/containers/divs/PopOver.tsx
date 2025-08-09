@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useTheme } from "../../theme/ThemeContext ";
 import { getColorShade } from "../../utilities/syncFunctions/syncs";
+import { useGlobalState } from "@/app/globalStateProvider";
 
 interface PopoverProps {
   clicker: React.ReactNode; // The element that triggers the popover
@@ -26,6 +27,7 @@ const Popover: React.FC<PopoverProps> = ({
   mobileBreakpoint = 475,
 }) => {
   const { accentColor } = useTheme();
+  const { pathname } = useGlobalState();
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
@@ -41,6 +43,10 @@ const Popover: React.FC<PopoverProps> = ({
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
   }, [mobileBreakpoint]);
+
+  useEffect(() => {
+    setIsOpen(false);
+  }, [pathname]);
 
   // Handle clicks outside the popover
   useEffect(() => {

@@ -365,6 +365,9 @@ export const availabilityOptions = [
 export const urlType = [
   { code: "Link", id: "link" },
   { code: "Handle", id: "handle" },
+  { code: "Phone", id: "phone" },
+  { code: "Email", id: "email" },
+  { code: "Website", id: "website" },
 ];
 
 // Import React Icons (install with: npm install react-icons)

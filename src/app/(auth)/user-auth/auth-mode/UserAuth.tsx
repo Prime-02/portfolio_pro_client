@@ -86,7 +86,7 @@ const UserAuth = () => {
   const ActiveComponent = authComponents[authMode.mode];
 
   return (
-    <div className="flex flex-col gap-y-3">
+    <div className="flex flex-col overflow-auto bg-[var(--background)] py-5 rounded-3xl items-center justify-center gap-y-3">
       <div className="flex items-center justify-center w-auto mx-auto h-auto">
         <PortfolioProLogo scale={0.2} />
       </div>

@@ -162,7 +162,7 @@ const Step4 = () => {
   return (
     <TemplateStructure
       headerAlignment="left"
-      step={privacyAndNotification.step + "/5"}
+      step={privacyAndNotification.step + "/6"}
       headerDescription={privacyAndNotification.description}
       greeting={privacyAndNotification.greeting}
       pageWriteup={privacyAndNotification.page_writeup}

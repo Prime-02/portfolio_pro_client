@@ -1,3 +1,4 @@
+import { ProfileSettings } from "@/app/(user)/[dashboard]/(sub-routes)/profile/page-components/ProfileTemplate";
 import { ThemeVariant } from "./loaderTypes";
 
 export interface Profile {
@@ -23,7 +24,7 @@ export interface User {
   username: string;
   id?: string;
   is_superuser?: boolean | null;
-  phone_number: string
+  phone_number: string;
   is_active: boolean;
   role?: string;
   created_at?: string;
@@ -40,7 +41,7 @@ export type UserPreferences = {
   accent: string | null;
   primary_theme_dark: string | null;
   secondary_theme_dark: string | null;
-  layout_style: string; // Could be more specific if there are known options
+  layout_style: ProfileSettings;
   loader: string | null;
   owner_id: string;
 };

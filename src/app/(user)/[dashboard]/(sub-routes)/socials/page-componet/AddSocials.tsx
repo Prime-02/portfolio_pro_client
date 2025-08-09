@@ -44,6 +44,68 @@ const AddSocials = ({ onRefresh }: { onRefresh: () => void }) => {
     router.replace(pathname, { scroll: false });
   };
 
+  useEffect(() => {
+    const detectAndSetUrlType = () => {
+      try {
+        // Basic check for empty or invalid URL
+        if (
+          !addSocial.profile_url ||
+          typeof addSocial.profile_url !== "string"
+        ) {
+          return setAddSocial((prev) => ({ ...prev, url_type: "link" }));
+        }
+
+        const lowerUrl = addSocial.profile_url.toLowerCase().trim();
+
+        // Check for email pattern
+        if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(lowerUrl)) {
+          return setAddSocial((prev) => ({ ...prev, url_type: "email" }));
+        }
+
+        // Check for phone number pattern (basic international format)
+        if (/^\+?[\d\s\-().]{7,}$/.test(lowerUrl)) {
+          return setAddSocial((prev) => ({ ...prev, url_type: "phone" }));
+        }
+
+        // Check for social media patterns
+        const socialPatterns = {
+          facebook: /(facebook\.com|fb\.com|fb\.me)/,
+          twitter: /(twitter\.com|x\.com|t\.co)/,
+          instagram: /instagram\.com/,
+          linkedin: /linkedin\.com/,
+          youtube: /youtube\.com|youtu\.be/,
+          tiktok: /tiktok\.com/,
+          whatsapp: /whatsapp\.com|wa\.me/,
+          telegram: /telegram\.me|t\.me/,
+        };
+
+        for (const [platform, pattern] of Object.entries(socialPatterns)) {
+          if (pattern.test(lowerUrl)) {
+            return setAddSocial((prev) => ({ ...prev, url_type: platform }));
+          }
+        }
+
+        // Check if it's a valid URL (http/https protocol)
+        try {
+          new URL(
+            lowerUrl.startsWith("http") ? lowerUrl : `https://${lowerUrl}`
+          );
+          return setAddSocial((prev) => ({ ...prev, url_type: "website" }));
+        } catch (e) {
+          // Not a valid URL
+        }
+
+        // Default to 'link' if none of the above match
+        setAddSocial((prev) => ({ ...prev, url_type: "link" }));
+      } catch (error) {
+        console.error("Error detecting URL type:", error);
+        setAddSocial((prev) => ({ ...prev, url_type: "link" }));
+      }
+    };
+
+    detectAndSetUrlType();
+  }, [addSocial.profile_url]); // Changed dependency to profile_url instead of url_type
+
   const postSocialData = async () => {
     setLoading("adding_social_profile");
     unauthorizedWarning();
@@ -59,8 +121,7 @@ const AddSocials = ({ onRefresh }: { onRefresh: () => void }) => {
         handleClose();
       }
     } catch (error) {
-      console.log("error adding socials: ", error );
-      
+      console.log("error adding socials: ", error);
     } finally {
       setLoading("adding_social_profile");
     }
@@ -85,7 +146,6 @@ const AddSocials = ({ onRefresh }: { onRefresh: () => void }) => {
     }
   };
 
-  
   const getASocialDetail = async () => {
     setLoading("fetching_a_social_detail");
     try {
@@ -180,7 +240,6 @@ const AddSocials = ({ onRefresh }: { onRefresh: () => void }) => {
             labelBgHex={theme.background}
             labelBgHexIntensity={10}
             type="text"
-            desc={`Head over to your account profile and copy the link`}
           />
         </div>
         <div className="w-full ">

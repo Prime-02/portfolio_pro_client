@@ -1,29 +1,60 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import ProfileSideBar from "../components/ProfileSideBar";
 import { useTheme } from "@/app/components/theme/ThemeContext ";
 import { getColorShade } from "@/app/components/utilities/syncFunctions/syncs";
+import { useGlobalState } from "@/app/globalStateProvider";
+import { useUser } from "@clerk/nextjs";
+import { useToast } from "@/app/components/toastify/Toastify";
+import { Accessibility, Info } from "lucide-react";
 
 const UsersLayout = ({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) => {
-  const {theme} = useTheme()
+  const { theme } = useTheme();
+  const { isLoaded, isSignedIn } = useUser();
+  const toast = useToast();
+  const { currentUser, getCurrentUser, router, accessToken } = useGlobalState();
+  useEffect(() => {
+    if (!isLoaded) return;
+
+    if (!isSignedIn) {
+      toast.toast("Please Login to continue", {
+        type: "default",
+        icon: <Info className="w-5 h-5 text-[var(--accent)]" />,
+        className:
+          "border-[var(--accent)] bg-purple-[var(--background)] text-[var(--accent)]",
+        sound: true,
+        animation: "scale",
+        position: "bottom-center",
+      });
+      router.replace("/user-auth?auth_mode=login");
+    }
+  }, [isLoaded, isSignedIn]);
+
+  useEffect(() => {
+    if (!accessToken) return;
+    getCurrentUser();
+  }, [currentUser, accessToken]);
+
   return (
-    <div className="flex">
-      <ProfileSideBar />
-      <div className="flex-1 mx-auto  max-w-5xl min-w-sm overflow-auto mt-5 ">
-        <div
-          className="rounded-3xl"
-          style={{
-            backgroundColor: getColorShade(theme?.background, 10),
-          }}
-        >
-          {children}
+    <>
+      <div className="flex">
+        <ProfileSideBar />
+        <div className="flex-1 mx-auto  max-w-5xl min-w-sm overflow-auto mt-5 ">
+          <div
+            className="rounded-3xl"
+            style={{
+              backgroundColor: getColorShade(theme?.background, 10),
+            }}
+          >
+            {children}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

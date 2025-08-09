@@ -96,6 +96,8 @@ function SocialsDisplay() {
         <div className="flex flex-col   gap-4 w-full ">
           {socials.length < 1 ? (
             <EmptyState
+            imageHeight={200}
+            imageWidth={200}
               description=""
               actionText="Add you first handle/social link"
               onAction={() => {

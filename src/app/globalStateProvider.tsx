@@ -28,6 +28,7 @@ import {
 } from "next/navigation";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { toast } from "./components/toastify/Toastify";
+import { getCurrentUrl } from "./components/utilities/syncFunctions/syncs";
 
 // Define types for user data
 export interface UserData extends User {
@@ -80,6 +81,9 @@ interface GlobalStateContextType {
   clearQuerryParam: () => void;
   unauthorizedWarning: () => void;
   checkUsernameAvailability: (username: string) => Promise<boolean | undefined>;
+  currentUser: string | undefined;
+  getCurrentUser: () => void;
+  setCurrentUser: (currentUser: string | undefined) => void;
 }
 
 // Context initialization
@@ -95,6 +99,7 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
   const [userData, setUserData] = useState<UserData>(defaultUserData);
   const [accessToken, setAccessToken] = useState<string>("");
   const [loading, _setLoading] = useState<string[]>([]);
+  const [currentUser, setCurrentUser] = useState<string | undefined>("");
 
   const { userId } = useAuth();
   const { user } = useUser();
@@ -103,7 +108,6 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
   const currentPath = usePathname();
   const pathname = usePathname();
 
-  // Type-safe user data fetching
   const fetchUserData = useCallback(
     async (access: string = accessToken): Promise<void> => {
       if (!access) {
@@ -113,9 +117,13 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
 
       setLoading("fetching_user_data");
       try {
+        const userDataUrl = currentUser
+          ? `${BASE_URL}/api/v1/settings/info/${currentUser}`
+          : `${BASE_URL}/api/v1/settings/info`;
+
         const userDataRes = await GetAllData<undefined, UserData>({
           access,
-          url: `${BASE_URL}/api/v1/settings/info`,
+          url: userDataUrl,
           type: "User Data",
         });
 
@@ -148,7 +156,7 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
         setLoading("fetching_user_data");
       }
     },
-    [accessToken]
+    [accessToken, currentUser]
   );
 
   // Simple user data update function to be used by other components
@@ -277,6 +285,42 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const getCurrentUser = async () => {
+    setLoading("finding_user");
+    const currentUserName = getCurrentUrl("pathSegment", 0);
+    if (!currentUserName) {
+      toast.error(
+        "Something went wrong... please as for the link to be resent "
+      );
+      setCurrentUser(undefined);
+      return;
+    }
+    if (currentUserName === userData.username) {
+      setCurrentUser(undefined);
+      return;
+    }
+    try {
+      const currentUserRes: { available: boolean; username: string } =
+        await GetAllData({
+          access: accessToken,
+          url: `${V1_BASE_URL}/user-multistep-form/check-username?username=${currentUserName}`,
+        });
+      if (
+        !currentUserRes.available &&
+        currentUserRes.username &&
+        currentUserRes.username !== userData.username
+      ) {
+        setCurrentUser(currentUserRes.username);
+        return currentUserRes.username;
+      }
+    } catch (error) {
+      setCurrentUser(undefined);
+      console.log(error);
+    } finally {
+      setLoading("finding_user");
+    }
+  };
+
   const contextValue: GlobalStateContextType = {
     clerkUserData,
     userData,
@@ -296,6 +340,9 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
     clearQuerryParam,
     unauthorizedWarning,
     checkUsernameAvailability,
+    currentUser,
+    setCurrentUser,
+    getCurrentUser,
   };
 
   return (

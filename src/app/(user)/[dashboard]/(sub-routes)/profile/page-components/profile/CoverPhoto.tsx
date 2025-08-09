@@ -2,6 +2,7 @@ import Image from "next/image";
 import React from "react";
 import { Profile } from "@/app/components/types and interfaces/UserAndProfile";
 import { ModalType } from "@/app/components/types and interfaces/userprofile";
+import { useGlobalState } from "@/app/globalStateProvider";
 
 interface CoverPhotoProps {
   userProfile: Profile;
@@ -14,8 +15,15 @@ const CoverPhoto: React.FC<CoverPhotoProps> = ({
   onEditClick,
   className = "bg-gradient-to-br animated-gradient from-slate-900 via-[var(--accent)] to-slate-900 relative h-64 w-full",
 }) => {
+  const { currentUser } = useGlobalState();
   return (
-    <div onClick={() => onEditClick({ type: "cover" })} className={className}>
+    <div
+      onClick={() => {
+        if (currentUser) return;
+        onEditClick({ type: "cover" });
+      }}
+      className={className}
+    >
       {userProfile.profile_picture && (
         <Image
           src={userProfile.profile_picture}

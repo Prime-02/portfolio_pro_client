@@ -6,6 +6,8 @@ import { PostAllData } from "@/app/components/utilities/asyncFunctions/lib/crud"
 import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
 import { toast } from "@/app/components/toastify/Toastify";
 import ThemeImportExport from "./ThemeImportExport";
+import Button from "@/app/components/buttons/Buttons";
+import { Textinput } from "@/app/components/inputs/Textinput";
 
 export interface ThemeProps {
   name: string;
@@ -165,28 +167,17 @@ const Pro = () => {
     }
   };
 
-  const renderHexInput = (
-    label: string,
-    field: keyof typeof themeData,
-    placeholder: string
-  ) => (
+  const renderHexInput = (label: string, field: keyof typeof themeData) => (
     <div>
-      <label className="block text-sm font-medium mb-2">{label}</label>
-      <input
+      <Textinput
+        labelBgHexIntensity={1}
+        label={label}
         type="text"
         value={themeData[field]}
-        onChange={(e) => handleInputChange(field, e.target.value)}
-        className={`w-full px-3 py-2 rounded-lg border border-opacity-20 bg-transparent ${
-          validationErrors[field] ? "border-red-500" : ""
-        }`}
-        style={{
-          borderColor: validationErrors[field] ? "#ef4444" : theme.foreground,
-        }}
-        placeholder={placeholder}
+        onChange={(e) => handleInputChange(field, e)}
+        className={`${validationErrors[field] ? "border-red-500" : ""}`}
+        error={validationErrors[field]}
       />
-      {validationErrors[field] && (
-        <p className="text-red-500 text-xs mt-1">{validationErrors[field]}</p>
-      )}
     </div>
   );
 
@@ -209,90 +200,58 @@ const Pro = () => {
 
       {/* Theme Configuration */}
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold">Theme Configuration</h3>
-          <button
-            onClick={applyThemeChanges}
-            className="px-4 py-2 rounded-lg border border-opacity-20 hover:bg-opacity-10 transition-colors"
-            style={{
-              borderColor: accentColor.color,
-              backgroundColor: `${accentColor.color}10`,
-              color: accentColor.color,
-            }}
-          >
-            Apply Changes
-          </button>
+        {/* Upload Theme Button */}
+        <div className="flex justify-end">
+          <Button
+            onClick={uploadTheme}
+            disabled={loading.includes("uploading_theme")}
+            className="px-6 py-2 rounded-lg font-medium transition-colors hover:opacity-90 disabled:opacity-50"
+            text="Save This Theme"
+            loading={loading.includes("uploading_theme")}
+          />
         </div>
 
         {/* Theme Name */}
         <div>
           <label className="block text-sm font-medium mb-2">Theme Name</label>
-          <input
+          <Textinput
             type="text"
             value={themeData.name}
-            onChange={(e) => handleInputChange("name", e.target.value)}
-            className="w-full px-3 py-2 rounded-lg border border-opacity-20 bg-transparent"
-            style={{ borderColor: theme.foreground }}
-            placeholder="My Custom Theme"
+            onChange={(e) => handleInputChange("name", e)}
+            label="My Custom Theme"
+            labelBgHexIntensity={1}
           />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Light Theme */}
-          <div
-            className="p-6 rounded-lg border border-opacity-20"
-            style={{ borderColor: theme.foreground }}
-          >
+          <div className="p-6 rounded-lg border border-opacity-20">
             <h4 className="font-medium mb-4 flex items-center gap-2">
               <Sun className="w-4 h-4" />
               Light Theme
             </h4>
             <div className="space-y-4">
-              {renderHexInput("Background Color", "primary_theme", "#ffffff")}
-              {renderHexInput("Text Color", "secondary_theme", "#000000")}
+              {renderHexInput("Background Color", "primary_theme")}
+              {renderHexInput("Text Color", "secondary_theme")}
             </div>
           </div>
 
           {/* Dark Theme */}
-          <div
-            className="p-6 rounded-lg border border-opacity-20"
-            style={{ borderColor: theme.foreground }}
-          >
+          <div className="p-6 rounded-lg border border-opacity-20">
             <h4 className="font-medium mb-4 flex items-center gap-2">
               <Moon className="w-4 h-4" />
               Dark Theme
             </h4>
             <div className="space-y-4">
-              {renderHexInput(
-                "Background Color",
-                "primary_theme_dark",
-                "#1a1a1a"
-              )}
-              {renderHexInput("Text Color", "secondary_theme_dark", "#ffffff")}
+              {renderHexInput("Background Color", "primary_theme_dark")}
+              {renderHexInput("Text Color", "secondary_theme_dark")}
             </div>
           </div>
         </div>
 
         {/* Accent Color */}
         <div className="max-w-md">
-          {renderHexInput("Accent Color", "accent", "#05df72")}
-        </div>
-
-        {/* Upload Theme Button */}
-        <div className="flex justify-end">
-          <button
-            onClick={uploadTheme}
-            disabled={loading.includes("uploading_theme")}
-            className="px-6 py-2 rounded-lg font-medium transition-colors hover:opacity-90 disabled:opacity-50"
-            style={{
-              backgroundColor: accentColor.color,
-              color: theme.background,
-            }}
-          >
-            {loading.includes("uploading_theme")
-              ? "Uploading..."
-              : "Upload Theme"}
-          </button>
+          {renderHexInput("Accent Color", "accent")}
         </div>
       </div>
 
@@ -319,15 +278,7 @@ const Pro = () => {
               Upgrade to Pro for advanced customization options, unlimited
               themes, and priority support.
             </p>
-            <button
-              className="px-6 py-2 rounded-lg font-medium transition-colors hover:opacity-90 flex items-center gap-2"
-              style={{
-                backgroundColor: accentColor.color,
-                color: theme.background,
-              }}
-            >
-              Upgrade Now <Zap className="w-4 h-4" />
-            </button>
+            <Button text="Upgrade Now" icon2={<Zap />} />
           </div>
         </div>
       </div>

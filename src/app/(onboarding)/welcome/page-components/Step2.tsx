@@ -147,7 +147,7 @@ const Step2 = () => {
     <TemplateStructure
       headerAlignment="right"
       // Header (A) Props
-      step={professionalInformation.step + "/5"}
+      step={professionalInformation.step + "/6"}
       title={professionalInformation.title}
       headerDescription={professionalInformation.description}
       // Description (B) Props

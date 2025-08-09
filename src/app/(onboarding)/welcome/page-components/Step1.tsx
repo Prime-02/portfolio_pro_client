@@ -263,7 +263,7 @@ const Step1 = () => {
         setCurrentArrangement(newArrangement); // Update the state
       }}
       arrangement={currentArrangement}
-      step={String(accountBasics.step) + "/5"}
+      step={String(accountBasics.step) + "/6"}
       title={accountBasics.title}
       headerDescription={accountBasics.description}
       headerAlignment="left" // Align header to the left as per original Step1

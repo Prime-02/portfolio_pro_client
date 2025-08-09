@@ -10,7 +10,10 @@ import {
   UpdateAllData,
 } from "@/app/components/utilities/asyncFunctions/lib/crud";
 import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
-import { base64ToFile } from "@/app/components/utilities/syncFunctions/syncs";
+import {
+  base64ToFile,
+  getCurrentUrl,
+} from "@/app/components/utilities/syncFunctions/syncs";
 import { toast } from "@/app/components/toastify/Toastify";
 import {
   ModalType,
@@ -30,86 +33,42 @@ import CheckBox from "@/app/components/inputs/CheckBox";
 import Switch from "@/app/components/inputs/Switch";
 import Dropdown from "@/app/components/inputs/DynamicDropdown";
 import Button from "@/app/components/buttons/Buttons";
-
-// Settings interface
-interface ProfileSettings {
-  layout: "default" | "compact" | "card" | "minimal" | "showcase";
-  showCover: boolean;
-  showActions: boolean;
-  coverHeight: "h-48" | "h-56" | "h-64" | "h-72" | "h-80";
-  profilePictureSize:
-    | "w-24 h-24"
-    | "w-28 h-28"
-    | "w-32 h-32"
-    | "w-36 h-36"
-    | "w-40 h-40";
-  profilePicturePosition: "left" | "center" | "right";
-  infoAlignment: "left" | "center" | "right";
-  spacing: "compact" | "normal" | "relaxed";
-  borderRadius: "none" | "small" | "medium" | "large" | "full";
-  showBio: boolean;
-  showProfession: boolean;
-  showLocation: boolean;
-  showWebsite: boolean;
-  showExperience: boolean;
-  showAvailability: boolean;
-  actionButtonStyle: "default" | "outline" | "minimal" | "rounded";
-  profileInfoStyle: "default" | "card" | "minimal";
-}
+import {
+  ProfileSettings,
+  useTheme,
+} from "@/app/components/theme/ThemeContext ";
 
 interface ProfileTemplateProps {
   showSettings?: boolean;
-  settings?: string; // JSON stringified ProfileSettings
-  setSettings?: (settings: string) => void; // JSON stringified ProfileSettings
   className?: string;
   children?: React.ReactNode;
 }
 
-// Default settings
-const defaultSettings: ProfileSettings = {
-  layout: "default",
-  showCover: true,
-  showActions: true,
-  coverHeight: "h-64",
-  profilePictureSize: "w-32 h-32",
-  profilePicturePosition: "left",
-  infoAlignment: "left",
-  spacing: "normal",
-  borderRadius: "medium",
-  showBio: true,
-  showProfession: true,
-  showLocation: true,
-  showWebsite: true,
-  showExperience: true,
-  showAvailability: true,
-  actionButtonStyle: "default",
-  profileInfoStyle: "default",
-};
-
 const ProfileTemplate: React.FC<ProfileTemplateProps> = ({
   showSettings = false,
-  settings = JSON.stringify(defaultSettings),
-  setSettings,
   className = "",
   children,
 }) => {
-  const { userData, accessToken, loading, setLoading, fetchUserData } =
-    useGlobalState();
-
-  // Parse settings from JSON string
-  const parsedSettings: ProfileSettings = React.useMemo(() => {
-    try {
-      return JSON.parse(settings);
-    } catch (error) {
-      console.warn("Invalid settings JSON, using defaults:", error);
-      return defaultSettings;
-    }
-  }, [settings]);
+  const {
+    userData,
+    accessToken,
+    loading,
+    setLoading,
+    fetchUserData,
+    currentUser,
+  } = useGlobalState();
+  const {
+    settings,
+    setSettings,
+    defaultSettings,
+    layoutLoaded,
+    setLayoutLoaded,
+  } = useTheme();
+  const [tempSettings, setTempSettings] =
+    useState<ProfileSettings>(defaultSettings);
 
   // Settings modal state
   const [showSettingsModal, setShowSettingsModal] = useState(false);
-  const [tempSettings, setTempSettings] =
-    useState<ProfileSettings>(parsedSettings);
 
   // Existing state management
   const [profileImages, setProfileImages] = useState<ModalType>({ type: null });
@@ -194,21 +153,30 @@ const ProfileTemplate: React.FC<ProfileTemplateProps> = ({
     }));
   };
 
-  const handleSaveSettings = () => {
-    if (setSettings) {
-      setSettings(JSON.stringify(tempSettings));
-    }
-    setShowSettingsModal(false);
-  };
-
-  const handleCancelSettings = () => {
-    setTempSettings(parsedSettings);
-    setShowSettingsModal(false);
-  };
+  useEffect(() => {
+    setTempSettings(settings);
+  }, [settings]);
 
   const resetToDefaults = () => {
     setTempSettings(defaultSettings);
   };
+
+  const handleSaveSettings = async () => {
+    try {
+      setSettings(tempSettings);
+      setShowSettingsModal(false);
+      console.log("Settings saved successfully!");
+    } catch (error) {
+      console.error("Failed to save settings:", error);
+      toast.error("Failed to save profile settings", {
+        title: "Error",
+      });
+    }
+  };
+
+  useEffect(() => {
+    setTempSettings(settings);
+  }, [settings]);
 
   // Validation function
   const validateField = (
@@ -279,10 +247,14 @@ const ProfileTemplate: React.FC<ProfileTemplateProps> = ({
   // API Functions (keeping existing ones)
   const fetchUserProfile = async () => {
     setLoading("fetching_user_profile");
+    const url = currentUser
+      ? `${V1_BASE_URL}/settings/profile/${currentUser}`
+      : `${V1_BASE_URL}/settings/profile`;
+
     try {
       const profileRes: Profile = await GetAllData({
         access: accessToken,
-        url: `${V1_BASE_URL}/settings/profile`,
+        url: url,
         type: "User Profile",
       });
       if (profileRes) {
@@ -293,6 +265,25 @@ const ProfileTemplate: React.FC<ProfileTemplateProps> = ({
     } finally {
       setLoading("fetching_user_profile");
     }
+  };
+
+  const loadInitialData = async () => {
+    if (!accessToken || !layoutLoaded) return;
+    try {
+      await Promise.all([fetchUserData(), fetchUserProfile()]);
+    } catch (error) {
+      console.error("Error loading initial data:", error);
+      setLayoutLoaded(false); // Only set false on error
+    }
+  };
+
+  useEffect(() => {
+    loadInitialData();
+  }, [accessToken, layoutLoaded]);
+
+  const handleCancelSettings = () => {
+    setTempSettings(settings);
+    setShowSettingsModal(false);
   };
 
   const handleProfilePictureCapture = async (newPicture: string | null) => {
@@ -656,18 +647,7 @@ const ProfileTemplate: React.FC<ProfileTemplateProps> = ({
     setOriginalUserProfileDetails(newUserProfileDetails);
   }, [userData, userProfile]);
 
-  useEffect(() => {
-    if (!accessToken) return;
-    fetchUserData();
-    fetchUserProfile();
-  }, [accessToken]);
-
-  // Update tempSettings when settings prop changes
-  useEffect(() => {
-    setTempSettings(parsedSettings);
-  }, [parsedSettings]);
-
-  // Dynamic styling functions based on parsedSettings
+  // Dynamic styling functions based on settings
   const getLayoutClasses = () => {
     const spacingClasses = {
       compact: "space-y-2",
@@ -683,17 +663,17 @@ const ProfileTemplate: React.FC<ProfileTemplateProps> = ({
       full: "rounded-3xl",
     };
 
-    const baseClasses = spacingClasses[parsedSettings.spacing];
+    const baseClasses = spacingClasses[settings.spacing];
 
-    switch (parsedSettings.layout) {
+    switch (settings.layout) {
       case "compact":
         return `${baseClasses} max-w-md mx-auto`;
       case "card":
-        return `bg-white dark:bg-gray-800 shadow-lg p-6 ${baseClasses} ${borderRadiusClasses[parsedSettings.borderRadius]}`;
+        return `bg-white dark:bg-gray-800 shadow-lg p-6 ${baseClasses} ${borderRadiusClasses[settings.borderRadius]}`;
       case "minimal":
         return `${baseClasses} border-l-4 border-blue-500 pl-4`;
       case "showcase":
-        return `bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 p-8 ${baseClasses} ${borderRadiusClasses[parsedSettings.borderRadius]}`;
+        return `bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 p-8 ${baseClasses} ${borderRadiusClasses[settings.borderRadius]}`;
       default:
         return baseClasses;
     }
@@ -708,7 +688,7 @@ const ProfileTemplate: React.FC<ProfileTemplateProps> = ({
       full: "rounded-3xl",
     };
 
-    return `bg-gradient-to-br overflow-hidden animated-gradient from-slate-900 via-[var(--accent)] to-slate-900 relative ${parsedSettings.coverHeight} w-full ${borderRadiusClasses[parsedSettings.borderRadius]}`;
+    return `bg-gradient-to-br overflow-hidden animated-gradient from-slate-900 via-[var(--accent)] to-slate-900 relative ${settings.coverHeight} w-full ${borderRadiusClasses[settings.borderRadius]}`;
   };
 
   const getProfilePictureClasses = () => {
@@ -726,7 +706,7 @@ const ProfileTemplate: React.FC<ProfileTemplateProps> = ({
       right: "right-8",
     };
 
-    return `absolute bottom-0 ${positionClasses[parsedSettings.profilePicturePosition]} ${parsedSettings.profilePictureSize} ${borderRadiusClasses[parsedSettings.borderRadius]} border overflow-hidden border-white z-10 bg-gradient-to-br animated-gradient from-slate-900 via-[var(--accent)] cursor-pointer to-slate-900 transform translate-y-1/2`;
+    return `absolute bottom-0 ${positionClasses[settings.profilePicturePosition]} ${settings.profilePictureSize} ${borderRadiusClasses[settings.borderRadius]} border overflow-hidden border-white z-10 bg-gradient-to-br animated-gradient from-slate-900 via-[var(--accent)] cursor-pointer to-slate-900 transform translate-y-1/2`;
   };
 
   const getProfileInfoClasses = () => {
@@ -748,7 +728,7 @@ const ProfileTemplate: React.FC<ProfileTemplateProps> = ({
       minimal: "border-b border-gray-200 dark:border-gray-700 pb-4",
     };
 
-    return `${spacingClasses[parsedSettings.spacing]} ${alignmentClasses[parsedSettings.infoAlignment]} ${styleClasses[parsedSettings.profileInfoStyle]}`;
+    return `${spacingClasses[settings.spacing]} ${alignmentClasses[settings.infoAlignment]} ${styleClasses[settings.profileInfoStyle]}`;
   };
 
   const getActionButtonClasses = () => {
@@ -771,11 +751,11 @@ const ProfileTemplate: React.FC<ProfileTemplateProps> = ({
     };
 
     // Combine classes
-    baseClasses += `flex gap-3 ${alignmentClasses[parsedSettings.infoAlignment]} `;
-    baseClasses += styleClasses[parsedSettings.actionButtonStyle];
+    baseClasses += `flex gap-3 ${alignmentClasses[settings.infoAlignment]} `;
+    baseClasses += styleClasses[settings.actionButtonStyle];
 
     // Add margin/spacing if needed
-    if (parsedSettings.actionButtonStyle !== "minimal") {
+    if (settings.actionButtonStyle !== "minimal") {
       baseClasses += " mt-4"; // Add top margin for non-minimal styles
     }
 
@@ -795,7 +775,7 @@ const ProfileTemplate: React.FC<ProfileTemplateProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <Dropdown
-                label="Layout Type"
+                  label="Layout Type"
                   value={tempSettings.layout}
                   onSelect={(e: string) => handleSettingsChange("layout", e)}
                   options={[
@@ -808,56 +788,48 @@ const ProfileTemplate: React.FC<ProfileTemplateProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium  mb-2">
-                  Spacing
-                </label>
-                <select
+                <Dropdown
+                  label="Spacing"
                   value={tempSettings.spacing}
-                  onChange={(e) =>
-                    handleSettingsChange("spacing", e.target.value)
-                  }
-                  className="w-full p-2 border border-[var(--accent)] rounded-md bg-[var(--background)]"
-                >
-                  <option value="compact">Compact</option>
-                  <option value="normal">Normal</option>
-                  <option value="relaxed">Relaxed</option>
-                </select>
+                  onSelect={(e: string) => handleSettingsChange("spacing", e)}
+                  options={[
+                    { id: "compact", code: "Compact" },
+                    { id: "normal", code: "Normal" },
+                    { id: "relaxed", code: "Relaxed" },
+                  ]}
+                />
               </div>
 
               <div>
-                <label className="block text-sm font-medium  mb-2">
-                  Border Radius
-                </label>
-                <select
+                <Dropdown
+                  label="Border Radius"
                   value={tempSettings.borderRadius}
-                  onChange={(e) =>
-                    handleSettingsChange("borderRadius", e.target.value)
+                  onSelect={(e: string) =>
+                    handleSettingsChange("borderRadius", e)
                   }
-                  className="w-full p-2 border border-[var(--accent)] rounded-md bg-[var(--background)]"
-                >
-                  <option value="none">None</option>
-                  <option value="small">Small</option>
-                  <option value="medium">Medium</option>
-                  <option value="large">Large</option>
-                  <option value="full">Full</option>
-                </select>
+                  options={[
+                    { id: "none", code: "None" },
+                    { id: "small", code: "Small" },
+                    { id: "medium", code: "Medium" },
+                    { id: "large", code: "Large" },
+                    { id: "full", code: "Full" },
+                  ]}
+                />
               </div>
 
               <div>
-                <label className="block text-sm font-medium  mb-2">
-                  Content Alignment
-                </label>
-                <select
+                <Dropdown
+                  label="Content Alignment"
                   value={tempSettings.infoAlignment}
-                  onChange={(e) =>
-                    handleSettingsChange("infoAlignment", e.target.value)
+                  onSelect={(e: string) =>
+                    handleSettingsChange("infoAlignment", e)
                   }
-                  className="w-full p-2 border border-[var(--accent)] rounded-md bg-[var(--background)]"
-                >
-                  <option value="left">Left</option>
-                  <option value="center">Center</option>
-                  <option value="right">Right</option>
-                </select>
+                  options={[
+                    { id: "left", code: "Left" },
+                    { id: "center", code: "Center" },
+                    { id: "right", code: "Right" },
+                  ]}
+                />
               </div>
             </div>
           </div>
@@ -874,26 +846,25 @@ const ProfileTemplate: React.FC<ProfileTemplateProps> = ({
                 />
                 <p className="text-xs font-medium ">Show Cover Photo</p>
               </div>
-
-              <div>
-                <label className="block text-sm font-medium  mb-2">
-                  Cover Height
-                </label>
-                <select
-                  value={tempSettings.coverHeight}
-                  onChange={(e) =>
-                    handleSettingsChange("coverHeight", e.target.value)
-                  }
-                  className="w-full p-2 border border-[var(--accent)] rounded-md bg-[var(--background)]"
-                  disabled={!tempSettings.showCover}
-                >
-                  <option value="h-48">Small (192px)</option>
-                  <option value="h-56">Medium (224px)</option>
-                  <option value="h-64">Default (256px)</option>
-                  <option value="h-72">Large (288px)</option>
-                  <option value="h-80">Extra Large (320px)</option>
-                </select>
-              </div>
+              {tempSettings.showCover && (
+                <div>
+                  <Dropdown
+                    label="Cover Height"
+                    value={tempSettings.coverHeight}
+                    onSelect={(e: string) =>
+                      handleSettingsChange("coverHeight", e)
+                    }
+                    disabled={!tempSettings.showCover}
+                    options={[
+                      { id: "h-48", code: "Small (192px)" },
+                      { id: "h-56", code: "Medium (224px)" },
+                      { id: "h-64", code: "Default (256px)" },
+                      { id: "h-72", code: "Large (288px)" },
+                      { id: "h-80", code: "Extra Large (320px)" },
+                    ]}
+                  />
+                </div>
+              )}
             </div>
           </div>
 
@@ -902,42 +873,35 @@ const ProfileTemplate: React.FC<ProfileTemplateProps> = ({
             <h3 className="text-lg font-semibold mb-4 ">Profile Picture</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium  mb-2">
-                  Picture Size
-                </label>
-                <select
+                <Dropdown
+                  label="Profile Picture Size"
                   value={tempSettings.profilePictureSize}
-                  onChange={(e) =>
-                    handleSettingsChange("profilePictureSize", e.target.value)
+                  onSelect={(e: string) =>
+                    handleSettingsChange("profilePictureSize", e)
                   }
-                  className="w-full p-2 border border-[var(--accent)] rounded-md bg-[var(--background)]"
-                >
-                  <option value="w-24 h-24">Small (96px)</option>
-                  <option value="w-28 h-28">Medium Small (112px)</option>
-                  <option value="w-32 h-32">Default (128px)</option>
-                  <option value="w-36 h-36">Large (144px)</option>
-                  <option value="w-40 h-40">Extra Large (160px)</option>
-                </select>
+                  options={[
+                    { id: "w-24 h-24", code: "Small (96px)" },
+                    { id: "w-28 h-28", code: "Medium Small (112px)" },
+                    { id: "w-32 h-32", code: "Default (128px)" },
+                    { id: "w-36 h-36", code: "Large (144px)" },
+                    { id: "w-40 h-40", code: "Extra Large (160px)" },
+                  ]}
+                />
               </div>
 
               <div>
-                <label className="block text-sm font-medium  mb-2">
-                  Picture Position
-                </label>
-                <select
+                <Dropdown
+                  label="Picture Position"
                   value={tempSettings.profilePicturePosition}
-                  onChange={(e) =>
-                    handleSettingsChange(
-                      "profilePicturePosition",
-                      e.target.value
-                    )
+                  onSelect={(e: string) =>
+                    handleSettingsChange("profilePicturePosition", e)
                   }
-                  className="w-full p-2 border border-[var(--accent)] rounded-md bg-[var(--background)]"
-                >
-                  <option value="left">Left</option>
-                  <option value="center">Center</option>
-                  <option value="right">Right</option>
-                </select>
+                  options={[
+                    { id: "left", code: "Left" },
+                    { id: "center", code: "Center" },
+                    { id: "right", code: "Right" },
+                  ]}
+                />
               </div>
             </div>
           </div>
@@ -1049,7 +1013,11 @@ const ProfileTemplate: React.FC<ProfileTemplateProps> = ({
               onClick={handleCancelSettings}
               variant="ghost"
             />
-            <Button text="Save Setting" onClick={handleSaveSettings} />
+            <Button
+              text="Save Setting"
+              loading={loading.includes("updating_layout")}
+              onClick={handleSaveSettings}
+            />
           </div>
         </div>
       </div>
@@ -1058,19 +1026,19 @@ const ProfileTemplate: React.FC<ProfileTemplateProps> = ({
 
   return (
     <div className={`${getLayoutClasses()} ${className} relative`}>
+      {" "}
       {/* Settings Button */}
-      {showSettings && (
+      { !currentUser && (
         <span
           onClick={() => setShowSettingsModal(true)}
-          className="absolute z-50 top-4 cursor-pointer left-4 p-2 bg-black/50 rounded-full backdrop-blur-sm"
+          className="absolute z-50 top-0 cursor-pointer left-0 p-2 bg-black/50 rounded-full backdrop-blur-sm"
           title="Customize Profile"
         >
           <MdDashboard size={16} />
         </span>
       )}
-
       {/* Cover Photo Section */}
-      {parsedSettings.showCover && (
+      {settings.showCover && (
         <div className="relative">
           <CoverPhoto
             userProfile={userProfile}
@@ -1084,17 +1052,16 @@ const ProfileTemplate: React.FC<ProfileTemplateProps> = ({
           />
         </div>
       )}
-
       {/* Profile Info Section */}
       <div className={getProfileInfoClasses()}>
         <ProfileInfo
           userInfo={userInfo}
           userProfileDetails={userProfileDetails}
-          // settings={parsedSettings}
+          // settings={settings}
         />
 
         {/* Profile Actions */}
-        {parsedSettings.showActions && (
+        {settings.showActions && (
           <ProfileActions
             onEditClick={() => setEditPanel(true)}
             className={getActionButtonClasses()}
@@ -1104,7 +1071,6 @@ const ProfileTemplate: React.FC<ProfileTemplateProps> = ({
         {/* Custom children content */}
         {children}
       </div>
-
       {/* Settings Modal */}
       <Modal
         size="lg"
@@ -1117,7 +1083,6 @@ const ProfileTemplate: React.FC<ProfileTemplateProps> = ({
       >
         <SettingsModal />
       </Modal>
-
       {/* Image Actions Modal */}
       <ImageActionsModal
         profileImages={profileImages}
@@ -1133,7 +1098,6 @@ const ProfileTemplate: React.FC<ProfileTemplateProps> = ({
         onImageFinish={handleImageFinish}
         onDeleteImage={deleteProfileImage}
       />
-
       {/* Profile Edit Modal */}
       <ProfileEditModal
         isOpen={editPanel}

@@ -1,8 +1,8 @@
 import React from "react";
 import { getColorShade } from "../../utilities/syncFunctions/syncs";
-import { useTheme } from "../../theme/ThemeContext ";
 import Image from "next/image";
 import Button from "../../buttons/Buttons";
+import { useTheme } from "../../theme/ThemeContext ";
 
 interface EmptyStateProps {
   icon?: React.ComponentType<React.SVGProps<SVGSVGElement>>; // Accepts Lucide icons or other SVG components
@@ -13,6 +13,9 @@ interface EmptyStateProps {
   hasFilters?: boolean;
   onClearFilters?: () => void;
   className?: string;
+  imageUrl?: string; // New prop for custom image URL
+  imageWidth?: number; // New prop for image width
+  imageHeight?: number; // New prop for image height
 }
 
 const EmptyState: React.FC<EmptyStateProps> = ({
@@ -23,8 +26,12 @@ const EmptyState: React.FC<EmptyStateProps> = ({
   hasFilters = false,
   onClearFilters,
   className = "",
+  imageUrl = "/vectors/undraw_search-engines_k649.svg", // Default image URL
+  imageWidth = 100, // Default width
+  imageHeight = 100, // Default height
 }) => {
   const { theme } = useTheme();
+  
   return (
     <div
       style={{
@@ -32,13 +39,16 @@ const EmptyState: React.FC<EmptyStateProps> = ({
       }}
       className={`col-span-full shadow-xl rounded-2xl flex flex-col items-center justify-center py-12 ${className}`}
     >
-      <Image
-        width={100}
-        height={100}
-        alt="Nothing found"
-        src={"/vectors/undraw_search-engines_k649.svg"}
-      />
-      <div className="text-center ">
+      {imageUrl && (
+        <Image
+          width={imageWidth}
+          height={imageHeight}
+          alt="Nothing found"
+          src={imageUrl}
+        />
+      )}
+      
+      <div className="text-center">
         <h3 className="text-lg font-semibold text- mb-2">{title}</h3>
         <p className="text- mb-4">{description}</p>
 

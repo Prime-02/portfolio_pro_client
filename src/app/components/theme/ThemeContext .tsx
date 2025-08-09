@@ -28,6 +28,7 @@ import {
 } from "../utilities/syncFunctions/syncs";
 import { UserPreferences } from "../types and interfaces/UserAndProfile";
 import { systemLanguages } from "../utilities/indices/DropDownItems";
+import { toast } from "../toastify/Toastify";
 
 export type ThemeContextType = {
   theme: Theme;
@@ -45,6 +46,59 @@ export type ThemeContextType = {
   setLoader: (loader: LoaderInput) => void;
   language: LanguageProps;
   setLanguage: (language: LanguageProps) => void;
+  settings: ProfileSettings;
+  setSettings: (settings: ProfileSettings) => void;
+  defaultSettings: ProfileSettings;
+  layoutLoaded: boolean;
+  setLayoutLoaded: (layoutLoaded: boolean) => void;
+  getUserSettings: (url: string | undefined) => void;
+};
+
+// Settings interface
+export interface ProfileSettings {
+  layout: "default" | "compact" | "card" | "minimal" | "showcase";
+  showCover: boolean;
+  showActions: boolean;
+  coverHeight: "h-48" | "h-56" | "h-64" | "h-72" | "h-80";
+  profilePictureSize:
+    | "w-24 h-24"
+    | "w-28 h-28"
+    | "w-32 h-32"
+    | "w-36 h-36"
+    | "w-40 h-40";
+  profilePicturePosition: "left" | "center" | "right";
+  infoAlignment: "left" | "center" | "right";
+  spacing: "compact" | "normal" | "relaxed";
+  borderRadius: "none" | "small" | "medium" | "large" | "full";
+  showBio: boolean;
+  showProfession: boolean;
+  showLocation: boolean;
+  showWebsite: boolean;
+  showExperience: boolean;
+  showAvailability: boolean;
+  actionButtonStyle: "default" | "outline" | "minimal" | "rounded";
+  profileInfoStyle: "default" | "card" | "minimal";
+}
+
+// Default settings
+const defaultSettings: ProfileSettings = {
+  layout: "default",
+  showCover: true,
+  showActions: true,
+  coverHeight: "h-64",
+  profilePictureSize: "w-32 h-32",
+  profilePicturePosition: "left",
+  infoAlignment: "left",
+  spacing: "normal",
+  borderRadius: "medium",
+  showBio: true,
+  showProfession: true,
+  showLocation: true,
+  showWebsite: true,
+  showExperience: true,
+  showAvailability: true,
+  actionButtonStyle: "default",
+  profileInfoStyle: "default",
 };
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -86,6 +140,8 @@ export const ThemeProvider = ({
   const [darkTheme, setDarkTheme] = useState<Theme>(initialDarkTheme);
   const [accentColor, setAccentColor] = useState<Accent>(initialAccentColor);
   const [language, setLanguage] = useState<LanguageProps>(initialLanguage);
+  const [layoutLoaded, setLayoutLoaded] = useState(false);
+
   const [loader, _setLoader] = useState<Loader>(() => {
     if (typeof initialLoader === "string") {
       return initialLoader as Loader;
@@ -93,7 +149,9 @@ export const ThemeProvider = ({
     return initialLoader.style as Loader;
   });
 
-  const { accessToken, setLoading } = useGlobalState();
+  const [settings, setSettings] = useState<ProfileSettings>(defaultSettings);
+
+  const { accessToken, setLoading, currentUser } = useGlobalState();
 
   // State for the theme variant (light/dark/system)
   const [themeVariant, setThemeVariant] =
@@ -218,14 +276,19 @@ export const ThemeProvider = ({
     });
   };
 
-  const getUserSettings = async () => {
+  const getUserSettings = async (url = currentUser) => {
     if (!accessToken || isUpdatingSettings.current) return;
+    setLayoutLoaded(false);
 
     setLoading("fething_user_settings");
+    url = currentUser
+      ? `${V1_BASE_URL}/settings/${currentUser}`
+      : `${V1_BASE_URL}/settings/`;
+
     try {
       const settingsRes: UserPreferences = await GetAllData({
         access: accessToken,
-        url: `${V1_BASE_URL}/settings/`,
+        url: url,
         type: "User Settings",
       });
 
@@ -240,6 +303,7 @@ export const ThemeProvider = ({
           "secondary_theme_dark",
           "loader",
           "accent",
+          "layout_style", // Added layout_style to required settings
         ];
 
         // Check if any required setting is missing or falsy
@@ -249,7 +313,7 @@ export const ThemeProvider = ({
 
         // Apply settings if they exist
         if (settingsRes.accent && isValidHexColorStrict(settingsRes.accent)) {
-          setAccentColor({ color: settingsRes.accent }); // Fixed: was using settingsRes.language
+          setAccentColor({ color: settingsRes.accent });
         } else {
           needsUpdate = true;
         }
@@ -271,7 +335,7 @@ export const ThemeProvider = ({
           settingsRes.theme &&
           ["light", "dark", "system"].includes(settingsRes.theme)
         ) {
-          setThemeVariant(settingsRes.theme as ThemeVariant); // Fixed: was setting theme instead of themeVariant
+          setThemeVariant(settingsRes.theme as ThemeVariant);
         } else {
           needsUpdate = true;
         }
@@ -315,6 +379,35 @@ export const ThemeProvider = ({
           needsUpdate = true;
         }
 
+        // Handle layout_style and profile settings
+        if (settingsRes.layout_style) {
+          try {
+            // If layout_style is a JSON string, parse it
+            const profileSettings =
+              typeof settingsRes.layout_style === "string"
+                ? JSON.parse(settingsRes.layout_style)
+                : settingsRes.layout_style;
+
+            // Merge with default settings to ensure all properties exist
+            const mergedSettings = Object.assign(
+              {},
+              defaultSettings,
+              profileSettings
+            );
+            setLayoutLoaded(true);
+            setSettings(mergedSettings);
+          } catch (error) {
+            console.error("Error parsing layout_style:", error);
+            // If parsing fails, use default settings and mark for update
+            setSettings(defaultSettings);
+            needsUpdate = true;
+          }
+        } else {
+          // If no layout_style exists, use default settings and mark for update
+          setSettings(defaultSettings);
+          needsUpdate = true;
+        }
+
         initialLoadComplete.current = true;
 
         // Trigger update if any setting was missing
@@ -324,13 +417,15 @@ export const ThemeProvider = ({
       }
     } catch (error) {
       console.error("Error fetching user settings:", error);
+      // Set default settings on error
+      setSettings(defaultSettings);
     } finally {
       setLoading("fething_user_settings");
     }
   };
-
   const updateUserSettings = async () => {
     if (!accessToken || isUpdatingSettings.current) return;
+    if (currentUser) return;
 
     isUpdatingSettings.current = true;
     setLoading("fething_user_settings");
@@ -347,6 +442,7 @@ export const ThemeProvider = ({
           primary_theme_dark: darkTheme.background,
           secondary_theme_dark: darkTheme.foreground,
           loader: loader,
+          layout_style: settings,
         },
         url: `${V1_BASE_URL}/settings/`,
       });
@@ -405,10 +501,11 @@ export const ThemeProvider = ({
     if (accessToken && !initialLoadComplete.current) {
       getUserSettings();
     }
-  }, [accessToken]);
+  }, [accessToken, currentUser]);
 
   // Update settings when values change (but only after initial load)
   // Use primitive values to avoid object reference issues
+  // In ThemeContext.tsx
   useEffect(() => {
     if (
       initialLoadComplete.current &&
@@ -417,8 +514,7 @@ export const ThemeProvider = ({
     ) {
       const timeoutId = setTimeout(() => {
         updateUserSettings();
-      }, 500); // debounce updates
-
+      }, 500);
       return () => clearTimeout(timeoutId);
     }
   }, [
@@ -430,6 +526,7 @@ export const ThemeProvider = ({
     darkTheme.foreground,
     language.code,
     accentColor.color,
+    settings, // ✅ Add this
   ]);
 
   return (
@@ -450,6 +547,12 @@ export const ThemeProvider = ({
         setLoader,
         language,
         setLanguage,
+        settings,
+        setSettings,
+        defaultSettings,
+        layoutLoaded,
+        setLayoutLoaded,
+        getUserSettings,
       }}
     >
       {children}

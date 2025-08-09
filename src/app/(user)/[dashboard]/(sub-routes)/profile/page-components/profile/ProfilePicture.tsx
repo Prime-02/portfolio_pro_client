@@ -4,6 +4,7 @@ import React from "react";
 import ProfileImageSkeleton from "@/app/components/containers/skeletons/ProfileImageSkeleton";
 import { User } from "@/app/components/types and interfaces/UserAndProfile";
 import { ModalType } from "@/app/components/types and interfaces/userprofile";
+import { useGlobalState } from "@/app/globalStateProvider";
 
 interface ProfilePictureProps {
   userData: User;
@@ -14,11 +15,15 @@ interface ProfilePictureProps {
 const ProfilePicture: React.FC<ProfilePictureProps> = ({
   userData,
   onEditClick,
-  className = "absolute bottom-0 left-8 w-32 h-32 overflow-clip rounded-full border border-white z-10 bg-gradient-to-br animated-gradient from-slate-900 via-[var(--accent)] to-slate-900 transform cursor-pointer translate-y-1/2",
+  className = "absolute bottom-0 left-8 w-32 h-32 overflow-clip rounded-full border border-white z-10 cursor-pointer translate-y-1/2",
 }) => {
+  const { currentUser } = useGlobalState();
   return (
     <span
-      onClick={() => onEditClick({ type: "profile" })}
+      onClick={() => {
+        if (currentUser) return;
+        onEditClick({ type: "profile" });
+      }}
       className={className}
     >
       {userData.profile_picture ? (
@@ -32,7 +37,7 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
       ) : (
         <ProfileImageSkeleton
           size="full"
-          rounded="full"
+          rounded="none"
           className="w-full h-full"
           showIcon={true}
         />

@@ -127,7 +127,7 @@ const Step3 = () => {
   return (
     <TemplateStructure
       headerAlignment="right"
-      step={contactAndLocation.step + "/5"}
+      step={contactAndLocation.step + "/6"}
       headerDescription={contactAndLocation.description}
       greeting={contactAndLocation.greeting}
       pageWriteup={contactAndLocation.page_writeup}

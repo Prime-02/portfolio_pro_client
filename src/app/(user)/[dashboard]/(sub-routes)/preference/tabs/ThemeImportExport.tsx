@@ -1,11 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  Download,
-  Upload,
-  Check,
-  X,
-  Palette,
-} from "lucide-react";
+import { Download, Upload, Check, X, Palette } from "lucide-react";
 import { useTheme } from "@/app/components/theme/ThemeContext ";
 import {
   Theme,
@@ -13,6 +7,10 @@ import {
   ThemeVariant,
   Loader,
 } from "@/app/components/types and interfaces/loaderTypes";
+import Dropdown from "@/app/components/inputs/DynamicDropdown";
+import Button from "@/app/components/buttons/Buttons";
+import Modal from "@/app/components/containers/modals/Modal";
+import { toast } from "@/app/components/toastify/Toastify";
 
 interface ThemeImportExportProps {
   onImportSuccess?: () => void;
@@ -583,113 +581,98 @@ const ThemeImportExport: React.FC<ThemeImportExportProps> = ({
     }
   };
 
+  useEffect(() => {
+    if (importStatus === "success" && !showColorPicker) {
+      toast.success("Theme successfully imported", {
+        title: "Success",
+      });
+      return;
+    }
+    if (exportStatus === "success") {
+      toast.success("Theme exprted imported", {
+        title: "Success",
+      });
+      return;
+    }
+    if (importStatus === "error") {
+      toast.error("Error importing theme. Please check the file format.", {
+        title: "Error",
+      });
+      return;
+    }
+  }, [importStatus, exportStatus, showColorPicker]);
+
   return (
     <div className={`space-y-4 ${className}`}>
-      {/* Status Messages */}
-      {importStatus === "success" && !showColorPicker && (
-        <div className="p-3 rounded-lg bg-green-500 bg-opacity-10 border border-green-500 border-opacity-20 text-green-600">
-          Theme imported successfully!
-        </div>
-      )}
-      {importStatus === "error" && (
-        <div className="p-3 rounded-lg bg-red-500 bg-opacity-10 border border-red-500 border-opacity-20 text-red-600">
-          Error importing theme. Please check the file format.
-        </div>
-      )}
-      {exportStatus === "success" && (
-        <div className="p-3 rounded-lg bg-green-500 bg-opacity-10 border border-green-500 border-opacity-20 text-green-600">
-          Theme exported successfully!
-        </div>
-      )}
+      <Modal
+        onClose={() => {
+          setShowColorPicker(false);
+        }}
+        isOpen={showColorPicker}
+        title={` Detected Colors (${detectedColors.length})`}
+      >
+        <p className="text-sm  mb-4">
+          Assign colors to your theme properties. Auto-assignments have been
+          made based on color brightness.
+        </p>
 
-      {/* Color Picker Modal */}
-      {showColorPicker && (
-        <div className="fixed inset-0 backdrop-blur-lg bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-[var(--background)] rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold flex items-center gap-2">
-                <Palette className="w-5 h-5" />
-                Detected Colors ({detectedColors.length})
-              </h3>
-              <button
-                onClick={() => setShowColorPicker(false)}
-                className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              Assign colors to your theme properties. Auto-assignments have been
-              made based on color brightness.
-            </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              {detectedColors.map((color, index) => (
-                <div key={index} className="border rounded-lg p-3">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div
-                      className="w-8 h-8 rounded border"
-                      style={{ backgroundColor: color.hex }}
-                    />
-                    <div>
-                      <p className="font-mono text-sm">{color.hex}</p>
-                      {color.name && (
-                        <p className="text-xs text-gray-500">{color.name}</p>
-                      )}
-                    </div>
-                  </div>
-
-                  <select
-                    value={color.assigned || ""}
-                    onChange={(e) =>
-                      assignColor(
-                        index,
-                        (e.target.value as DetectedColor["assigned"]) || null
-                      )
-                    }
-                    className="w-full p-2 border rounded text-sm"
-                  >
-                    <option value="">Unassigned</option>
-                    <option value="lightBg">Light Background</option>
-                    <option value="lightFg">Light Foreground</option>
-                    <option value="darkBg">Dark Background</option>
-                    <option value="darkFg">Dark Foreground</option>
-                    <option value="accent">Accent Color</option>
-                  </select>
-
-                  {color.assigned && (
-                    <p className="text-xs text-blue-600 mt-1">
-                      → {getAssignmentLabel(color.assigned)}
-                    </p>
-                  )}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          {detectedColors.map((color, index) => (
+            <div key={index} className="border rounded-lg p-3">
+              <div className="flex items-center gap-3 mb-2">
+                <div
+                  className="w-8 h-8 rounded border"
+                  style={{ backgroundColor: color.hex }}
+                />
+                <div>
+                  <p className="font-mono text-sm">{color.hex}</p>
+                  {color.name && <p className="text-xs">{color.name}</p>}
                 </div>
-              ))}
-            </div>
+              </div>
 
-            <div className="flex gap-3">
-              <button
-                onClick={applySelectedColors}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
-              >
-                <Check className="w-4 h-4" />
-                Apply Colors
-              </button>
-              <button
-                onClick={() => setShowColorPicker(false)}
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                Cancel
-              </button>
+              <Dropdown
+                value={color.assigned || ""}
+                onSelect={(e: string) =>
+                  assignColor(index, (e as DetectedColor["assigned"]) || null)
+                }
+                options={[
+                  { id: "", code: "Unassigned" },
+                  { id: "lightBg", code: "Light Background" },
+                  { id: "lightFg", code: "Light Foreground" },
+                  { id: "darkBg", code: "Dark Background" },
+                  { id: "darkFg", code: "Dark Foreground" },
+                  { id: "accent", code: "Accent Color" },
+                ]}
+                className="w-full p-2 border rounded text-sm"
+              />
+
+              {color.assigned && (
+                <p className="text-xs  mt-1">
+                  → {getAssignmentLabel(color.assigned)}
+                </p>
+              )}
             </div>
-          </div>
+          ))}
         </div>
-      )}
+
+        <div className="flex gap-3">
+          <Button
+            text="Apply Color"
+            icon2={<Check />}
+            onClick={applySelectedColors}
+          />
+          <Button
+            text="Cancel"
+            variant="outline"
+            onClick={() => setShowColorPicker(false)}
+          />
+        </div>
+      </Modal>
 
       {/* Import/Export Buttons */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Smart Theme Management</h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+        <p className="text-sm ">
           Import themes from JSON, XML, CSV, TXT files, or any file containing
           color codes in various formats (hex, rgb, hsl).
         </p>
@@ -737,10 +720,8 @@ const ThemeImportExport: React.FC<ThemeImportExportProps> = ({
 
         {/* Supported Formats */}
         <details className="text-sm">
-          <summary className="cursor-pointer text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200">
-            Supported file formats
-          </summary>
-          <div className="mt-2 space-y-1 text-xs text-gray-500 dark:text-gray-400">
+          <summary className="cursor-pointer ">Supported file formats</summary>
+          <div className="mt-2 space-y-1 text-xs ">
             <p>
               • <strong>JSON:</strong> Theme configs, color objects, arrays
             </p>

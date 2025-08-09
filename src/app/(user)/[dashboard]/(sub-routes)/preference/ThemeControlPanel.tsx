@@ -76,10 +76,7 @@ const ThemeControlPanel = ({ component }: ThemeControlPanelProp) => {
 
         {/* Tab Content */}
         <div
-          className="space-y-6 p-4 min-w-md rounded-xl"
-          style={{
-            backgroundColor: getColorShade(theme.background, 5),
-          }}
+          className="space-y-6 p-4 min-w-md rounded-xl shadow-xl"
         >
           {activeTab === "themes" && <Themes />}
 

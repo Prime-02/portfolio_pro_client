@@ -51,8 +51,8 @@ const LandingPageNavbar = () => {
         backgroundColor: getColorShade(theme.background, 10),
       }}
     >
-      {/* Mobile Search Overlay */}
-      {isMobile && showMobileSearch && (
+      {/* Mobile Search Overlay - Only shown when signed in */}
+      {isSignedIn && isMobile && showMobileSearch && (
         <div
           className="absolute top-0 left-0 right-0 z-50 p-4 flex items-center gap-2"
           style={{
@@ -79,8 +79,8 @@ const LandingPageNavbar = () => {
           <PortfolioProLogo scale={0.2} />
         </Link>
 
-        {/* Mobile Search Icon - Only visible on mobile */}
-        {isMobile && (
+        {/* Mobile Search Icon - Only visible on mobile and when signed in */}
+        {isSignedIn && isMobile && (
           <button
             onClick={() => setShowMobileSearch(true)}
             className="cursor-pointer rounded-full w-12 h-12 flex items-center justify-center bg-[var(--background)]"
@@ -90,8 +90,8 @@ const LandingPageNavbar = () => {
           </button>
         )}
 
-        {/* Desktop Search - Hidden on mobile */}
-        {!isMobile && (
+        {/* Desktop Search - Hidden on mobile and when not signed in */}
+        {isSignedIn && !isMobile && (
           <div className="min-w-0">
             <div className="w-full max-w-3xl lg:max-w-4xl xl:max-w-5xl">
               <AbsoluteSearch />

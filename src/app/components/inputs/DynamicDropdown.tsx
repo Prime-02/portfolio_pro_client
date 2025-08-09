@@ -26,6 +26,7 @@ interface DropdownProps {
   type?: string;
   value?: string;
   label?: string;
+  disabled?: boolean
 }
 
 interface DropdownMenuProps {
@@ -166,6 +167,7 @@ const Dropdown: React.FC<DropdownProps> = ({
   type,
   value,
   label,
+  disabled =false
 }) => {
   const { theme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
@@ -285,7 +287,7 @@ const Dropdown: React.FC<DropdownProps> = ({
 
   return (
     <>
-      <span>{label}</span>
+      <span className=" text-xs">{label}</span>
       <div
         tabIndex={0}
         onFocus={onFocus}

@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import ProfileSideBar from "../components/ProfileSideBar";
 import { useTheme } from "@/app/components/theme/ThemeContext ";
 import { getColorShade } from "@/app/components/utilities/syncFunctions/syncs";
@@ -17,6 +18,7 @@ const UsersLayout = ({
   const { isLoaded, isSignedIn } = useUser();
   const toast = useToast();
   const { currentUser, getCurrentUser, router, accessToken } = useGlobalState();
+
   useEffect(() => {
     if (!isLoaded) return;
 
@@ -43,16 +45,34 @@ const UsersLayout = ({
     <>
       <div className="flex">
         <ProfileSideBar />
-        <div className="flex-1 mx-auto  max-w-5xl min-w-sm overflow-auto mt-5 ">
-          <div
-            className="rounded-3xl"
+        <motion.div 
+          className="flex items-center justify-center min-h-screen h-auto mx-auto max-w-5xl min-w-sm overflow-auto py-5 px-2"
+          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{
+            duration: 0.6,
+            ease: "easeOut",
+            type: "spring",
+            stiffness: 100,
+            damping: 20
+          }}
+        >
+          <motion.div
+            className="rounded-3xl h-auto"
             style={{
               backgroundColor: getColorShade(theme?.background, 10),
             }}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{
+              duration: 0.8,
+              delay: 0.2,
+              ease: "easeOut"
+            }}
           >
             {children}
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
     </>
   );

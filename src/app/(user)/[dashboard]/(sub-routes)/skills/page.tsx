@@ -4,7 +4,7 @@ import SkillsDisplay from './page-components/SkillsDisplay'
 
 const Skills = () => {
   return (
-    <div className='min-h-screen p-8'>
+    <div className='h-auto p-8'>
      <SkillsDisplay/>
     </div>
   )

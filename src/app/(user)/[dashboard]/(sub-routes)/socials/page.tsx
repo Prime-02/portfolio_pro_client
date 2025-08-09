@@ -4,7 +4,7 @@ import SocialsDisplay from "./page-componet/SocialsDisplay";
 
 const Socials = () => {
   return (
-    <div className="w-full min-h-screen h-auto">
+    <div className="w-full h-auto">
       <SocialsDisplay />
     </div>
   );

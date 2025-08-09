@@ -20,6 +20,10 @@ import Button from "../buttons/Buttons";
 interface ImageCropperProps {
   onFinish?: (data: { file: File | null; croppedImage: string | null }) => void;
   loading?: boolean;
+  croppedImage?: string | null; // Optional controlled state for final image
+  onCroppedImageChange?: (croppedImage: string | null) => void; // Callback for controlled mode
+  title?: string;
+  description?: string;
 }
 
 type ImageFormat = "jpeg" | "png" | "webp";
@@ -29,12 +33,18 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 export default function ImageCropper({
   onFinish,
   loading = false,
+  croppedImage: controlledCroppedImage, // Controlled cropped image state
+  onCroppedImageChange, // Callback for when cropped image changes
+  title = "Upload Image",
+  description = "All formats supported, up to 5mb",
 }: ImageCropperProps) {
   const { theme } = useTheme();
   const [image, setImage] = useState<string | null>(null);
   const [currentFile, setCurrentFile] = useState<File | null>(null);
   const [crop, setCrop] = useState<Crop>();
-  const [croppedImage, setCroppedImage] = useState<string | null>(null);
+  const [internalCroppedImage, setInternalCroppedImage] = useState<
+    string | null
+  >(null);
   const [fileName, setFileName] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -52,6 +62,23 @@ export default function ImageCropper({
 
   const currentImage = image;
 
+  // Determine if component is in controlled mode
+  const isControlled = controlledCroppedImage !== undefined;
+
+  // Use controlled or internal cropped image state
+  const croppedImage = isControlled
+    ? controlledCroppedImage
+    : internalCroppedImage;
+
+  // Helper to update cropped image (controlled or internal)
+  const updateCroppedImage = (newCroppedImage: string | null) => {
+    if (isControlled && onCroppedImageChange) {
+      onCroppedImageChange(newCroppedImage);
+    } else {
+      setInternalCroppedImage(newCroppedImage);
+    }
+  };
+
   const aspectRatios = [
     { label: "Free", value: undefined, icon: Maximize },
     { label: "1:1", value: 1, icon: Square },
@@ -60,6 +87,9 @@ export default function ImageCropper({
     { label: "9:16", value: 9 / 16, icon: Smartphone },
     { label: "3:4", value: 3 / 4, icon: Smartphone },
   ];
+
+  // Determine if finish button should be shown (only in uncontrolled mode with onFinish)
+  const shouldShowFinishButton = !isControlled && !!onFinish;
 
   // Clean up object URLs when component unmounts
   useEffect(() => {
@@ -127,7 +157,7 @@ export default function ImageCropper({
           try {
             const imageData = reader.result as string;
             setImage(imageData);
-            setCroppedImage(null);
+            updateCroppedImage(null);
             setCrop(undefined); // Reset crop
             setRotation(0);
             setBrightness(100);
@@ -214,98 +244,125 @@ export default function ImageCropper({
     }
   };
 
+  const generateCroppedImage = useCallback(() => {
+    if (!currentImage || !imgRef.current || !crop?.width || !crop?.height)
+      return;
+
+    setIsProcessing(true);
+
+    requestAnimationFrame(() => {
+      try {
+        const canvas = document.createElement("canvas");
+        const img = imgRef.current!;
+        const scaleX = img.naturalWidth / img.width;
+        const scaleY = img.naturalHeight / img.height;
+
+        const cropWidth = crop.width * scaleX;
+        const cropHeight = crop.height * scaleY;
+
+        // Set canvas size
+        const MAX_DIMENSION = 4000;
+        if (cropWidth > MAX_DIMENSION || cropHeight > MAX_DIMENSION) {
+          const scale = Math.min(
+            MAX_DIMENSION / cropWidth,
+            MAX_DIMENSION / cropHeight
+          );
+          canvas.width = Math.floor(cropWidth * scale);
+          canvas.height = Math.floor(cropHeight * scale);
+        } else {
+          canvas.width = cropWidth;
+          canvas.height = cropHeight;
+        }
+
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.save();
+
+          // Apply all transformations to the canvas
+          ctx.translate(canvas.width / 2, canvas.height / 2);
+
+          // Apply rotation
+          ctx.rotate((rotation * Math.PI) / 180);
+
+          // Apply flips
+          ctx.scale(flipH ? -1 : 1, flipV ? -1 : 1);
+
+          // Draw the cropped portion of the image
+          ctx.drawImage(
+            img,
+            crop.x * scaleX,
+            crop.y * scaleY,
+            cropWidth,
+            cropHeight,
+            -canvas.width / 2,
+            -canvas.height / 2,
+            canvas.width,
+            canvas.height
+          );
+
+          ctx.restore();
+
+          // Apply filters (brightness, contrast, saturation)
+          applyFilters(canvas, ctx);
+
+          // Reduce quality for large images
+          let finalQuality = quality;
+          if (canvas.width * canvas.height > 2000 * 2000) {
+            finalQuality = Math.max(0.6, quality * 0.9);
+          }
+
+          const croppedImageUrl = canvas.toDataURL(
+            `image/${format}`,
+            finalQuality
+          );
+          updateCroppedImage(croppedImageUrl);
+        }
+      } catch (err) {
+        setError("Error processing image");
+        console.log(err);
+      } finally {
+        setIsProcessing(false);
+      }
+    });
+  }, [
+    currentImage,
+    crop,
+    rotation,
+    flipH,
+    flipV,
+    quality,
+    format,
+    brightness,
+    contrast,
+    saturation,
+  ]);
+
   const onCropComplete = useCallback(
     (crop: Crop) => {
       if (!currentImage || !imgRef.current || !crop.width || !crop.height)
         return;
 
-      setIsProcessing(true);
-
-      // Use requestAnimationFrame for better performance
-      requestAnimationFrame(() => {
-        try {
-          const canvas = document.createElement("canvas");
-          const img = imgRef.current!;
-          const scaleX = img.naturalWidth / img.width;
-          const scaleY = img.naturalHeight / img.height;
-
-          const cropWidth = crop.width * scaleX;
-          const cropHeight = crop.height * scaleY;
-
-          // Limit canvas size to prevent memory issues
-          const MAX_DIMENSION = 4000;
-          if (cropWidth > MAX_DIMENSION || cropHeight > MAX_DIMENSION) {
-            const scale = Math.min(
-              MAX_DIMENSION / cropWidth,
-              MAX_DIMENSION / cropHeight
-            );
-            canvas.width = Math.floor(cropWidth * scale);
-            canvas.height = Math.floor(cropHeight * scale);
-          } else {
-            canvas.width = cropWidth;
-            canvas.height = cropHeight;
-          }
-
-          const ctx = canvas.getContext("2d");
-          if (ctx) {
-            ctx.save();
-
-            // Apply transformations
-            ctx.translate(canvas.width / 2, canvas.height / 2);
-            ctx.rotate((rotation * Math.PI) / 180);
-            ctx.scale(flipH ? -1 : 1, flipV ? -1 : 1);
-
-            ctx.drawImage(
-              img,
-              crop.x * scaleX,
-              crop.y * scaleY,
-              cropWidth,
-              cropHeight,
-              -canvas.width / 2,
-              -canvas.height / 2,
-              canvas.width,
-              canvas.height
-            );
-
-            ctx.restore();
-
-            // Apply filters
-            applyFilters(canvas, ctx);
-
-            // Reduce quality for large images
-            let finalQuality = quality;
-            if (canvas.width * canvas.height > 2000 * 2000) {
-              finalQuality = Math.max(0.6, quality * 0.9);
-            }
-
-            const croppedImageUrl = canvas.toDataURL(
-              `image/${format}`,
-              finalQuality
-            );
-            setCroppedImage(croppedImageUrl);
-
-            // Removed the automatic onFinish call here
-          }
-        } catch (err) {
-          setError("Error processing image");
-          console.log(err);
-        } finally {
-          setIsProcessing(false);
-        }
-      });
+      // Generate cropped image when crop is complete
+      generateCroppedImage();
     },
-    [
-      currentImage,
-      rotation,
-      flipH,
-      flipV,
-      quality,
-      format,
-      brightness,
-      contrast,
-      saturation,
-    ]
+    [generateCroppedImage, currentImage]
   );
+
+  // Regenerate cropped image when filters change
+  useEffect(() => {
+    if (crop && currentImage) {
+      generateCroppedImage();
+    }
+  }, [
+    rotation,
+    flipH,
+    flipV,
+    brightness,
+    contrast,
+    saturation,
+    quality,
+    format,
+  ]);
 
   const downloadImage = () => {
     if (!croppedImage) return;
@@ -326,7 +383,7 @@ export default function ImageCropper({
   const resetUploader = () => {
     setImage(null);
     setCurrentFile(null);
-    setCroppedImage(null);
+    updateCroppedImage(null);
     setCrop(undefined);
     setFileName("");
     setRotation(0);
@@ -337,8 +394,8 @@ export default function ImageCropper({
     setFlipV(false);
     setError(null);
 
-    // Call onFinish with null values
-    if (onFinish) {
+    // Call onFinish with null values only in uncontrolled mode
+    if (!isControlled && onFinish) {
       onFinish({
         file: null,
         croppedImage: null,
@@ -420,9 +477,9 @@ export default function ImageCropper({
               <Upload size={20} />
             </div>
             <p className="text-sm font-medium mb-1">
-              {isDragActive ? "Drop here" : "Upload image"}
+              {isDragActive ? "Drop here" : title}
             </p>
-            <p className="text-xs ">All formats supported, up to 5MB</p>
+            <p className="text-xs ">{description}</p>
           </div>
         </div>
       ) : (
@@ -561,7 +618,7 @@ export default function ImageCropper({
                   />
                 </div>
               </div>
-              Export Settings
+              {/* Export Settings */}
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="text-xs block mb-1">Format</label>
@@ -596,8 +653,8 @@ export default function ImageCropper({
             </div>
           )}
 
-          {/* Crop area */}
-          <div className=" p-2 rounded overflow-hidden">
+          {/* Crop area - centered */}
+          <div className="p-2 rounded overflow-hidden flex justify-center">
             <ReactCrop
               crop={crop}
               onChange={setCrop}
@@ -609,7 +666,7 @@ export default function ImageCropper({
                 ref={imgRef}
                 src={currentImage}
                 alt="Source"
-                className="max-w-full h-auto rounded"
+                className="max-w-full h-auto rounded block mx-auto"
                 style={getImageStyle()}
                 onLoad={() => {
                   // Initialize crop after image loads
@@ -634,7 +691,7 @@ export default function ImageCropper({
             </div>
           )}
 
-          {/* Preview */}
+          {/* Preview and action buttons */}
           {croppedImage && (
             <div className="space-y-2">
               {/* Action buttons */}
@@ -654,7 +711,7 @@ export default function ImageCropper({
                 >
                   <Button variant="outline" text="Reset" />
                 </span>
-                {onFinish && (
+                {shouldShowFinishButton && (
                   <span
                     onClick={handleFinish}
                     className="flex items-center justify-center space-x-1 card px-3 py-2 rounded text-sm hover: transition-colors"

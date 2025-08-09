@@ -30,14 +30,10 @@ const EmptyState: React.FC<EmptyStateProps> = ({
   imageWidth = 100, // Default width
   imageHeight = 100, // Default height
 }) => {
-  const { theme } = useTheme();
   
   return (
     <div
-      style={{
-        backgroundColor: getColorShade(theme.background, 10),
-      }}
-      className={`col-span-full shadow-xl rounded-2xl flex flex-col items-center justify-center py-12 ${className}`}
+      className={`col-span-full shadow-xl rounded-2xl flex flex-col items-center justify-center py-12 bg-[var(--background)] ${className}`}
     >
       {imageUrl && (
         <Image

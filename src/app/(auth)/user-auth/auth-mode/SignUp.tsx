@@ -20,13 +20,19 @@ const SignUp = () => {
 
   const [formData, setFormData] = useState({
     email: "",
-    username: "",
     password: "",
+    confirmPassword: "",
     verificationCode: "",
   });
 
-  const [error, setError] = useState("");
-  // Fixed: Check for verify_email parameter instead of create
+  const [errors, setErrors] = useState({
+    email: "",
+    password: "",
+    confirmPassword: "",
+    verificationCode: "",
+    general: "",
+  });
+
   const verifyEmail = searchParams.get("verify_email") === "true";
 
   const handleChange = (field: keyof typeof formData) => (value: string) => {
@@ -34,48 +40,82 @@ const SignUp = () => {
       ...prev,
       [field]: value,
     }));
+    // Clear error when user starts typing
+    if (errors[field as keyof typeof errors]) {
+      setErrors((prev) => ({ ...prev, [field]: "" }));
+    }
   };
 
-  // Fixed: Remove problematic useEffect that creates empty signUp call
   useEffect(() => {
     if (isLoaded && !verifyEmail) {
-      // Only initialize captcha container if needed
       const captchaContainer = document.getElementById("clerk-captcha");
       if (captchaContainer && captchaContainer.children.length === 0) {
-        // Don't create empty signUp call - this causes issues
-        // The captcha will be initialized when user actually submits the form
+        // Don't create empty signUp call
       }
     }
   }, [isLoaded, verifyEmail]);
 
+  const validateForm = () => {
+    let isValid = true;
+    const newErrors = {
+      email: "",
+      password: "",
+      confirmPassword: "",
+      verificationCode: "",
+      general: "",
+    };
+
+    if (!formData.email) {
+      newErrors.email = "Email is required";
+      isValid = false;
+    } else if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
+      newErrors.email = "Please enter a valid email address";
+      isValid = false;
+    }
+
+    if (!formData.password) {
+      newErrors.password = "Password is required";
+      isValid = false;
+    } else if (formData.password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters long";
+      isValid = false;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match";
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setErrors({
+      email: "",
+      password: "",
+      confirmPassword: "",
+      verificationCode: "",
+      general: "",
+    });
+
+    if (!validateForm()) return;
+
     setLoading("signup_in_progress");
 
     if (!isLoaded) {
-      setError("System is not ready. Please try again.");
-      setLoading("signup_in_progress");
-      return;
-    }
-
-    // Fixed: Add form validation
-    if (!formData.email || !formData.username || !formData.password) {
-      setError("Please fill in all fields.");
-      setLoading("signup_in_progress");
-      return;
-    }
-
-    if (formData.password.length < 8) {
-      setError("Password must be at least 8 characters long.");
-      setLoading("signup_in_progress");
+      setErrors((prev) => ({
+        ...prev,
+        general: "System is not ready. Please try again.",
+      }));
+      setLoading("");
       return;
     }
 
     try {
       await signUp.create({
         emailAddress: formData.email,
-        username: formData.username,
         password: formData.password,
       });
 
@@ -83,38 +123,52 @@ const SignUp = () => {
       extendRouteWithQuery({ verify_email: "true" });
     } catch (err: unknown) {
       if (err instanceof Error) {
-        setError(err.message);
+        setErrors((prev) => ({ ...prev, general: err.message }));
       } else if (typeof err === "object" && err !== null && "errors" in err) {
         const errorWithErrors = err as { errors?: Array<{ message?: string }> };
-        setError(
-          errorWithErrors.errors?.[0]?.message ||
-            "Sign up failed prease try again "
-        );
+        setErrors((prev) => ({
+          ...prev,
+          general:
+            errorWithErrors.errors?.[0]?.message ||
+            "Sign up failed. Please try again.",
+        }));
       } else {
-        setError("Sign up failed prease try again ");
+        setErrors((prev) => ({
+          ...prev,
+          general: "Sign up failed. Please try again.",
+        }));
       }
     } finally {
-      setLoading("signup_in_progress");
+      setLoading("");
     }
   };
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    setLoading("email_verification_in_progress");
+    setErrors({
+      email: "",
+      password: "",
+      confirmPassword: "",
+      verificationCode: "",
+      general: "",
+    });
 
-    if (!isLoaded) {
-      setError("System is not ready. Please try again.");
-      setLoading("email_verification_in_progress");
-
+    if (!formData.verificationCode) {
+      setErrors((prev) => ({
+        ...prev,
+        verificationCode: "Verification code is required",
+      }));
       return;
     }
 
-    // Fixed: Add validation for verification code
-    if (!formData.verificationCode) {
-      setError("Please enter the verification code.");
-      setLoading("email_verification_in_progress");
+    setLoading("email_verification_in_progress");
 
+    if (!isLoaded) {
+      setErrors((prev) => ({
+        ...prev,
+        general: "System is not ready. Please try again.",
+      }));
+      setLoading("");
       return;
     }
 
@@ -129,26 +183,35 @@ const SignUp = () => {
       }
     } catch (err: unknown) {
       if (err instanceof Error) {
-        setError(err.message);
+        setErrors((prev) => ({ ...prev, general: err.message }));
       } else if (typeof err === "object" && err !== null && "errors" in err) {
         const errorWithErrors = err as { errors?: Array<{ message?: string }> };
-        setError(
-          errorWithErrors.errors?.[0]?.message ||
-            "Verification failed. Please try again."
-        );
+        setErrors((prev) => ({
+          ...prev,
+          general:
+            errorWithErrors.errors?.[0]?.message ||
+            "Verification failed. Please try again.",
+        }));
       } else {
-        setError("Verification failed. Please try again.");
+        setErrors((prev) => ({
+          ...prev,
+          general: "Verification failed. Please try again.",
+        }));
       }
     } finally {
-      setLoading("email_verification_in_progress");
+      setLoading("");
     }
   };
 
-  // Fixed: Add function to handle modal close properly
   const handleModalClose = () => {
     clearQuerryParam();
-    setError("");
-    // Reset verification code when closing modal
+    setErrors({
+      email: "",
+      password: "",
+      confirmPassword: "",
+      verificationCode: "",
+      general: "",
+    });
     setFormData((prev) => ({ ...prev, verificationCode: "" }));
   };
 
@@ -174,8 +237,11 @@ const SignUp = () => {
               onChange={handleChange("verificationCode")}
               placeholder="Enter verification code"
               className="w-full p-2 border rounded"
+              error={errors.verificationCode}
             />
-            {error && <p className="text-red-500 text-sm">{error}</p>}
+            {errors.general && (
+              <p className="text-red-500 text-sm">{errors.general}</p>
+            )}
             <Button
               type="submit"
               loading={loading.includes("email_verification_in_progress")}
@@ -190,7 +256,9 @@ const SignUp = () => {
       {/* Sign Up Form */}
       <div className="max-w-md mx-auto p-6 rounded-lg shadow-sm">
         <h1 className="text-2xl font-bold text mb-4">Create an Account</h1>
-        {error && !verifyEmail && <p className="text-red-500 mb-4">{error}</p>}
+        {errors.general && !verifyEmail && (
+          <p className="text-red-500 mb-4">{errors.general}</p>
+        )}
 
         <div
           id="clerk-captcha"
@@ -209,18 +277,7 @@ const SignUp = () => {
               className="w-full p-2 border rounded"
               label="Email"
               labelBgHexIntensity={1}
-            />
-          </div>
-
-          <div>
-            <Textinput
-              type="text"
-              id="username"
-              value={formData.username}
-              onChange={handleChange("username")}
-              className="w-full p-2 border rounded"
-              label="Username"
-              labelBgHexIntensity={1}
+              error={errors.email}
             />
           </div>
 
@@ -234,6 +291,20 @@ const SignUp = () => {
               className="w-full p-2 border rounded"
               minLength={8}
               labelBgHexIntensity={1}
+              error={errors.password}
+            />
+          </div>
+          <div>
+            <Textinput
+              label="Confirm Password"
+              type="password"
+              id="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange("confirmPassword")}
+              className="w-full p-2 border rounded"
+              minLength={8}
+              labelBgHexIntensity={1}
+              error={errors.confirmPassword}
             />
           </div>
           <Button

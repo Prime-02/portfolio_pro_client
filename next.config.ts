@@ -4,9 +4,9 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: '**', // Allows all hostnames
-        pathname: '/**', // Allows all paths
+        protocol: "https",
+        hostname: "**", // Allows all hostnames
+        pathname: "/**", // Allows all paths
       },
       /*
       {
@@ -22,6 +22,9 @@ const nextConfig: NextConfig = {
       // Add other patterns if needed
       */
     ],
+  },
+  experimental: {
+    optimizePackageImports: ["@clerk/nextjs"],
   },
 };
 

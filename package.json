@@ -34,9 +34,9 @@
     "react-image-crop": "^11.0.10",
     "react-map-gl": "^8.0.4",
     "react-phone-input-2": "^2.15.1",
-    "scroll-lock": "^2.1.5",
     "simplebar-core": "^1.3.2",
-    "simplebar-react": "^3.3.2"
+    "simplebar-react": "^3.3.2",
+    "stream-browserify": "^3.0.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

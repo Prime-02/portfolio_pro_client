@@ -10,8 +10,7 @@ import {
   validateFields,
 } from "@/app/components/utilities/syncFunctions/syncs";
 import { useGlobalState } from "@/app/globalStateProvider";
-import { currentUser } from "@clerk/nextjs/server";
-import React, { FormEvent, useEffect, useState } from "react";
+import React, { FormEvent, useState } from "react";
 
 interface AlbumProp {
   cover_media_file: File | null;
@@ -21,8 +20,7 @@ interface AlbumProp {
 }
 
 const GalleryActions = ({ fetchAlbum }: { fetchAlbum: () => void }) => {
-  const { loading, setLoading, accessToken, clearQuerryParam } =
-    useGlobalState();
+  const { loading, setLoading, accessToken, clearQuerryParam } = useGlobalState();
   const [albumData, setAlbumData] = useState<AlbumProp>({
     cover_media_file: null,
     name: "",
@@ -117,10 +115,6 @@ const GalleryActions = ({ fetchAlbum }: { fetchAlbum: () => void }) => {
     }
   };
 
-  useEffect(() => {
-    if (!accessToken) return;
-    fetchAlbum();
-  }, [accessToken, currentUser]);
 
   return (
     <div className="flex flex-col items-center justify-evenly gap-3 flex-wrap md:flex-row">

@@ -208,6 +208,7 @@ const Step2 = () => {
               desc={professionalInformation.fields[4].description}
               required={professionalInformation.fields[4].required}
               placeholder="Job Seeking Status"
+              label="Job Seeking Status"
               id={professionalInformation.fields[4].name}
             />
           </span>
@@ -245,6 +246,7 @@ const Step2 = () => {
               }
               onChange={(e) => handleFieldChange("preferred_work_type", e)}
               placeholder="Preferred work type"
+              label="Preferred work type"
               desc={professionalInformation.fields[5].description}
             />
           </span>
@@ -269,6 +271,7 @@ const Step2 = () => {
             value={formData.availability || ""}
             onChange={(e) => handleFieldChange("availability", e)}
             placeholder="Availability"
+            label="Availability"
             labelBgHexIntensity={1}
             desc={professionalInformation.fields[7].description}
             type={professionalInformation.fields[7].type}

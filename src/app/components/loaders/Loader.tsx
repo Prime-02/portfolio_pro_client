@@ -169,15 +169,17 @@ export const SpinLoader: React.FC<LoaderProps> = ({
   <LoaderContainer>
     <div
       className="animate-spin rounded-full border-solid border-opacity-25 "
-      style={{
-        width: size,
-        height: size,
-        borderWidth: thickness,
-        borderColor: color,
-        borderTopColor: "transparent",
-        animation: "spin 0.8s linear infinite",
-      }}
-    />
+     style={{
+      width: size,
+      height: size,
+      borderWidth: thickness,
+      borderTopColor: "transparent",
+      borderRightColor: color,
+      borderBottomColor: color,
+      borderLeftColor: color,
+      animation: "spin 0.8s linear infinite",
+    }}
+  />
   </LoaderContainer>
 );
 

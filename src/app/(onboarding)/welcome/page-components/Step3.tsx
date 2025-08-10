@@ -197,6 +197,7 @@ const Step3 = () => {
               desc={contactAndLocation.fields[3].description}
               required={contactAndLocation.fields[3].required}
               placeholder="Preferred Contact  Method"
+              label="Preferred Contact  Method"
               id={contactAndLocation.fields[3].name}
             />
           </span>

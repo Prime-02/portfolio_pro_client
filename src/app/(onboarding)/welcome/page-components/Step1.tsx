@@ -297,7 +297,7 @@ const Step1 = () => {
             label={
               loading.includes("checking_username")
                 ? "Checking username..."
-                : "Username *"
+                : "Username*"
             }
             minLength={accountBasics.fields[0]?.constraints?.min_length}
             maxLength={accountBasics.fields[0]?.constraints?.max_length}

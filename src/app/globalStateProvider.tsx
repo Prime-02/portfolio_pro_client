@@ -300,15 +300,18 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
     try {
-      const currentUserRes: { available: boolean; username: string } =
-        await GetAllData({
-          access: accessToken,
-          url: `${V1_BASE_URL}/user-multistep-form/check-username?username=${currentUserName}`,
-        });
+      const currentUserRes: {
+        available: boolean;
+        username: string;
+        requested_by: string;
+      } = await GetAllData({
+        access: accessToken,
+        url: `${V1_BASE_URL}/user-multistep-form/check-username?username=${currentUserName}`,
+      });
       if (
         !currentUserRes.available &&
         currentUserRes.username &&
-        currentUserRes.username !== userData.username
+        currentUserRes.username !== currentUserRes.requested_by
       ) {
         setCurrentUser(currentUserRes.username);
         return currentUserRes.username;

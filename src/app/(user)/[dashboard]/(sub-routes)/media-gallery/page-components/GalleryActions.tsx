@@ -20,7 +20,8 @@ interface AlbumProp {
 }
 
 const GalleryActions = ({ fetchAlbum }: { fetchAlbum: () => void }) => {
-  const { loading, setLoading, accessToken, clearQuerryParam } = useGlobalState();
+  const { loading, setLoading, accessToken, clearQuerryParam } =
+    useGlobalState();
   const [albumData, setAlbumData] = useState<AlbumProp>({
     cover_media_file: null,
     name: "",
@@ -32,7 +33,7 @@ const GalleryActions = ({ fetchAlbum }: { fetchAlbum: () => void }) => {
 
   const handleFieldChange = (
     key: keyof AlbumProp,
-    value: File | string | boolean
+    value: File | string | boolean | null
   ) => {
     setAlbumData((prev) => ({
       ...prev,
@@ -115,7 +116,6 @@ const GalleryActions = ({ fetchAlbum }: { fetchAlbum: () => void }) => {
     }
   };
 
-
   return (
     <div className="flex flex-col items-center justify-evenly gap-3 flex-wrap md:flex-row">
       <section>
@@ -123,9 +123,12 @@ const GalleryActions = ({ fetchAlbum }: { fetchAlbum: () => void }) => {
           title="Upload cover photo"
           description="All image formats supported up to 5mb"
           onFinish={convertToCover}
+          onResetImageChange={() => {
+            handleFieldChange("cover_media_file", null);
+          }}
         />
       </section>
-      {coverReady && (
+      {coverReady && albumData.cover_media_file && (
         <form
           onSubmit={uploadAlbum}
           className="flex flex-col gap-3 w-full md:max-w-1/2"
@@ -148,6 +151,7 @@ const GalleryActions = ({ fetchAlbum }: { fetchAlbum: () => void }) => {
                 handleFieldChange("description", e);
               }}
               label="Album Description"
+              maxLength={1000}
             />
           </span>
           <span className="flex items-center gap-3 justify-start flex-wrap">

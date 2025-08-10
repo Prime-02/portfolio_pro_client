@@ -19,6 +19,7 @@ import Button from "../buttons/Buttons";
 
 interface ImageCropperProps {
   onFinish?: (data: { file: File | null; croppedImage: string | null }) => void;
+  onResetImageChange?: () => void;
   loading?: boolean;
   croppedImage?: string | null; // Optional controlled state for final image
   onCroppedImageChange?: (croppedImage: string | null) => void; // Callback for controlled mode
@@ -37,6 +38,7 @@ export default function ImageCropper({
   onCroppedImageChange, // Callback for when cropped image changes
   title = "Upload Image",
   description = "All formats supported, up to 5mb",
+  onResetImageChange,
 }: ImageCropperProps) {
   const { theme } = useTheme();
   const [image, setImage] = useState<string | null>(null);
@@ -58,6 +60,7 @@ export default function ImageCropper({
   const [flipH, setFlipH] = useState(false);
   const [flipV, setFlipV] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isFinished, setIsFinished] = useState(false); // Track if finish has been clicked
   const imgRef = useRef<HTMLImageElement>(null);
 
   const currentImage = image;
@@ -88,8 +91,8 @@ export default function ImageCropper({
     { label: "3:4", value: 3 / 4, icon: Smartphone },
   ];
 
-  // Determine if finish button should be shown (only in uncontrolled mode with onFinish)
-  const shouldShowFinishButton = !isControlled && !!onFinish;
+  // Determine if finish button should be shown (only in uncontrolled mode with onFinish and not finished)
+  const shouldShowFinishButton = !isControlled && !!onFinish && !isFinished;
 
   // Clean up object URLs when component unmounts
   useEffect(() => {
@@ -393,7 +396,10 @@ export default function ImageCropper({
     setFlipH(false);
     setFlipV(false);
     setError(null);
-
+    setIsFinished(false); // Reset the finished state
+    if (onResetImageChange) {
+      onResetImageChange();
+    }
     // Call onFinish with null values only in uncontrolled mode
     if (!isControlled && onFinish) {
       onFinish({
@@ -425,6 +431,7 @@ export default function ImageCropper({
         file: currentFile,
         croppedImage: croppedImage,
       });
+      setIsFinished(true); // Set finished state to hide the button
     }
   };
 

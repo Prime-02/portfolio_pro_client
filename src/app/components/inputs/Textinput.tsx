@@ -25,7 +25,9 @@ interface TextInputProps {
   desc?: string;
   ref?: RefObject<HTMLInputElement | null>;
   maxLength?: number;
+  max?: number;
   minLength?: number;
+  min?: number;
   autoComplete?: string;
   inputMode?:
     | "text"
@@ -59,7 +61,9 @@ export const Textinput: React.FC<TextInputProps> = ({
   desc,
   ref,
   maxLength = 100000,
+  max = 100000,
   minLength = 3,
+  min = 3,
   autoComplete = "",
   inputMode = "text",
   labelBgHex,
@@ -146,6 +150,8 @@ export const Textinput: React.FC<TextInputProps> = ({
 
     return (
       <input
+        min={min}
+        max={max}
         pattern={pattern}
         required={required}
         maxLength={maxLength}

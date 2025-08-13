@@ -84,6 +84,8 @@ interface GlobalStateContextType {
   currentUser: string | undefined;
   getCurrentUser: () => void;
   setCurrentUser: (currentUser: string | undefined) => void;
+  checkValidId: (id: string) => boolean;
+  checkParams: (param: string) => string | null;
 }
 
 // Context initialization
@@ -324,6 +326,16 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const checkValidId = (id: string) => {
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      id
+    );
+  };
+
+  const checkParams = (param: string) => {
+    return searchParams.get(param);
+  };
+
   const contextValue: GlobalStateContextType = {
     clerkUserData,
     userData,
@@ -346,6 +358,8 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
     currentUser,
     setCurrentUser,
     getCurrentUser,
+    checkValidId,
+    checkParams,
   };
 
   return (

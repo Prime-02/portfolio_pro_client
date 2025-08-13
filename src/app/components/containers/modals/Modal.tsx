@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { useTheme } from "../../theme/ThemeContext ";
 import { getColorShade } from "../../utilities/syncFunctions/syncs";
-import { X } from "lucide-react";
+import { X, Minus, Maximize2 } from "lucide-react";
 
 interface ModalProps {
   isOpen: boolean;
@@ -14,6 +14,7 @@ interface ModalProps {
   title?: string | Element;
   size?: "sm" | "md" | "lg" | "xl" | "full";
   showCloseButton?: boolean;
+  showMinimizeButton?: boolean;
   closeOnBackdropClick?: boolean;
   closeOnEscape?: boolean;
   className?: string;
@@ -38,6 +39,7 @@ const Modal: React.FC<ModalProps> = ({
   title,
   size = "md",
   showCloseButton = true,
+  showMinimizeButton = false,
   closeOnBackdropClick = true,
   closeOnEscape = true,
   className = "",
@@ -57,15 +59,16 @@ const Modal: React.FC<ModalProps> = ({
   const { theme } = useTheme();
   const modalRef = useRef<HTMLDivElement>(null);
   const [isMounted, setIsMounted] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
 
   // Prevent hydration mismatch by only rendering after mount
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  // Handle body scroll prevention
+  // Handle body scroll prevention - only when modal is open and not minimized
   useEffect(() => {
-    if (!isMounted || !preventScroll || !isOpen) return;
+    if (!isMounted || !preventScroll || !isOpen || isMinimized) return;
 
     const originalOverflow = document.body.style.overflow;
     const originalPaddingRight = document.body.style.paddingRight;
@@ -81,7 +84,7 @@ const Modal: React.FC<ModalProps> = ({
       document.body.style.overflow = originalOverflow;
       document.body.style.paddingRight = originalPaddingRight;
     };
-  }, [isOpen, preventScroll, isMounted]);
+  }, [isOpen, preventScroll, isMounted, isMinimized]);
 
   // Handle escape key
   useEffect(() => {
@@ -89,24 +92,37 @@ const Modal: React.FC<ModalProps> = ({
 
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
-        onClose();
+        if (isMinimized) {
+          setIsMinimized(false);
+        } else {
+          onClose();
+        }
       }
     };
 
     document.addEventListener("keydown", handleEscape);
     return () => document.removeEventListener("keydown", handleEscape);
-  }, [isOpen, closeOnEscape, onClose, isMounted]);
+  }, [isOpen, closeOnEscape, onClose, isMounted, isMinimized]);
 
-  // Handle backdrop click
+  // Handle backdrop click - only when not minimized
   const handleBackdropClick = (e: React.MouseEvent) => {
-    if (closeOnBackdropClick && e.target === e.currentTarget) {
+    if (!isMinimized && closeOnBackdropClick && e.target === e.currentTarget) {
       onClose();
     }
   };
 
-  // Handle focus trap
+  // Handle minimize/maximize
+  const handleMinimize = () => {
+    setIsMinimized(true);
+  };
+
+  const handleMaximize = () => {
+    setIsMinimized(false);
+  };
+
+  // Handle focus trap - only when not minimized
   useEffect(() => {
-    if (!isMounted || !isOpen) return;
+    if (!isMounted || !isOpen || isMinimized) return;
 
     const modal = modalRef.current;
     if (!modal) return;
@@ -146,7 +162,7 @@ const Modal: React.FC<ModalProps> = ({
       document.removeEventListener("keydown", handleTab);
       clearTimeout(timeoutId);
     };
-  }, [isOpen, isMounted]);
+  }, [isOpen, isMounted, isMinimized]);
 
   const sizeClasses = {
     sm: "max-w-sm",
@@ -156,7 +172,7 @@ const Modal: React.FC<ModalProps> = ({
     full: "max-w-full mx-4",
   };
 
-  // Fixed Animation variants with proper typing
+  // Animation variants for backdrop
   const backdropVariants: Variants = {
     hidden: {
       opacity: 0,
@@ -174,6 +190,55 @@ const Modal: React.FC<ModalProps> = ({
         duration: animationDuration,
         ease: "easeIn",
       },
+    },
+  };
+
+  // Animation variants for minimized state
+  const minimizedVariants: Variants = {
+    minimized: {
+      scale: 0,
+      opacity: 0,
+      transition: {
+        duration: 0.2,
+        ease: "easeIn",
+      },
+    },
+    expanded: {
+      scale: 1,
+      opacity: 1,
+      transition: {
+        ...springConfig,
+        duration: springConfig.type === "tween" ? animationDuration : undefined,
+      },
+    },
+  };
+
+  // Minimized icon variants
+  const minimizedIconVariants: Variants = {
+    hidden: {
+      scale: 0,
+      opacity: 0,
+    },
+    visible: {
+      scale: 1,
+      opacity: 1,
+      transition: {
+        delay: 0.1,
+        type: "spring",
+        stiffness: 400,
+        damping: 25,
+      },
+    },
+    hover: {
+      scale: 1.1,
+      transition: {
+        type: "spring",
+        stiffness: 400,
+        damping: 25,
+      },
+    },
+    tap: {
+      scale: 0.95,
     },
   };
 
@@ -227,7 +292,26 @@ const Modal: React.FC<ModalProps> = ({
     },
   };
 
-  // Close button animation
+  // Button animation variants
+  const buttonVariants: Variants = {
+    rest: {
+      scale: 1,
+      rotate: 0,
+    },
+    hover: {
+      scale: 1.1,
+      transition: {
+        type: "spring",
+        stiffness: 300,
+        damping: 20,
+      },
+    },
+    tap: {
+      scale: 0.9,
+    },
+  };
+
+  // Close button specific animation
   const closeButtonVariants: Variants = {
     rest: {
       scale: 1,
@@ -248,89 +332,144 @@ const Modal: React.FC<ModalProps> = ({
   };
 
   const modalContent = (
-    <AnimatePresence mode="wait">
-      {isOpen && (
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          exit="exit"
-          variants={backdropVariants}
-          className={`fixed inset-0 flex ${
-            centered
-              ? "items-center justify-center"
-              : "items-end justify-center"
-          } px-4 py-4 bg-black/50 backdrop-blur-sm ${backdropClassName}`}
-          style={{ zIndex }}
-          onClick={handleBackdropClick}
-        >
+    <>
+      {/* Main Modal */}
+      <AnimatePresence mode="wait">
+        {isOpen && !isMinimized && (
           <motion.div
-            ref={modalRef}
-            variants={centered ? centeredModalVariants : slideUpModalVariants}
             initial="hidden"
             animate="visible"
             exit="exit"
-            style={{
-              backgroundColor: getColorShade(theme.background, 10),
-            }}
-            className={`
-              relative w-full ${sizeClasses[size]} 
-              shadow-2xl
-              ${centered ? "rounded-2xl" : "rounded-2xl"}
-              ${className}
-            `}
-            onClick={(e) => e.stopPropagation()}
+            variants={backdropVariants}
+            className={`fixed inset-0 flex ${
+              centered
+                ? "items-center justify-center"
+                : "items-end justify-center"
+            } px-4 py-4 bg-black/50 backdrop-blur-sm ${backdropClassName}`}
+            style={{ zIndex }}
+            onClick={handleBackdropClick}
           >
-            {/* Header */}
-            {(title || showCloseButton) && (
-              <motion.div
-                className="flex items-center justify-between p-6 border-b border-gray-200"
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1, duration: 0.3 }}
-              >
-                {title && (
-                  <motion.div
-                    className={
-                      typeof title === "string"
-                        ? "text-xl font-semibold truncate pr-4"
-                        : undefined
-                    }
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.15, duration: 0.3 }}
-                  >
-                    {title as ReactNode}
-                  </motion.div>
-                )}
-                {showCloseButton && (
-                  <motion.button
-                    onClick={onClose}
-                    className={`flex-shrink-0 p-2 ${loading ? "animate-spin" : ""} hover:text-[var(--accent)] hover:bg-[var(--background)] rounded-full transition-colors duration-150`}
-                    aria-label="Close modal"
-                    variants={closeButtonVariants}
-                    initial="rest"
-                    whileHover="hover"
-                    whileTap="tap"
-                  >
-                    <X />
-                  </motion.button>
-                )}
-              </motion.div>
-            )}
-
-            {/* Content */}
             <motion.div
-              className="p-6 max-h-[calc(100vh-8rem)] overflow-y-auto"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.3 }}
+              ref={modalRef}
+              variants={centered ? centeredModalVariants : slideUpModalVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              style={{
+                backgroundColor: getColorShade(theme.background, 10),
+              }}
+              className={`
+                relative w-full ${sizeClasses[size]} 
+                shadow-2xl
+                ${centered ? "rounded-2xl" : "rounded-2xl"}
+                ${className}
+              `}
+              onClick={(e) => e.stopPropagation()}
             >
-              {children}
+              {/* Header */}
+              {(title || showCloseButton || showMinimizeButton) && (
+                <motion.div
+                  className="flex items-center justify-between p-6 border-b border-gray-200"
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1, duration: 0.3 }}
+                >
+                  {title && (
+                    <motion.div
+                      className={
+                        typeof title === "string"
+                          ? "text-xl font-semibold truncate pr-4"
+                          : undefined
+                      }
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.15, duration: 0.3 }}
+                    >
+                      {title as ReactNode}
+                    </motion.div>
+                  )}
+
+                  <div className="flex items-center gap-2">
+                    {showMinimizeButton && (
+                      <motion.button
+                        onClick={handleMinimize}
+                        className="flex-shrink-0 p-2 hover:text-[var(--accent)] hover:bg-[var(--background)] rounded-full transition-colors duration-150"
+                        aria-label="Minimize modal"
+                        variants={buttonVariants}
+                        initial="rest"
+                        whileHover="hover"
+                        whileTap="tap"
+                      >
+                        <Minus size={20} />
+                      </motion.button>
+                    )}
+
+                    {showCloseButton && (
+                      <motion.button
+                        onClick={onClose}
+                        className={`flex-shrink-0 p-2 ${loading ? "animate-spin" : ""} hover:text-[var(--accent)] hover:bg-[var(--background)] rounded-full transition-colors duration-150`}
+                        aria-label="Close modal"
+                        variants={closeButtonVariants}
+                        initial="rest"
+                        whileHover="hover"
+                        whileTap="tap"
+                      >
+                        <X size={20} />
+                      </motion.button>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Content */}
+              <motion.div
+                className="p-6 max-h-[calc(100vh-8rem)] overflow-y-auto"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2, duration: 0.3 }}
+              >
+                {children}
+              </motion.div>
             </motion.div>
           </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+        )}
+      </AnimatePresence>
+
+      {/* Minimized Icon */}
+      <AnimatePresence>
+        {isOpen && isMinimized && (
+          <motion.div
+            className="fixed bottom-6 right-6 cursor-pointer"
+            style={{ zIndex: zIndex + 1 }}
+            variants={minimizedIconVariants}
+            initial="hidden"
+            animate="visible"
+            exit="hidden"
+            whileHover="hover"
+            whileTap="tap"
+            onClick={handleMaximize}
+          >
+            <motion.div
+              className="w-14 h-14 rounded-full shadow-lg flex items-center justify-center"
+              style={{
+                backgroundColor: getColorShade(theme.background, 10),
+              }}
+            >
+              <Maximize2 size={20} className="text-[var(--accent)]" />
+            </motion.div>
+
+            {/* Tooltip */}
+            <motion.div
+              className="absolute bottom-full right-0 mb-2 px-3 py-1 bg-black text-white text-sm rounded whitespace-nowrap opacity-0 pointer-events-none"
+              whileHover={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+            >
+              {typeof title === "string" ? title : "Expand modal"}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 
   // Only render if mounted (prevents hydration mismatch)

@@ -3,11 +3,14 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import ProfileSideBar from "../components/ProfileSideBar";
 import { useTheme } from "@/app/components/theme/ThemeContext ";
-import { getColorShade } from "@/app/components/utilities/syncFunctions/syncs";
+import {
+  getColorShade,
+  getCurrentUrl,
+} from "@/app/components/utilities/syncFunctions/syncs";
 import { useGlobalState } from "@/app/globalStateProvider";
 import { useUser } from "@clerk/nextjs";
 import { useToast } from "@/app/components/toastify/Toastify";
-import { Accessibility, Info } from "lucide-react";
+import { Info } from "lucide-react";
 
 const UsersLayout = ({
   children,
@@ -17,7 +20,28 @@ const UsersLayout = ({
   const { theme } = useTheme();
   const { isLoaded, isSignedIn } = useUser();
   const toast = useToast();
-  const { currentUser, getCurrentUser, router, accessToken } = useGlobalState();
+  const {
+    currentUser,
+    getCurrentUser,
+    router,
+    accessToken,
+    currentPath,
+    checkValidId,
+  } = useGlobalState();
+  const [fullScreen, setFullscreen] = useState(false);
+
+  useEffect(() => {
+    if (window !== undefined) {
+      const pageUrl = getCurrentUrl("pathSegment", 1);
+      const validId = checkValidId(getCurrentUrl("lastPathSegment"));
+
+      if (pageUrl === "media-gallery" && validId) {
+        setFullscreen(true);
+      } else {
+        setFullscreen(false);
+      }
+    }
+  }, [currentPath]);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -45,8 +69,8 @@ const UsersLayout = ({
     <>
       <div className="flex">
         <ProfileSideBar />
-        <motion.div 
-          className="flex items-center justify-center min-h-screen h-auto mx-auto max-w-5xl min-w-sm overflow-auto py-5 px-2"
+        <motion.div
+          className="flex items-center justify-center min-h-screen h-auto w-full mx-auto overflow-auto py-5 px-2"
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{
@@ -54,11 +78,11 @@ const UsersLayout = ({
             ease: "easeOut",
             type: "spring",
             stiffness: 100,
-            damping: 20
+            damping: 20,
           }}
         >
           <motion.div
-            className="rounded-3xl h-auto"
+            className={`rounded-3xl h-auto ${fullScreen ? "max-w-full w-full" : "max-w-fit"}  `} // Changed from w-fit to w-full
             style={{
               backgroundColor: getColorShade(theme?.background, 10),
             }}
@@ -67,7 +91,7 @@ const UsersLayout = ({
             transition={{
               duration: 0.8,
               delay: 0.2,
-              ease: "easeOut"
+              ease: "easeOut",
             }}
           >
             {children}

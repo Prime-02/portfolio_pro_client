@@ -523,7 +523,7 @@ export async function copyToClipboard(text: string): Promise<void> {
   try {
     await copy(text);
     toast.info("Successfully copied to clipboard!", {
-      title: "Text Copied",
+      title: "Copied",
     });
   } catch (err) {
     console.error("❌ Failed to copy:", err);
@@ -540,6 +540,7 @@ type UrlPart =
   | "pathSegment"
   | "origin"
   | "search"
+  | "lastPathSegment"
   | "hash";
 
 /**
@@ -571,6 +572,8 @@ export function getCurrentUrl(
         return url.pathname;
       case "pathSegment":
         return getPathSegment(url.pathname, segmentIndex);
+      case "lastPathSegment":
+        return getLastPathSegment(url.pathname);
       case "search":
         return url.search;
       case "hash":
@@ -598,19 +601,23 @@ function getPathSegment(pathname: string, index?: number): string {
   return segments[index];
 }
 
-// // For URL: https://example.com/products/electronics/123?sort=price#reviews
+function getLastPathSegment(pathname: string): string {
+  const segments = pathname.split("/").filter((segment) => segment !== "");
+  return segments.length > 0 ? segments[segments.length - 1] : "";
+}
 
-// getCurrentUrl('full');      // "https://example.com/products/electronics/123?sort=price#reviews"
-// getCurrentUrl('host');      // "example.com"
-// getCurrentUrl('origin');    // "https://example.com"
-// getCurrentUrl('path');      // "/products/electronics/123"
-// getCurrentUrl('pathSegment');       // "products/electronics/123"
-// getCurrentUrl('pathSegment', 0);    // "products"
-// getCurrentUrl('pathSegment', 1);    // "electronics"
-// getCurrentUrl('pathSegment', 2);    // "123"
-// getCurrentUrl('search');    // "?sort=price"
-// getCurrentUrl('hash');      // "#reviews"
-
+// Example usage with URL: https://example.com/products/electronics/123?sort=price#reviews
+// getCurrentUrl('full');             // "https://example.com/products/electronics/123?sort=price#reviews"
+// getCurrentUrl('host');             // "example.com"
+// getCurrentUrl('origin');           // "https://example.com"
+// getCurrentUrl('path');             // "/products/electronics/123"
+// getCurrentUrl('pathSegment');      // "products/electronics/123"
+// getCurrentUrl('pathSegment', 0);   // "products"
+// getCurrentUrl('pathSegment', 1);   // "electronics"
+// getCurrentUrl('pathSegment', 2);   // "123"
+// getCurrentUrl('lastPathSegment');  // "123"
+// getCurrentUrl('search');           // "?sort=price"
+// getCurrentUrl('hash');             // "#reviews"
 export function validateUsername(username: string): {
   valid: boolean;
   message?: string;
@@ -675,5 +682,3 @@ export function validateUsername(username: string): {
 
   return { valid: true };
 }
-
-

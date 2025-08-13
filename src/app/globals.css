@@ -46,3 +46,41 @@ body {
   background-size: 200% 200%;
   animation: gradientShift 5s ease infinite;
 }
+
+
+
+/* In your global CSS */
+.custom-shadow {
+  --tw-shadow-color: var(--accent);
+  box-shadow: 0 4px 6px -1px var(--tw-shadow-color), 
+              0 2px 4px -2px var(--tw-shadow-color);
+}
+
+
+
+@import 'tailwindcss';
+
+/* Custom scrollbar styles */
+.custom-scrollbar::-webkit-scrollbar {
+ width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+ @apply bg-gray-100 rounded;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+ background-color: var(--accent);
+  border-radius: 0.25rem;
+}
+
+/* Hide scrollbar */
+.hide-scrollbar {
+ /* Hide scrollbar for Chrome, Safari and Opera */
+ -ms-overflow-style: none;  /* IE and Edge */
+ scrollbar-width: none;  /* Firefox */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+ display: none;
+}

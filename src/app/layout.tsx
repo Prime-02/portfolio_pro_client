@@ -8,6 +8,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import ClientLayout from "./ClientLayout";
 import { Suspense } from "react";
 import PortfolioProLogo from "./components/logo/PortfolioProTextLogo";
+import DynamicTitle from "./DynamicTitle";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -206,6 +207,7 @@ export default function RootLayout({
             }
           >
             <GlobalStateProvider>
+            <DynamicTitle/>
               <ToastProvider>
                 <ThemeProvider>
                   {/* Header with Clerk auth buttons */}

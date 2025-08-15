@@ -19,7 +19,7 @@ export interface AlbumData {
 
 const MediaView = () => {
   const { currentUser, accessToken, setLoading } = useGlobalState();
-  const [lastPathSegment, setLastPathSegment] = useState<string | null>(null);
+  const [lastPathSegment, setLastPathSegment] = useState<string>("");
   const [albumData, setAlbumData] = useState<AlbumData>({
     id: "",
     cover_media_url: "",
@@ -62,7 +62,7 @@ const MediaView = () => {
     if (accessToken && lastPathSegment) {
       fetchAlbumCover();
     }
-  }, [accessToken, lastPathSegment]);
+  }, [accessToken, lastPathSegment, currentUser]);
 
   useEffect(() => {
     const updateLastPathSegment = () => {
@@ -71,20 +71,20 @@ const MediaView = () => {
         setLastPathSegment(url);
       } catch (error) {
         console.error("Error getting last path segment:", error);
-        setLastPathSegment(null);
+        setLastPathSegment("");
       }
     };
 
     updateLastPathSegment();
-  }, []);
+  }, [lastPathSegment]);
 
   return (
     <div className="w-full flex items-center justify-center ">
       <div className="flex w-full flex-col md:flex-row items-center md:items-start justify-between gap-4">
-        <div className="w-full md:w-fit flex-1">
+        <div className="w-full md:w-[23%]">
           <AlbumCover fetchAlbumData={fetchAlbumCover} albumData={albumData} />
         </div>
-        <MediaCollection albumData={albumData} />
+        <MediaCollection collectionId={lastPathSegment} props={albumData} />
       </div>
     </div>
   );

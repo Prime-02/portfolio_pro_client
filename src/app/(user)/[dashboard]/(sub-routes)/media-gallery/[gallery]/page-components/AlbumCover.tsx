@@ -42,7 +42,7 @@ const AlbumCover: React.FC<AlbumCoverProps> = ({
   className,
   aspectRatio = "auto",
   showContent = true,
-  contentPosition = "bottom",
+  contentPosition = "overlay",
   hoverScale = 1.053,
   priority = false,
   quality = 75,
@@ -106,76 +106,77 @@ const AlbumCover: React.FC<AlbumCoverProps> = ({
     extendRouteWithQuery({ delete: "true" });
   };
 
-  const isOwner = !currentUser 
+  const isOwner = !currentUser;
 
+  
   return (
-    <div
-      ref={componentRef}
-      className={`${className} max-h-screen overflow-auto hide-scrollbar relative flex w-fit flex-col items-center md:items-start mx-auto border rounded-2xl p-2 bg-background`}
-    >
-      {/* Modal for album actions */}
-      <Modal isOpen={!!currentAction} onClose={clearQuerryParam}>
-        <GalleryActions
-          edit={isEditMode}
-          albumId={albumData.id}
-          fetchAlbum={fetchAlbumData}
-        />
-      </Modal>
+    // <div
+    //   ref={componentRef}
+    //   className={`${className} overflow-auto hide-scrollbar relative flex flex-col items-center md:items-start mx-auto border rounded-2xl p-2 bg-background`}
+    // >
+    //   {/* Modal for album actions */}
+    //   <Modal isOpen={!!currentAction} onClose={clearQuerryParam}>
+    //     <GalleryActions
+    //       edit={isEditMode}
+    //       albumId={albumData.id}
+    //       fetchAlbum={fetchAlbumData}
+    //     />
+    //   </Modal>
 
-      {/* Action buttons - different layout for owner vs viewer */}
-      <div className="flex items-center sticky w-full justify-start bottom-0 py-4 z-10">
-        <div className="flex gap-3 pl-4">
-          {/* Like button - always visible */}
-          <span
-            className="gap-x-1 flex items-center cursor-pointer hover:scale-110 transition-transform"
-            onClick={handleLike}
-            title={liked ? "Remove from favorites" : "Add to favorites"}
-          >
-            {liked ? (
-              <BsHeartFill className="text-red-500 size-5" />
-            ) : (
-              <Heart className="text-red-500 size-5" />
-            )}
-            <p className="text-xs">{albumData.likes || 0}</p>
-          </span>
+    //   {/* Action buttons - different layout for owner vs viewer */}
+    //   <div className="flex items-center sticky w-full justify-start bottom-0 py-4 z-10">
+    //     <div className="flex gap-3 pl-4">
+    //       {/* Like button - always visible */}
+    //       <span
+    //         className="gap-x-1 flex items-center cursor-pointer hover:scale-110 transition-transform"
+    //         onClick={handleLike}
+    //         title={liked ? "Remove from favorites" : "Add to favorites"}
+    //       >
+    //         {liked ? (
+    //           <BsHeartFill className="text-red-500 size-5" />
+    //         ) : (
+    //           <Heart className="text-red-500 size-5" />
+    //         )}
+    //         <p className="text-xs">{albumData.likes || 0}</p>
+    //       </span>
 
-          {/* Share button - always visible */}
-          <Share2
-            onClick={handleShare}
-            className="size-5 cursor-pointer hover:scale-110 transition-transform"
-            title="Share album"
-          />
+    //       {/* Share button - always visible */}
+    //       <Share2
+    //         onClick={handleShare}
+    //         className="size-5 cursor-pointer hover:scale-110 transition-transform"
+    //         title="Share album"
+    //       />
 
-          {/* Owner-only actions */}
-          {isOwner && (
-            <>
-              <Edit
-                onClick={handleEdit}
-                className="cursor-pointer size-5 hover:scale-110 transition-transform text-blue-500"
-                title="Edit album"
-              />
-              <Trash2
-                onClick={handleDelete}
-                className="cursor-pointer size-5 text-red-500 hover:scale-110 transition-transform"
-                title="Delete album"
-              />
-            </>
-          )}
+    //       {/* Owner-only actions */}
+    //       {isOwner && (
+    //         <>
+    //           <Edit
+    //             onClick={handleEdit}
+    //             className="cursor-pointer size-5 hover:scale-110 transition-transform text-blue-500"
+    //             title="Edit album"
+    //           />
+    //           <Trash2
+    //             onClick={handleDelete}
+    //             className="cursor-pointer size-5 text-red-500 hover:scale-110 transition-transform"
+    //             title="Delete album"
+    //           />
+    //         </>
+    //       )}
 
-          {/* Scroll button - mobile only */}
-          <ArrowDown
-            onClick={scrollOutOfView}
-            className="size-5 md:hidden cursor-pointer hover:scale-110 transition-transform"
-            title="Scroll down"
-          />
-        </div>
-      </div>
+    //       {/* Scroll button - mobile only */}
+    //       <ArrowDown
+    //         onClick={scrollOutOfView}
+    //         className="size-5 md:hidden cursor-pointer hover:scale-110 transition-transform"
+    //         title="Scroll down"
+    //       />
+    //     </div>
+    //   </div>
 
-      {/* Album cover image */}
-      <div className="relative" style={{ width: `${width}px` }}>
+    //   {/* Album cover image */}
+    //   <div className="relative" style={{ width: `${width}px` }}>
         <ImageCard
           id={albumData.id}
-          image_url={albumData?.cover_media_url || "/"}
+          image_url={albumData?.cover_media_url}
           title={albumData?.name}
           description={albumData?.description}
           isLoading={
@@ -186,44 +187,40 @@ const AlbumCover: React.FC<AlbumCoverProps> = ({
           width={width}
           height={height}
           aspectRatio={preserveAspectRatio ? undefined : aspectRatio}
-          imageHeight={height}
-          border="thin"
           borderRadius={borderRadius}
           shadow={shadow}
+          imageHeight={500}
           hoverShadow={hoverShadow}
           showContent={showContent}
           contentPosition={contentPosition}
           hoverScale={hoverScale}
-          transitionDuration="duration-200"
+          transition="fast" 
           titleLines={2}
           hoverEffect="lift"
           descriptionLines={3}
           priority={priority}
           quality={quality}
-          sizes="(max-width: 768px) 100vw, 33vw"
           placeholder="empty"
           fallbackImage="/placeholder.jpg"
           loadingHeight={`${height}px`}
           alt={albumData ? `Cover for ${albumData.name}` : "Album cover"}
           actions={() => <></>}
         />
-      </div>
-
-      {/* Album metadata - optional additional info */}
-      {showContent && albumData && (
-        <div className="w-full px-4 py-2 text-center md:text-left">
-          <p className="text-xs opacity-65">
-            {albumData.is_public ? "Public Album" : "Private Album"}
-            {albumData.created_at && (
-              <span>
-                {" "}
-                • Created {new Date(albumData.created_at).toLocaleDateString()}
-              </span>
-            )}
-          </p>
-        </div>
-      )}
-    </div>
+      
+      // {showContent && albumData && (
+      //   <div className="w-full px-4 py-2 text-center md:text-left">
+      //     <p className="text-xs opacity-65">
+      //       {albumData.is_public ? "Public Album" : "Private Album"}
+      //       {albumData.created_at && (
+      //         <span>
+      //           {" "}
+      //           • Created {new Date(albumData.created_at).toLocaleDateString()}
+      //         </span>
+      //       )}
+      //     </p>
+      //   </div>
+      // )}
+    // </div>
   );
 };
 

@@ -14,6 +14,7 @@ interface PopoverProps {
     | "top-center"
     | "bottom-center"; // Position options
   className?: string; // Optional className for styling
+  clickerClassName?: string; // Optional className for styling
   closeOnOutsideClick?: boolean; // Whether to close when clicking outside
   mobileBreakpoint?: number; // Screen width threshold for mobile behavior (default: 768px)
 }
@@ -23,6 +24,7 @@ const Popover: React.FC<PopoverProps> = ({
   children,
   position = "bottom-center",
   className = "",
+  clickerClassName = "w-12 h-12 cursor-pointer rounded-full flex items-center justify-center bg-[var(--background)]",
   closeOnOutsideClick = true,
   mobileBreakpoint = 475,
 }) => {
@@ -133,7 +135,7 @@ const Popover: React.FC<PopoverProps> = ({
       <div
         ref={clickerRef}
         onClick={togglePopover}
-        className={`cursor-pointer rounded-full w-12 h-12 flex items-center justify-center bg-[var(--background)]  ${isOpen ? "" : ""}`}
+        className={` ${clickerClassName}   ${isOpen ? "" : ""}`}
         style={
           isOpen
             ? {

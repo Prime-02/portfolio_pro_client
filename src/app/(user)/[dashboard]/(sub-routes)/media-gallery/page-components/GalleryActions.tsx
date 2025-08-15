@@ -115,8 +115,6 @@ const GalleryActions = ({
         url: `${V1_BASE_URL}/media-gallery/collections/${albumId}`,
         field: coverData,
         useFormData: true,
-
-        useFormData: true,
       });
 
       if (uploadRes) {

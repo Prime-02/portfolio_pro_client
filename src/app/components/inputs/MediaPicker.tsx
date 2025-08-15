@@ -43,7 +43,7 @@ interface ErrorState {
 }
 
 const MediaPicker: React.FC<MediaPickerProps> = ({
-  maxFiles = 5,
+  maxFiles = 20,
   onMediaChange = () => {},
   acceptedTypes = {
     "image/*": [".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg"],
@@ -53,7 +53,7 @@ const MediaPicker: React.FC<MediaPickerProps> = ({
   devMode = true,
   loading = false,
   onClick = () => {},
-  maxFileSize = 2 * 1024 * 1024, // 2MB default
+  maxFileSize = 200 * 1024 * 1024, // 2MB default
   uploadCooldown = 1000, // 1 second default
 }) => {
   const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
@@ -346,7 +346,7 @@ const MediaPicker: React.FC<MediaPickerProps> = ({
           isDisabled
             ? "border-gray-300 bg-gray-50 cursor-not-allowed opacity-60"
             : isDragging
-              ? "border-[var(--foreground)] bg-[var(--accent)] cursor-pointer"
+              ? " border-[var(--accent)] cursor-pointer"
               : "border-gray-300 hover:border-[var(--accent)] cursor-pointer"
         } ${isProcessing ? "animate-pulse" : ""}`}
         onDragEnter={handleDragEnter}
@@ -439,7 +439,6 @@ const MediaPicker: React.FC<MediaPickerProps> = ({
               className="flex items-center justify-between p-4 bg-[var(--background)] border border-[var(--accent)] rounded-lg shadow-sm w-full overflow-hidden"
             >
               <div className="flex items-center space-x-3 min-w-0 flex-1">
-                {getFileIcon(file.media_type)}
                 <div className="min-w-0 overflow-hidden">
                   <p className="font-medium truncate">{file.name}</p>
                   <div className="flex items-center text-xs space-x-2 text-gray-500 truncate">

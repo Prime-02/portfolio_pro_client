@@ -1,451 +1,303 @@
-import React, { ReactNode } from "react";
+import React, { ReactNode, useState } from "react";
+import styled, { css, keyframes } from "styled-components";
 import Image from "next/image";
+import { AnimationVariant, BorderColorVariant, BorderRadiusVariant, BorderStyleVariant, ColorVariant, HoverEffectVariant, HoverShadowVariant, ShadowVariant, SpacingVariant, TextSizeVariant, TextWeightVariant, TransitionVariant } from "../../types and interfaces/ImageCardTypes";
 
-// Predefined style enums
-export type BorderRadiusVariant =
-  | "none"
-  | "sm"
-  | "md"
-  | "lg"
-  | "xl"
-  | "2xl"
-  | "3xl"
-  | "full";
-export type ShadowVariant =
-  | "none"
-  | "sm"
-  | "md"
-  | "lg"
-  | "xl"
-  | "2xl"
-  | "inner"
-  | "drop"
-  | "colored";
-export type HoverShadowVariant =
-  | "none"
-  | "sm"
-  | "md"
-  | "lg"
-  | "xl"
-  | "2xl"
-  | "colored"
-  | "glow";
-export type SizeVariant =
-  | "xs"
-  | "sm"
-  | "md"
-  | "lg"
-  | "xl"
-  | "2xl"
-  | "3xl"
-  | "4xl";
-export type ColorVariant =
-  | "primary"
-  | "secondary"
-  | "accent"
-  | "neutral"
-  | "success"
-  | "warning"
-  | "error"
-  | "info"
-  | "rose"
-  | "purple"
-  | "indigo"
-  | "cyan"
-  | "emerald"
-  | "amber";
-export type TextSizeVariant =
-  | "xs"
-  | "sm"
-  | "base"
-  | "lg"
-  | "xl"
-  | "2xl"
-  | "3xl"
-  | "4xl";
-export type SpacingVariant =
-  | "none"
-  | "xs"
-  | "sm"
-  | "md"
-  | "lg"
-  | "xl"
-  | "2xl"
-  | "3xl";
-export type BorderVariant =
-  | "none"
-  | "thin"
-  | "medium"
-  | "thick"
-  | "dashed"
-  | "dotted"
-  | "double";
-export type TransitionVariant = "none" | "fast" | "normal" | "slow" | "slower";
-export type HoverEffectVariant =
-  | "none"
-  | "scale"
-  | "rotate"
-  | "skew"
-  | "lift"
-  | "tilt"
-  | "blur"
-  | "brightness"
-  | "saturate"
-  | "grayscale"
-  | "sepia"
-  | "hue-rotate"
-  | "float"
-  | "pulse"
-  | "bounce"
-  | "wiggle"
-  | "shake"
-  | "flip"
-  | "slide-up"
-  | "slide-down"
-  | "zoom-in"
-  | "zoom-out"
-  | "fade"
-  | "glow"
-  | "rainbow";
-export type GradientVariant =
-  | "none"
-  | "subtle"
-  | "vibrant"
-  | "rainbow"
-  | "sunset"
-  | "ocean"
-  | "forest"
-  | "cosmic"
-  | "fire"
-  | "ice"
-  | "neon"
-  | "pastel"
-  | "dark";
-export type BlendModeVariant =
-  | "normal"
-  | "multiply"
-  | "screen"
-  | "overlay"
-  | "soft-light"
-  | "hard-light"
-  | "color-dodge"
-  | "color-burn"
-  | "darken"
-  | "lighten"
-  | "difference"
-  | "exclusion";
-export type TextWeightVariant =
-  | "thin"
-  | "light"
-  | "normal"
-  | "medium"
-  | "semibold"
-  | "bold"
-  | "extrabold"
-  | "black";
-export type OpacityVariant =
-  | "0"
-  | "5"
-  | "10"
-  | "20"
-  | "25"
-  | "30"
-  | "40"
-  | "50"
-  | "60"
-  | "70"
-  | "75"
-  | "80"
-  | "90"
-  | "95"
-  | "100";
-export type BackdropVariant =
-  | "none"
-  | "blur-sm"
-  | "blur-md"
-  | "blur-lg"
-  | "blur-xl"
-  | "brightness"
-  | "contrast"
-  | "grayscale"
-  | "hue-rotate"
-  | "invert"
-  | "saturate"
-  | "sepia";
-export type AnimationVariant =
-  | "none"
-  | "spin"
-  | "ping"
-  | "pulse"
-  | "bounce"
-  | "float"
-  | "swing"
-  | "wobble"
-  | "slide"
-  | "fade-in"
-  | "zoom-in"
-  | "flip"
-  | "shake"
-  | "heartbeat"
-  | "flash"
-  | "rubber-band"
-  | "jello"
-  | "roll"
-  | "rotate-in";
 
-// Predefined style mappings
-const BORDER_RADIUS_STYLES: Record<BorderRadiusVariant, string> = {
-  none: "rounded-none",
-  sm: "rounded-sm",
-  md: "rounded-md",
-  lg: "rounded-lg",
-  xl: "rounded-xl",
-  "2xl": "rounded-2xl",
-  "3xl": "rounded-3xl",
-  full: "rounded-full",
-};
+// Styled components
+const CardContainer = styled.div<{
+  $borderStyle: BorderStyleVariant;
+  $borderWidth: number;
+  $borderColor: BorderColorVariant | string;
+  $borderRadius: BorderRadiusVariant;
+  $shadow: ShadowVariant;
+  $hoverShadow: HoverShadowVariant;
+  $transition: TransitionVariant;
+  $hoverEffect: HoverEffectVariant;
+  $colorVariant: ColorVariant;
+  $isClickable: boolean;
+  $disabled: boolean;
+  $animation: AnimationVariant;
+  $disableHover: boolean;
+}>`
+  border-radius: ${(props) => getBorderRadius(props.$borderRadius)};
+  border: ${(props) => getBorderCSS(props.$borderStyle, props.$borderWidth, props.$borderColor)};
+  box-shadow: ${(props) => getShadow(props.$shadow)};
+  background-color: ${(props) => getColorTheme(props.$colorVariant).bg};
+  transition: all ${(props) => getTransitionDuration(props.$transition)}
+    ease-in-out;
+  overflow: hidden;
+  cursor: ${(props) =>
+    props.$disabled
+      ? "not-allowed"
+      : props.$isClickable
+        ? "pointer"
+        : "default"};
+  opacity: ${(props) => (props.$disabled ? 0.5 : 1)};
 
-const SHADOW_STYLES: Record<ShadowVariant, string> = {
-  none: "shadow-none",
-  sm: "shadow-sm",
-  md: "shadow-md",
-  lg: "shadow-lg",
-  xl: "shadow-xl",
-  "2xl": "shadow-2xl",
-  inner: "shadow-inner",
-  drop: "drop-shadow-lg",
-  colored: "shadow-lg shadow-blue-500/25",
-};
+  ${(props) =>
+    props.$animation === "spin" &&
+    css`
+      animation: ${spin} 1s linear infinite;
+    `}
 
-const HOVER_SHADOW_STYLES: Record<HoverShadowVariant, string> = {
-  none: "",
-  sm: "hover:shadow-sm",
-  md: "hover:shadow-md",
-  lg: "hover:shadow-lg",
-  xl: "hover:shadow-xl",
-  "2xl": "hover:shadow-2xl",
-  colored: "hover:shadow-xl hover:shadow-blue-500/30",
-  glow: "hover:shadow-2xl hover:shadow-blue-400/50 hover:drop-shadow-lg",
-};
+  ${(props) =>
+    props.$animation === "pulse" &&
+    css`
+      animation: ${pulse} 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    `}
+  
+  ${(props) =>
+    props.$animation === "bounce" &&
+    css`
+      animation: ${bounce} 1s infinite;
+    `}
+  
+  ${(props) =>
+    props.$animation === "float" &&
+    css`
+      animation: ${float} 3s ease-in-out infinite;
+    `}
+  
+  ${(props) =>
+    props.$animation === "shake" &&
+    css`
+      animation: ${shake} 0.82s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+    `}
 
-const TEXT_SIZE_STYLES: Record<TextSizeVariant, string> = {
-  xs: "text-xs",
-  sm: "text-sm",
-  base: "text-base",
-  lg: "text-lg",
-  xl: "text-xl",
-  "2xl": "text-2xl",
-  "3xl": "text-3xl",
-  "4xl": "text-4xl",
-};
+  ${(props) =>
+    !props.$disableHover &&
+    css`
+      &:hover {
+        ${props.$hoverShadow !== "none" &&
+        css`
+          box-shadow: ${getShadow(props.$hoverShadow as ShadowVariant)};
+        `}
 
-const SPACING_STYLES: Record<SpacingVariant, string> = {
-  none: "p-0",
-  xs: "p-2",
-  sm: "p-3",
-  md: "p-4",
-  lg: "p-6",
-  xl: "p-8",
-  "2xl": "p-10",
-  "3xl": "p-12",
-};
+        ${props.$hoverShadow === "glow" &&
+        css`
+          box-shadow: 0 25px 50px -12px rgba(59, 130, 246, 0.5);
+          filter: drop-shadow(0 20px 13px rgb(0 0 0 / 0.03));
+        `}
+      
+      ${props.$hoverEffect === "scale" &&
+        css`
+          transform: scale(1.05);
+        `}
+      
+      ${props.$hoverEffect === "rotate" &&
+        css`
+          transform: rotate(3deg);
+        `}
+      
+      ${props.$hoverEffect === "lift" &&
+        css`
+          transform: translateY(-8px);
+        `}
+      
+      ${props.$hoverEffect === "tilt" &&
+        css`
+          transform: rotate(6deg) scale(1.05);
+        `}
+      
+      ${props.$hoverEffect === "blur" &&
+        css`
+          filter: blur(2px);
+        `}
+      
+      ${props.$hoverEffect === "brightness" &&
+        css`
+          filter: brightness(1.1);
+        `}
+      
+      ${props.$hoverEffect === "fade" &&
+        css`
+          opacity: 0.75;
+        `}
+      
+      ${props.$hoverEffect === "glow" &&
+        css`
+          filter: drop-shadow(0 0 20px rgba(59, 130, 246, 0.5)) brightness(1.1);
+        `}
+      }
+    `}
 
-const BACKGROUND_STYLES: Record<ColorVariant, string> = {
-  primary: "bg-blue-50 dark:bg-blue-900/20",
-  secondary: "bg-gray-50 dark:bg-gray-900/20",
-  accent: "bg-purple-50 dark:bg-purple-900/20",
-  neutral: "bg-neutral-50 dark:bg-neutral-900/20",
-  success: "bg-green-50 dark:bg-green-900/20",
-  warning: "bg-yellow-50 dark:bg-yellow-900/20",
-  error: "bg-red-50 dark:bg-red-900/20",
-  info: "bg-sky-50 dark:bg-sky-900/20",
-  rose: "bg-rose-50 dark:bg-rose-900/20",
-  purple: "bg-purple-50 dark:bg-purple-900/20",
-  indigo: "bg-indigo-50 dark:bg-indigo-900/20",
-  cyan: "bg-cyan-50 dark:bg-cyan-900/20",
-  emerald: "bg-emerald-50 dark:bg-emerald-900/20",
-  amber: "bg-amber-50 dark:bg-amber-900/20",
-};
+  @media (prefers-color-scheme: dark) {
+    background-color: ${(props) => getColorTheme(props.$colorVariant).bgDark};
+  }
+`;
 
-const TEXT_COLOR_STYLES: Record<ColorVariant, string> = {
-  primary: "text-blue-900 dark:text-blue-100",
-  secondary: "text-gray-900 dark:text-gray-100",
-  accent: "text-purple-900 dark:text-purple-100",
-  neutral: "text-neutral-900 dark:text-neutral-100",
-  success: "text-green-900 dark:text-green-100",
-  warning: "text-yellow-900 dark:text-yellow-100",
-  error: "text-red-900 dark:text-red-100",
-  info: "text-sky-900 dark:text-sky-100",
-  rose: "text-rose-900 dark:text-rose-100",
-  purple: "text-purple-900 dark:text-purple-100",
-  indigo: "text-indigo-900 dark:text-indigo-100",
-  cyan: "text-cyan-900 dark:text-cyan-100",
-  emerald: "text-emerald-900 dark:text-emerald-100",
-  amber: "text-amber-900 dark:text-amber-100",
-};
+const ImageContainer = styled.div`
+  position: relative;
+  overflow: hidden;
+`;
 
-const LOADING_BACKGROUND_STYLES: Record<ColorVariant, string> = {
-  primary: "bg-gradient-to-r from-blue-200 via-blue-300 to-blue-200",
-  secondary: "bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200",
-  accent: "bg-gradient-to-r from-purple-200 via-purple-300 to-purple-200",
-  neutral: "bg-gradient-to-r from-neutral-200 via-neutral-300 to-neutral-200",
-  success: "bg-gradient-to-r from-green-200 via-green-300 to-green-200",
-  warning: "bg-gradient-to-r from-yellow-200 via-yellow-300 to-yellow-200",
-  error: "bg-gradient-to-r from-red-200 via-red-300 to-red-200",
-  info: "bg-gradient-to-r from-sky-200 via-sky-300 to-sky-200",
-  rose: "bg-gradient-to-r from-rose-200 via-rose-300 to-rose-200",
-  purple: "bg-gradient-to-r from-purple-200 via-purple-300 to-purple-200",
-  indigo: "bg-gradient-to-r from-indigo-200 via-indigo-300 to-indigo-200",
-  cyan: "bg-gradient-to-r from-cyan-200 via-cyan-300 to-cyan-200",
-  emerald: "bg-gradient-to-r from-emerald-200 via-emerald-300 to-emerald-200",
-  amber: "bg-gradient-to-r from-amber-200 via-amber-300 to-amber-200",
-};
+const StyledImage = styled(Image)<{
+  $transition: TransitionVariant;
+  $hoverScale?: number;
+  $disableHover: boolean;
+}>`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform ${(props) => getTransitionDuration(props.$transition)}
+    ease-in-out;
 
-const BORDER_STYLES: Record<BorderVariant, string> = {
-  none: "border-0",
-  thin: "border border-[var(--accent)] ",
-  medium: "border-2 border-[var(--accent)] ",
-  thick: "border-4 border-[var(--accent)] ",
-  dashed: "border-2 border-dashed border-[var(--accent)] ",
-  dotted: "border-2 border-dotted border-[var(--accent)] ",
-  double: "border-4 border-double border-[var(--accent)] ",
-};
+  ${(props) =>
+    !props.$disableHover &&
+    props.$hoverScale &&
+    css`
+      ${CardContainer}:hover & {
+        transform: scale(${props.$hoverScale});
+      }
+    `}
+`;
 
-const TRANSITION_STYLES: Record<TransitionVariant, string> = {
-  none: "",
-  fast: "duration-150",
-  normal: "duration-300",
-  slow: "duration-500",
-  slower: "duration-700",
-};
+const ActionsOverlay = styled.div<{
+  $transition: TransitionVariant;
+  $disableHover: boolean;
+}>`
+  position: absolute;
+  bottom: 0.75rem;
+  right: 0.75rem;
+  z-index: 30;
+  opacity: 0;
+  transition: opacity ${(props) => getTransitionDuration(props.$transition)}
+    ease-in-out;
 
-const HOVER_EFFECT_STYLES: Record<HoverEffectVariant, string> = {
-  none: "",
-  scale: "hover:scale-105",
-  rotate: "hover:rotate-3",
-  skew: "hover:skew-y-3",
-  lift: "hover:-translate-y-2",
-  tilt: "hover:rotate-6 hover:scale-105",
-  blur: "hover:blur-sm",
-  brightness: "hover:brightness-110",
-  saturate: "hover:saturate-150",
-  grayscale: "hover:grayscale",
-  sepia: "hover:sepia",
-  "hue-rotate": "hover:hue-rotate-30",
-  float: "hover:animate-bounce",
-  pulse: "hover:animate-pulse",
-  bounce: "hover:animate-bounce",
-  wiggle: "hover:animate-ping",
-  shake: "hover:animate-spin",
-  flip: "hover:rotate-180",
-  "slide-up": "hover:-translate-y-4",
-  "slide-down": "hover:translate-y-4",
-  "zoom-in": "hover:scale-125",
-  "zoom-out": "hover:scale-75",
-  fade: "hover:opacity-75",
-  glow: "hover:drop-shadow-2xl hover:filter hover:brightness-110",
-  rainbow: "hover:animate-pulse hover:hue-rotate-90",
-};
+  ${(props) =>
+    !props.$disableHover &&
+    css`
+      ${CardContainer}:hover & {
+        opacity: 1;
+      }
+    `}
+`;
 
-const GRADIENT_STYLES: Record<GradientVariant, string> = {
-  none: "",
-  subtle:
-    "bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900",
-  vibrant: "bg-gradient-to-br from-pink-500 via-red-500 to-yellow-500",
-  rainbow:
-    "bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500",
-  sunset: "bg-gradient-to-br from-orange-400 via-red-500 to-pink-600",
-  ocean: "bg-gradient-to-br from-blue-400 via-blue-600 to-cyan-600",
-  forest: "bg-gradient-to-br from-green-400 via-green-600 to-emerald-600",
-  cosmic: "bg-gradient-to-br from-purple-400 via-pink-500 to-red-500",
-  fire: "bg-gradient-to-br from-yellow-400 via-orange-500 to-red-600",
-  ice: "bg-gradient-to-br from-blue-200 via-cyan-200 to-blue-300",
-  neon: "bg-gradient-to-br from-lime-400 via-green-400 to-emerald-400",
-  pastel: "bg-gradient-to-br from-pink-200 via-purple-200 to-indigo-200",
-  dark: "bg-gradient-to-br from-gray-700 via-gray-800 to-black",
-};
+const GradientOverlay = styled.div<{
+  $overlayOpacity: number;
+}>`
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, ${(props) => props.$overlayOpacity / 100}),
+    transparent 50%,
+    transparent
+  );
+  z-index: 20;
+`;
 
-const BLEND_MODE_STYLES: Record<BlendModeVariant, string> = {
-  normal: "mix-blend-normal",
-  multiply: "mix-blend-multiply",
-  screen: "mix-blend-screen",
-  overlay: "mix-blend-overlay",
-  "soft-light": "mix-blend-soft-light",
-  "hard-light": "mix-blend-hard-light",
-  "color-dodge": "mix-blend-color-dodge",
-  "color-burn": "mix-blend-color-burn",
-  darken: "mix-blend-darken",
-  lighten: "mix-blend-lighten",
-  difference: "mix-blend-difference",
-  exclusion: "mix-blend-exclusion",
-};
+const ContentContainer = styled.div<{
+  $padding: SpacingVariant;
+  $colorVariant: ColorVariant;
+  $position: "bottom" | "overlay";
+}>`
+  padding: ${(props) => getPadding(props.$padding)};
 
-const TEXT_WEIGHT_STYLES: Record<TextWeightVariant, string> = {
-  thin: "font-thin",
-  light: "font-light",
-  normal: "font-normal",
-  medium: "font-medium",
-  semibold: "font-semibold",
-  bold: "font-bold",
-  extrabold: "font-extrabold",
-  black: "font-black",
-};
+  ${(props) =>
+    props.$position === "overlay"
+      ? css`
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          z-index: 20;
+          color: white;
+        `
+      : css`
+          background-color: ${getColorTheme(props.$colorVariant).bg};
+          color: ${getColorTheme(props.$colorVariant).text};
 
-const OPACITY_STYLES: Record<OpacityVariant, string> = {
-  "0": "opacity-0",
-  "5": "opacity-5",
-  "10": "opacity-10",
-  "20": "opacity-20",
-  "25": "opacity-25",
-  "30": "opacity-30",
-  "40": "opacity-40",
-  "50": "opacity-50",
-  "60": "opacity-60",
-  "70": "opacity-70",
-  "75": "opacity-75",
-  "80": "opacity-80",
-  "90": "opacity-90",
-  "95": "opacity-95",
-  "100": "opacity-100",
-};
+          @media (prefers-color-scheme: dark) {
+            background-color: ${getColorTheme(props.$colorVariant).bgDark};
+            color: ${getColorTheme(props.$colorVariant).textDark};
+          }
+        `}
+`;
 
-const BACKDROP_STYLES: Record<BackdropVariant, string> = {
-  none: "",
-  "blur-sm": "backdrop-blur-sm",
-  "blur-md": "backdrop-blur-md",
-  "blur-lg": "backdrop-blur-lg",
-  "blur-xl": "backdrop-blur-xl",
-  brightness: "backdrop-brightness-110",
-  contrast: "backdrop-contrast-125",
-  grayscale: "backdrop-grayscale",
-  "hue-rotate": "backdrop-hue-rotate-15",
-  invert: "backdrop-invert",
-  saturate: "backdrop-saturate-150",
-  sepia: "backdrop-sepia",
-};
+const Title = styled.h3<{
+  $size: TextSizeVariant;
+  $weight: TextWeightVariant;
+  $lines?: number;
+}>`
+  font-size: ${(props) => getTextSize(props.$size)};
+  font-weight: ${(props) => getFontWeight(props.$weight)};
+  margin-bottom: 0.5rem;
+  line-height: 1.25;
 
-const ANIMATION_STYLES: Record<AnimationVariant, string> = {
-  none: "",
-  spin: "animate-spin",
-  ping: "animate-ping",
-  pulse: "animate-pulse",
-  bounce: "animate-bounce",
-  float: "hover:animate-bounce",
-  swing: "hover:animate-pulse",
-  wobble: "hover:animate-ping",
-  slide: "transition-transform hover:translate-x-2",
-  "fade-in": "animate-pulse",
-  "zoom-in": "hover:scale-110 transition-transform",
-  flip: "hover:rotate-180 transition-transform",
-  shake: "hover:animate-pulse",
-  heartbeat: "animate-ping",
-  flash: "animate-pulse",
-  "rubber-band": "hover:scale-110 hover:skew-x-12 transition-transform",
-  jello: "hover:skew-x-12 hover:skew-y-3 transition-transform",
-  roll: "hover:rotate-360 transition-transform",
-  "rotate-in": "hover:rotate-45 transition-transform",
-};
+  ${(props) =>
+    props.$lines &&
+    css`
+      display: -webkit-box;
+      -webkit-line-clamp: ${props.$lines};
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    `}
+`;
 
+const Description = styled.p<{
+  $size: TextSizeVariant;
+  $weight: TextWeightVariant;
+  $lines?: number;
+  $position: "bottom" | "overlay";
+}>`
+  font-size: ${(props) => getTextSize(props.$size)};
+  font-weight: ${(props) => getFontWeight(props.$weight)};
+  line-height: 1.5;
+  opacity: ${(props) => (props.$position === "overlay" ? 0.9 : 0.7)};
+
+  ${(props) =>
+    props.$lines &&
+    css`
+      display: -webkit-box;
+      -webkit-line-clamp: ${props.$lines};
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    `}
+`;
+
+const LoadingContainer = styled(CardContainer)`
+  animation: ${pulse} 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+`;
+
+const LoadingImagePlaceholder = styled.div<{
+  $height: string | number;
+  $colorVariant: ColorVariant;
+}>`
+  width: 100%;
+  height: ${(props) =>
+    typeof props.$height === "number" ? `${props.$height}px` : props.$height};
+  background: linear-gradient(
+    -45deg,
+    ${(props) => getColorTheme(props.$colorVariant).bg},
+    ${(props) => getColorTheme(props.$colorVariant).text}20,
+    ${(props) => getColorTheme(props.$colorVariant).bg}
+  );
+  background-size: 400% 400%;
+  animation: ${gradientShift} 2s ease infinite;
+`;
+
+const LoadingTextPlaceholder = styled.div<{
+  $width: string;
+  $height: string;
+  $colorVariant: ColorVariant;
+}>`
+  width: ${(props) => props.$width};
+  height: ${(props) => props.$height};
+  background: linear-gradient(
+    -45deg,
+    ${(props) => getColorTheme(props.$colorVariant).bg},
+    ${(props) => getColorTheme(props.$colorVariant).text}20,
+    ${(props) => getColorTheme(props.$colorVariant).bg}
+  );
+  background-size: 400% 400%;
+  animation: ${gradientShift} 2s ease infinite;
+  border-radius: 0.25rem;
+  margin-bottom: 0.5rem;
+`;
+
+// Props interface
 export interface ImageCardProps {
   id: string;
   title?: string;
@@ -461,22 +313,22 @@ export interface ImageCardProps {
   aspectRatio?: string;
   imageHeight?: string | number;
 
-  // Enhanced Styling Props
+  // Styling Props
+  // Border Props
+  borderStyle?: BorderStyleVariant;
+  borderWidth?: number;
+  borderColor?: BorderColorVariant | string;
   borderRadius?: BorderRadiusVariant;
   shadow?: ShadowVariant;
   hoverShadow?: HoverShadowVariant;
   titleSize?: TextSizeVariant;
   descriptionSize?: TextSizeVariant;
   contentPadding?: SpacingVariant;
-  border?: BorderVariant;
   transition?: TransitionVariant;
   hoverEffect?: HoverEffectVariant;
-  gradient?: GradientVariant;
-  blendMode?: BlendModeVariant;
   titleWeight?: TextWeightVariant;
   descriptionWeight?: TextWeightVariant;
-  overlayOpacity?: OpacityVariant;
-  backdrop?: BackdropVariant;
+  overlayOpacity?: number;
   animation?: AnimationVariant;
 
   // Content Props
@@ -488,7 +340,6 @@ export interface ImageCardProps {
 
   // Animation & Effects Props
   hoverScale?: number;
-  transitionDuration?: string;
   showGradientOverlay?: boolean;
 
   // Loading Props
@@ -520,10 +371,9 @@ export interface ImageCardProps {
   // Background & Colors
   backgroundVariant?: ColorVariant;
   textVariant?: ColorVariant;
-  useGradientBackground?: boolean;
 }
 
-const ImageCard = (props: ImageCardProps) => {
+const ImageCard: React.FC<ImageCardProps> = (props) => {
   const {
     actions,
     isLoading = false,
@@ -535,22 +385,21 @@ const ImageCard = (props: ImageCardProps) => {
     aspectRatio,
     imageHeight = "auto",
 
-    // Enhanced Styling
+    // Border Props
+    borderStyle = "none",
+    borderWidth = 0,
+    borderColor = "transparent",
     borderRadius = "2xl",
     shadow = "sm",
     hoverShadow = "lg",
     titleSize = "base",
     descriptionSize = "sm",
     contentPadding = "md",
-    border = "none",
     transition = "normal",
     hoverEffect = "scale",
-    gradient = "none",
-    blendMode = "normal",
     titleWeight = "semibold",
     descriptionWeight = "normal",
-    overlayOpacity = "50",
-    backdrop = "none",
+    overlayOpacity = 50,
     animation = "none",
 
     // Content
@@ -562,7 +411,6 @@ const ImageCard = (props: ImageCardProps) => {
 
     // Animation & Effects
     hoverScale = 1.05,
-    transitionDuration = "duration-300",
     showGradientOverlay = true,
 
     // Loading
@@ -594,81 +442,62 @@ const ImageCard = (props: ImageCardProps) => {
     // Background & Colors
     backgroundVariant = "neutral",
     textVariant = "neutral",
-    useGradientBackground = false,
 
     ...cardProps
   } = props;
 
-  // Get styles from enums
-  const borderRadiusStyle = BORDER_RADIUS_STYLES[borderRadius];
-  const shadowStyle = SHADOW_STYLES[shadow];
-  const hoverShadowStyle = HOVER_SHADOW_STYLES[hoverShadow];
-  const backgroundStyle = useGradientBackground
-    ? GRADIENT_STYLES[gradient] || BACKGROUND_STYLES[backgroundVariant]
-    : BACKGROUND_STYLES[backgroundVariant];
-  const textColorStyle = TEXT_COLOR_STYLES[textVariant];
-  const loadingBackgroundStyle = LOADING_BACKGROUND_STYLES[loadingVariant];
-  const titleSizeStyle = TEXT_SIZE_STYLES[titleSize];
-  const descriptionSizeStyle = TEXT_SIZE_STYLES[descriptionSize];
-  const contentPaddingStyle = SPACING_STYLES[contentPadding];
-  const borderStyle = BORDER_STYLES[border];
-  const transitionStyle = TRANSITION_STYLES[transition];
-  const hoverEffectStyle = HOVER_EFFECT_STYLES[hoverEffect];
-  const gradientStyle = GRADIENT_STYLES[gradient];
-  const blendModeStyle = BLEND_MODE_STYLES[blendMode];
-  const titleWeightStyle = TEXT_WEIGHT_STYLES[titleWeight];
-  const descriptionWeightStyle = TEXT_WEIGHT_STYLES[descriptionWeight];
-  const overlayOpacityStyle = OPACITY_STYLES[overlayOpacity];
-  const backdropStyle = BACKDROP_STYLES[backdrop];
-  const animationStyle = ANIMATION_STYLES[animation];
+  const [imageError, setImageError] = useState(false);
 
   // Custom loading content or default loading placeholder
   if (isLoading) {
     if (customLoadingContent) {
       return (
-        <div className={`${borderRadiusStyle} ${animationStyle}`}>
+        <div style={{ borderRadius: getBorderRadius(borderRadius) }}>
           {customLoadingContent}
         </div>
       );
     }
 
     return (
-      <div
-        className={`${backgroundStyle} ${borderRadiusStyle} ${shadowStyle} ${borderStyle} overflow-hidden animate-pulse ${animationStyle}`}
+      <LoadingContainer
+        $borderRadius={borderRadius}
+        $shadow={shadow}
+        $hoverShadow="none"
+        $transition={transition}
+        $hoverEffect="none"
+        $colorVariant={loadingVariant}
+        $isClickable={false}
+        $disabled={false}
+        $animation="none"
+        $disableHover={true}
       >
-        {/* Image Placeholder */}
-        <div className="relative overflow-hidden">
-          <div
-            className={`w-full ${loadingBackgroundStyle} animate-gradient-x`}
-            style={{
-              height:
-                typeof loadingHeight === "number"
-                  ? `${loadingHeight}px`
-                  : loadingHeight,
-            }}
-          />
-        </div>
+        <LoadingImagePlaceholder
+          $height={loadingHeight}
+          $colorVariant={loadingVariant}
+        />
 
-        {/* Content Placeholder */}
         {showContent && contentPosition === "bottom" && (
-          <div className={`${contentPaddingStyle} space-y-3`}>
-            {/* Title placeholder */}
-            <div
-              className={`h-4 ${loadingBackgroundStyle} ${borderRadiusStyle} animate-gradient-x w-3/4`}
+          <div style={{ padding: getPadding(contentPadding) }}>
+            <LoadingTextPlaceholder
+              $width="75%"
+              $height="1rem"
+              $colorVariant={loadingVariant}
             />
-
-            {/* Description placeholder lines */}
-            <div className="space-y-2">
-              <div
-                className={`h-3 ${loadingBackgroundStyle} ${borderRadiusStyle} animate-gradient-x w-full`}
+            <div>
+              <LoadingTextPlaceholder
+                $width="100%"
+                $height="0.75rem"
+                $colorVariant={loadingVariant}
               />
-              <div
-                className={`h-3 ${loadingBackgroundStyle} ${borderRadiusStyle} animate-gradient-x w-2/3`}
+              <LoadingTextPlaceholder
+                $width="66%"
+                $height="0.75rem"
+                $colorVariant={loadingVariant}
               />
             </div>
           </div>
         )}
-      </div>
+      </LoadingContainer>
     );
   }
 
@@ -689,63 +518,39 @@ const ImageCard = (props: ImageCardProps) => {
 
   // Handle image error
   const handleImageError = (error: any) => {
+    setImageError(true);
     if (onImageError) {
       onImageError(error);
     }
   };
-  
-
-  // Generate line clamp classes
-  const getTitleLineClamp = () =>
-    !fullText && titleLines > 0 ? `line-clamp-${titleLines}` : "";
-  const getDescriptionLineClamp = () =>
-    !fullText && descriptionLines > 0 ? `line-clamp-${descriptionLines}` : "";
-
-  // Generate hover scale transform (fallback for custom hover effects)
-  const getHoverTransform = () =>
-    !disableHover && hoverEffect === "none"
-      ? `group-hover:scale-[${hoverScale}]`
-      : "";
-
-  const cardClasses = `
-    ${backgroundStyle} 
-    ${borderRadiusStyle} 
-    ${shadowStyle} 
-    ${borderStyle}
-    ${!disableHover ? hoverShadowStyle : ""} 
-    ${!disableHover ? hoverEffectStyle : ""}
-    ${blendModeStyle}
-    ${backdropStyle}
-    transition-all 
-    ${transitionStyle || transitionDuration}
-    overflow-hidden 
-    group 
-    ${animationStyle}
-    ${isClickable ? "cursor-pointer" : disabled ? "cursor-not-allowed" : "cursor-default"}
-    ${disabled ? "opacity-50" : ""}
-  `
-    .trim()
-    .replace(/\s+/g, " ");
 
   return (
-    <div
-      className={cardClasses}
+    <CardContainer
+      $borderRadius={borderRadius}
+      $shadow={shadow}
+      $hoverShadow={hoverShadow}
+      $transition={transition}
+      $hoverEffect={hoverEffect}
+      $colorVariant={backgroundVariant}
+      $isClickable={isClickable}
+      $disabled={disabled}
+      $animation={animation}
+      $disableHover={disableHover}
       onClick={!disabled ? handleCardClick : undefined}
       role={role}
       tabIndex={!disabled ? tabIndex : -1}
       style={aspectRatio ? { aspectRatio } : undefined}
     >
       {/* Image Container */}
-      <div
-        className="relative overflow-hidden"
-        style={aspectRatio ? { flex: 1 } : undefined}
-      >
+      <ImageContainer style={aspectRatio ? { flex: 1 } : undefined}>
         {fill ? (
-          <Image
+          <StyledImage
             src={props.image_url}
             alt={alt || props.title || "Image"}
             fill
-            className={`object-cover transition-transform ${transitionStyle || transitionDuration} ${getHoverTransform()}`}
+            $transition={transition}
+            $hoverScale={hoverEffect === "none" ? hoverScale : undefined}
+            $disableHover={disableHover}
             priority={priority}
             quality={quality}
             placeholder={placeholder}
@@ -762,12 +567,14 @@ const ImageCard = (props: ImageCardProps) => {
                   : imageHeight,
             }}
           >
-            <Image
+            <StyledImage
               src={props.image_url}
               alt={alt || props.title || "Image"}
               width={width}
               height={height}
-              className={`w-full h-full object-cover transition-transform ${transitionStyle || transitionDuration} ${getHoverTransform()}`}
+              $transition={transition}
+              $hoverScale={hoverEffect === "none" ? hoverScale : undefined}
+              $disableHover={disableHover}
               priority={priority}
               quality={quality}
               placeholder={placeholder}
@@ -780,73 +587,87 @@ const ImageCard = (props: ImageCardProps) => {
 
         {/* Actions Overlay */}
         {actions && (
-          <div
-            className={`absolute top-3 right-3 z-30 opacity-0 ${!disableHover ? "group-hover:opacity-100" : ""} transition-opacity ${transitionStyle || transitionDuration}`}
+          <ActionsOverlay
+            $transition={transition}
+            $disableHover={disableHover}
             onClick={handleActionClick}
           >
             {actions(cardProps)}
-          </div>
+          </ActionsOverlay>
         )}
 
+        {/* Gradient Overlay */}
         {showGradientOverlay &&
           contentPosition === "overlay" &&
           (props.title || props.description) && (
-            <div
-              className={`absolute inset-0 bg-gradient-to-t from-black/${overlayOpacity} via-transparent to-transparent z-20`}
-            />
+            <GradientOverlay $overlayOpacity={overlayOpacity} />
           )}
 
         {/* Overlay Content */}
         {showContent &&
           contentPosition === "overlay" &&
           (props.title || props.description) && (
-            <div
-              className={`absolute bottom-0 left-0 right-0 ${contentPaddingStyle} text-white z-20 ${backdropStyle}`}
+            <ContentContainer
+              $padding={contentPadding}
+              $colorVariant={textVariant}
+              $position="overlay"
             >
               {props.title && (
-                <h3
-                  className={`${titleWeightStyle} ${titleSizeStyle} mb-2 ${getTitleLineClamp()} leading-tight`}
+                <Title
+                  $size={titleSize}
+                  $weight={titleWeight}
+                  $lines={!fullText ? titleLines : undefined}
                 >
                   {props.title}
-                </h3>
+                </Title>
               )}
 
               {props.description && (
-                <p
-                  className={`${descriptionWeightStyle} ${descriptionSizeStyle} ${getDescriptionLineClamp()} leading-relaxed opacity-90`}
+                <Description
+                  $size={descriptionSize}
+                  $weight={descriptionWeight}
+                  $lines={!fullText ? descriptionLines : undefined}
+                  $position="overlay"
                 >
                   {props.description}
-                </p>
+                </Description>
               )}
-            </div>
+            </ContentContainer>
           )}
-      </div>
+      </ImageContainer>
 
       {/* Bottom Content */}
       {showContent &&
         contentPosition === "bottom" &&
         (props.title || props.description) && (
-          <div
-            className={`${contentPaddingStyle} bg-[var(--background)] ${textColorStyle}`}
+          <ContentContainer
+            $padding={contentPadding}
+            $colorVariant={textVariant}
+            $position="bottom"
           >
             {props.title && (
-              <h3
-                className={`${titleWeightStyle} ${titleSizeStyle} mb-2 ${getTitleLineClamp()} leading-tight`}
+              <Title
+                $size={titleSize}
+                $weight={titleWeight}
+                $lines={!fullText ? titleLines : undefined}
               >
                 {props.title}
-              </h3>
+              </Title>
             )}
 
             {props.description && (
-              <p
-                className={`${descriptionWeightStyle} ${descriptionSizeStyle} ${getDescriptionLineClamp()} leading-relaxed opacity-70`}
+              <Description
+                $size={descriptionSize}
+                $weight={descriptionWeight}
+                $lines={!fullText ? descriptionLines : undefined}
+                $position="bottom"
               >
                 {props.description}
-              </p>
+              </Description>
             )}
-          </div>
+          </ContentContainer>
         )}
-    </div>
+    </CardContainer>
   );
 };
 

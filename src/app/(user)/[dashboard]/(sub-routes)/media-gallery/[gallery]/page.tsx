@@ -4,7 +4,7 @@ import MediaView from "./page-components/MediaView";
 
 const MediaGallery = () => {
   return (
-    <div className="h-auto w-full p-4">
+    <div className="h-auto w-full p-2 overflow-auto">
       <MediaView />
     </div>
   );

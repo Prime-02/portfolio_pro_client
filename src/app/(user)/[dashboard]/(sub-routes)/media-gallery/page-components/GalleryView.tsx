@@ -67,7 +67,7 @@ const GalleryView = () => {
         }
 
         const url = currentUser
-          ? `${V1_BASE_URL}/media-gallery/user/${currentUser}/collections?page=${pageNum}`
+          ? `${V1_BASE_URL}/media-gallery/users/${currentUser}/collections?page=${pageNum}`
           : `${V1_BASE_URL}/media-gallery/collections?page=${pageNum}`;
 
         const galleryRes: { total: number; items: AlbumProps[] } =
@@ -120,7 +120,7 @@ const GalleryView = () => {
   useEffect(() => {
     if (!accessToken) return;
     refreshGallery();
-  }, [accessToken]); // Removed currentUser from dependencies
+  }, [accessToken, currentUser]); 
 
   const isInitialLoading = loading.includes("fetching_albums") && page === 1;
 
@@ -209,8 +209,9 @@ const GalleryView = () => {
                 showGradientOverlay
                 image_url={gallery.cover_media_url}
                 aspectRatio="auto"
-                contentPosition="bottom"
+                contentPosition="overlay"
                 border="thin"
+                imageHeight={600}
                 titleLines={1}
                 hoverEffect="lift"
                 id={gallery.id}

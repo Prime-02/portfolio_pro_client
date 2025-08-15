@@ -33,9 +33,10 @@ const GalleryCardActions = ({
 
   return (
     <Popover
-      position="bottom-left"
+      position="top-left"
+      clickerClassName="bg-[var(--background)] border  cursor-pointer w-8 h-8 flex items-center justify-center rotate-0 rounded-full shadow-md hover:shadow-lg transition-shadow"
       clicker={
-        <span className="bg-[var(--background)] cursor-pointer p-2 rounded-full shadow-md hover:shadow-lg transition-shadow">
+        <span className="">
           <MoreVertical size={16} />
         </span>
       }

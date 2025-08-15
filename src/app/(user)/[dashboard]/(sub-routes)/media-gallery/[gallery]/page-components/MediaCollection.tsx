@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { AlbumProps } from "../../page-components/GalleryView";
 import { useGlobalState } from "@/app/globalStateProvider";
 import { GetAllData } from "@/app/components/utilities/asyncFunctions/lib/crud";
 import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
@@ -13,30 +12,30 @@ import ImageCard from "@/app/components/containers/cards/ImageCard";
 import Button from "@/app/components/buttons/Buttons";
 import { Plus } from "lucide-react";
 import MediaActions from "./MediaActions";
-
-export interface MediaCollectionProps {
-  className?: string;
-  albumData?: AlbumProps;
-}
+import { AlbumData } from "./MediaView";
 
 export interface Media {
-  id: string;
-  title: string;
-  media_type: string;
-  description: string;
-  media_url: string;
+  id?: string;
+  title?: string;
+  media_type?: string;
+  description?: string;
+  media_url?: string;
   is_public: boolean;
   is_featured: boolean;
   allow_download: boolean;
-  created_at: string;
+  created_at?: string;
 }
 
 interface AllMedia {
   items: Media[];
   total: number;
 }
+interface MediaCollectionProps {
+  props: AlbumData;
+  collectionId: string;
+}
 
-const MediaCollection = (props: MediaCollectionProps) => {
+const MediaCollection = ({ props, collectionId }: MediaCollectionProps) => {
   const {
     loading,
     setLoading,
@@ -47,7 +46,6 @@ const MediaCollection = (props: MediaCollectionProps) => {
     checkParams,
     clearQuerryParam,
     checkValidId,
-    extendRoute,
   } = useGlobalState();
   const { loader, accentColor } = useTheme();
 
@@ -61,7 +59,6 @@ const MediaCollection = (props: MediaCollectionProps) => {
 
   const LoaderComponent = getLoader(loader) || null;
 
-
   const fetchAllAlbumMedia = useCallback(
     async (pageNum = 1, append = false) => {
       try {
@@ -72,8 +69,8 @@ const MediaCollection = (props: MediaCollectionProps) => {
         }
 
         const url = currentUser
-          ? `${V1_BASE_URL}/media-gallery/users/${userData.username}/collections/${props.albumData?.id}/media?page=${pageNum}`
-          : `${V1_BASE_URL}/media-gallery/collections/${props.albumData?.id || mediaId}/media?page=${pageNum}`;
+          ? `${V1_BASE_URL}/media-gallery/users/${currentUser}/collections/${collectionId}/media?page=${pageNum}`
+          : `${V1_BASE_URL}/media-gallery/collections/${collectionId}/media?page=${pageNum}`;
 
         const mediaRes: AllMedia = await GetAllData({
           access: accessToken,
@@ -105,7 +102,7 @@ const MediaCollection = (props: MediaCollectionProps) => {
       accessToken,
       currentUser,
       mediaId,
-      props.albumData?.id,
+      collectionId,
       setLoading,
       userData.username,
     ]
@@ -125,22 +122,16 @@ const MediaCollection = (props: MediaCollectionProps) => {
   }, []);
 
   useEffect(() => {
-    if (accessToken && (props.albumData?.id || mediaId)) {
+    if (accessToken && collectionId) {
       fetchAllAlbumMedia();
     }
-  }, [
-    accessToken,
-    currentUser,
-    mediaId,
-    props.albumData?.id,
-    fetchAllAlbumMedia,
-  ]);
+  }, [accessToken, currentUser, collectionId]);
 
   const isInitialLoading = loading.includes("fetching_media") && page === 1;
 
   return (
     <div
-      className={`flex-col w-full gap-y-3 rounded-2xl flex items-center justify-center h-auto`}
+      className={`flex-col w-full md:w-[75%] gap-y-3 rounded-2xl flex items-center justify-center h-auto`}
     >
       <Modal
         isOpen={checkParams("upload") === "true" || checkValidId(mediaId || "")}
@@ -148,22 +139,23 @@ const MediaCollection = (props: MediaCollectionProps) => {
           clearQuerryParam();
         }}
         title="Upload Media"
-        size="full"
+        size="md"
       >
-      <MediaActions
-      fetchAllAlbumMedia={fetchAllAlbumMedia}
-      />
+        <MediaActions
+          id={props.id}
+          fetchAllAlbumMedia={fetchAllAlbumMedia}
+        />{" "}
       </Modal>
 
       <div className="w-full flex flex-col gap-4">
-        {props.albumData?.name && (
+        {props?.name && (
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4">
             <div>
               <h2 className={`text-2xl sm:text-3xl font-semibold`}>
-                {props.albumData.name}
+                {props.name}
               </h2>
               <p className={`opacity-70 mt-2`}>
-                {props.albumData.description || "Album media collection"}
+                {props.description || "Album media collection"}
               </p>
             </div>
             <Button
@@ -177,7 +169,7 @@ const MediaCollection = (props: MediaCollectionProps) => {
           </div>
         )}
 
-        <div className="w-full bg-[var(--background)] border-[var(--accent)] border rounded-2xl p-4">
+        <div className="w-full bg-[var(--background)] border-[var(--accent)] border rounded-2xl p-2">
           {albumMedia.total < 1 && !isInitialLoading ? (
             <EmptyState
               imageHeight={200}
@@ -201,7 +193,7 @@ const MediaCollection = (props: MediaCollectionProps) => {
             </div>
           ) : (
             <MasonryGrid
-              gap={10}
+              gap={4}
               totalItems={albumMedia.total}
               loadedItems={albumMedia.items.length}
               page={page}
@@ -220,19 +212,20 @@ const MediaCollection = (props: MediaCollectionProps) => {
                 <ImageCard
                   key={`${media.id}-${i}`}
                   showGradientOverlay
-                  image_url={media.media_url}
-                  aspectRatio="auto"
+                  image_url={media.media_url || ""}
                   contentPosition="bottom"
-                  border="thin"
                   titleLines={1}
+                  aspectRatio="auto"
                   hoverEffect="lift"
-                  id={media.id}
+                  id={String(media.id)}
                   title={media.title}
-                  onClick={(props) => {
-                    if (props.id) {
-                      extendRoute(props.id);
-                    }
-                  }}
+                  // onClick={(props) => {
+                  //   if (props.id) {
+                  //     extendRouteWithQuery({
+                  //       update: props.id,
+                  //     });
+                  //   }
+                  // }}
                   description={media.description}
                   actions={() => (
                     <div className="flex gap-2">
@@ -241,7 +234,7 @@ const MediaCollection = (props: MediaCollectionProps) => {
                         size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleShareMedia(media.id);
+                          handleShareMedia(String(media.id));
                         }}
                         text="Share"
                       />
@@ -250,7 +243,7 @@ const MediaCollection = (props: MediaCollectionProps) => {
                         size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleDeleteMedia(media.id);
+                          handleDeleteMedia(String(media.id));
                         }}
                         text="Delete"
                       />

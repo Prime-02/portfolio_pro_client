@@ -1,8 +1,36 @@
 import React, { ReactNode, useState } from "react";
-import styled, { css, keyframes } from "styled-components";
+import styled, { css } from "styled-components";
 import Image from "next/image";
-import { AnimationVariant, BorderColorVariant, BorderRadiusVariant, BorderStyleVariant, ColorVariant, HoverEffectVariant, HoverShadowVariant, ShadowVariant, SpacingVariant, TextSizeVariant, TextWeightVariant, TransitionVariant } from "../../types and interfaces/ImageCardTypes";
-
+import {
+  AnimationVariant,
+  BorderColorVariant,
+  BorderRadiusVariant,
+  BorderStyleVariant,
+  ColorVariant,
+  HoverEffectVariant,
+  HoverShadowVariant,
+  ShadowVariant,
+  SpacingVariant,
+  TextSizeVariant,
+  TextWeightVariant,
+  TransitionVariant,
+} from "../../types and interfaces/ImageCardTypes";
+import {
+  bounce,
+  float,
+  getBorderCSS,
+  getBorderRadius,
+  getColorTheme,
+  getFontWeight,
+  getPadding,
+  getShadow,
+  getTextSize,
+  getTransitionDuration,
+  gradientShift,
+  pulse,
+  shake,
+  spin,
+} from "./imageCardUtils/stylesFucntions";
 
 // Styled components
 const CardContainer = styled.div<{
@@ -21,7 +49,8 @@ const CardContainer = styled.div<{
   $disableHover: boolean;
 }>`
   border-radius: ${(props) => getBorderRadius(props.$borderRadius)};
-  border: ${(props) => getBorderCSS(props.$borderStyle, props.$borderWidth, props.$borderColor)};
+  border: ${(props) =>
+    getBorderCSS(props.$borderStyle, props.$borderWidth, props.$borderColor)};
   box-shadow: ${(props) => getShadow(props.$shadow)};
   background-color: ${(props) => getColorTheme(props.$colorVariant).bg};
   transition: all ${(props) => getTransitionDuration(props.$transition)}
@@ -158,7 +187,7 @@ const ActionsOverlay = styled.div<{
   $disableHover: boolean;
 }>`
   position: absolute;
-  bottom: 0.75rem;
+  top: 0.75rem;
   right: 0.75rem;
   z-index: 30;
   opacity: 0;
@@ -386,9 +415,9 @@ const ImageCard: React.FC<ImageCardProps> = (props) => {
     imageHeight = "auto",
 
     // Border Props
-    borderStyle = "none",
-    borderWidth = 0,
-    borderColor = "transparent",
+    borderStyle = "solid",
+    borderWidth = 1,
+    borderColor = "default",
     borderRadius = "2xl",
     shadow = "sm",
     hoverShadow = "lg",
@@ -440,8 +469,8 @@ const ImageCard: React.FC<ImageCardProps> = (props) => {
     onImageError,
 
     // Background & Colors
-    backgroundVariant = "neutral",
-    textVariant = "neutral",
+    backgroundVariant = "primary",
+    textVariant = "primary",
 
     ...cardProps
   } = props;
@@ -526,6 +555,9 @@ const ImageCard: React.FC<ImageCardProps> = (props) => {
 
   return (
     <CardContainer
+      $borderStyle={borderStyle}
+      $borderWidth={borderWidth}
+      $borderColor={borderColor}
       $borderRadius={borderRadius}
       $shadow={shadow}
       $hoverShadow={hoverShadow}

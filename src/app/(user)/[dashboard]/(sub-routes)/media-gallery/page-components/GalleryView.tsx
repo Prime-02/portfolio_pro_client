@@ -10,10 +10,11 @@ import { useGlobalState } from "@/app/globalStateProvider";
 import { Plus } from "lucide-react";
 import React, { useEffect, useState, useCallback } from "react";
 import GalleryActions from "./GalleryActions";
-import GalleryCardActions from "./GalleryCardActions"; // Import the new component
+import GalleryCardActions, { ActionType } from "./GalleryCardActions"; // Import the new component
 import ImageCard from "@/app/components/containers/cards/ImageCard";
 import MasonryGrid from "@/app/components/containers/divs/MasonryGrid";
 import { toast } from "@/app/components/toastify/Toastify";
+import { createAlbumUniversalActions } from "../imageActions";
 
 export interface AlbumProps {
   id: string;
@@ -51,7 +52,8 @@ const GalleryView = () => {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   const create = searchParams.get("create") === "true";
-  const deleteParam = searchParams.get("delete");
+  const deleteParam =
+    searchParams.get("delete") === "true" ? searchParams.get("albumCover") : "";
   const isValidId = deleteParam !== null && checkValidId(deleteParam);
   const LoaderComponent = getLoader(loader) || null;
 
@@ -103,24 +105,15 @@ const GalleryView = () => {
     await fetchGallery(nextPage, true);
   }, [fetchGallery, page]);
 
-  const handleDeleteAlbum = useCallback((albumId: string) => {
-    extendRouteWithQuery({ delete: albumId });
-  }, []);
-
   const refreshGallery = useCallback(() => {
     setPage(1);
     fetchGallery(1, false);
   }, [fetchGallery]);
 
-  const handleShareAlbum = useCallback((albumId: string) => {
-    // Additional share logic if needed
-  }, []);
-
-
   useEffect(() => {
     if (!accessToken) return;
     refreshGallery();
-  }, [accessToken, currentUser]); 
+  }, [accessToken, currentUser]);
 
   const isInitialLoading = loading.includes("fetching_albums") && page === 1;
 
@@ -143,9 +136,7 @@ const GalleryView = () => {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4 mb-6">
           <div>
             <h2 className={`text-2xl sm:text-3xl font-semibold`}>
-              {currentUser
-                ? `${currentUser}'s Media Album`
-                : `My Media Album`}
+              {currentUser ? `${currentUser}'s Media Album` : `My Media Album`}
             </h2>
             <p className={`opacity-70 mt-2`}>
               {currentUser
@@ -167,8 +158,8 @@ const GalleryView = () => {
       <div className="pb-8">
         {galleries.items.length < 1 && !isInitialLoading ? (
           <EmptyState
-            imageHeight={300}
-            imageWidth={300}
+            imageHeight={200}
+            imageWidth={200}
             imageUrl="/vectors/undraw_profile-image_2hi8.svg"
             actionText="Create your first album"
             onAction={() => {
@@ -187,7 +178,7 @@ const GalleryView = () => {
           )
         ) : (
           <MasonryGrid
-          gap={10}
+            gap={5}
             totalItems={galleries.total}
             loadedItems={galleries.items.length}
             page={page}
@@ -203,36 +194,57 @@ const GalleryView = () => {
             }
           >
             {/* Render actual gallery items */}
-            {galleries.items.map((gallery, i) => (
-              <ImageCard
-                key={`${gallery.id}-${i}`}
-                showGradientOverlay
-                image_url={gallery.cover_media_url}
-                aspectRatio="auto"
-                contentPosition="overlay"
-                border="thin"
-                imageHeight={600}
-                titleLines={1}
-                hoverEffect="lift"
-                id={gallery.id}
-                title={gallery.name}
-                onClick={(props) => {
-                  if (props.id) {
-                    extendRoute(props.id);
-                  }
-                }}
-                description={gallery.description}
-                actions={() => (
-                  <GalleryCardActions
-                    albumId={gallery.id}
-                    albumTitle={gallery.name}
-                    isOwnGallery={!currentUser}
-                    onDelete={handleDeleteAlbum}
-                    onShare={handleShareAlbum}
-                  />
-                )}
-              />
-            ))}
+            {galleries.items.map((gallery, i) => {
+              const getUserType = (): ActionType => {
+                if (!currentUser) return "owner";
+                return "others";
+              };
+
+              const userType = getUserType();
+              const actions = createAlbumUniversalActions(
+                gallery.id,
+                gallery.name,
+                gallery.cover_media_url,
+                {
+                  extendRoute: extendRoute,
+                  extendRouteWithQuery: extendRouteWithQuery,
+                  allowEdit: false
+                },
+                "Album"
+              );
+              return (
+                <ImageCard
+                  key={`${gallery.id}-${i}`}
+                  showGradientOverlay
+                  image_url={gallery.cover_media_url}
+                  aspectRatio="auto"
+                  contentPosition="overlay"
+                  borderWidth={1}
+                  borderRadius="2xl"
+                  borderColor="default"
+                  borderStyle="solid"
+                  titleLines={1}
+                  hoverEffect="lift"
+                  id={gallery.id}
+                  title={gallery.name}
+                  onClick={(props) => {
+                    if (props.id) {
+                      extendRoute(props.id);
+                    }
+                  }}
+                  description={gallery.description}
+                  actions={() => (
+                    <GalleryCardActions
+                      albumId={gallery.id}
+                      albumTitle={gallery.name}
+                      actions={actions}
+                      userType={userType}
+                      popoverPosition="bottom-left"
+                    />
+                  )}
+                />
+              );
+            })}
 
             {/* Render loading placeholders when loading more */}
             {isLoadingMore &&

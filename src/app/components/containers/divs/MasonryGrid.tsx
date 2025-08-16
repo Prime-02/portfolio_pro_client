@@ -28,7 +28,7 @@ export interface MasonryGridProps {
 const MasonryGrid = ({
   children,
   className = "",
-  gap = 16,
+  gap = 1,
   totalItems,
   loadedItems = React.Children.count(children),
   page,
@@ -102,7 +102,7 @@ const MasonryGrid = ({
     
     try {
       const containerWidth = containerRef.current.offsetWidth;
-      const availableWidth = containerWidth - (gap * 2); // Account for container padding
+      const availableWidth = containerWidth - (gap * 1); // Account for container padding
       
       // Calculate based on minimum column width rather than arbitrary breakpoints
       const maxPossibleColumns = Math.floor(availableWidth / minColumnWidth);
@@ -325,7 +325,7 @@ const MasonryGrid = ({
   const mobileGap = useMemo(() => {
     if (!deviceInfo.isMobile) return gap;
     // Larger gaps on mobile for better touch targets
-    return Math.max(gap, 24);
+    return Math.max(gap, 2);
   }, [gap, deviceInfo.isMobile]);
 
   // Loading skeleton optimized for mobile

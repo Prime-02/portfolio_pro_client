@@ -682,3 +682,124 @@ export function validateUsername(username: string): {
 
   return { valid: true };
 }
+
+
+/**
+ * Downloads a video or image file from a URL
+ * @param url - The URL of the media file to download
+ * @param filename - Optional custom filename for the downloaded file
+ * @returns Promise that resolves when download is complete
+ */
+export async function downloadMediaFile(url: string, filename?: string): Promise<void> {
+  try {
+    // Validate URL format
+    let urlObj: URL;
+    try {
+      urlObj = new URL(url);
+    } catch {
+      throw new Error('Invalid URL format');
+    }
+
+    // Fetch the file with appropriate headers
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Accept': 'image/*,video/*',
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch file: ${response.status} ${response.statusText}`);
+    }
+
+    // Check if it's actually a video or image
+    const contentType = response.headers.get('content-type') || '';
+    if (!contentType.startsWith('image/') && !contentType.startsWith('video/')) {
+      throw new Error(`File is not a video or image. Content-Type: ${contentType}`);
+    }
+
+    // Get the blob data
+    const blob = await response.blob();
+    
+    // Determine filename with better extension mapping
+    let finalFilename = filename;
+    if (!finalFilename) {
+      finalFilename = urlObj.pathname.split('/').pop() || 'download';
+      
+      // Remove query parameters from extracted filename
+      finalFilename = finalFilename.split('?')[0];
+      
+      // If there's no extension, determine from content type
+      if (!finalFilename.includes('.')) {
+        const extension = getExtensionFromContentType(contentType);
+        if (extension) {
+          finalFilename += `.${extension}`;
+        } else {
+          finalFilename += '.bin'; // fallback
+        }
+      }
+    }
+
+    // Create blob URL and trigger download
+    const blobUrl = URL.createObjectURL(blob);
+    
+    // Create and trigger download
+    const a = document.createElement('a');
+    a.style.display = 'none'; // Hide the anchor element
+    a.href = blobUrl;
+    a.download = finalFilename;
+    
+    // Add to DOM, click, then remove
+    document.body.appendChild(a);
+    a.click();
+    
+    // Clean up immediately after click
+    document.body.removeChild(a);
+    
+    // Clean up blob URL after a short delay to ensure download starts
+    setTimeout(() => {
+      URL.revokeObjectURL(blobUrl);
+    }, 1000);
+    
+  } catch (error) {
+    console.error('Error downloading media file:', error);
+    throw error;
+  }
+}
+
+/**
+ * Maps content-type to appropriate file extension
+ */
+function getExtensionFromContentType(contentType: string): string {
+  const typeMap: Record<string, string> = {
+    // Images
+    'image/jpeg': 'jpg',
+    'image/jpg': 'jpg',
+    'image/png': 'png',
+    'image/gif': 'gif',
+    'image/webp': 'webp',
+    'image/svg+xml': 'svg',
+    'image/bmp': 'bmp',
+    'image/tiff': 'tiff',
+    'image/avif': 'avif',
+    
+    // Videos
+    'video/mp4': 'mp4',
+    'video/webm': 'webm',
+    'video/ogg': 'ogv',
+    'video/avi': 'avi',
+    'video/mov': 'mov',
+    'video/wmv': 'wmv',
+    'video/flv': 'flv',
+    'video/mkv': 'mkv',
+    'video/m4v': 'm4v',
+    'video/3gpp': '3gp',
+    'video/quicktime': 'mov'
+  };
+  
+  return typeMap[contentType.toLowerCase()] || '';
+}
+
+// Example usage:
+// downloadMediaFile('https://example.com/video.mp4', 'my-video.mp4');
+// downloadMediaFile('https://example.com/image.jpg'); // Will use original filename

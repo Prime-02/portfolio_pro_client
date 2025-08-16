@@ -79,7 +79,7 @@ const MediaView = () => {
   }, [lastPathSegment]);
 
   return (
-    <div className="w-full flex items-center justify-center ">
+    <div className="w-full flex items-center justify-center h-full ">
       <div className="flex w-full flex-col md:flex-row items-center md:items-start justify-between gap-4">
         <div className="w-full md:w-[23%]">
           <AlbumCover fetchAlbumData={fetchAlbumCover} albumData={albumData} />

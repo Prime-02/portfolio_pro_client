@@ -8,6 +8,7 @@ import { TextArea, Textinput } from "@/app/components/inputs/Textinput";
 import CheckBox from "@/app/components/inputs/CheckBox";
 import Button from "@/app/components/buttons/Buttons";
 import {
+  DeleteData,
   GetAllData,
   UpdateAllData,
 } from "@/app/components/utilities/asyncFunctions/lib/crud";
@@ -25,18 +26,14 @@ const MediaActions = ({ id, fetchAllAlbumMedia }: MediaActionsProps) => {
     is_featured: false,
     allow_download: false,
     is_public: false,
+    media_type: "File",
   });
-  const {
-    setLoading,
-    loading,
-    accessToken,
-    clearQuerryParam,
-    checkParams,
-    checkValidId,
-  } = useGlobalState();
-  const updateId = checkParams("update");
-  const deleteId = checkParams("delete");
-
+  const { setLoading, loading, accessToken, clearQuerryParam, checkParams } =
+    useGlobalState();
+  const updateAction = checkParams("update");
+  const deleteAction = checkParams("delete");
+  const currentAction =
+    updateAction || deleteAction ? checkParams("media") : "";
   const uploadMedia = async () => {
     if (!mediaState || mediaState.length === 0) {
       console.warn("No media files to upload");
@@ -139,7 +136,7 @@ const MediaActions = ({ id, fetchAllAlbumMedia }: MediaActionsProps) => {
     try {
       const mediumRes: Media = await GetAllData({
         access: accessToken,
-        url: `${V1_BASE_URL}/media-gallery/collections/${id}/media/${updateId}`,
+        url: `${V1_BASE_URL}/media-gallery/collections/${id}/media/${currentAction}`,
         type: "Medium Data",
       });
       if (mediumRes) {
@@ -149,6 +146,7 @@ const MediaActions = ({ id, fetchAllAlbumMedia }: MediaActionsProps) => {
           is_public: mediumRes.is_public || true,
           allow_download: mediumRes.allow_download || true,
           is_featured: mediumRes.is_featured || false,
+          media_type: mediumRes.media_type || "File",
         }));
       }
     } catch (error) {
@@ -159,16 +157,16 @@ const MediaActions = ({ id, fetchAllAlbumMedia }: MediaActionsProps) => {
   };
 
   useEffect(() => {
-    if (!accessToken) return;
+    if (!accessToken && !currentAction) return;
     getMediaData();
-  }, [accessToken]);
+  }, [accessToken, currentAction]);
 
   const updateMediaData = async () => {
     setLoading("updating_media");
     try {
       const updateRes = await UpdateAllData({
         access: accessToken,
-        url: `${V1_BASE_URL}/media-gallery/collections/${id}/media/${updateId}`,
+        url: `${V1_BASE_URL}/media-gallery/collections/${id}/media/${currentAction}`,
         field: mediaData,
         method: "patch",
       });
@@ -183,14 +181,29 @@ const MediaActions = ({ id, fetchAllAlbumMedia }: MediaActionsProps) => {
     }
   };
 
+  const deleteMediaData = async () => {
+    setLoading("deleting_media_data");
+    try {
+      const deleteRes = await DeleteData({
+        access: accessToken,
+        url: `${V1_BASE_URL}/media-gallery/collections/${id}/media/${currentAction}`,
+      });
+      fetchAllAlbumMedia();
+      clearQuerryParam();
+    } catch (error) {
+      console.log("Error deleting media data: ", error);
+    } finally {
+      setLoading("deleting_media_data");
+    }
+  };
+
   return (
     <div>
-      {updateId ? (
+      {updateAction ? (
         <div className="flex flex-col gap-y-3">
           <span>
             <Textinput
-              loading={loading.includes("getting_medium_data")}
-              label="Label"
+              label="Title"
               value={mediaData.title}
               onChange={(e) => {
                 setMediaData((prev) => ({
@@ -236,8 +249,31 @@ const MediaActions = ({ id, fetchAllAlbumMedia }: MediaActionsProps) => {
             onClick={updateMediaData}
           />
         </div>
-      ) : deleteId ? (
-        <div>delete</div>
+      ) : deleteAction ? (
+        <div className="flex flex-col items-center gap-y-4">
+          <h1 className="text-lg font-semibold text-center">
+            Are you sure you want to delete this {mediaData.media_type}?
+          </h1>
+          <p className="text-sm opacity-65 text-center">
+            This action cannot be undone. Click cancel to return to album
+          </p>
+          <div className="flex gap-3">
+            <Button
+              text="Cancel"
+              variant="outline"
+              size="md"
+              onClick={() => clearQuerryParam()}
+            />
+            <Button
+              text={`Delete ${mediaData.media_type}`}
+              customColor="red"
+              size="md"
+              onClick={deleteMediaData}
+              loading={loading.includes("deleting_media_data")}
+              disabled={loading.includes("deleting_media_data")}
+            />
+          </div>
+        </div>
       ) : (
         <MediaPicker
           onMediaChange={setMediaState}

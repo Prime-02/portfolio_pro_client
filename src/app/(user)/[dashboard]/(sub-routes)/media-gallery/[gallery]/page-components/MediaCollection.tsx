@@ -13,6 +13,11 @@ import Button from "@/app/components/buttons/Buttons";
 import { Plus } from "lucide-react";
 import MediaActions from "./MediaActions";
 import { AlbumData } from "./MediaView";
+import { createAlbumUniversalActions } from "../../imageActions";
+import GalleryCardActions, {
+  ActionType,
+} from "../../page-components/GalleryCardActions";
+import Link from "next/link";
 
 export interface Media {
   id?: string;
@@ -55,7 +60,10 @@ const MediaCollection = ({ props, collectionId }: MediaCollectionProps) => {
   });
   const [page, setPage] = useState(1);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const mediaId = checkParams("update");
+  const updateAction = checkParams("update");
+  const deleteAction = checkParams("delete");
+  const currentAction =
+    updateAction || deleteAction ? checkParams("media") : "";
 
   const LoaderComponent = getLoader(loader) || null;
 
@@ -98,28 +106,13 @@ const MediaCollection = ({ props, collectionId }: MediaCollectionProps) => {
         }
       }
     },
-    [
-      accessToken,
-      currentUser,
-      mediaId,
-      collectionId,
-      setLoading,
-      userData.username,
-    ]
+    [accessToken, currentUser, collectionId, setLoading, userData.username]
   );
 
   const handleLoadMore = useCallback(async () => {
     const nextPage = page + 1;
     await fetchAllAlbumMedia(nextPage, true);
   }, [fetchAllAlbumMedia, page]);
-
-  const handleDeleteMedia = useCallback((mediaId: string) => {
-    extendRouteWithQuery({ delete: mediaId });
-  }, []);
-
-  const handleShareMedia = useCallback((mediaId: string) => {
-    // Additional share logic if needed
-  }, []);
 
   useEffect(() => {
     if (accessToken && collectionId) {
@@ -131,14 +124,14 @@ const MediaCollection = ({ props, collectionId }: MediaCollectionProps) => {
 
   return (
     <div
-      className={`flex-col w-full md:w-[75%] gap-y-3 rounded-2xl flex items-center justify-center h-auto`}
+      className={`flex-col w-full md:w-[75%] gap-y-3 rounded-2xl flex items-center justify-center h-full `}
     >
       <Modal
-        isOpen={checkParams("upload") === "true" || checkValidId(mediaId || "")}
+        isOpen={checkValidId(currentAction || "")}
         onClose={() => {
           clearQuerryParam();
         }}
-        title="Upload Media"
+        title={`${updateAction === "true" ? "Update" : deleteAction === "true" ? "Delete" : ""} Media`}
         size="md"
       >
         <MediaActions
@@ -169,7 +162,7 @@ const MediaCollection = ({ props, collectionId }: MediaCollectionProps) => {
           </div>
         )}
 
-        <div className="w-full bg-[var(--background)] border-[var(--accent)] border rounded-2xl p-2">
+        <div className="w-full bg-[var(--background)] md:max-h-screen overflow-auto hide-scrollbar border-[var(--accent)] border rounded-2xl p-2">
           {albumMedia.total < 1 && !isInitialLoading ? (
             <EmptyState
               imageHeight={200}
@@ -193,7 +186,7 @@ const MediaCollection = ({ props, collectionId }: MediaCollectionProps) => {
             </div>
           ) : (
             <MasonryGrid
-              gap={4}
+              gap={10}
               totalItems={albumMedia.total}
               loadedItems={albumMedia.items.length}
               page={page}
@@ -208,49 +201,52 @@ const MediaCollection = ({ props, collectionId }: MediaCollectionProps) => {
                 )
               }
             >
-              {albumMedia.items.map((media, i) => (
-                <ImageCard
-                  key={`${media.id}-${i}`}
-                  showGradientOverlay
-                  image_url={media.media_url || ""}
-                  contentPosition="bottom"
-                  titleLines={1}
-                  aspectRatio="auto"
-                  hoverEffect="lift"
-                  id={String(media.id)}
-                  title={media.title}
-                  // onClick={(props) => {
-                  //   if (props.id) {
-                  //     extendRouteWithQuery({
-                  //       update: props.id,
-                  //     });
-                  //   }
-                  // }}
-                  description={media.description}
-                  actions={() => (
-                    <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleShareMedia(String(media.id));
-                        }}
-                        text="Share"
-                      />
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteMedia(String(media.id));
-                        }}
-                        text="Delete"
-                      />
-                    </div>
-                  )}
-                />
-              ))}
+              {albumMedia.items.map((media, i) => {
+                const getUserType = (): ActionType => {
+                  if (!currentUser) return "owner";
+                  return "others";
+                };
+                const userType = getUserType();
+                const actions = createAlbumUniversalActions(
+                  String(media.id),
+                  String(media.title),
+                  String(media.media_url),
+                  {
+                    extendRouteWithQuery: extendRouteWithQuery,
+                    isAlbum: false,
+                  },
+                  String(media.media_type)
+                );
+                return (
+                  <Link
+                    href={`/${userData.username}/media-gallery/${collectionId}/${media.id}`}
+                    scroll={false}
+                    key={`${media.id}-${i}`}
+                  >
+                    <ImageCard
+                      key={`${media.id}-${i}`}
+                      showGradientOverlay
+                      image_url={media.media_url || ""}
+                      contentPosition="overlay"
+                      titleLines={1}
+                      aspectRatio="auto"
+                      hoverEffect="lift"
+                      id={String(media.id)}
+                      title={media.title}
+                      description={media.description}
+                      actions={() => (
+                        <GalleryCardActions
+                          albumId={String(media.id)}
+                          albumTitle={String(media.title)}
+                          actions={actions}
+                          userType={userType}
+                          popoverPosition="bottom-left"
+                        />
+                      )}
+                    />
+                  </Link>
+                );
+              })}
 
               {isLoadingMore &&
                 Array.from({ length: 3 }).map((_, i) => (

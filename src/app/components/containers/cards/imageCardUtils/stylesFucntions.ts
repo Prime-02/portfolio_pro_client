@@ -1,5 +1,16 @@
-import { BorderColorVariant, BorderRadiusVariant, ShadowVariant, SpacingVariant, TextSizeVariant, TextWeightVariant, TransitionVariant } from "@/app/components/types and interfaces/ImageCardTypes";
-import styled, { css, keyframes } from "styled-components";
+import { useTheme } from "@/app/components/theme/ThemeContext ";
+import {
+  BorderColorVariant,
+  BorderRadiusVariant,
+  BorderStyleVariant,
+  ColorVariant,
+  ShadowVariant,
+  SpacingVariant,
+  TextSizeVariant,
+  TextWeightVariant,
+  TransitionVariant,
+} from "@/app/components/types and interfaces/ImageCardTypes";
+import { keyframes } from "styled-components";
 
 // Keyframe animations
 export const gradientShift = keyframes`
@@ -37,7 +48,7 @@ export const shake = keyframes`
 
 // Style mapping functions
 export const getBorderRadius = (variant: BorderRadiusVariant): string => {
-   const map = {
+  const map = {
     none: "0",
     sm: "0.125rem",
     md: "0.375rem",
@@ -51,7 +62,7 @@ export const getBorderRadius = (variant: BorderRadiusVariant): string => {
 };
 
 export const getShadow = (variant: ShadowVariant): string => {
-   const map = {
+  const map = {
     none: "none",
     sm: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
     md: "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
@@ -65,7 +76,9 @@ export const getShadow = (variant: ShadowVariant): string => {
 };
 
 export const getBorderColor = (variant: BorderColorVariant): string => {
-   const colorMap = {
+  const { accentColor } = useTheme();
+  const colorMap = {
+    default: accentColor.color,
     transparent: "transparent",
     current: "currentColor",
     black: "#000000",
@@ -164,7 +177,7 @@ export const getBorderColor = (variant: BorderColorVariant): string => {
 };
 
 export const getTextSize = (variant: TextSizeVariant): string => {
-   const map = {
+  const map = {
     xs: "0.75rem",
     sm: "0.875rem",
     base: "1rem",
@@ -178,7 +191,7 @@ export const getTextSize = (variant: TextSizeVariant): string => {
 };
 
 export const getPadding = (variant: SpacingVariant): string => {
-  export const map = {
+  const map = {
     none: "0",
     xs: "0.5rem",
     sm: "0.75rem",
@@ -192,7 +205,7 @@ export const getPadding = (variant: SpacingVariant): string => {
 };
 
 export const getTransitionDuration = (variant: TransitionVariant): string => {
-  export const map = {
+  const map = {
     none: "0ms",
     fast: "150ms",
     normal: "300ms",
@@ -203,7 +216,7 @@ export const getTransitionDuration = (variant: TransitionVariant): string => {
 };
 
 export const getFontWeight = (variant: TextWeightVariant): string => {
-  export const map = {
+  const map = {
     thin: "100",
     light: "300",
     normal: "400",
@@ -217,12 +230,13 @@ export const getFontWeight = (variant: TextWeightVariant): string => {
 };
 
 export const getColorTheme = (variant: ColorVariant) => {
-  export const themes = {
+  const { theme } = useTheme();
+  const themes = {
     primary: {
-      bg: "#eff6ff",
-      bgDark: "rgba(30, 58, 138, 0.2)",
-      text: "#1e3a8a",
-      textDark: "#dbeafe",
+      bg: theme.background,
+      bgDark: theme.background,
+      text: theme.foreground,
+      textDark: theme.foreground,
     },
     secondary: {
       bg: "#f9fafb",
@@ -274,11 +288,11 @@ export const getColorTheme = (variant: ColorVariant) => {
 export const getBorderCSS = (
   style: BorderStyleVariant,
   width: number,
-  color: BorderColorVariant | string
+  color: BorderColorVariant | string = "primary"
 ): string => {
   if (style === "none" || width === 0) return "none";
 
-  export const borderColor =
+  const borderColor =
     color.startsWith("#") || color.startsWith("rgb") || color.startsWith("hsl")
       ? color
       : getBorderColor(color as BorderColorVariant);

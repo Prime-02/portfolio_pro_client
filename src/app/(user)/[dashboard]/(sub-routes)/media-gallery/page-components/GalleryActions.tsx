@@ -371,8 +371,6 @@ const GalleryActions = ({
     <div className="flex flex-col gap-6 max-w-2xl mx-auto">
       {/* Main Album Form - Shows First in Edit Mode */}
       <form onSubmit={updateAlbum} className="flex flex-col gap-4">
-        <h1 className="text-2xl font-bold">Edit Album</h1>
-
         <Textinput
           loading={
             loading.includes("updating_album") ||

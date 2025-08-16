@@ -1,77 +1,85 @@
 import React from "react";
-import { MoreVertical, Trash2, Share2 } from "lucide-react";
-import Popover from "@/app/components/containers/divs/PopOver";
-import { toast } from "@/app/components/toastify/Toastify";
-import { getCurrentUrl } from "@/app/components/utilities/syncFunctions/syncs";
+import { MoreVertical, LucideIcon } from "lucide-react";
+import Popover, {
+  PopOverPosition,
+} from "@/app/components/containers/divs/PopOver";
+
+export type ActionType = "owner" | "others";
+
+export interface ActionItem {
+  icon: LucideIcon;
+  actionName: string;
+  onClick: (albumId: string) => void;
+  type: ActionType | ActionType[]; // Single type or array of types
+  style?: string; // Custom CSS classes for styling
+  disabled?: boolean;
+}
 
 export interface GalleryCardActionsProps {
   albumId: string;
   albumTitle: string;
-  isOwnGallery: boolean; // true when viewing own gallery, false when viewing another user's
-  onDelete?: (albumId: string) => void;
-  onShare?: (albumId: string) => void;
+  actions: ActionItem[];
+  userType: ActionType; // Current user's relationship to the album
+  popoverPosition?: PopOverPosition;
+  triggerClassName?: string;
 }
 
 const GalleryCardActions = ({
   albumId,
   albumTitle,
-  isOwnGallery,
-  onDelete,
-  onShare,
+  actions,
+  userType,
+  popoverPosition = "top-left",
+  triggerClassName,
 }: GalleryCardActionsProps) => {
-  const handleShare = () => {
-    const shareUrl = getCurrentUrl("full");
-    navigator.clipboard.writeText(shareUrl);
-    toast.success("Album link copied to clipboard");
-    onShare?.(albumId);
-  };
+  const defaultTriggerClassName =
+    "bg-[var(--background)] border cursor-pointer w-8 h-8 flex items-center justify-center rotate-0 rounded-full shadow-md hover:shadow-lg transition-shadow";
 
-  const handleDelete = () => {
-    toast.warning(`Delete confirmation for: ${albumTitle}`);
-    onDelete?.(albumId);
-  };
+  const defaultActionClassName =
+    "w-full px-4 py-2 text-left hover:underline cursor-pointer transition-colors flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed";
+
+  // Filter actions based on user type
+  const filteredActions = actions.filter((action) => {
+    if (Array.isArray(action.type)) {
+      return action.type.includes(userType);
+    }
+    return action.type === userType;
+  });
+
+  // Don't render if no actions are available for this user type
+  if (filteredActions.length === 0) {
+    return null;
+  }
 
   return (
     <Popover
-      position="top-left"
-      clickerClassName="bg-[var(--background)] border  cursor-pointer w-8 h-8 flex items-center justify-center rotate-0 rounded-full shadow-md hover:shadow-lg transition-shadow"
+      position={popoverPosition}
+      clickerClassName={triggerClassName || defaultTriggerClassName}
       clicker={
-        <span className="">
+        <span>
           <MoreVertical size={16} />
         </span>
       }
     >
       <div className="min-w-48 py-2">
-        {isOwnGallery ? (
-          // Options when viewing own gallery
-          <>
+        {filteredActions.map((action, index) => {
+          const Icon = action.icon;
+          const combinedClassName = action.style
+            ? `${defaultActionClassName} ${action.style}`
+            : defaultActionClassName;
+
+          return (
             <button
-              onClick={handleShare}
-              className="w-full px-4 py-2 text-left hover:underline cursor-pointer transition-colors flex items-center gap-3"
+              key={`${action.actionName}-${index}`}
+              onClick={() => action.onClick(albumId)}
+              disabled={action.disabled}
+              className={combinedClassName}
             >
-              <Share2 size={16} />
-              <span>Share Album</span>
+              <Icon size={16} />
+              <span>{action.actionName}</span>
             </button>
-            <button
-              onClick={handleDelete}
-              className="w-full px-4 py-2 text-left hover:bg-red-100 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 transition-colors flex items-center gap-3"
-            >
-              <Trash2 size={16} />
-              <span>Delete Album</span>
-            </button>
-          </>
-        ) : (
-          // Options when viewing another user's gallery
-          <>
-            <button
-              onClick={handleShare}
-              className="w-full px-4 py-2 text-left hover:underline cursor-pointer transition-colors flex items-center gap-3"
-            >
-              <Share2 size={16} />
-              <span>Share</span>
-            </button>
-          </>
-        )}
+          );
+        })}
       </div>
     </Popover>
   );

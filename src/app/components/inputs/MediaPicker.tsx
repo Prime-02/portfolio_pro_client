@@ -188,9 +188,9 @@ const MediaPicker: React.FC<MediaPickerProps> = ({
       const fileArray = files instanceof FileList ? Array.from(files) : files;
 
       // Prevent uploading too many files at once (spam prevention)
-      if (fileArray.length > 5) {
+      if (fileArray.length > maxFiles) {
         showError(
-          "Too many files selected at once. Please select up to 5 files.",
+          `Too many files selected at once. Please select up to ${maxFiles} files.`,
           "general"
         );
         return;

@@ -108,7 +108,7 @@ const Profile = () => {
                   {userData.username
                     ? userData.username
                     : clerkUserData.user?.id && !userData.username
-                      ? "Your Porfile Is Incomplete"
+                      ? "Your Profile Is Incomplete"
                       : "Sign Up"}
                 </h3>
                 <span className="flex gap-x-2">

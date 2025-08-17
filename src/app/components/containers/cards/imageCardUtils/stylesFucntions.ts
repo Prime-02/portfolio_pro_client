@@ -4,6 +4,7 @@ import {
   BorderRadiusVariant,
   BorderStyleVariant,
   ColorVariant,
+  OverlayPosition,
   ShadowVariant,
   SpacingVariant,
   TextSizeVariant,
@@ -298,4 +299,17 @@ export const getBorderCSS = (
       : getBorderColor(color as BorderColorVariant);
 
   return `${width}px ${style} ${borderColor}`;
+};
+
+
+
+export const positionMap: Record<OverlayPosition, string> = {
+  'top-right': 'top: 0.75rem; right: 0.75rem;',
+  'top-left': 'top: 0.75rem; left: 0.75rem;',
+  'top-center': 'top: 0.75rem; left: 50%; transform: translateX(-50%);',
+  'bottom-right': 'bottom: 0.75rem; right: 0.75rem;',
+  'bottom-left': 'bottom: 0.75rem; left: 0.75rem;',
+  'bottom-center': 'bottom: 0.75rem; left: 50%; transform: translateX(-50%);',
+  'center-right': 'top: 50%; right: 0.75rem; transform: translateY(-50%);',
+  'center-left': 'top: 50%; left: 0.75rem; transform: translateY(-50%);',
 };

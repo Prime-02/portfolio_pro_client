@@ -128,9 +128,6 @@ const Step4 = () => {
       }
     } catch (error) {
       console.error("Error fetching privacy settings:", error);
-      toast.error("Failed to load privacy settings", {
-        title: "Loading Error",
-      });
     } finally {
       setLoading("fetching_privacy_settings");
     }

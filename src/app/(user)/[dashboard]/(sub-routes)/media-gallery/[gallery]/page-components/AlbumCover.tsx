@@ -140,6 +140,7 @@ const AlbumCover: React.FC<AlbumCoverProps> = ({
             actions={actions}
             userType={userType}
             popoverPosition="bottom-left"
+            displayMode="circular-icons-horizontal"
           />
         )}
       />

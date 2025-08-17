@@ -5,7 +5,7 @@ import {
   getCurrentUrl,
 } from "@/app/components/utilities/syncFunctions/syncs";
 import {
-  ArrowRight,
+  Maximize,
   Download,
   Edit,
   Eye,
@@ -15,8 +15,8 @@ import {
   Trash2,
 } from "lucide-react";
 import { ActionItem } from "./page-components/GalleryCardActions";
-
-type DisplayMode = "popover" | "circular-icons-vertical" | "circular-icons-horizontal" | "buttons";
+import { PathUtil } from "@/app/components/utilities/syncFunctions/syncs";
+import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
 interface AlbumActionsConfig {
   allowShare?: boolean;
@@ -29,8 +29,10 @@ interface AlbumActionsConfig {
   allowDelete?: boolean;
   extendRoute?: (segment: string) => void;
   extendRouteWithQuery?: (newParams: Record<string, string>) => void;
+  router?: AppRouterInstance;
+  newUrl?: string;
+  noop?: () => void | unknown;
   isAlbum?: boolean;
-  displayMode?: DisplayMode;
 }
 
 export const createAlbumUniversalActions = (
@@ -40,15 +42,33 @@ export const createAlbumUniversalActions = (
   config: AlbumActionsConfig = {},
   type: "Album" | "Photo" | "Video" | "Audio" | "Album Cover" | string = "Album"
 ): ActionItem[] => {
-  const noop = () => {};
-
+  const noop = config.noop || (() => {});
   const {
     extendRoute = noop,
     extendRouteWithQuery = noop,
+    newUrl,
     isAlbum = true,
-    displayMode = "popover",
-    ...actionConfig
+    router,
+    // ...actionConfig
   } = config;
+
+  const mediaCustomPathAction = ({
+    action,
+    value,
+  }: {
+    action: string;
+    value: string;
+  }) => {
+    if (newUrl) {
+      const customPath = PathUtil.buildUrlWithQuery(newUrl, {
+        [action]: true,
+        media: value,
+      });
+      return customPath;
+    } else {
+      return null;
+    }
+  };
 
   // Capitalize the type for display purposes
   const capitalizedType =
@@ -56,34 +76,60 @@ export const createAlbumUniversalActions = (
 
   const actions: ActionItem[] = [];
 
+  // Helper function to handle route navigation
+  const handleRoute = (id: string) => {
+    const customUrl = mediaCustomPathAction({ action: "open", value: id });
+    if (customUrl) {
+      if (router) {
+        router.push(customUrl);
+      }
+    } else if (extendRoute !== noop) {
+      extendRoute(id);
+    } else if (extendRouteWithQuery !== noop) {
+      extendRouteWithQuery({
+        [isAlbum ? "albumCover" : "media"]: id,
+      });
+    } else {
+      noop();
+    }
+  };
+
   // Share action
   if (config.allowShare !== false) {
     actions.push({
       icon: Share2,
       actionName: `Share ${capitalizedType}`,
       onClick: () => {
-        const shareUrl = getCurrentUrl("full");
-        if (isAlbum) {
-          copyToClipboard(`${shareUrl}/${id}`);
-        } else {
-          copyToClipboard(`${shareUrl}?${type}=${id}`);
+        try {
+          const shareUrl = getCurrentUrl("full");
+          if (isAlbum) {
+            copyToClipboard(`${shareUrl}/${id}`);
+          } else {
+            copyToClipboard(`${shareUrl}?${type}=${id}`);
+          }
+        } catch (error) {
+          console.log(error);
+          noop();
         }
       },
       type: ["owner", "others"],
-      displayMode,
     });
   }
 
   // Open action
   if (config.allowOpen !== false) {
     actions.push({
-      icon: ArrowRight,
+      icon: Maximize,
       actionName: `Open ${capitalizedType}`,
       onClick: () => {
-        extendRoute(id);
+        try {
+          handleRoute(id);
+        } catch (error) {
+          console.log(error);
+          noop();
+        }
       },
       type: ["owner", "others"],
-      displayMode,
     });
   }
 
@@ -93,14 +139,18 @@ export const createAlbumUniversalActions = (
       icon: Download,
       actionName: `Download ${type === "Album" ? "Cover" : capitalizedType}`,
       onClick: async () => {
-        toast.info("Starting download...");
-        await downloadMediaFile(
-          coverUrl,
-          `${title}-${type === "Album" ? "cover" : type.toLowerCase()}`
-        );
+        try {
+          toast.info("Starting download...");
+          await downloadMediaFile(
+            coverUrl,
+            `${title}-${type === "Album" ? "cover" : type.toLowerCase()}`
+          );
+        } catch (error) {
+          console.log(error);
+          noop();
+        }
       },
       type: ["owner", "others"],
-      displayMode,
     });
   }
 
@@ -110,14 +160,30 @@ export const createAlbumUniversalActions = (
       icon: Edit,
       actionName: `Edit ${capitalizedType}`,
       onClick: () => {
-        toast.info(`Editing ${type.toLowerCase()}: ${title}`);
-        extendRouteWithQuery({
-          update: "true",
-          [isAlbum ? "albumCover" : "media"]: id,
-        });
+        try {
+          toast.info(`Editing ${type.toLowerCase()}: ${title}`);
+          const customUrl = mediaCustomPathAction({
+            action: "update",
+            value: id,
+          });
+          if (customUrl) {
+            if (router) {
+              router.push(customUrl);
+            }
+          } else if (extendRouteWithQuery !== noop) {
+            extendRouteWithQuery({
+              update: "true",
+              [isAlbum ? "albumCover" : "media"]: id,
+            });
+          } else {
+            noop();
+          }
+        } catch (error) {
+          console.log(error);
+          noop();
+        }
       },
       type: "owner",
-      displayMode,
     });
   }
 
@@ -127,10 +193,14 @@ export const createAlbumUniversalActions = (
       icon: Heart,
       actionName: `Like ${capitalizedType}`,
       onClick: () => {
-        toast.success(`${capitalizedType} liked!`);
+        try {
+          toast.success(`${capitalizedType} liked!`);
+        } catch (error) {
+          console.log(error);
+          noop();
+        }
       },
       type: "others",
-      displayMode,
     });
   }
 
@@ -140,10 +210,26 @@ export const createAlbumUniversalActions = (
       icon: Eye,
       actionName: `View ${capitalizedType} Analytics`,
       onClick: () => {
-        toast.info(`Loading ${type.toLowerCase()} analytics...`);
+        try {
+          toast.info(`Loading ${type.toLowerCase()} analytics...`);
+          const customUrl = mediaCustomPathAction({
+            action: "analytics",
+            value: id,
+          });
+          if (customUrl) {
+            if (router) {
+              router.push(customUrl);
+            }
+          } else {
+            // Fallback behavior for analytics
+            console.log(`Analytics for ${type} ${id} not implemented`);
+          }
+        } catch (error) {
+          console.log(error);
+          noop();
+        }
       },
       type: "owner",
-      displayMode,
     });
   }
 
@@ -153,12 +239,25 @@ export const createAlbumUniversalActions = (
       icon: Flag,
       actionName: `Report ${capitalizedType}`,
       onClick: () => {
-        toast.info("Report submitted");
+        try {
+          toast.info("Report submitted");
+          const customUrl = mediaCustomPathAction({
+            action: "report",
+            value: id,
+          });
+          if (customUrl) {
+            if (router) {
+              router.push(customUrl);
+            }
+          }
+        } catch (error) {
+          console.log(error);
+          noop();
+        }
       },
       type: "others",
       style:
         "hover:bg-yellow-100 dark:hover:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400",
-      displayMode,
     });
   }
 
@@ -168,16 +267,32 @@ export const createAlbumUniversalActions = (
       icon: Trash2,
       actionName: `Delete ${capitalizedType}`,
       onClick: () => {
-        extendRouteWithQuery({
-          delete: "true",
-          [isAlbum ? "albumCover" : "media"]: id,
-        });
-        toast.warning(`Delete confirmation for: ${title}`);
+        try {
+          const customUrl = mediaCustomPathAction({
+            action: "delete",
+            value: id,
+          });
+          if (customUrl) {
+            if (router) {
+              router.push(customUrl);
+            }
+          } else if (extendRouteWithQuery !== noop) {
+            extendRouteWithQuery({
+              delete: "true",
+              [isAlbum ? "albumCover" : "media"]: id,
+            });
+          } else {
+            noop();
+          }
+          toast.warning(`Delete confirmation for: ${title}`);
+        } catch (error) {
+          console.log(error);
+          noop();
+        }
       },
       type: "owner",
       style:
         "hover:bg-red-100 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400",
-      displayMode,
     });
   }
 

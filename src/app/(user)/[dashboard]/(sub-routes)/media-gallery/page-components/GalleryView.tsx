@@ -13,7 +13,6 @@ import GalleryActions from "./GalleryActions";
 import GalleryCardActions, { ActionType } from "./GalleryCardActions"; // Import the new component
 import ImageCard from "@/app/components/containers/cards/ImageCard";
 import MasonryGrid from "@/app/components/containers/divs/MasonryGrid";
-import { toast } from "@/app/components/toastify/Toastify";
 import { createAlbumUniversalActions } from "../imageActions";
 
 export interface AlbumProps {
@@ -87,7 +86,6 @@ const GalleryView = () => {
           }));
         }
       } catch (error) {
-        toast.error("Failed to load albums");
         throw error; // Re-throw to let MasonryGrid handle page reversion
       } finally {
         if (append) {
@@ -182,6 +180,7 @@ const GalleryView = () => {
             totalItems={galleries.total}
             loadedItems={galleries.items.length}
             page={page}
+            customMessage={`Showing All album`}
             setPage={setPage}
             onLoadMore={handleLoadMore}
             isLoading={isLoadingMore}
@@ -208,7 +207,7 @@ const GalleryView = () => {
                 {
                   extendRoute: extendRoute,
                   extendRouteWithQuery: extendRouteWithQuery,
-                  allowEdit: false
+                  allowEdit: false,
                 },
                 "Album"
               );

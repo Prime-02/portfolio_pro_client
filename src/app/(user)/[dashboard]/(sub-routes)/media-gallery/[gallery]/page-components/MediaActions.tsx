@@ -20,22 +20,28 @@ export const getMediaData = async ({
   currentAction,
   setLoading,
   setMediaData,
+  currentUser,
 }: {
   accessToken: string;
   id: string;
   currentAction: string;
   setLoading: (state: string) => void;
   setMediaData: React.Dispatch<React.SetStateAction<Media>>;
+  currentUser?: string | null;
 }) => {
   setLoading("getting_medium_data");
+  const url = currentUser
+    ? `${V1_BASE_URL}/media-gallery/users/${currentUser}/collections/${id}/media/${currentAction}`
+    : `${V1_BASE_URL}/media-gallery/collections/${id}/media/${currentAction}`;
   try {
     const mediumRes: Media = await GetAllData({
       access: accessToken,
-      url: `${V1_BASE_URL}/media-gallery/collections/${id}/media/${currentAction}`,
+      url: url,
       type: "Medium Data",
     });
     if (mediumRes) {
       setMediaData(() => ({
+        id: mediumRes.id,
         title: mediumRes.title || "",
         description: mediumRes.description || "",
         is_public: mediumRes.is_public || true,
@@ -133,8 +139,14 @@ const MediaActions = ({ id, fetchAllAlbumMedia }: MediaActionsProps) => {
     is_public: false,
     media_type: "File",
   });
-  const { setLoading, loading, accessToken, clearQuerryParam, checkParams } =
-    useGlobalState();
+  const {
+    setLoading,
+    loading,
+    accessToken,
+    clearQuerryParam,
+    checkParams,
+    currentUser,
+  } = useGlobalState();
   const updateAction = checkParams("update");
   const deleteAction = checkParams("delete");
   const currentAction =
@@ -245,6 +257,7 @@ const MediaActions = ({ id, fetchAllAlbumMedia }: MediaActionsProps) => {
       currentAction,
       setLoading,
       setMediaData,
+      currentUser,
     });
   };
 

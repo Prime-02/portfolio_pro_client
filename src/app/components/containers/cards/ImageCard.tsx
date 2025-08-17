@@ -9,6 +9,7 @@ import {
   ColorVariant,
   HoverEffectVariant,
   HoverShadowVariant,
+  OverlayPosition,
   ShadowVariant,
   SpacingVariant,
   TextSizeVariant,
@@ -27,6 +28,7 @@ import {
   getTextSize,
   getTransitionDuration,
   gradientShift,
+  positionMap,
   pulse,
   shake,
   spin,
@@ -185,12 +187,13 @@ const StyledImage = styled(Image)<{
 const ActionsOverlay = styled.div<{
   $transition: TransitionVariant;
   $disableHover: boolean;
+  $hideAction?: boolean;
+  $position?: OverlayPosition;
 }>`
   position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
+  ${(props) => positionMap[props.$position || "top-right"]}
   z-index: 30;
-  opacity: 1;
+  opacity: ${(props) => (props.$hideAction ? "0" : "1")};
   transition: opacity ${(props) => getTransitionDuration(props.$transition)}
     ease-in-out;
 
@@ -202,7 +205,6 @@ const ActionsOverlay = styled.div<{
       }
     `}
 `;
-
 const GradientOverlay = styled.div<{
   $overlayOpacity: number;
 }>`
@@ -392,6 +394,8 @@ export interface ImageCardProps {
   // Interaction Props
   disabled?: boolean;
   disableHover?: boolean;
+  hideAction?: boolean;
+  actionPosition?: OverlayPosition;
 
   // Error Handling Props
   fallbackImage?: string;
@@ -463,6 +467,8 @@ const ImageCard: React.FC<ImageCardProps> = (props) => {
     // Interaction
     disabled = false,
     disableHover = false,
+    hideAction = false,
+    actionPosition = "top-right",
 
     // Error Handling
     fallbackImage = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23f3f4f6'/%3E%3Ctext x='200' y='150' font-family='Arial' font-size='18' fill='%239ca3af' text-anchor='middle'%3EImage not found%3C/text%3E%3C/svg%3E",
@@ -600,7 +606,7 @@ const ImageCard: React.FC<ImageCardProps> = (props) => {
             }}
           >
             <StyledImage
-              src={props.image_url}
+              src={props.image_url || fallbackImage}
               alt={alt || props.title || "Image"}
               width={width}
               height={height}
@@ -623,6 +629,8 @@ const ImageCard: React.FC<ImageCardProps> = (props) => {
             $transition={transition}
             $disableHover={disableHover}
             onClick={handleActionClick}
+            $hideAction={hideAction}
+            $position={actionPosition}
           >
             {actions(cardProps)}
           </ActionsOverlay>

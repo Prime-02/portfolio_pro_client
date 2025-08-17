@@ -186,3 +186,14 @@ export type BorderColorVariant =
   | "warning"
   | "error"
   | "info";
+
+
+  export type OverlayPosition = 
+  | 'top-right'       // default
+  | 'top-left'
+  | 'top-center'
+  | 'bottom-right'
+  | 'bottom-left'
+  | 'bottom-center'
+  | 'center-right'
+  | 'center-left';

@@ -82,7 +82,7 @@ const UsersLayout = ({
           }}
         >
           <motion.div
-            className={`rounded-3xl h-auto ${fullScreen ? "max-w-full w-full" : "max-w-fit"}  `} // Changed from w-fit to w-full
+            className={`rounded-3xl h-auto max-w-fit `} // Changed from w-fit to w-full
             style={{
               backgroundColor: getColorShade(theme?.background, 10),
             }}

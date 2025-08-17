@@ -49,16 +49,11 @@ body {
 
 
 
-/* In your global CSS */
 .custom-shadow {
   --tw-shadow-color: var(--accent);
   box-shadow: 0 4px 6px -1px var(--tw-shadow-color), 
               0 2px 4px -2px var(--tw-shadow-color);
 }
-
-
-
-@import 'tailwindcss';
 
 /* Custom scrollbar styles */
 .custom-scrollbar::-webkit-scrollbar {

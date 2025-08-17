@@ -683,86 +683,94 @@ export function validateUsername(username: string): {
   return { valid: true };
 }
 
-
 /**
  * Downloads a video or image file from a URL
  * @param url - The URL of the media file to download
  * @param filename - Optional custom filename for the downloaded file
  * @returns Promise that resolves when download is complete
  */
-export async function downloadMediaFile(url: string, filename?: string): Promise<void> {
+export async function downloadMediaFile(
+  url: string,
+  filename?: string
+): Promise<void> {
   try {
     // Validate URL format
     let urlObj: URL;
     try {
       urlObj = new URL(url);
     } catch {
-      throw new Error('Invalid URL format');
+      throw new Error("Invalid URL format");
     }
 
     // Fetch the file with appropriate headers
     const response = await fetch(url, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Accept': 'image/*,video/*',
-      }
+        Accept: "image/*,video/*",
+      },
     });
-    
+
     if (!response.ok) {
-      throw new Error(`Failed to fetch file: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Failed to fetch file: ${response.status} ${response.statusText}`
+      );
     }
 
     // Check if it's actually a video or image
-    const contentType = response.headers.get('content-type') || '';
-    if (!contentType.startsWith('image/') && !contentType.startsWith('video/')) {
-      throw new Error(`File is not a video or image. Content-Type: ${contentType}`);
+    const contentType = response.headers.get("content-type") || "";
+    if (
+      !contentType.startsWith("image/") &&
+      !contentType.startsWith("video/")
+    ) {
+      throw new Error(
+        `File is not a video or image. Content-Type: ${contentType}`
+      );
     }
 
     // Get the blob data
     const blob = await response.blob();
-    
+
     // Determine filename with better extension mapping
     let finalFilename = filename;
     if (!finalFilename) {
-      finalFilename = urlObj.pathname.split('/').pop() || 'download';
-      
+      finalFilename = urlObj.pathname.split("/").pop() || "download";
+
       // Remove query parameters from extracted filename
-      finalFilename = finalFilename.split('?')[0];
-      
+      finalFilename = finalFilename.split("?")[0];
+
       // If there's no extension, determine from content type
-      if (!finalFilename.includes('.')) {
+      if (!finalFilename.includes(".")) {
         const extension = getExtensionFromContentType(contentType);
         if (extension) {
           finalFilename += `.${extension}`;
         } else {
-          finalFilename += '.bin'; // fallback
+          finalFilename += ".bin"; // fallback
         }
       }
     }
 
     // Create blob URL and trigger download
     const blobUrl = URL.createObjectURL(blob);
-    
+
     // Create and trigger download
-    const a = document.createElement('a');
-    a.style.display = 'none'; // Hide the anchor element
+    const a = document.createElement("a");
+    a.style.display = "none"; // Hide the anchor element
     a.href = blobUrl;
     a.download = finalFilename;
-    
+
     // Add to DOM, click, then remove
     document.body.appendChild(a);
     a.click();
-    
+
     // Clean up immediately after click
     document.body.removeChild(a);
-    
+
     // Clean up blob URL after a short delay to ensure download starts
     setTimeout(() => {
       URL.revokeObjectURL(blobUrl);
     }, 1000);
-    
   } catch (error) {
-    console.error('Error downloading media file:', error);
+    console.error("Error downloading media file:", error);
     throw error;
   }
 }
@@ -773,33 +781,510 @@ export async function downloadMediaFile(url: string, filename?: string): Promise
 function getExtensionFromContentType(contentType: string): string {
   const typeMap: Record<string, string> = {
     // Images
-    'image/jpeg': 'jpg',
-    'image/jpg': 'jpg',
-    'image/png': 'png',
-    'image/gif': 'gif',
-    'image/webp': 'webp',
-    'image/svg+xml': 'svg',
-    'image/bmp': 'bmp',
-    'image/tiff': 'tiff',
-    'image/avif': 'avif',
-    
+    "image/jpeg": "jpg",
+    "image/jpg": "jpg",
+    "image/png": "png",
+    "image/gif": "gif",
+    "image/webp": "webp",
+    "image/svg+xml": "svg",
+    "image/bmp": "bmp",
+    "image/tiff": "tiff",
+    "image/avif": "avif",
+
     // Videos
-    'video/mp4': 'mp4',
-    'video/webm': 'webm',
-    'video/ogg': 'ogv',
-    'video/avi': 'avi',
-    'video/mov': 'mov',
-    'video/wmv': 'wmv',
-    'video/flv': 'flv',
-    'video/mkv': 'mkv',
-    'video/m4v': 'm4v',
-    'video/3gpp': '3gp',
-    'video/quicktime': 'mov'
+    "video/mp4": "mp4",
+    "video/webm": "webm",
+    "video/ogg": "ogv",
+    "video/avi": "avi",
+    "video/mov": "mov",
+    "video/wmv": "wmv",
+    "video/flv": "flv",
+    "video/mkv": "mkv",
+    "video/m4v": "m4v",
+    "video/3gpp": "3gp",
+    "video/quicktime": "mov",
   };
-  
-  return typeMap[contentType.toLowerCase()] || '';
+
+  return typeMap[contentType.toLowerCase()] || "";
 }
 
 // Example usage:
 // downloadMediaFile('https://example.com/video.mp4', 'my-video.mp4');
 // downloadMediaFile('https://example.com/image.jpg'); // Will use original filename
+
+/**
+ * Enhanced path utility with comprehensive segment manipulation
+ */
+
+export class PathUtil {
+  /**
+   * Normalizes a path by removing leading/trailing slashes and cleaning up empty segments
+   */
+  private static normalizePath(path: string): string {
+    return path.replace(/^\/+|\/+$/g, "").replace(/\/+/g, "/");
+  }
+
+  /**
+   * Splits a path into segments, handling edge cases
+   */
+  private static getSegments(path: string): string[] {
+    const normalized = this.normalizePath(path);
+    if (!normalized) return [];
+    return normalized.split("/").filter((segment) => segment.length > 0);
+  }
+
+  /**
+   * Gets a specific path segment by index
+   * @param currentPath - The path to extract from
+   * @param index - Zero-based index of the segment to retrieve
+   * @returns The segment at the specified index, or empty string if not found
+   */
+  static getPathSegment(currentPath: string, index: number): string {
+    const segments = this.getSegments(currentPath);
+    if (index < 0 || index >= segments.length) {
+      return "";
+    }
+    return segments[index];
+  }
+
+  /**
+   * Gets the last segment of a path
+   * @param currentPath - The path to extract from
+   * @returns The last segment or empty string if path is empty
+   */
+  static getLastSegment(currentPath: string): string {
+    const segments = this.getSegments(currentPath);
+    return segments.length > 0 ? segments[segments.length - 1] : "";
+  }
+
+  /**
+   * Gets the first segment of a path
+   * @param currentPath - The path to extract from
+   * @returns The first segment or empty string if path is empty
+   */
+  static getFirstSegment(currentPath: string): string {
+    const segments = this.getSegments(currentPath);
+    return segments.length > 0 ? segments[0] : "";
+  }
+
+  /**
+   * Removes a path segment by index
+   * @param currentPath - The path to modify
+   * @param index - Zero-based index of the segment to remove
+   * @returns New path with the segment removed
+   */
+  static removeSegmentByIndex(currentPath: string, index: number): string {
+    const segments = this.getSegments(currentPath);
+    if (index < 0 || index >= segments.length) {
+      return currentPath;
+    }
+    segments.splice(index, 1);
+    return segments.length > 0 ? `/${segments.join("/")}` : "/";
+  }
+
+  /**
+   * Removes the first occurrence of a segment by value
+   * @param currentPath - The path to modify
+   * @param segmentValue - The segment value to remove
+   * @returns New path with the first matching segment removed
+   */
+  static removeSegmentByValue(
+    currentPath: string,
+    segmentValue: string
+  ): string {
+    const segments = this.getSegments(currentPath);
+    const index = segments.indexOf(segmentValue);
+    if (index === -1) {
+      return currentPath;
+    }
+    segments.splice(index, 1);
+    return segments.length > 0 ? `/${segments.join("/")}` : "/";
+  }
+
+  /**
+   * Removes all occurrences of a segment by value
+   * @param currentPath - The path to modify
+   * @param segmentValue - The segment value to remove
+   * @returns New path with all matching segments removed
+   */
+  static removeAllSegmentsByValue(
+    currentPath: string,
+    segmentValue: string
+  ): string {
+    const segments = this.getSegments(currentPath);
+    const filtered = segments.filter((segment) => segment !== segmentValue);
+    return filtered.length > 0 ? `/${filtered.join("/")}` : "/";
+  }
+
+  /**
+   * Removes the last segment from a path
+   * @param currentPath - The path to modify
+   * @returns New path with the last segment removed
+   */
+  static removeLastSegment(currentPath: string): string {
+    const segments = this.getSegments(currentPath);
+    if (segments.length === 0) {
+      return currentPath;
+    }
+    segments.pop();
+    return segments.length > 0 ? `/${segments.join("/")}` : "/";
+  }
+
+  /**
+   * Removes the first segment from a path
+   * @param currentPath - The path to modify
+   * @returns New path with the first segment removed
+   */
+  static removeFirstSegment(currentPath: string): string {
+    const segments = this.getSegments(currentPath);
+    if (segments.length === 0) {
+      return currentPath;
+    }
+    segments.shift();
+    return segments.length > 0 ? `/${segments.join("/")}` : "/";
+  }
+
+  /**
+   * Adds a segment at a specific index
+   * @param currentPath - The path to modify
+   * @param index - Zero-based index where to insert the segment
+   * @param segmentValue - The segment to add
+   * @returns New path with the segment added
+   */
+  static addSegmentAtIndex(
+    currentPath: string,
+    index: number,
+    segmentValue: string
+  ): string {
+    const segments = this.getSegments(currentPath);
+    const clampedIndex = Math.max(0, Math.min(index, segments.length));
+    segments.splice(clampedIndex, 0, segmentValue);
+    return `/${segments.join("/")}`;
+  }
+
+  /**
+   * Replaces a segment at a specific index
+   * @param currentPath - The path to modify
+   * @param index - Zero-based index of the segment to replace
+   * @param newValue - The new segment value
+   * @returns New path with the segment replaced
+   */
+  static replaceSegmentAtIndex(
+    currentPath: string,
+    index: number,
+    newValue: string
+  ): string {
+    const segments = this.getSegments(currentPath);
+    if (index < 0 || index >= segments.length) {
+      return currentPath;
+    }
+    segments[index] = newValue;
+    return `/${segments.join("/")}`;
+  }
+
+  /**
+   * Gets all segments as an array
+   * @param currentPath - The path to split
+   * @returns Array of path segments
+   */
+  static getAllSegments(currentPath: string): string[] {
+    return this.getSegments(currentPath);
+  }
+
+  /**
+   * Gets the number of segments in a path
+   * @param currentPath - The path to count
+   * @returns Number of segments
+   */
+  static getSegmentCount(currentPath: string): number {
+    return this.getSegments(currentPath).length;
+  }
+
+  /**
+   * Checks if a path contains a specific segment
+   * @param currentPath - The path to search
+   * @param segmentValue - The segment to look for
+   * @returns True if the segment exists in the path
+   */
+  static hasSegment(currentPath: string, segmentValue: string): boolean {
+    return this.getSegments(currentPath).includes(segmentValue);
+  }
+
+  /**
+   * Gets a range of segments
+   * @param currentPath - The path to extract from
+   * @param startIndex - Starting index (inclusive)
+   * @param endIndex - Ending index (exclusive, optional)
+   * @returns Array of segments in the specified range
+   */
+  static getSegmentRange(
+    currentPath: string,
+    startIndex: number,
+    endIndex?: number
+  ): string[] {
+    const segments = this.getSegments(currentPath);
+    return segments.slice(startIndex, endIndex);
+  }
+
+  /**
+   * Builds a path from segments
+   * @param segments - Array of segments to join
+   * @returns Complete path string
+   */
+  static buildPath(segments: string[]): string {
+    const filtered = segments.filter(
+      (segment) => segment && segment.length > 0
+    );
+    return filtered.length > 0 ? `/${filtered.join("/")}` : "/";
+  }
+
+  /**
+   * Parses query parameters from a URL or query string
+   * @param input - Full URL or just the query string (with or without ?)
+   * @returns Object with query parameters as key-value pairs
+   */
+  static parseQueryParams(input: string): Record<string, string | string[]> {
+    const queryString = input.includes("?") ? input.split("?")[1] : input;
+    if (!queryString) return {};
+
+    const params: Record<string, string | string[]> = {};
+    const searchParams = new URLSearchParams(queryString);
+
+    for (const [key, value] of searchParams.entries()) {
+      if (params[key]) {
+        // Handle multiple values for the same key
+        if (Array.isArray(params[key])) {
+          (params[key] as string[]).push(value);
+        } else {
+          params[key] = [params[key] as string, value];
+        }
+      } else {
+        params[key] = value;
+      }
+    }
+
+    return params;
+  }
+
+  /**
+   * Builds a query string from an object
+   * @param params - Object with key-value pairs for query parameters
+   * @param includeQuestionMark - Whether to include the leading ? (default: true)
+   * @returns Query string
+   */
+  static buildQueryString(
+    params: Record<
+      string,
+      string | number | boolean | string[] | null | undefined
+    >,
+    includeQuestionMark: boolean = true
+  ): string {
+    const searchParams = new URLSearchParams();
+
+    Object.entries(params).forEach(([key, value]) => {
+      if (value === null || value === undefined) {
+        return; // Skip null/undefined values
+      }
+
+      if (Array.isArray(value)) {
+        value.forEach((v) => searchParams.append(key, String(v)));
+      } else {
+        searchParams.append(key, String(value));
+      }
+    });
+
+    const queryString = searchParams.toString();
+    return queryString
+      ? includeQuestionMark
+        ? `?${queryString}`
+        : queryString
+      : "";
+  }
+
+  /**
+   * Builds a complete URL with path and query parameters
+   * @param basePath - The base path/route
+   * @param queryParams - Object with query parameters
+   * @returns Complete URL string
+   */
+  static buildUrlWithQuery(
+    basePath: string,
+    queryParams: Record<
+      string,
+      string | number | boolean | string[] | null | undefined
+    >
+  ): string {
+    const normalizedPath = basePath.startsWith("/") ? basePath : `/${basePath}`;
+    const queryString = this.buildQueryString(queryParams, true);
+    return `${normalizedPath}${queryString}`;
+  }
+
+  /**
+   * Adds query parameters to an existing URL
+   * @param currentUrl - The current URL (with or without existing query params)
+   * @param newParams - New query parameters to add
+   * @param overwrite - Whether to overwrite existing parameters (default: false)
+   * @returns URL with added query parameters
+   */
+  static addQueryParams(
+    currentUrl: string,
+    newParams: Record<
+      string,
+      string | number | boolean | string[] | null | undefined
+    >,
+    overwrite: boolean = false
+  ): string {
+    const [basePath, existingQuery] = currentUrl.split("?");
+    const existingParams = existingQuery
+      ? this.parseQueryParams(existingQuery)
+      : {};
+
+    const mergedParams = overwrite
+      ? { ...existingParams, ...newParams }
+      : { ...newParams, ...existingParams };
+
+    return this.buildUrlWithQuery(basePath, mergedParams);
+  }
+
+  /**
+   * Removes specific query parameters from a URL
+   * @param currentUrl - The current URL
+   * @param paramsToRemove - Array of parameter keys to remove
+   * @returns URL with specified parameters removed
+   */
+  static removeQueryParams(
+    currentUrl: string,
+    paramsToRemove: string[]
+  ): string {
+    const [basePath, existingQuery] = currentUrl.split("?");
+    if (!existingQuery) return basePath;
+
+    const existingParams = this.parseQueryParams(existingQuery);
+    const filteredParams: Record<string, string | string[]> = {};
+
+    Object.entries(existingParams).forEach(([key, value]) => {
+      if (!paramsToRemove.includes(key)) {
+        filteredParams[key] = value;
+      }
+    });
+
+    const queryString = this.buildQueryString(filteredParams, true);
+    return `${basePath}${queryString}`;
+  }
+
+  /**
+   * Updates specific query parameters in a URL
+   * @param currentUrl - The current URL
+   * @param updates - Object with parameters to update/add
+   * @returns URL with updated parameters
+   */
+  static updateQueryParams(
+    currentUrl: string,
+    updates: Record<
+      string,
+      string | number | boolean | string[] | null | undefined
+    >
+  ): string {
+    return this.addQueryParams(currentUrl, updates, true);
+  }
+
+  /**
+   * Gets a specific query parameter value from a URL
+   * @param url - The URL to extract from
+   * @param paramName - The parameter name to get
+   * @returns The parameter value or null if not found
+   */
+  static getQueryParam(
+    url: string,
+    paramName: string
+  ): string | string[] | null {
+    const params = this.parseQueryParams(url);
+    return params[paramName] || null;
+  }
+
+  /**
+   * Checks if a URL has a specific query parameter
+   * @param url - The URL to check
+   * @param paramName - The parameter name to look for
+   * @returns True if the parameter exists
+   */
+  static hasQueryParam(url: string, paramName: string): boolean {
+    const params = this.parseQueryParams(url);
+    return paramName in params;
+  }
+
+  /**
+   * Clears all query parameters from a URL
+   * @param currentUrl - The current URL
+   * @returns URL with all query parameters removed
+   */
+  static clearQueryParams(currentUrl: string): string {
+    return currentUrl.split("?")[0];
+  }
+}
+
+// // Example usage and tests
+// if (typeof window === "undefined") {
+//   // Node.js environment - run some tests
+//   console.log("=== PathUtil Tests ===");
+
+//   const testPath = "/users/123/profile/settings";
+
+//   console.log("Original path:", testPath);
+//   console.log("Get segment 1:", PathUtil.getPathSegment(testPath, 1)); // "123"
+//   console.log("Get last segment:", PathUtil.getLastSegment(testPath)); // "settings"
+//   console.log("Remove segment 1:", PathUtil.removeSegmentByIndex(testPath, 1)); // "/users/profile/settings"
+//   console.log(
+//     "Remove by value 'profile':",
+//     PathUtil.removeSegmentByValue(testPath, "profile")
+//   ); // "/users/123/settings"
+//   console.log("Remove last segment:", PathUtil.removeLastSegment(testPath)); // "/users/123/profile"
+//   console.log(
+//     "Add segment at index 2:",
+//     PathUtil.addSegmentAtIndex(testPath, 2, "edit")
+//   ); // "/users/123/edit/profile/settings"
+//   console.log(
+//     "Replace segment 2:",
+//     PathUtil.replaceSegmentAtIndex(testPath, 2, "dashboard")
+//   ); // "/users/123/dashboard/settings"
+//   console.log("All segments:", PathUtil.getAllSegments(testPath)); // ["users", "123", "profile", "settings"]
+//   console.log("Segment count:", PathUtil.getSegmentCount(testPath)); // 4
+//   console.log("Has 'profile':", PathUtil.hasSegment(testPath, "profile")); // true
+
+//   console.log("\n=== Query Parameter Tests ===");
+
+//   // Test query parameter methods
+//   const queryParams = {
+//     page: 1,
+//     limit: 10,
+//     sort: "name",
+//     tags: ["javascript", "react"],
+//   };
+//   const urlWithQuery = PathUtil.buildUrlWithQuery("/api/users", queryParams);
+//   console.log("URL with query:", urlWithQuery); // "/api/users?page=1&limit=10&sort=name&tags=javascript&tags=react"
+
+//   const existingUrl = "/search?q=test&page=2";
+//   const updatedUrl = PathUtil.addQueryParams(existingUrl, {
+//     limit: 20,
+//     sort: "date",
+//   });
+//   console.log("Added params:", updatedUrl); // "/search?limit=20&sort=date&q=test&page=2"
+
+//   const updatedUrl2 = PathUtil.updateQueryParams(existingUrl, {
+//     page: 5,
+//     category: "books",
+//   });
+//   console.log("Updated params:", updatedUrl2); // "/search?q=test&page=5&category=books"
+
+//   const removedUrl = PathUtil.removeQueryParams(updatedUrl2, ["page"]);
+//   console.log("Removed params:", removedUrl); // "/search?q=test&category=books"
+
+//   const pageParam = PathUtil.getQueryParam(existingUrl, "page");
+//   console.log("Get 'page' param:", pageParam); // "2"
+
+//   const hasQ = PathUtil.hasQueryParam(existingUrl, "q");
+//   console.log("Has 'q' param:", hasQ); // true
+
+//   const clearedUrl = PathUtil.clearQueryParams(existingUrl);
+//   console.log("Cleared params:", clearedUrl); // "/search"
+// }

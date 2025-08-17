@@ -6,7 +6,6 @@ import { getLoader } from "@/app/components/loaders/Loader";
 import { useTheme } from "@/app/components/theme/ThemeContext ";
 import EmptyState from "@/app/components/containers/cards/EmptyState";
 import Modal from "@/app/components/containers/modals/Modal";
-import { toast } from "@/app/components/toastify/Toastify";
 import MasonryGrid from "@/app/components/containers/divs/MasonryGrid";
 import ImageCard from "@/app/components/containers/cards/ImageCard";
 import Button from "@/app/components/buttons/Buttons";
@@ -99,7 +98,6 @@ const MediaCollection = ({ props, collectionId }: MediaCollectionProps) => {
         }
       } catch (error) {
         console.log("Error fetching media: ", error);
-        toast.error("Failed to load media");
         throw error;
       } finally {
         if (append) {
@@ -178,9 +176,9 @@ const MediaCollection = ({ props, collectionId }: MediaCollectionProps) => {
               }}
             />
           ) : isInitialLoading ? (
-            <div>
+            <div className="w-sm h-[10rem] flex items-center justify-center">
               {LoaderComponent ? (
-                <div className="w-full h-64 flex items-center justify-center">
+                <div className="">
                   <LoaderComponent color={accentColor.color} />
                 </div>
               ) : (
@@ -191,6 +189,7 @@ const MediaCollection = ({ props, collectionId }: MediaCollectionProps) => {
             <MasonryGrid
               gap={10}
               totalItems={albumMedia.total}
+              customMessage={`Showing All media in album`}
               loadedItems={albumMedia.items.length}
               page={page}
               setPage={setPage}
@@ -246,14 +245,14 @@ const MediaCollection = ({ props, collectionId }: MediaCollectionProps) => {
                         actions={actions}
                         userType={userType}
                         popoverPosition="bottom-left"
-                        
+                        displayMode="circular-icons-horizontal"
                       />
                     )}
                   />
                 );
               })}
 
-              {isLoadingMore &&
+              {/* {isLoadingMore &&
                 Array.from({ length: 3 }).map((_, i) => (
                   <ImageCard
                     key={`loading-${i}`}
@@ -261,7 +260,7 @@ const MediaCollection = ({ props, collectionId }: MediaCollectionProps) => {
                     image_url=""
                     isLoading={true}
                   />
-                ))}
+                ))} */}
             </MasonryGrid>
           )}
         </div>

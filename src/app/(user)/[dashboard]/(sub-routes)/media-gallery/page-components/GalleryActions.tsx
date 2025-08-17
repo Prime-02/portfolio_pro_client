@@ -272,7 +272,6 @@ const GalleryActions = ({
       }
     } catch (error) {
       console.log("Error fetching album data:", error);
-      toast.error("Failed to load album data");
     } finally {
       setLoading("fetching_album");
     }

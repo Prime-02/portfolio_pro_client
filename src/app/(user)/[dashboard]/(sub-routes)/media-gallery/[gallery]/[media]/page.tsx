@@ -1,8 +1,10 @@
 import React from 'react'
+import MediaView from './page-component/MediaView'
 
 const page = () => {
+  
   return (
-    <div>Main route Here</div>
+    <MediaView/>
   )
 }
 

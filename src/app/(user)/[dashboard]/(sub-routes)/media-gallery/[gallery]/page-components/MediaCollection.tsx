@@ -17,7 +17,6 @@ import { createAlbumUniversalActions } from "../../imageActions";
 import GalleryCardActions, {
   ActionType,
 } from "../../page-components/GalleryCardActions";
-import Link from "next/link";
 
 export interface Media {
   id?: string;
@@ -51,6 +50,9 @@ const MediaCollection = ({ props, collectionId }: MediaCollectionProps) => {
     checkParams,
     clearQuerryParam,
     checkValidId,
+    extendRoute,
+    router,
+    currentPath,
   } = useGlobalState();
   const { loader, accentColor } = useTheme();
 
@@ -60,6 +62,7 @@ const MediaCollection = ({ props, collectionId }: MediaCollectionProps) => {
   });
   const [page, setPage] = useState(1);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const uploadAction = checkParams("upload") === "true";
   const updateAction = checkParams("update");
   const deleteAction = checkParams("delete");
   const currentAction =
@@ -115,10 +118,10 @@ const MediaCollection = ({ props, collectionId }: MediaCollectionProps) => {
   }, [fetchAllAlbumMedia, page]);
 
   useEffect(() => {
-    if (accessToken && collectionId) {
+    if (accessToken && collectionId && currentPath.endsWith(collectionId)) {
       fetchAllAlbumMedia();
     }
-  }, [accessToken, currentUser, collectionId]);
+  }, [accessToken, currentUser, collectionId, currentPath]);
 
   const isInitialLoading = loading.includes("fetching_media") && page === 1;
 
@@ -127,7 +130,7 @@ const MediaCollection = ({ props, collectionId }: MediaCollectionProps) => {
       className={`flex-col w-full md:w-[75%] gap-y-3 rounded-2xl flex items-center justify-center h-full `}
     >
       <Modal
-        isOpen={checkValidId(currentAction || "")}
+        isOpen={checkValidId(currentAction || "") || uploadAction}
         onClose={() => {
           clearQuerryParam();
         }}
@@ -214,37 +217,39 @@ const MediaCollection = ({ props, collectionId }: MediaCollectionProps) => {
                   {
                     extendRouteWithQuery: extendRouteWithQuery,
                     isAlbum: false,
+                    extendRoute: extendRoute,
                   },
                   String(media.media_type)
                 );
                 return (
-                  <Link
-                    href={`/${userData.username}/media-gallery/${collectionId}/${media.id}`}
-                    scroll={false}
+                  <ImageCard
                     key={`${media.id}-${i}`}
-                  >
-                    <ImageCard
-                      key={`${media.id}-${i}`}
-                      showGradientOverlay
-                      image_url={media.media_url || ""}
-                      contentPosition="overlay"
-                      titleLines={1}
-                      aspectRatio="auto"
-                      hoverEffect="lift"
-                      id={String(media.id)}
-                      title={media.title}
-                      description={media.description}
-                      actions={() => (
-                        <GalleryCardActions
-                          albumId={String(media.id)}
-                          albumTitle={String(media.title)}
-                          actions={actions}
-                          userType={userType}
-                          popoverPosition="bottom-left"
-                        />
-                      )}
-                    />
-                  </Link>
+                    showGradientOverlay
+                    image_url={
+                      media.media_url || "/vectors/undraw_monitor_ypga.svg"
+                    }
+                    contentPosition="overlay"
+                    titleLines={1}
+                    aspectRatio="auto"
+                    hoverEffect="lift"
+                    id={String(media.id)}
+                    onClick={() => {
+                      extendRoute(String(media.id));
+                    }}
+                    title={media.title}
+                    fallbackImage="/vectors/undraw_monitor_ypga.svg"
+                    description={media.description}
+                    actions={() => (
+                      <GalleryCardActions
+                        albumId={String(media.id)}
+                        albumTitle={String(media.title)}
+                        actions={actions}
+                        userType={userType}
+                        popoverPosition="bottom-left"
+                        
+                      />
+                    )}
+                  />
                 );
               })}
 

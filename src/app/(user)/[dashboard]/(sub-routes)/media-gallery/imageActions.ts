@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import { ActionItem } from "./page-components/GalleryCardActions";
 
+type DisplayMode = "popover" | "circular-icons-vertical" | "circular-icons-horizontal" | "buttons";
+
 interface AlbumActionsConfig {
   allowShare?: boolean;
   allowOpen?: boolean;
@@ -28,6 +30,7 @@ interface AlbumActionsConfig {
   extendRoute?: (segment: string) => void;
   extendRouteWithQuery?: (newParams: Record<string, string>) => void;
   isAlbum?: boolean;
+  displayMode?: DisplayMode;
 }
 
 export const createAlbumUniversalActions = (
@@ -43,6 +46,7 @@ export const createAlbumUniversalActions = (
     extendRoute = noop,
     extendRouteWithQuery = noop,
     isAlbum = true,
+    displayMode = "popover",
     ...actionConfig
   } = config;
 
@@ -66,6 +70,7 @@ export const createAlbumUniversalActions = (
         }
       },
       type: ["owner", "others"],
+      displayMode,
     });
   }
 
@@ -75,13 +80,10 @@ export const createAlbumUniversalActions = (
       icon: ArrowRight,
       actionName: `Open ${capitalizedType}`,
       onClick: () => {
-        if (isAlbum) {
-          extendRoute(id);
-        } else {
-          extendRouteWithQuery({ open: "true", media: id });
-        }
+        extendRoute(id);
       },
       type: ["owner", "others"],
+      displayMode,
     });
   }
 
@@ -98,6 +100,7 @@ export const createAlbumUniversalActions = (
         );
       },
       type: ["owner", "others"],
+      displayMode,
     });
   }
 
@@ -114,6 +117,7 @@ export const createAlbumUniversalActions = (
         });
       },
       type: "owner",
+      displayMode,
     });
   }
 
@@ -126,6 +130,7 @@ export const createAlbumUniversalActions = (
         toast.success(`${capitalizedType} liked!`);
       },
       type: "others",
+      displayMode,
     });
   }
 
@@ -138,6 +143,7 @@ export const createAlbumUniversalActions = (
         toast.info(`Loading ${type.toLowerCase()} analytics...`);
       },
       type: "owner",
+      displayMode,
     });
   }
 
@@ -152,6 +158,7 @@ export const createAlbumUniversalActions = (
       type: "others",
       style:
         "hover:bg-yellow-100 dark:hover:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400",
+      displayMode,
     });
   }
 
@@ -170,6 +177,7 @@ export const createAlbumUniversalActions = (
       type: "owner",
       style:
         "hover:bg-red-100 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400",
+      displayMode,
     });
   }
 

@@ -12,7 +12,7 @@ interface ModalProps {
   onClose: () => void;
   children: React.ReactNode;
   title?: string | Element;
-  size?: "sm" | "md" | "lg" | "xl" | "full";
+  size?: "sm" | "md" | "lg" | "xl" | "full" | "auto";
   showCloseButton?: boolean;
   showMinimizeButton?: boolean;
   closeOnBackdropClick?: boolean;
@@ -170,6 +170,7 @@ const Modal: React.FC<ModalProps> = ({
     lg: "max-w-lg",
     xl: "max-w-xl",
     full: "max-w-full mx-4",
+    auto: "max-w-fit w-auto mx-4",
   };
 
   // Animation variants for backdrop

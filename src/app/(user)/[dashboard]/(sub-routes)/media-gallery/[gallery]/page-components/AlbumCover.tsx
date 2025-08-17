@@ -104,7 +104,9 @@ const AlbumCover: React.FC<AlbumCoverProps> = ({
       </Modal>
       <ImageCard
         id={albumData.id}
-        image_url={albumData?.cover_media_url}
+        image_url={
+          albumData.cover_media_url || "/vectors/undraw_monitor_ypga.svg"
+        }
         title={albumData?.name}
         description={albumData?.description}
         isLoading={
@@ -128,7 +130,7 @@ const AlbumCover: React.FC<AlbumCoverProps> = ({
         priority={priority}
         quality={quality}
         placeholder="empty"
-        fallbackImage="/placeholder.jpg"
+        fallbackImage="/vectors/undraw_monitor_ypga.svg"
         loadingHeight={`${height}px`}
         alt={albumData ? `Cover for ${albumData.name}` : "Album cover"}
         actions={() => (

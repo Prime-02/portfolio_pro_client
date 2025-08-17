@@ -26,7 +26,6 @@ export interface GalleryCardActionsProps {
 
 const GalleryCardActions = ({
   albumId,
-  albumTitle,
   actions,
   userType,
   popoverPosition = "top-left",

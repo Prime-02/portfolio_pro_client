@@ -13,6 +13,111 @@ import {
   UpdateAllData,
 } from "@/app/components/utilities/asyncFunctions/lib/crud";
 
+// Extracted and exported functions
+export const getMediaData = async ({
+  accessToken,
+  id,
+  currentAction,
+  setLoading,
+  setMediaData,
+}: {
+  accessToken: string;
+  id: string;
+  currentAction: string;
+  setLoading: (state: string) => void;
+  setMediaData: React.Dispatch<React.SetStateAction<Media>>;
+}) => {
+  setLoading("getting_medium_data");
+  try {
+    const mediumRes: Media = await GetAllData({
+      access: accessToken,
+      url: `${V1_BASE_URL}/media-gallery/collections/${id}/media/${currentAction}`,
+      type: "Medium Data",
+    });
+    if (mediumRes) {
+      setMediaData(() => ({
+        title: mediumRes.title || "",
+        description: mediumRes.description || "",
+        is_public: mediumRes.is_public || true,
+        allow_download: mediumRes.allow_download || true,
+        is_featured: mediumRes.is_featured || false,
+        media_type: mediumRes.media_type || "File",
+        media_url: mediumRes.media_url || "/vectors/undraw_monitor_ypga.svg",
+      }));
+    }
+  } catch (error) {
+    console.log("Error fetching medium data");
+  } finally {
+    setLoading("getting_medium_data");
+  }
+};
+
+export const updateMediaData = async ({
+  accessToken,
+  id,
+  currentAction,
+  mediaData,
+  setLoading,
+  fetchAllAlbumMedia,
+  clearQuerryParam,
+}: {
+  accessToken: string;
+  id: string;
+  currentAction: string;
+  mediaData: Media;
+  setLoading: (state: string) => void;
+  fetchAllAlbumMedia: () => void;
+  clearQuerryParam: () => void;
+}) => {
+  setLoading("updating_media");
+  try {
+    const updateRes = await UpdateAllData({
+      access: accessToken,
+      url: `${V1_BASE_URL}/media-gallery/collections/${id}/media/${currentAction}`,
+      field: mediaData,
+      method: "patch",
+    });
+    if (updateRes) {
+      fetchAllAlbumMedia();
+      clearQuerryParam();
+    }
+  } catch (error) {
+    console.log("Error updating media: ", error);
+  } finally {
+    setLoading("updating_media");
+  }
+};
+
+export const deleteMediaData = async ({
+  accessToken,
+  id,
+  currentAction,
+  setLoading,
+  fetchAllAlbumMedia,
+  clearQuerryParam,
+}: {
+  accessToken: string;
+  id: string;
+  currentAction: string;
+  setLoading: (state: string) => void;
+  fetchAllAlbumMedia: () => void;
+  clearQuerryParam: () => void;
+}) => {
+  setLoading("deleting_media_data");
+  try {
+    const deleteRes = await DeleteData({
+      access: accessToken,
+      url: `${V1_BASE_URL}/media-gallery/collections/${id}/media/${currentAction}`,
+    });
+    fetchAllAlbumMedia();
+    clearQuerryParam();
+  } catch (error) {
+    console.log("Error deleting media data: ", error);
+  } finally {
+    setLoading("deleting_media_data");
+  }
+};
+
 interface MediaActionsProps {
   id: string;
   fetchAllAlbumMedia: () => void;
@@ -33,7 +138,8 @@ const MediaActions = ({ id, fetchAllAlbumMedia }: MediaActionsProps) => {
   const updateAction = checkParams("update");
   const deleteAction = checkParams("delete");
   const currentAction =
-    updateAction || deleteAction ? checkParams("media") : "";
+    updateAction || deleteAction ? checkParams("media") || "" : "";
+
   const uploadMedia = async () => {
     if (!mediaState || mediaState.length === 0) {
       console.warn("No media files to upload");
@@ -131,71 +237,44 @@ const MediaActions = ({ id, fetchAllAlbumMedia }: MediaActionsProps) => {
     }
   };
 
-  const getMediaData = async () => {
-    setLoading("getting_medium_data");
-    try {
-      const mediumRes: Media = await GetAllData({
-        access: accessToken,
-        url: `${V1_BASE_URL}/media-gallery/collections/${id}/media/${currentAction}`,
-        type: "Medium Data",
-      });
-      if (mediumRes) {
-        setMediaData(() => ({
-          title: mediumRes.title || "",
-          description: mediumRes.description || "",
-          is_public: mediumRes.is_public || true,
-          allow_download: mediumRes.allow_download || true,
-          is_featured: mediumRes.is_featured || false,
-          media_type: mediumRes.media_type || "File",
-        }));
-      }
-    } catch (error) {
-      console.log("Error fetching medium data");
-    } finally {
-      setLoading("getting_medium_data");
-    }
+  // Wrapper functions that call the extracted functions with component state
+  const handleGetMediaData = () => {
+    getMediaData({
+      accessToken,
+      id,
+      currentAction,
+      setLoading,
+      setMediaData,
+    });
+  };
+
+  const handleUpdateMediaData = () => {
+    updateMediaData({
+      accessToken,
+      id,
+      currentAction,
+      mediaData,
+      setLoading,
+      fetchAllAlbumMedia,
+      clearQuerryParam,
+    });
+  };
+
+  const handleDeleteMediaData = () => {
+    deleteMediaData({
+      accessToken,
+      id,
+      currentAction,
+      setLoading,
+      fetchAllAlbumMedia,
+      clearQuerryParam,
+    });
   };
 
   useEffect(() => {
     if (!accessToken && !currentAction) return;
-    getMediaData();
+    handleGetMediaData();
   }, [accessToken, currentAction]);
-
-  const updateMediaData = async () => {
-    setLoading("updating_media");
-    try {
-      const updateRes = await UpdateAllData({
-        access: accessToken,
-        url: `${V1_BASE_URL}/media-gallery/collections/${id}/media/${currentAction}`,
-        field: mediaData,
-        method: "patch",
-      });
-      if (updateRes) {
-        fetchAllAlbumMedia();
-        clearQuerryParam();
-      }
-    } catch (error) {
-      console.log("Error updating media: ", error);
-    } finally {
-      setLoading("updating_media");
-    }
-  };
-
-  const deleteMediaData = async () => {
-    setLoading("deleting_media_data");
-    try {
-      const deleteRes = await DeleteData({
-        access: accessToken,
-        url: `${V1_BASE_URL}/media-gallery/collections/${id}/media/${currentAction}`,
-      });
-      fetchAllAlbumMedia();
-      clearQuerryParam();
-    } catch (error) {
-      console.log("Error deleting media data: ", error);
-    } finally {
-      setLoading("deleting_media_data");
-    }
-  };
 
   return (
     <div>
@@ -246,7 +325,7 @@ const MediaActions = ({ id, fetchAllAlbumMedia }: MediaActionsProps) => {
             text="Save"
             size="sm"
             loading={loading.includes("updating_media")}
-            onClick={updateMediaData}
+            onClick={handleUpdateMediaData}
           />
         </div>
       ) : deleteAction ? (
@@ -268,7 +347,7 @@ const MediaActions = ({ id, fetchAllAlbumMedia }: MediaActionsProps) => {
               text={`Delete ${mediaData.media_type}`}
               customColor="red"
               size="md"
-              onClick={deleteMediaData}
+              onClick={handleDeleteMediaData}
               loading={loading.includes("deleting_media_data")}
               disabled={loading.includes("deleting_media_data")}
             />

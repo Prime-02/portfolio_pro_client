@@ -86,6 +86,7 @@ interface GlobalStateContextType {
   setCurrentUser: (currentUser: string | undefined) => void;
   checkValidId: (id: string) => boolean;
   checkParams: (param: string) => string | null;
+  getPathSegment: (currentPath: string, index: number) => string;
 }
 
 // Context initialization
@@ -336,6 +337,24 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
     return searchParams.get(param);
   };
 
+  function getPathSegment(currentPath: string, index: number): string {
+    // Remove leading/trailing slashes and split into segments
+    const segments = currentPath.replace(/^\/+|\/+$/g, "").split("/");
+
+    // Handle empty path case
+    if (
+      segments.length === 0 ||
+      (segments.length === 1 && segments[0] === "")
+    ) {
+      return "";
+    }
+
+    // Clamp the index to valid range
+    const clampedIndex = Math.min(index, segments.length - 1);
+
+    return segments[clampedIndex];
+  }
+
   const contextValue: GlobalStateContextType = {
     clerkUserData,
     userData,
@@ -360,6 +379,7 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
     getCurrentUser,
     checkValidId,
     checkParams,
+    getPathSegment,
   };
 
   return (

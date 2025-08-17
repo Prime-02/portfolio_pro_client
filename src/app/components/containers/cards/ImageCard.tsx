@@ -190,7 +190,7 @@ const ActionsOverlay = styled.div<{
   top: 0.75rem;
   right: 0.75rem;
   z-index: 30;
-  opacity: 0;
+  opacity: 1;
   transition: opacity ${(props) => getTransitionDuration(props.$transition)}
     ease-in-out;
 
@@ -331,7 +331,7 @@ export interface ImageCardProps {
   id: string;
   title?: string;
   description?: string;
-  image_url: string;
+  image_url: string | undefined;
   actions?: (props: Omit<ImageCardProps, "actions">) => ReactNode;
   isLoading?: boolean;
   onClick?: (props: Omit<ImageCardProps, "actions" | "onClick">) => void;
@@ -577,7 +577,7 @@ const ImageCard: React.FC<ImageCardProps> = (props) => {
       <ImageContainer style={aspectRatio ? { flex: 1 } : undefined}>
         {fill ? (
           <StyledImage
-            src={props.image_url}
+            src={props.image_url || "/vectors/undraw_monitor_ypga.svg"}
             alt={alt || props.title || "Image"}
             fill
             $transition={transition}

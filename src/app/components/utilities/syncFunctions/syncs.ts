@@ -549,6 +549,7 @@ type UrlPart =
  * @param segmentIndex - When part='pathSegment', the index to retrieve (0-based)
  * @returns The requested URL part as a string
  */
+//This utility function is now depreciated, use The PathUtil class for all path operations 
 export function getCurrentUrl(
   part: UrlPart = "full",
   segmentIndex?: number

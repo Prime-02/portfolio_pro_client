@@ -79,11 +79,11 @@ const MediaView = () => {
   }, [lastPathSegment]);
 
   return (
-    <div className="w-full flex items-center justify-center h-full ">
-      <div className="flex w-full flex-col md:flex-row items-center md:items-start justify-between gap-4">
-        <div className="w-full md:w-[23%]">
-          <AlbumCover fetchAlbumData={fetchAlbumCover} albumData={albumData} />
-        </div>
+    <div className="grid w-full grid-cols-1 md:grid-cols-5 gap-2">
+      <div className="md:col-span-2">
+        <AlbumCover fetchAlbumData={fetchAlbumCover} albumData={albumData} />
+      </div>
+      <div className="md:col-span-3">
         <MediaCollection collectionId={lastPathSegment} props={albumData} />
       </div>
     </div>

@@ -3,10 +3,7 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import ProfileSideBar from "../components/ProfileSideBar";
 import { useTheme } from "@/app/components/theme/ThemeContext ";
-import {
-  getColorShade,
-  getCurrentUrl,
-} from "@/app/components/utilities/syncFunctions/syncs";
+import { getColorShade } from "@/app/components/utilities/syncFunctions/syncs";
 import { useGlobalState } from "@/app/globalStateProvider";
 import { useUser } from "@clerk/nextjs";
 import { useToast } from "@/app/components/toastify/Toastify";
@@ -20,28 +17,8 @@ const UsersLayout = ({
   const { theme } = useTheme();
   const { isLoaded, isSignedIn } = useUser();
   const toast = useToast();
-  const {
-    currentUser,
-    getCurrentUser,
-    router,
-    accessToken,
-    currentPath,
-    checkValidId,
-  } = useGlobalState();
-  const [fullScreen, setFullscreen] = useState(false);
 
-  useEffect(() => {
-    if (window !== undefined) {
-      const pageUrl = getCurrentUrl("pathSegment", 1);
-      const validId = checkValidId(getCurrentUrl("lastPathSegment"));
-
-      if (pageUrl === "media-gallery" && validId) {
-        setFullscreen(true);
-      } else {
-        setFullscreen(false);
-      }
-    }
-  }, [currentPath]);
+  const { currentUser, getCurrentUser, router, accessToken } = useGlobalState();
 
   useEffect(() => {
     if (!isLoaded) return;

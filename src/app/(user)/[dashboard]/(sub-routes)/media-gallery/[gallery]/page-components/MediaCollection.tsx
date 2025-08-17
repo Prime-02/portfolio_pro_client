@@ -125,7 +125,7 @@ const MediaCollection = ({ props, collectionId }: MediaCollectionProps) => {
 
   return (
     <div
-      className={`flex-col w-full md:w-[75%] gap-y-3 rounded-2xl flex items-center justify-center h-full `}
+     
     >
       <Modal
         isOpen={checkValidId(currentAction || "") || uploadAction}
@@ -176,11 +176,9 @@ const MediaCollection = ({ props, collectionId }: MediaCollectionProps) => {
               }}
             />
           ) : isInitialLoading ? (
-            <div className="w-sm h-[10rem] flex items-center justify-center">
+            <div className="w-sm h-[10rem] flex items-center justify-center  mx-auto ">
               {LoaderComponent ? (
-                <div className="">
-                  <LoaderComponent color={accentColor.color} />
-                </div>
+                <LoaderComponent color={accentColor.color} />
               ) : (
                 "Fetching album's media, please wait..."
               )}

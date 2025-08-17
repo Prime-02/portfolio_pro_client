@@ -102,48 +102,50 @@ const AlbumCover: React.FC<AlbumCoverProps> = ({
           fetchAlbum={fetchAlbumData}
         />
       </Modal>
-      <ImageCard
-        id={albumData.id}
-        image_url={
-          albumData.cover_media_url || "/vectors/undraw_monitor_ypga.svg"
-        }
-        title={albumData?.name}
-        description={albumData?.description}
-        isLoading={
-          loading.includes("fetching_cover_data") ||
-          loading.includes("fetching_album")
-        }
-        fullText
-        width={width}
-        height={height}
-        aspectRatio={preserveAspectRatio ? undefined : aspectRatio}
-        borderRadius={borderRadius}
-        shadow={shadow}
-        hoverShadow={hoverShadow}
-        showContent={showContent}
-        contentPosition={contentPosition}
-        hoverScale={hoverScale}
-        transition="fast"
-        titleLines={2}
-        hoverEffect="lift"
-        descriptionLines={3}
-        priority={priority}
-        quality={quality}
-        placeholder="empty"
-        fallbackImage="/vectors/undraw_monitor_ypga.svg"
-        loadingHeight={`${height}px`}
-        alt={albumData ? `Cover for ${albumData.name}` : "Album cover"}
-        actions={() => (
-          <GalleryCardActions
-            albumId={albumData.id}
-            albumTitle={albumData.name}
-            actions={actions}
-            userType={userType}
-            popoverPosition="bottom-left"
-            displayMode="circular-icons-horizontal"
-          />
-        )}
-      />
+      <div>
+        <ImageCard
+          id={albumData.id}
+          image_url={
+            albumData.cover_media_url || "/vectors/undraw_monitor_ypga.svg"
+          }
+          title={albumData?.name}
+          description={albumData?.description}
+          isLoading={
+            loading.includes("fetching_cover_data") ||
+            loading.includes("fetching_album")
+          }
+          fullText
+          width={width}
+          height={height}
+          aspectRatio={preserveAspectRatio ? undefined : aspectRatio}
+          borderRadius={borderRadius}
+          shadow={shadow}
+          hoverShadow={hoverShadow}
+          showContent={showContent}
+          contentPosition={contentPosition}
+          hoverScale={hoverScale}
+          transition="fast"
+          titleLines={2}
+          hoverEffect="lift"
+          descriptionLines={3}
+          priority={priority}
+          quality={quality}
+          placeholder="empty"
+          fallbackImage="/vectors/undraw_monitor_ypga.svg"
+          loadingHeight={`${height}px`}
+          alt={albumData ? `Cover for ${albumData.name}` : "Album cover"}
+          actions={() => (
+            <GalleryCardActions
+              albumId={albumData.id}
+              albumTitle={albumData.name}
+              actions={actions}
+              userType={userType}
+              popoverPosition="bottom-left"
+              displayMode="circular-icons-horizontal"
+            />
+          )}
+        />
+      </div>
     </>
   );
 };

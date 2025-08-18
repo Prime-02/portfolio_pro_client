@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import InfiniteScrollDiv from "@/app/components/containers/divs/infinitescroll/InfiniteScrollDiv ";
 import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
 import PortfolioGrid from "@/app/components/containers/cards/PortfolioGrid";
-import { getColorShade } from "@/app/components/utilities/syncFunctions/syncs";
 import { useTheme } from "@/app/components/theme/ThemeContext ";
 
 const PortfolioPage = () => {
@@ -39,10 +38,7 @@ const PortfolioPage = () => {
 
   return (
     <div
-      className={`min-h-screen  pt-32`}
-      style={{
-        backgroundColor: getColorShade(theme.background, 8),
-      }}
+      className={`min-h-screen border border-[var(--accent)] rounded-2xl pt-32`}
     >
 
       {/* Main Content */}

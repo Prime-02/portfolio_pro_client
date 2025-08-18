@@ -236,7 +236,7 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
 
   const extendRoute = (segment: string) => {
     const newPath = `${currentPath}/${segment}`; // Constructs '/desktop/home'
-    router.push(newPath); // Navigates to the new path
+    router.push(newPath, {scroll: false}); // Navigates to the new path
   };
 
   const extendRouteWithQuery = (newParams: Record<string, string>) => {
@@ -249,7 +249,7 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
 
     // Construct the new URL
     const newUrl = `${pathname}?${params.toString()}`;
-    router.push(newUrl);
+    router.push(newUrl, {scroll: false});
   };
 
   const clearQuerryParam = () => {

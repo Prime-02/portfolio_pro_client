@@ -10,6 +10,8 @@ export type PopOverPosition =
   | "bottom-left"
   | "bottom-right"
   | "top-center"
+  | "center-right"
+  | "center-left"
   | "bottom-center";
 
 interface PopoverProps {

@@ -38,21 +38,7 @@ interface AlbumCoverProps {
 }
 
 const AlbumCover: React.FC<AlbumCoverProps> = ({
-  albumData,
-  fetchAlbumData,
-  width = 350,
-  height = 400,
-  className,
-  aspectRatio = "auto",
-  showContent = true,
-  contentPosition = "overlay",
-  hoverScale = 1.053,
-  priority = false,
-  quality = 75,
-  borderRadius = "3xl",
-  shadow = "xl",
-  hoverShadow = "xl",
-  preserveAspectRatio = false,
+  
 }) => {
   const {
     loading,
@@ -91,17 +77,6 @@ const AlbumCover: React.FC<AlbumCoverProps> = ({
 
   return (
     <>
-      <Modal
-        title={`${deleteAction ? "Delete" : updateAction ? "Edit" : ""} Album`}
-        isOpen={checkValidId(currentAction || "")}
-        onClose={clearQuerryParam}
-      >
-        <GalleryActions
-          edit={isEditMode}
-          albumId={albumData.id}
-          fetchAlbum={fetchAlbumData}
-        />
-      </Modal>
       <div>
         <ImageCard
           id={albumData.id}

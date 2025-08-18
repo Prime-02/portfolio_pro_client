@@ -31,7 +31,6 @@ import {
   Edit2,
 } from "lucide-react";
 import { useTheme } from "@/app/components/theme/ThemeContext ";
-import { getColorShade } from "@/app/components/utilities/syncFunctions/syncs";
 
 const CertCard = (props: CertificateCardProps) => {
   const {
@@ -193,12 +192,8 @@ const CertCard = (props: CertificateCardProps) => {
 
       {/* Certificate Preview */}
       {certificateUrl && (
-        <div className="p-4 border-b border-gray-100">
+        <div className="p-4 border-b border-[var(--accent)]">
           <div
-            className="relative  rounded-lg overflow-hidden"
-            style={{
-              backgroundColor: getColorShade(theme.background, 10),
-            }}
           >
             {isImage(certificateUrl) && !imageError ? (
               <img

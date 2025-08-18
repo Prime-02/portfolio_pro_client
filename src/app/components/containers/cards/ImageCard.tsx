@@ -9,7 +9,7 @@ import {
   ColorVariant,
   HoverEffectVariant,
   HoverShadowVariant,
-  OverlayPosition,
+  ImageCardProps,
   ShadowVariant,
   SpacingVariant,
   TextSizeVariant,
@@ -33,6 +33,8 @@ import {
   shake,
   spin,
 } from "./imageCardUtils/stylesFucntions";
+import { mediaCardDefault } from "../../utilities/indices/settings-JSONs/mediaCard";
+import { PopOverPosition } from "../divs/PopOver";
 
 // Styled components
 const CardContainer = styled.div<{
@@ -93,7 +95,7 @@ const CardContainer = styled.div<{
   ${(props) =>
     props.$animation === "shake" &&
     css`
-      animation: ${shake} 0.82s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+      animation: ${shake} 0.82s cubic-bezier(0.36, 0.07, 0.19, 0.97) both ;
     `}
 
   ${(props) =>
@@ -184,11 +186,67 @@ const StyledImage = styled(Image)<{
     `}
 `;
 
+const StyledVideo = styled.video<{
+  $transition: TransitionVariant;
+  $hoverScale?: number;
+  $disableHover: boolean;
+}>`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform ${(props) => getTransitionDuration(props.$transition)}
+    ease-in-out;
+
+  ${(props) =>
+    !props.$disableHover &&
+    props.$hoverScale &&
+    css`
+      ${CardContainer}:hover & {
+        transform: scale(${props.$hoverScale});
+      }
+    `}
+`;
+
+const AudioContainer = styled.div<{
+  $height: string | number;
+  $colorVariant: ColorVariant;
+}>`
+  width: 100%;
+  height: ${(props) =>
+    typeof props.$height === "number" ? `${props.$height}px` : props.$height};
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: ${(props) => getColorTheme(props.$colorVariant).bg};
+
+  @media (prefers-color-scheme: dark) {
+    background: ${(props) => getColorTheme(props.$colorVariant).bgDark};
+  }
+`;
+
+const StyledAudio = styled.audio`
+  width: 90%;
+  max-width: 300px;
+`;
+
+const AudioIcon = styled.div<{
+  $colorVariant: ColorVariant;
+}>`
+  font-size: 3rem;
+  color: ${(props) => getColorTheme(props.$colorVariant).text};
+  margin-bottom: 1rem;
+
+  @media (prefers-color-scheme: dark) {
+    color: ${(props) => getColorTheme(props.$colorVariant).textDark};
+  }
+`;
+
 const ActionsOverlay = styled.div<{
   $transition: TransitionVariant;
   $disableHover: boolean;
   $hideAction?: boolean;
-  $position?: OverlayPosition;
+  $position?: PopOverPosition;
 }>`
   position: absolute;
   ${(props) => positionMap[props.$position || "top-right"]}
@@ -328,123 +386,59 @@ const LoadingTextPlaceholder = styled.div<{
   margin-bottom: 0.5rem;
 `;
 
-// Props interface
-export interface ImageCardProps {
-  id: string;
-  title?: string;
-  description?: string;
-  image_url: string | undefined;
-  actions?: (props: Omit<ImageCardProps, "actions">) => ReactNode;
-  isLoading?: boolean;
-  onClick?: (props: Omit<ImageCardProps, "actions" | "onClick">) => void;
-
-  // Layout & Sizing Props
-  width?: number;
-  height?: number;
-  aspectRatio?: string;
-  imageHeight?: string | number;
-
-  // Styling Props
-  // Border Props
-  borderStyle?: BorderStyleVariant;
-  borderWidth?: number;
-  borderColor?: BorderColorVariant | string;
-  borderRadius?: BorderRadiusVariant;
-  shadow?: ShadowVariant;
-  hoverShadow?: HoverShadowVariant;
-  titleSize?: TextSizeVariant;
-  descriptionSize?: TextSizeVariant;
-  contentPadding?: SpacingVariant;
-  transition?: TransitionVariant;
-  hoverEffect?: HoverEffectVariant;
-  titleWeight?: TextWeightVariant;
-  descriptionWeight?: TextWeightVariant;
-  overlayOpacity?: number;
-  animation?: AnimationVariant;
-
-  // Content Props
-  titleLines?: number;
-  descriptionLines?: number;
-  fullText?: boolean;
-  showContent?: boolean;
-  contentPosition?: "bottom" | "overlay" | "none";
-
-  // Animation & Effects Props
-  hoverScale?: number;
-  showGradientOverlay?: boolean;
-
-  // Loading Props
-  loadingHeight?: string | number;
-  customLoadingContent?: ReactNode;
-  loadingVariant?: ColorVariant;
-
-  // Accessibility Props
-  alt?: string;
-  role?: string;
-  tabIndex?: number;
-
-  // Image Optimization Props
-  priority?: boolean;
-  quality?: number;
-  placeholder?: "blur" | "empty";
-  blurDataURL?: string;
-  sizes?: string;
-  fill?: boolean;
-
-  // Interaction Props
-  disabled?: boolean;
-  disableHover?: boolean;
-  hideAction?: boolean;
-  actionPosition?: OverlayPosition;
-
-  // Error Handling Props
-  fallbackImage?: string;
-  onImageError?: (error: any) => void;
-
-  // Background & Colors
-  backgroundVariant?: ColorVariant;
-  textVariant?: ColorVariant;
-}
-
 const ImageCard: React.FC<ImageCardProps> = (props) => {
   const {
+    media_type = "image",
+    media_url = "",
+    videoProps = {
+      autoplay: true,
+      loop: true,
+      muted: true,
+      controls: false,
+    },
+    audioProps = {
+      autoplay: false,
+      loop: false,
+      controls: true,
+      preload: "metadata",
+    },
     actions,
     isLoading = false,
     onClick,
 
     // Layout & Sizing
-    width = 400,
-    height = 300,
-    aspectRatio,
-    imageHeight = "auto",
+    width = mediaCardDefault.width,
+    height = mediaCardDefault.height,
+    aspectRatio = mediaCardDefault.aspectRatio,
+    imageHeight = mediaCardDefault.imageHeight,
 
     // Border Props
-    borderStyle = "solid",
-    borderWidth = 1,
-    borderColor = "default",
-    borderRadius = "2xl",
-    shadow = "sm",
-    hoverShadow = "lg",
-    titleSize = "base",
-    descriptionSize = "sm",
-    contentPadding = "md",
-    transition = "normal",
-    hoverEffect = "scale",
-    titleWeight = "semibold",
-    descriptionWeight = "normal",
-    overlayOpacity = 50,
-    animation = "none",
+    borderStyle = mediaCardDefault.borderStyle,
+    borderWidth = mediaCardDefault.borderWidth,
+    borderColor = mediaCardDefault.borderColor,
+    borderRadius = mediaCardDefault.borderRadius,
+    shadow = mediaCardDefault.shadow,
+    hoverShadow = mediaCardDefault.hoverShadow,
+    titleSize = mediaCardDefault.titleSize,
+    descriptionSize = mediaCardDefault.descriptionSize,
+    contentPadding = mediaCardDefault.contentPadding,
+    transition = mediaCardDefault.transition,
+    hoverEffect = mediaCardDefault.hoverEffect,
+    titleWeight = mediaCardDefault.titleWeight,
+    descriptionWeight = mediaCardDefault.descriptionWeight,
+    overlayOpacity = mediaCardDefault.overlayOpacity,
+    animation = mediaCardDefault.animation,
 
     // Content
-    titleLines = 1,
-    descriptionLines = 2,
-    fullText = false,
-    showContent = true,
-    contentPosition = "overlay",
+    titleLines = mediaCardDefault.titleLines,
+    descriptionLines = mediaCardDefault.descriptionLines,
+    fullText = mediaCardDefault.fullText,
+    showContent = mediaCardDefault.showContent,
+    contentPosition = mediaCardDefault.contentPosition,
 
     // Animation & Effects
-    hoverScale = 1.05,
-    showGradientOverlay = true,
+    hoverScale = mediaCardDefault.hoverScale,
+    showGradientOverlay = mediaCardDefault.showGradientOverlay,
 
     // Loading
     loadingHeight = "12rem",
@@ -465,21 +459,23 @@ const ImageCard: React.FC<ImageCardProps> = (props) => {
     fill = false,
 
     // Interaction
-    disabled = false,
-    disableHover = false,
-    hideAction = false,
-    actionPosition = "top-right",
+    disabled = mediaCardDefault.disabled,
+    disableHover = mediaCardDefault.disableHover,
+    hideAction = mediaCardDefault.hideAction,
+    actionPosition = mediaCardDefault.actionPosition,
 
     // Error Handling
     fallbackImage = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23f3f4f6'/%3E%3Ctext x='200' y='150' font-family='Arial' font-size='18' fill='%239ca3af' text-anchor='middle'%3EImage not found%3C/text%3E%3C/svg%3E",
     onImageError,
 
     // Background & Colors
-    backgroundVariant = "primary",
-    textVariant = "primary",
+    backgroundVariant = mediaCardDefault.backgroundVariant,
+    textVariant = mediaCardDefault.textVariant,
 
     ...cardProps
   } = props;
+
+  const mediaUrl = media_url || props.image_url;
 
   const [imageError, setImageError] = useState(false);
 
@@ -495,6 +491,9 @@ const ImageCard: React.FC<ImageCardProps> = (props) => {
 
     return (
       <LoadingContainer
+        $borderStyle={borderStyle}
+        $borderWidth={borderWidth}
+        $borderColor={borderColor}
         $borderRadius={borderRadius}
         $shadow={shadow}
         $hoverShadow="none"
@@ -537,7 +536,9 @@ const ImageCard: React.FC<ImageCardProps> = (props) => {
   }
 
   // Determine if the card should be clickable
-  const isClickable = !isLoading && !disabled && props.image_url && onClick;
+  const isClickable = Boolean(
+    !isLoading && !disabled && (mediaUrl || props.image_url) && onClick
+  );
 
   // Stop propagation for action clicks
   const handleActionClick = (e: React.MouseEvent) => {
@@ -556,6 +557,120 @@ const ImageCard: React.FC<ImageCardProps> = (props) => {
     setImageError(true);
     if (onImageError) {
       onImageError(error);
+    }
+  };
+
+  const renderMedia = () => {
+    const mediaSource = mediaUrl || fallbackImage;
+
+    switch (media_type) {
+      case "video":
+        return fill ? (
+          <StyledVideo
+            src={mediaSource}
+            $transition={transition}
+            $hoverScale={hoverEffect === "none" ? hoverScale : undefined}
+            $disableHover={disableHover}
+            autoPlay={videoProps.autoplay}
+            loop={videoProps.loop}
+            muted={videoProps.muted}
+            controls={videoProps.controls}
+            poster={videoProps.poster}
+            onError={handleImageError}
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+            }}
+          />
+        ) : (
+          <div
+            style={{
+              height:
+                typeof imageHeight === "number"
+                  ? `${imageHeight}px`
+                  : imageHeight,
+            }}
+          >
+            <StyledVideo
+              src={mediaSource}
+              $transition={transition}
+              $hoverScale={hoverEffect === "none" ? hoverScale : undefined}
+              $disableHover={disableHover}
+              autoPlay={videoProps.autoplay}
+              loop={videoProps.loop}
+              muted={videoProps.muted}
+              controls={videoProps.controls}
+              poster={videoProps.poster}
+              onError={handleImageError}
+            />
+          </div>
+        );
+
+      case "audio":
+        const audioHeight =
+          typeof imageHeight === "number" ? `${imageHeight}px` : imageHeight;
+        return (
+          <AudioContainer
+            $height={audioHeight}
+            $colorVariant={backgroundVariant}
+          >
+            <AudioIcon $colorVariant={backgroundVariant}>🎵</AudioIcon>
+            <StyledAudio
+              src={mediaSource}
+              autoPlay={audioProps.autoplay}
+              loop={audioProps.loop}
+              controls={audioProps.controls}
+              preload={audioProps.preload}
+              onError={handleImageError}
+            />
+          </AudioContainer>
+        );
+
+      default: // "image"
+        return fill ? (
+          <StyledImage
+            src={mediaSource}
+            alt={alt || props.title || "Image"}
+            fill
+            $transition={transition}
+            $hoverScale={hoverEffect === "none" ? hoverScale : undefined}
+            $disableHover={disableHover}
+            priority={priority}
+            quality={quality}
+            placeholder={placeholder}
+            blurDataURL={blurDataURL}
+            sizes={sizes}
+            onError={handleImageError}
+          />
+        ) : (
+          <div
+            style={{
+              height:
+                typeof imageHeight === "number"
+                  ? `${imageHeight}px`
+                  : imageHeight,
+            }}
+          >
+            <StyledImage
+              src={mediaSource}
+              alt={alt || props.title || "Image"}
+              width={width}
+              height={height}
+              $transition={transition}
+              $hoverScale={hoverEffect === "none" ? hoverScale : undefined}
+              $disableHover={disableHover}
+              priority={priority}
+              quality={quality}
+              placeholder={placeholder}
+              blurDataURL={blurDataURL}
+              sizes={sizes}
+              onError={handleImageError}
+            />
+          </div>
+        );
     }
   };
 
@@ -581,47 +696,7 @@ const ImageCard: React.FC<ImageCardProps> = (props) => {
     >
       {/* Image Container */}
       <ImageContainer style={aspectRatio ? { flex: 1 } : undefined}>
-        {fill ? (
-          <StyledImage
-            src={props.image_url || "/vectors/undraw_monitor_ypga.svg"}
-            alt={alt || props.title || "Image"}
-            fill
-            $transition={transition}
-            $hoverScale={hoverEffect === "none" ? hoverScale : undefined}
-            $disableHover={disableHover}
-            priority={priority}
-            quality={quality}
-            placeholder={placeholder}
-            blurDataURL={blurDataURL}
-            sizes={sizes}
-            onError={handleImageError}
-          />
-        ) : (
-          <div
-            style={{
-              height:
-                typeof imageHeight === "number"
-                  ? `${imageHeight}px`
-                  : imageHeight,
-            }}
-          >
-            <StyledImage
-              src={props.image_url || fallbackImage}
-              alt={alt || props.title || "Image"}
-              width={width}
-              height={height}
-              $transition={transition}
-              $hoverScale={hoverEffect === "none" ? hoverScale : undefined}
-              $disableHover={disableHover}
-              priority={priority}
-              quality={quality}
-              placeholder={placeholder}
-              blurDataURL={blurDataURL}
-              sizes={sizes}
-              onError={handleImageError}
-            />
-          </div>
-        )}
+        {renderMedia()}
 
         {/* Actions Overlay */}
         {actions && (

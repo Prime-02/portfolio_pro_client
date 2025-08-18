@@ -16,13 +16,7 @@ import {
 } from "@/app/components/utilities/syncFunctions/syncs";
 import { useGlobalState } from "@/app/globalStateProvider";
 import React, { FormEvent, useState, useEffect } from "react";
-
-export interface AlbumProp {
-  cover_media_file: string | File | null;
-  name: string;
-  description?: string;
-  is_public: boolean;
-}
+import { AlbumData } from "../[gallery]/page-components/MediaView";
 
 const GalleryActions = ({
   fetchAlbum,
@@ -42,8 +36,9 @@ const GalleryActions = ({
     userData,
   } = useGlobalState();
 
-  const [albumData, setAlbumData] = useState<AlbumProp>({
-    cover_media_file: null,
+  const [albumData, setAlbumData] = useState<AlbumData>({
+    id: "",
+    cover_media_url: "",
     name: "",
     description: "",
     is_public: true,
@@ -60,7 +55,7 @@ const GalleryActions = ({
   }, [edit, albumId]);
 
   const handleFieldChange = (
-    key: keyof AlbumProp,
+    key: keyof AlbumData,
     value: File | string | boolean | null
   ) => {
     setAlbumData((prev) => ({
@@ -94,7 +89,7 @@ const GalleryActions = ({
         setPendingCoverFile(convertedImg);
       } else {
         // Set directly for creation
-        handleFieldChange("cover_media_file", convertedImg);
+        handleFieldChange("cover_media_url", convertedImg);
       }
     } catch (error) {
       toast.error("Invalid image format");
@@ -108,7 +103,7 @@ const GalleryActions = ({
 
     setLoading("uploading_cover");
     try {
-      const coverData = { cover_media_file: pendingCoverFile, id: albumId };
+      const coverData = { cover_media_url: pendingCoverFile, id: albumId };
       const uploadRes = await UpdateAllData({
         method: "patch",
         access: accessToken,
@@ -123,7 +118,7 @@ const GalleryActions = ({
         setShowCoverUpload(false);
         fetchAlbum();
         // Update local state to reflect the new cover
-        handleFieldChange("cover_media_file", pendingCoverFile);
+        handleFieldChange("cover_media_url", pendingCoverFile);
       }
     } catch (error) {
       console.log("Error uploading cover:", error);
@@ -136,7 +131,7 @@ const GalleryActions = ({
   const createAlbum = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // Validate required fields (exclude description and cover_media_file for separate handling)
+    // Validate required fields (exclude description and cover_media_url for separate handling)
     const fieldsToValidate = {
       name: albumData.name,
       is_public: albumData.is_public,
@@ -146,7 +141,7 @@ const GalleryActions = ({
       return;
     }
 
-    if (!albumData.cover_media_file) {
+    if (!albumData.cover_media_url) {
       toast.warning("Please upload a cover image");
       return;
     }
@@ -169,7 +164,8 @@ const GalleryActions = ({
         );
         // Reset form
         setAlbumData({
-          cover_media_file: null,
+          id: "",
+          cover_media_url: "",
           name: "",
           description: "",
           is_public: true,
@@ -200,7 +196,7 @@ const GalleryActions = ({
 
     setLoading("updating_album");
     try {
-      // Send only the text fields, not the cover_media_file
+      // Send only the text fields, not the cover_media_url
       const updateData = {
         name: albumData.name,
         description: albumData.description,
@@ -257,14 +253,15 @@ const GalleryActions = ({
 
     setLoading("fetching_album");
     try {
-      const albumRes: AlbumProp = await GetAllData({
+      const albumRes: AlbumData = await GetAllData({
         access: accessToken,
         url: `${V1_BASE_URL}/media-gallery/collections/${albumId}`,
       });
 
       if (albumRes) {
         setAlbumData({
-          cover_media_file: albumRes.cover_media_file,
+          id: "",
+          cover_media_url: albumRes.cover_media_url,
           name: albumRes.name,
           description: albumRes.description || "",
           is_public: albumRes.is_public,
@@ -318,12 +315,12 @@ const GalleryActions = ({
             description="All image formats supported up to 5mb"
             onFinish={convertToCover}
             onResetImageChange={() => {
-              handleFieldChange("cover_media_file", null);
+              handleFieldChange("cover_media_url", null);
             }}
           />
         </section>
 
-        {albumData.cover_media_file && (
+        {albumData.cover_media_url && (
           <form
             onSubmit={createAlbum}
             className="flex flex-col gap-4 w-full md:max-w-md"
@@ -346,7 +343,7 @@ const GalleryActions = ({
 
             <div className="flex items-center gap-3 justify-start flex-wrap">
               <CheckBox
-                isChecked={albumData.is_public}
+                isChecked={albumData.is_public || true}
                 setIsChecked={(e: boolean) => handleFieldChange("is_public", e)}
                 description="All users can view this album and its contents"
               />
@@ -390,7 +387,7 @@ const GalleryActions = ({
 
         <div className="flex items-center gap-3 justify-start flex-wrap">
           <CheckBox
-            isChecked={albumData.is_public}
+            isChecked={albumData.is_public || true}
             setIsChecked={(e: boolean) => handleFieldChange("is_public", e)}
             description="All users can view this album and its contents"
           />
@@ -410,11 +407,11 @@ const GalleryActions = ({
         {!showCoverUpload ? (
           <div className="flex flex-col gap-3">
             <h2 className="text-lg font-semibold">Cover Photo</h2>
-            {albumData.cover_media_file &&
-              typeof albumData.cover_media_file === "string" && (
+            {albumData.cover_media_url &&
+              typeof albumData.cover_media_url === "string" && (
                 <div className="w-32 h-32 rounded-lg overflow-hidden border">
                   <img
-                    src={albumData.cover_media_file}
+                    src={albumData.cover_media_url}
                     alt="Current cover"
                     className="w-full h-full object-cover"
                   />

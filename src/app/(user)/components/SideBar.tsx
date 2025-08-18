@@ -4,7 +4,6 @@ import {
   Theme,
   ThemeVariant,
 } from "@/app/components/types and interfaces/loaderTypes";
-import { getColorShade } from "@/app/components/utilities/syncFunctions/syncs";
 import {
   Monitor,
   Moon,
@@ -49,20 +48,12 @@ const SideBar = ({
       className={`min-h-screen h-full flex z-10 left-0 flex-col border-r transition-all duration-300 rounded-l-3xl ease-in-out ${
         isCollapsed ? "w-16" : "w-64"
       }`}
-      style={{
-        backgroundColor: getColorShade(theme.background, 5),
-        borderColor: `${theme.foreground}10`,
-      }}
     >
       {/* Collapse Button */}
-      <div
-        className="p-3 border-b"
-        style={{ borderColor: `${theme.foreground}10` }}
-      >
+      <div className="p-3 border-b border-[var(--accent)]">
         <button
           onClick={toggleCollapse}
           className="p-2 rounded-lg flex items-center justify-center w-full transition-all duration-300 ease-in-out hover:bg-opacity-20 hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-opacity-50 "
-          style={{ color: theme.foreground }}
         >
           {isCollapsed ? (
             <ChevronRight className="w-5 h-5" />

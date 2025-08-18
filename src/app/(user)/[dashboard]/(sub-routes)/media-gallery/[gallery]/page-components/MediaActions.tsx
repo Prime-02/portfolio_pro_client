@@ -12,6 +12,7 @@ import {
   GetAllData,
   UpdateAllData,
 } from "@/app/components/utilities/asyncFunctions/lib/crud";
+import { AlbumData } from "./MediaView";
 
 // Extracted and exported functions
 export const getMediaData = async ({
@@ -34,20 +35,21 @@ export const getMediaData = async ({
     ? `${V1_BASE_URL}/media-gallery/users/${currentUser}/collections/${id}/media/${currentAction}`
     : `${V1_BASE_URL}/media-gallery/collections/${id}/media/${currentAction}`;
   try {
-    const mediumRes: Media = await GetAllData({
+    const mediumRes: AlbumData & Media = await GetAllData({
       access: accessToken,
       url: url,
       type: "Medium Data",
     });
     if (mediumRes) {
-      setMediaData(() => ({
+      setMediaData((prev) => ({
+        ...prev,
         id: mediumRes.id,
         title: mediumRes.title || "",
         description: mediumRes.description || "",
         is_public: mediumRes.is_public || true,
         allow_download: mediumRes.allow_download || true,
         is_featured: mediumRes.is_featured || false,
-        media_type: mediumRes.media_type || "File",
+        media_type: mediumRes.media_type || "image",
         media_url: mediumRes.media_url || "/vectors/undraw_monitor_ypga.svg",
       }));
     }
@@ -131,13 +133,13 @@ interface MediaActionsProps {
 
 const MediaActions = ({ id, fetchAllAlbumMedia }: MediaActionsProps) => {
   const [mediaState, setMediaState] = useState<MediaFile[]>([]);
-  const [mediaData, setMediaData] = useState<Media>({
+  const [mediaData, setMediaData] = useState<Media & AlbumProps>({
     title: "",
     description: "",
     is_featured: false,
     allow_download: false,
     is_public: false,
-    media_type: "File",
+    media_type: "image",
   });
   const {
     setLoading,
@@ -344,7 +346,7 @@ const MediaActions = ({ id, fetchAllAlbumMedia }: MediaActionsProps) => {
       ) : deleteAction ? (
         <div className="flex flex-col items-center gap-y-4">
           <h1 className="text-lg font-semibold text-center">
-            Are you sure you want to delete this {mediaData.media_type}?
+            Are you sure you want to delete this {mediaData.albumCover?.media_type}?
           </h1>
           <p className="text-sm opacity-65 text-center">
             This action cannot be undone. Click cancel to return to album
@@ -357,7 +359,7 @@ const MediaActions = ({ id, fetchAllAlbumMedia }: MediaActionsProps) => {
               onClick={() => clearQuerryParam()}
             />
             <Button
-              text={`Delete ${mediaData.media_type}`}
+              text={`Delete ${mediaData.albumCover?.media_type}`}
               customColor="red"
               size="md"
               onClick={handleDeleteMediaData}

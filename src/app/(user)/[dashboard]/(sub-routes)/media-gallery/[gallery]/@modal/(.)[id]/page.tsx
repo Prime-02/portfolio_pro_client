@@ -36,7 +36,7 @@ const MediaModal = () => {
     is_featured: false,
     allow_download: false,
     is_public: false,
-    media_type: "File",
+    media_type: undefined,
     media_url: "",
   });
   const LoaderComponent = getLoader(loader) || null;

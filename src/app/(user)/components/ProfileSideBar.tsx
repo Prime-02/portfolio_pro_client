@@ -1,6 +1,5 @@
 import { useTheme } from "@/app/components/theme/ThemeContext ";
 import { privateRoutes } from "@/app/components/utilities/indices/NavigationItems";
-import { getColorShade } from "@/app/components/utilities/syncFunctions/syncs";
 import { useGlobalState } from "@/app/globalStateProvider";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
@@ -8,7 +7,6 @@ import { usePathname } from "next/navigation";
 import React, { useState } from "react";
 
 const ProfileSideBar = () => {
-  const { theme, accentColor } = useTheme();
   const { userData } = useGlobalState();
   const [isCollapsed, setIsCollapsed] = useState(true);
   const pathname = usePathname();
@@ -26,25 +24,15 @@ const ProfileSideBar = () => {
 
   return (
     <div
-      className={`min-h-screen hidden md:flex h-auto z-10 left-0 flex-col border-r transition-all duration-300 ease-in-out ${
+      className={`min-h-screen hidden md:flex h-auto z-10 left-0 flex-col border-[var(--accent)]/20 border-r transition-all duration-300 ease-in-out ${
         isCollapsed ? "w-16" : "w-64"
       }`}
-      style={{
-        backgroundColor: getColorShade(theme.background, 5),
-        borderColor: `${theme.foreground}10`,
-      }}
     >
       {/* Header with toggle button */}
-      <div
-        className="p-3 border-b transition-colors duration-300 ease-in-out"
-        style={{ borderColor: `${theme.foreground}10` }}
-      >
+      <div className="p-3 border-[var(--accent)]/20 border-b transition-colors duration-300 ease-in-out">
         <button
           onClick={toggleCollapse}
-          className="p-2 rounded-lg flex items-center justify-center w-full transition-all duration-300 ease-in-out hover:bg-opacity-20 hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-opacity-50 "
-          style={{
-            color: theme.foreground,
-          }}
+          className="p-2 rounded-lg flex items-center justify-center w-full transition-all duration-300 ease-in-out hover:bg-[var(--foreground)]/20  focus:ring-opacity-50 "
           aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {isCollapsed ? (
@@ -75,19 +63,17 @@ const ProfileSideBar = () => {
                 className="block"
               >
                 <div
-                  className={`mx-2 mb-2 p-3 rounded-lg transition-all duration-300 ease-in-out hover:bg-opacity-20 hover:bg-[var(--background)] text-foreground cursor-pointer group ${
-                    isCollapsed
-                      ? "flex items-center justify-center"
-                      : "flex items-center gap-3"
-                  }`}
-                  style={{
-                    color: isActiveRoute(route.link)
-                      ? accentColor.color
-                      : theme.foreground,
-                    backgroundColor: isActiveRoute(route.link)
-                      ? `${accentColor.color}20`
-                      : "none",
-                  }}
+                  className={`mx-2 mb-2 p-3 rounded-lg transition-all duration-300 ease-in-out hover:bg-[var(--foreground)]/20 text-foreground cursor-pointer
+                  ${
+                    isActiveRoute(route.link)
+                      ? "text-[var(--accent)] bg-[var(--accent)]"
+                      : "text-[var(--forground)] bg-none"
+                  }
+                    group ${
+                      isCollapsed
+                        ? "flex items-center justify-center"
+                        : "flex items-center gap-3"
+                    }`}
                 >
                   <div className="flex-shrink-0">
                     <route.icon
@@ -130,19 +116,17 @@ const ProfileSideBar = () => {
                 className="block"
               >
                 <div
-                  className={`mx-2 mb-2 p-3 rounded-lg transition-all duration-300 ease-in-out hover:bg-opacity-20 hover:bg-[var(--background)] text-foreground cursor-pointer group ${
-                    isCollapsed
-                      ? "flex items-center justify-center"
-                      : "flex items-center gap-3"
-                  }`}
-                  style={{
-                    color: isActiveRoute(route.link)
-                      ? accentColor.color
-                      : theme.foreground,
-                    backgroundColor: isActiveRoute(route.link)
-                      ? `${accentColor.color}20`
-                      : "none",
-                  }}
+                  className={`mx-2 mb-2 p-3 rounded-lg transition-all duration-300 ease-in-out hover:bg-[var(--foreground)]/20 text-foreground cursor-pointer
+                     ${
+                       isActiveRoute(route.link)
+                         ? "text-[var(--accent)] bg-[var(--accent)]"
+                         : "text-[var(--forground)] bg-none"
+                     }
+                    group ${
+                      isCollapsed
+                        ? "flex items-center justify-center"
+                        : "flex items-center gap-3"
+                    }`}
                 >
                   <div className="flex-shrink-0">
                     <route.icon
@@ -180,19 +164,17 @@ const ProfileSideBar = () => {
                 className="block"
               >
                 <div
-                  className={`mx-2 mb-2 p-3 rounded-lg transition-all duration-300 ease-in-out hover:bg-opacity-20 hover:bg-[var(--background)] text-foreground cursor-pointer group ${
-                    isCollapsed
-                      ? "flex items-center justify-center"
-                      : "flex items-center gap-3"
-                  }`}
-                  style={{
-                    color: isActiveRoute(route.link)
-                      ? accentColor.color
-                      : theme.foreground,
-                    backgroundColor: isActiveRoute(route.link)
-                      ? `${accentColor.color}20`
-                      : "none",
-                  }}
+                  className={`mx-2 mb-2 p-3 rounded-lg transition-all duration-300 ease-in-out hover:bg-[var(--foreground)]/20 text-foreground cursor-pointer
+                     ${
+                       isActiveRoute(route.link)
+                         ? "text-[var(--accent)] bg-[var(--accent)]"
+                         : "text-[var(--forground)] bg-none"
+                     }
+                    group ${
+                      isCollapsed
+                        ? "flex items-center justify-center"
+                        : "flex items-center gap-3"
+                    }`}
                 >
                   <div className="flex-shrink-0">
                     <route.icon
@@ -226,19 +208,17 @@ const ProfileSideBar = () => {
                 className="block"
               >
                 <div
-                  className={`mx-2 mb-2 p-3 rounded-lg transition-all duration-300 ease-in-out hover:bg-opacity-20 hover:bg-[var(--background)] text-foreground cursor-pointer group ${
-                    isCollapsed
-                      ? "flex items-center justify-center"
-                      : "flex items-center gap-3"
-                  }`}
-                  style={{
-                    color: isActiveRoute(route.link)
-                      ? accentColor.color
-                      : theme.foreground,
-                    backgroundColor: isActiveRoute(route.link)
-                      ? `${accentColor.color}20`
-                      : "none",
-                  }}
+                  className={`mx-2 mb-2 p-3 rounded-lg transition-all duration-300 ease-in-out hover:bg-[var(--foreground)]/20 text-foreground cursor-pointer
+                     ${
+                       isActiveRoute(route.link)
+                         ? "text-[var(--accent)] bg-[var(--accent)]"
+                         : "text-[var(--forground)] bg-none"
+                     }
+                     group ${
+                       isCollapsed
+                         ? "flex items-center justify-center"
+                         : "flex items-center gap-3"
+                     }`}
                 >
                   <div className="flex-shrink-0">
                     <route.icon
@@ -259,10 +239,7 @@ const ProfileSideBar = () => {
       {/* Footer spacer */}
       <div className="p-4">
         {!isCollapsed && (
-          <div
-            className="text-xs opacity-60 text-center transition-opacity duration-300 ease-in-out"
-            style={{ color: theme.foreground }}
-          >
+          <div className="text-xs opacity-60 text-center transition-opacity duration-300 ease-in-out">
             Profile Menu
           </div>
         )}

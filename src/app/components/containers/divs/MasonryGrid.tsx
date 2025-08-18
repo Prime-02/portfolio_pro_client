@@ -9,7 +9,7 @@ import React, {
 } from "react";
 import ImageCard from "@/app/components/containers/cards/ImageCard";
 import { MdWarning } from "react-icons/md";
-import { ArrowDownToLine } from "lucide-react";
+import { ArrowDown } from "lucide-react";
 
 export interface MasonryGridProps {
   children: ReactNode;
@@ -40,8 +40,8 @@ const MasonryGrid = ({
   onLoadMore,
   threshold = 0.1,
   isLoading = false,
-  minColumnWidth = 280, // Mobile-optimized minimum column width
-  enablePullToRefresh = false,
+  minColumnWidth = 0, // Mobile-optimized minimum column width
+  enablePullToRefresh = true,
   onRefresh,
   customMessage,
 }: MasonryGridProps) => {
@@ -162,17 +162,17 @@ const MasonryGrid = ({
 
       // Mobile-first breakpoint strategy
       if (containerWidth < 480) {
-        return 1; // Always single column on very small screens
+        return 2; // Always single column on very small screens
       } else if (containerWidth < 640) {
-        return Math.min(2, maxPossibleColumns);
-      } else if (containerWidth < 768) {
-        return Math.min(2, maxPossibleColumns);
-      } else if (containerWidth < 1024) {
         return Math.min(3, maxPossibleColumns);
-      } else if (containerWidth < 1280) {
+      } else if (containerWidth < 768) {
         return Math.min(4, maxPossibleColumns);
-      } else {
+      } else if (containerWidth < 1024) {
+        return Math.min(4, maxPossibleColumns);
+      } else if (containerWidth < 1280) {
         return Math.min(5, maxPossibleColumns);
+      } else {
+        return Math.min(6, maxPossibleColumns);
       }
     } catch {
       return 1;
@@ -408,7 +408,7 @@ const MasonryGrid = ({
 
   // Create skeleton loading cards
   const createSkeletonCards = useCallback(() => {
-    return Array.from({ length: 3 }).map((_, i) => (
+    return Array.from({ length: 4 }).map((_, i) => (
       <ImageCard
         key={`loading-${i}`}
         id={`loading-${i}`}
@@ -528,21 +528,21 @@ const MasonryGrid = ({
 
       {/* Bouncing Load More Arrow */}
       {showLoadMoreArrow && hasMore && isOnline && !isLoading && (
-        <div className="fixed bottom-6 right-6 z-50">
+        <div className="fixed bottom-6 right-1/2 z-50">
           <button
             onClick={scrollToLoadMore}
             className={`
-              bg-[var(--background)] text-[var(--foreground)] rounded-full p-3 shadow-lg
-              transition-all duration-300 ease-in-out transform hover:scale-110
+              bg-[var(--background)]  text-[var(--foreground)] rounded-full shadow-lg cursor-pointer border border-[var(--accent)]
+              transition-all duration-300 ease-in-out transform hover:scale-90
               ${deviceInfo.preferReducedMotion ? "" : "animate-bounce"}
-              ${deviceInfo.isMobile ? "p-4" : "p-3"}
+              ${deviceInfo.isMobile ? "p-1" : "p-2"}
             `}
             style={{
-              animationDuration: deviceInfo.preferReducedMotion ? "0s" : "2s",
+              animationDuration: deviceInfo.preferReducedMotion ? "0s" : "1s",
             }}
             aria-label="Load more items"
           >
-           <ArrowDownToLine/>
+            <ArrowDown />
           </button>
         </div>
       )}
@@ -562,7 +562,7 @@ const MasonryGrid = ({
         <div className="flex justify-center py-6">
           <div className="bg-orange-100 border border-orange-400 text-orange-700 px-4 py-3 rounded-lg">
             <div className="flex items-center space-x-2">
-             <MdWarning/>
+              <MdWarning />
               <span className="text-sm">
                 You're offline. Check your connection.
               </span>

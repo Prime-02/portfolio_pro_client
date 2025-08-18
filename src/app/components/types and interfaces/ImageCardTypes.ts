@@ -1,3 +1,6 @@
+import { ReactNode } from "react";
+import { PopOverPosition } from "../containers/divs/PopOver";
+
 // Type definitions
 export type BorderRadiusVariant =
   | "none"
@@ -94,6 +97,7 @@ export type BorderStyleVariant =
 
 export type BorderColorVariant =
   | "transparent"
+  | "default"
   | "current"
   | "black"
   | "white"
@@ -187,13 +191,111 @@ export type BorderColorVariant =
   | "error"
   | "info";
 
+export interface AlbumCoverProps {
+  width?: number;
+  height?: number;
+  aspectRatio?: string;
+  showContent?: boolean;
+  contentPosition?: "bottom" | "overlay" | "none";
+  hoverScale?: number;
+  priority?: boolean;
+  quality?: number;
+  borderRadius?: BorderRadiusVariant;
+  shadow?: ShadowVariant;
+  hoverShadow?: HoverShadowVariant;
+  preserveAspectRatio?: boolean;
+}
 
-  export type OverlayPosition = 
-  | 'top-right'       // default
-  | 'top-left'
-  | 'top-center'
-  | 'bottom-right'
-  | 'bottom-left'
-  | 'bottom-center'
-  | 'center-right'
-  | 'center-left';
+export type MediaType = "image" | "video" | "audio";
+
+export interface ImageCardProps {
+  // Core Identification Props
+  id: string;
+  title?: string;
+  description?: string;
+  alt?: string;
+  role?: string;
+  tabIndex?: number;
+
+  // Media Related Props
+  media_type?: MediaType;
+  media_url?: string;
+  image_url: string | undefined;
+  fallbackImage?: string;
+  onImageError?: (error: any) => void;
+
+  // Media Player Configuration
+  videoProps?: {
+    autoplay?: boolean;
+    loop?: boolean;
+    muted?: boolean;
+    controls?: boolean;
+    poster?: string;
+  };
+  audioProps?: {
+    autoplay?: boolean;
+    loop?: boolean;
+    controls?: boolean;
+    preload?: "none" | "metadata" | "auto";
+  };
+
+  // Layout & Sizing Props
+  width?: number;
+  height?: number;
+  aspectRatio?: string;
+  imageHeight?: string | number;
+  fill?: boolean;
+
+  // Content Display & Layout
+  contentPosition?: "bottom" | "overlay" | "none";
+  contentPadding?: SpacingVariant;
+  showContent?: boolean;
+  titleLines?: number;
+  descriptionLines?: number;
+  fullText?: boolean;
+
+  // Typography Props
+  titleSize?: TextSizeVariant;
+  descriptionSize?: TextSizeVariant;
+  titleWeight?: TextWeightVariant;
+  descriptionWeight?: TextWeightVariant;
+
+  // Styling & Appearance
+  borderStyle?: BorderStyleVariant;
+  borderWidth?: number;
+  borderColor?: BorderColorVariant | string;
+  borderRadius?: BorderRadiusVariant;
+  backgroundVariant?: ColorVariant;
+  textVariant?: ColorVariant;
+  overlayOpacity?: number;
+  showGradientOverlay?: boolean;
+
+  // Effects & Animation
+  shadow?: ShadowVariant;
+  hoverShadow?: HoverShadowVariant;
+  transition?: TransitionVariant;
+  hoverEffect?: HoverEffectVariant;
+  hoverScale?: number;
+  animation?: AnimationVariant;
+
+  // Image Optimization Props
+  priority?: boolean;
+  quality?: number;
+  placeholder?: "blur" | "empty";
+  blurDataURL?: string;
+  sizes?: string;
+
+  // Interaction & Behavior
+  actions?: (props: Omit<ImageCardProps, "actions">) => ReactNode;
+  onClick?: (props: Omit<ImageCardProps, "actions" | "onClick">) => void;
+  disabled?: boolean;
+  disableHover?: boolean;
+  hideAction?: boolean;
+  actionPosition?: PopOverPosition;
+
+  // Loading State
+  isLoading?: boolean;
+  loadingHeight?: string | number;
+  customLoadingContent?: ReactNode;
+  loadingVariant?: ColorVariant;
+}

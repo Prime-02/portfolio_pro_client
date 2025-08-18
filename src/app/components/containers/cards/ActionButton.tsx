@@ -1,24 +1,6 @@
 import React from "react";
 import { Heart, Share, MoreVertical, Eye, Download, Edit } from "lucide-react";
-
-// Define the album interface to match your data structure
-export interface AlbumData {
-  name: string;
-  description?: string;
-  is_public: boolean;
-  cover_media_url: string;
-  created_at: string;
-  updated_at: string | null;
-  id?: string;
-  user_id: string;
-  cover_media_url_id: string;
-  media_count?: number;
-  // Allow for transformed props
-  formattedDate?: string;
-  isPublic?: boolean;
-  // Allow any additional properties
-  [key: string]: unknown;
-}
+import { AlbumData } from "@/app/(user)/[dashboard]/(sub-routes)/media-gallery/[gallery]/page-components/MediaView";
 
 // Example action components
 export const ActionButton = ({

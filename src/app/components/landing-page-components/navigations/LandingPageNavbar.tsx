@@ -45,12 +45,7 @@ const LandingPageNavbar = () => {
   }, [isMobile, showMobileSearch]);
 
   return (
-    <div
-      className="min-h-16 w-full h-auto flex flex-row items-center justify-between px-4 md:px-8"
-      style={{
-        backgroundColor: getColorShade(theme.background, 10),
-      }}
-    >
+    <div className="min-h-16 border-b backdrop-blur-2xl border-[var(--accent)]/20 w-full h-auto flex flex-row items-center justify-between px-4 md:px-8">
       {/* Mobile Search Overlay - Only shown when signed in */}
       {isSignedIn && isMobile && showMobileSearch && (
         <div
@@ -83,7 +78,7 @@ const LandingPageNavbar = () => {
         {isSignedIn && isMobile && (
           <button
             onClick={() => setShowMobileSearch(true)}
-            className="cursor-pointer rounded-full w-12 h-12 flex items-center justify-center bg-[var(--background)]"
+            className="cursor-pointer rounded-full w-12 h-12 flex items-center justify-center "
             title="Search"
           >
             <Search size={24} />
@@ -119,7 +114,7 @@ const LandingPageNavbar = () => {
             <Link
               title="Notification"
               href={`/${userData?.username}/notifications`}
-              className="cursor-pointer rounded-full w-12 h-12 flex items-center justify-center bg-[var(--background)]"
+              className="cursor-pointer rounded-full w-12 h-12 flex items-center justify-center "
             >
               <Bell />
             </Link>

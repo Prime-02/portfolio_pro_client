@@ -4,7 +4,7 @@ import CertDisplay from "./page-components/CertDisplay";
 
 const Cert = () => {
   return (
-    <div className="w-full h-auto">
+    <div className="max-w-xl h-auto">
       <CertDisplay />
     </div>
   );

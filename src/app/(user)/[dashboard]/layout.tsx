@@ -3,7 +3,6 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import ProfileSideBar from "../components/ProfileSideBar";
 import { useTheme } from "@/app/components/theme/ThemeContext ";
-import { getColorShade } from "@/app/components/utilities/syncFunctions/syncs";
 import { useGlobalState } from "@/app/globalStateProvider";
 import { useUser } from "@clerk/nextjs";
 import { useToast } from "@/app/components/toastify/Toastify";
@@ -59,10 +58,7 @@ const UsersLayout = ({
           }}
         >
           <motion.div
-            className={`rounded-3xl h-auto max-w-fit `} // Changed from w-fit to w-full
-            style={{
-              backgroundColor: getColorShade(theme?.background, 10),
-            }}
+            className={`rounded-3xl h-auto max-w-fit border-[var(--accent)]/20 border `} // Changed from w-fit to w-full
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{

@@ -1,6 +1,5 @@
 import { useTheme } from "@/app/components/theme/ThemeContext ";
 import { onboardingSteps } from "@/app/components/utilities/indices/MultiStepWriteUp";
-import { getColorShade } from "@/app/components/utilities/syncFunctions/syncs";
 import { useGlobalState } from "@/app/globalStateProvider";
 import { ChevronLeft, ChevronRight, Check, Circle } from "lucide-react";
 import React, { useState, useEffect } from "react";
@@ -27,7 +26,7 @@ const Sidebar: React.FC = () => {
 
   // Initialize with SSR-safe defaults
   const [isCollapsed, setIsCollapsed] = useState(true);
-  const [currentStep, setCurrentStep] = useState("1");
+  const [currentStep, setCurrentStep] = useState("0");
   const [isClient, setIsClient] = useState(false);
 
   // Mark when component is mounted on client
@@ -95,24 +94,12 @@ const Sidebar: React.FC = () => {
     return (
       <div className="flex h-auto min-h-screen p-4 relative">
         <span
-          style={{
-            backgroundColor: theme?.background
-              ? getColorShade(theme.background, 10)
-              : "transparent",
-          }}
           onClick={toggleSidebar}
-          className="absolute z-10 top-1/2 -right-2 rounded-md cursor-pointer w-fit h-8 focus:outline-none transition-colors flex items-center justify-center"
+          className="absolute z-10 top-1/2 bg-[var(--background)] -right-2 rounded-md cursor-pointer w-fit h-8 focus:outline-none border border-[var(--accent)]/20  transition-colors flex items-center justify-center"
         >
           <ChevronLeft size={20} />
         </span>
-        <div
-          style={{
-            backgroundColor: theme?.background
-              ? getColorShade(theme.background, 10)
-              : "transparent",
-          }}
-          className="h-full rounded-2xl  transition-all duration-300 ease-in-out w-80 md:w-80 md:flex-shrink-0 relative"
-        >
+        <div className="h-full rounded-2xl border border-[var(--accent)]/20 transition-all duration-300 ease-in-out w-80 md:w-80 md:flex-shrink-0 relative">
           <div className="p-4">
             <div className="space-y-4">
               {onboardingSteps.map((step: OnboardingStep, index: number) => {
@@ -127,10 +114,7 @@ const Sidebar: React.FC = () => {
                   <div key={step.step} className="relative">
                     {!isLast && (
                       <div
-                        className="absolute left-9 top-12 w-0.5 h-16"
-                        style={{
-                          backgroundColor: theme?.accent || "var(--accent)",
-                        }}
+                        className={`absolute bg-[var(--accent)] left-9 top-12 w-0.5 h-16`}
                       ></div>
                     )}
 
@@ -138,7 +122,7 @@ const Sidebar: React.FC = () => {
                       onClick={() => handleStepClick(step)}
                       className={`flex items-center  rounded-xl space-x-4 p-3 cursor-pointer transition-all duration-200 hover:shadow-sm ${
                         status === "current"
-                          ? "bg-[var(--foreground)] border border-[var(--accent)]"
+                          ? "bg-[var(--foreground)] border border-[var(--accent)]/20"
                           : ""
                       }`}
                     >
@@ -196,23 +180,11 @@ const Sidebar: React.FC = () => {
       onClick={toggleSidebar}
       className="flex h-auto min-h-screen p-4 relative"
     >
-      <span
-        style={{
-          backgroundColor: theme?.background
-            ? getColorShade(theme.background, 10)
-            : "transparent",
-        }}
-        className="absolute z-10 top-1/2 -right-2 rounded-md cursor-pointer w-fit h-8 focus:outline-none transition-colors flex items-center justify-center"
-      >
+      <span className="absolute z-10 top-1/2 -right-2 rounded-md border border-[var(--accent)]/20 bg-[var(--background)] cursor-pointer w-fit h-8 focus:outline-none transition-colors flex items-center justify-center">
         {!isCollapsed ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
       </span>
       <div
-        style={{
-          backgroundColor: theme?.background
-            ? getColorShade(theme.background, 10)
-            : "transparent",
-        }}
-        className={`h-full rounded-2xl transition-all duration-300 ease-in-out ${
+        className={`h-full rounded-2xl border border-[var(--accent)]/20 transition-all duration-300 ease-in-out ${
           isCollapsed ? "w-16" : "w-80"
         } md:${isCollapsed ? "w-16" : "w-80"} md:flex-shrink-0 relative`}
       >
@@ -227,10 +199,7 @@ const Sidebar: React.FC = () => {
                 <div key={step.step} className="relative">
                   {!isLast && !isCollapsed && (
                     <div
-                      className="absolute left-9 top-12 w-0.5 h-16"
-                      style={{
-                        backgroundColor: theme?.accent || "var(--accent)",
-                      }}
+                      className="absolute left-9 top-12 w-0.5 h-16 bg-[var(--accent)]"
                     ></div>
                   )}
 

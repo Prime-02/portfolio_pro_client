@@ -13,12 +13,14 @@ import {
   Heart,
   Share2,
   Trash2,
+  Plus,
 } from "lucide-react";
 import { ActionItem } from "./page-components/GalleryCardActions";
 import { PathUtil } from "@/app/components/utilities/syncFunctions/syncs";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
 interface AlbumActionsConfig {
+  allowCreate?: boolean;
   allowShare?: boolean;
   allowOpen?: boolean;
   allowDownload?: boolean;
@@ -94,6 +96,36 @@ export const createAlbumUniversalActions = (
     }
   };
 
+  // Create action
+  if (config.allowCreate) {
+    actions.push({
+      icon: Plus,
+      actionName: `Create ${capitalizedType}`,
+      onClick: () => {
+        try {
+          const customUrl = mediaCustomPathAction({
+            action: "upload",
+            value: id,
+          });
+          if (customUrl) {
+            if (router) {
+              router.push(customUrl);
+            }
+          } else if (extendRouteWithQuery !== noop) {
+            extendRouteWithQuery({
+              upload: "true",
+            });
+          } else {
+            noop();
+          }
+        } catch (error) {
+          console.log(error);
+          noop();
+        }
+      },
+      type: ["owner"],
+    });
+  }
   // Share action
   if (config.allowShare !== false) {
     actions.push({

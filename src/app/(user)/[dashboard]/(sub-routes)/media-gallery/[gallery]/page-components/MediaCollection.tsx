@@ -8,29 +8,16 @@ import EmptyState from "@/app/components/containers/cards/EmptyState";
 import Modal from "@/app/components/containers/modals/Modal";
 import MasonryGrid from "@/app/components/containers/divs/MasonryGrid";
 import ImageCard from "@/app/components/containers/cards/ImageCard";
-import Button from "@/app/components/buttons/Buttons";
-import { Plus } from "lucide-react";
 import MediaActions from "./MediaActions";
 import { AlbumData } from "./MediaView";
 import { createAlbumUniversalActions } from "../../imageActions";
 import GalleryCardActions, {
   ActionType,
 } from "../../page-components/GalleryCardActions";
-
-export interface Media {
-  id?: string;
-  title?: string;
-  media_type?: string;
-  description?: string;
-  media_url?: string;
-  is_public: boolean;
-  is_featured: boolean;
-  allow_download: boolean;
-  created_at?: string;
-}
+import { ImageCardProps } from "@/app/components/types and interfaces/ImageCardTypes";
 
 interface AllMedia {
-  items: Media[];
+  media: ImageCardProps[];
   total: number;
 }
 interface MediaCollectionProps {
@@ -50,13 +37,12 @@ const MediaCollection = ({ props, collectionId }: MediaCollectionProps) => {
     clearQuerryParam,
     checkValidId,
     extendRoute,
-    router,
     currentPath,
   } = useGlobalState();
   const { loader, accentColor } = useTheme();
 
   const [albumMedia, setAlbumMedia] = useState<AllMedia>({
-    items: [],
+    media: [],
     total: 0,
   });
   const [page, setPage] = useState(1);
@@ -89,8 +75,8 @@ const MediaCollection = ({ props, collectionId }: MediaCollectionProps) => {
 
         if (mediaRes) {
           setAlbumMedia((prev) => ({
-            ...mediaRes,
-            items: append ? [...prev.items, ...mediaRes.items] : mediaRes.items,
+            total: mediaRes.total || 0,
+            media: append ? [...prev.media, ...mediaRes.media] : mediaRes.media,
           }));
           if (append) {
             setPage(pageNum);
@@ -123,10 +109,27 @@ const MediaCollection = ({ props, collectionId }: MediaCollectionProps) => {
 
   const isInitialLoading = loading.includes("fetching_media") && page === 1;
 
+  const getUserType = (): ActionType => {
+    if (!currentUser) return "owner";
+    return "others";
+  };
+
+  const userType = getUserType();
+  const actions = createAlbumUniversalActions(
+    props.id,
+    props.name || "",
+    props.image_url || "",
+    {
+      allowOpen: false,
+      extendRoute: extendRoute,
+      extendRouteWithQuery: extendRouteWithQuery,
+      allowCreate: true,
+    },
+    "Album Cover"
+  );
+
   return (
-    <div
-     
-    >
+    <div>
       <Modal
         isOpen={checkValidId(currentAction || "") || uploadAction}
         onClose={() => {
@@ -143,38 +146,37 @@ const MediaCollection = ({ props, collectionId }: MediaCollectionProps) => {
 
       <div className="w-full flex flex-col gap-4">
         {props?.name && (
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4">
-            <div>
-              <h2 className={`text-2xl sm:text-3xl font-semibold`}>
-                {props.name}
-              </h2>
-              <p className={`opacity-70 mt-2`}>
-                {props.description || "Album media collection"}
-              </p>
-            </div>
-            <Button
-              icon={<Plus />}
-              variant="ghost"
-              className="self-end sm:self-auto"
-              onClick={() => {
-                extendRouteWithQuery({ upload: "true" });
-              }}
+          <div className="flex flex-col  max-w-3xl gap-4">
+            <h2 className={`text-2xl sm:text-3xl font-semibold`}>
+              {props.name}
+            </h2>
+            <p className={`opacity-70 mt-2`}>
+              {props.description || "Album media collection"}
+            </p>
+            <GalleryCardActions
+              albumId={props.id}
+              albumTitle={props.name}
+              actions={actions}
+              userType={userType}
+              displayMode="buttons"
             />
           </div>
         )}
 
-        <div className="w-full bg-[var(--background)] md:max-h-screen overflow-auto hide-scrollbar border-[var(--accent)] border rounded-2xl p-2">
+        <div className="w-full bg-[var(--background)] border-[var(--accent)] border rounded-2xl py-1">
           {albumMedia.total < 1 && !isInitialLoading ? (
-            <EmptyState
-              imageHeight={200}
-              imageWidth={200}
-              imageUrl="/vectors/undraw_drag-and-drop_v4po.svg"
-              actionText="Upload media"
-              description="Start uploading media to this album"
-              onAction={() => {
-                extendRouteWithQuery({ upload: "true" });
-              }}
-            />
+            <div className="w-sm">
+              <EmptyState
+                imageHeight={200}
+                imageWidth={200}
+                imageUrl="/vectors/undraw_drag-and-drop_v4po.svg"
+                actionText="Upload media"
+                description="Start uploading media to this album"
+                onAction={() => {
+                  extendRouteWithQuery({ upload: "true" });
+                }}
+              />
+            </div>
           ) : isInitialLoading ? (
             <div className="w-sm h-[10rem] flex items-center justify-center  mx-auto ">
               {LoaderComponent ? (
@@ -188,7 +190,7 @@ const MediaCollection = ({ props, collectionId }: MediaCollectionProps) => {
               gap={10}
               totalItems={albumMedia.total}
               customMessage={`Showing All media in album`}
-              loadedItems={albumMedia.items.length}
+              loadedItems={albumMedia.media.length}
               page={page}
               setPage={setPage}
               onLoadMore={handleLoadMore}
@@ -201,7 +203,47 @@ const MediaCollection = ({ props, collectionId }: MediaCollectionProps) => {
                 )
               }
             >
-              {albumMedia.items.map((media, i) => {
+              <ImageCard
+                id={props.id}
+                image_url={
+                  props.image_url || "/vectors/undraw_monitor_ypga.svg"
+                }
+                isLoading={
+                  loading.includes("fetching_cover_data") ||
+                  loading.includes("fetching_album")
+                }
+                title={"Album Cover Photo"}
+                titleWeight={props.media?.titleWeight}
+                titleSize={props.media?.titleSize}
+                overlayOpacity={props.media?.overlayOpacity}
+                contentPadding={props.media?.contentPadding}
+                disableHover={props.media?.disableHover}
+                showGradientOverlay={props.media?.showGradientOverlay}
+                borderColor={props.media?.borderColor}
+                borderStyle={props.media?.borderStyle}
+                borderWidth={props.media?.borderWidth}
+                fullText={props.media?.fullText}
+                width={props.media?.width}
+                height={props.media?.height}
+                aspectRatio={props.media?.aspectRatio}
+                borderRadius={props.media?.borderRadius}
+                shadow={props.media?.shadow}
+                hoverShadow={props.media?.hoverShadow}
+                showContent={props.media?.showContent}
+                contentPosition={props.media?.contentPosition}
+                hoverScale={props.media?.hoverScale}
+                transition={props.media?.transition}
+                titleLines={props.media?.titleLines}
+                hoverEffect={props.media?.hoverEffect}
+                descriptionLines={props.media?.descriptionLines}
+                priority={props.media?.priority}
+                quality={props.media?.quality}
+                placeholder="empty"
+                fallbackImage="/vectors/undraw_monitor_ypga.svg"
+                loadingHeight={`${props.media?.height}px`}
+                alt={props.name ? `Cover for ${props.name}` : "Album cover"}
+              />
+              {albumMedia.media.map((media, i) => {
                 const getUserType = (): ActionType => {
                   if (!currentUser) return "owner";
                   return "others";
@@ -210,7 +252,7 @@ const MediaCollection = ({ props, collectionId }: MediaCollectionProps) => {
                 const actions = createAlbumUniversalActions(
                   String(media.id),
                   String(media.title),
-                  String(media.media_url),
+                  String(media.image_url),
                   {
                     extendRouteWithQuery: extendRouteWithQuery,
                     isAlbum: false,
@@ -222,6 +264,7 @@ const MediaCollection = ({ props, collectionId }: MediaCollectionProps) => {
                   <ImageCard
                     key={`${media.id}-${i}`}
                     showGradientOverlay
+                    media_type={media.media_type}
                     image_url={
                       media.media_url || "/vectors/undraw_monitor_ypga.svg"
                     }
@@ -249,16 +292,6 @@ const MediaCollection = ({ props, collectionId }: MediaCollectionProps) => {
                   />
                 );
               })}
-
-              {/* {isLoadingMore &&
-                Array.from({ length: 3 }).map((_, i) => (
-                  <ImageCard
-                    key={`loading-${i}`}
-                    id={`loading-${i}`}
-                    image_url=""
-                    isLoading={true}
-                  />
-                ))} */}
             </MasonryGrid>
           )}
         </div>

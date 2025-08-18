@@ -244,7 +244,7 @@ const TemplateStructure = ({
     const arrangements = getArrangementsWithComponentFirst(component);
 
     return (
-      <div className="rounded-lg p-6 max-w-md w-full">
+      <div className="rounded-lg p-6 max-w-md w-full ">
         <div className="grid grid-cols-2 gap-3">
           {arrangements.map((arr, index) => (
             <button
@@ -252,8 +252,8 @@ const TemplateStructure = ({
               onClick={() => handleLayoutChange(arr)}
               className={`p-3 border rounded-lg hover:bg-[var(--background)] transition-colors text-sm ${
                 arr === arrangement
-                  ? "border-[var(--accent)]"
-                  : "border-gray-200 dark:border-gray-700"
+                  ? "border-[var(--accent)]/20"
+                  : "border"
               }`}
             >
               <div className="grid grid-cols-2 gap-1 mb-2">
@@ -353,7 +353,7 @@ const TemplateStructure = ({
       }}
       className={`${getComponentClasses(position)} flex items-center justify-center relative ${
         focusedComponent === component
-          ? "ring-2 ring-[var(--accent)] ring-opacity-50  rounded-lg"
+          ? "ring-2 ring-[var(--accent)]/20 ring-opacity-50  rounded-lg"
           : ""
       }`}
       onMouseEnter={() => setHoveredSection(component)}
@@ -381,7 +381,7 @@ const TemplateStructure = ({
   );
 
   return (
-    <div className="h-auto p-4 md:p-8 flex flex-col gap-y-5 relative">
+    <div className="h-auto p-4 md:p-8 rounded-2xl  flex flex-col gap-y-5 relative">
       {/* Layout Selector Modal */}
       <Modal
         centered

@@ -10,6 +10,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import Button from "../buttons/Buttons";
+import { MediaType } from "../types and interfaces/ImageCardTypes";
 
 // Type definitions
 export interface MediaFile {
@@ -35,7 +36,6 @@ interface MediaPickerProps {
   onClick?: () => {};
 }
 
-type MediaType = "image" | "video" | "audio" | "unknown";
 
 interface ErrorState {
   message: string;
@@ -115,7 +115,7 @@ const MediaPicker: React.FC<MediaPickerProps> = ({
     if (file.type.startsWith("image/")) return "image";
     if (file.type.startsWith("video/")) return "video";
     if (file.type.startsWith("audio/")) return "audio";
-    return "unknown";
+    return "image";
   };
 
   const getFileIcon = (mediaType: MediaType): JSX.Element => {
@@ -127,7 +127,7 @@ const MediaPicker: React.FC<MediaPickerProps> = ({
       case "audio":
         return <Music className="w-8 h-8 text-green-500" />;
       default:
-        return <File className="w-8 h-8 text-gray-500" />;
+        return <File className="w-8 h-8 opacity-75 " />;
     }
   };
 
@@ -376,7 +376,7 @@ const MediaPicker: React.FC<MediaPickerProps> = ({
           <Upload
             className={`w-12 h-12 transition-colors ${
               isProcessing
-                ? "text-gray-400 animate-bounce"
+                ? " animate-bounce"
                 : isDragging
                   ? "text-[var(--accent)]"
                   : "group-hover:text-[var(--accent)]"
@@ -385,29 +385,29 @@ const MediaPicker: React.FC<MediaPickerProps> = ({
 
           {isProcessing ? (
             <div>
-              <p className="text-lg font-medium text-gray-600">
+              <p className="text-lg font-medium opacity-85">
                 Processing files...
               </p>
-              <p className="text-sm text-gray-500">Please wait</p>
+              <p className="text-sm opacity-75 ">Please wait</p>
             </div>
           ) : mediaFiles.length >= maxFiles ? (
             <div>
-              <p className="text-lg font-medium text-gray-600">
+              <p className="text-lg font-medium opacity-85">
                 Maximum files reached
               </p>
-              <p className="text-sm text-gray-500">Remove files to add more</p>
+              <p className="text-sm opacity-75 ">Remove files to add more</p>
             </div>
           ) : (
             <div>
-              <p className="text-lg font-medium text-gray-700">
+              <p className="text-lg font-medium ">
                 {isDragging
                   ? "Drop your media files here"
                   : "Drag & drop media files here"}
               </p>
-              <p className="text-sm text-gray-500 mt-2">
+              <p className="text-sm opacity-75  mt-2">
                 or click to browse ({maxFiles - mediaFiles.length} remaining)
               </p>
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-xs opacity-65 mt-1">
                 Supports images, videos, and audio files (max{" "}
                 {formatFileSize(maxFileSize)} each)
               </p>
@@ -441,7 +441,7 @@ const MediaPicker: React.FC<MediaPickerProps> = ({
               <div className="flex items-center space-x-3 min-w-0 flex-1">
                 <div className="min-w-0 overflow-hidden">
                   <p className="font-medium truncate">{file.name}</p>
-                  <div className="flex items-center text-xs space-x-2 text-gray-500 truncate">
+                  <div className="flex items-center text-xs space-x-2 opacity-75  truncate">
                     <span className="capitalize">{file.media_type}</span>
                     <span>•</span>
                     <span>{formatFileSize(file.file_size)}</span>

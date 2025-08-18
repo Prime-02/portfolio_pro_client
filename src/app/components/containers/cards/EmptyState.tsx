@@ -1,8 +1,6 @@
 import React from "react";
-import { getColorShade } from "../../utilities/syncFunctions/syncs";
 import Image from "next/image";
 import Button from "../../buttons/Buttons";
-import { useTheme } from "../../theme/ThemeContext ";
 
 interface EmptyStateProps {
   icon?: React.ComponentType<React.SVGProps<SVGSVGElement>>; // Accepts Lucide icons or other SVG components
@@ -33,7 +31,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
   
   return (
     <div
-      className={`col-span-full shadow-xl rounded-2xl flex flex-col items-center justify-center py-12 bg-[var(--background)] ${className}`}
+      className={`col-span-full  flex flex-col items-center justify-center py-12 `}
     >
       {imageUrl && (
         <Image

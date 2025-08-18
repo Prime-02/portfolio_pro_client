@@ -8,7 +8,6 @@ import Loaders from "./tabs/Loaders";
 import Pro from "./tabs/Pro";
 import { useTheme } from "@/app/components/theme/ThemeContext ";
 import { tabConfig } from "@/app/components/utilities/indices/Themes";
-import { getColorShade } from "@/app/components/utilities/syncFunctions/syncs";
 
 export interface ThemeColors {
   background: string;

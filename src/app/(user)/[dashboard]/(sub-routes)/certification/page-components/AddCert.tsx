@@ -260,8 +260,6 @@ const AddCert = ({ onRefresh }: { onRefresh: () => void }) => {
     );
   };
 
-
-
   return (
     <div className="flex flex-col w-full gap-y-4 p-4">
       <div className="space-y-4">
@@ -414,11 +412,7 @@ const AddCert = ({ onRefresh }: { onRefresh: () => void }) => {
         {!isValidCertId ? (
           // Create mode - submit all fields at once
           <Button
-            text={
-              loading.includes("uploading_certificate")
-                ? "Uploading..."
-                : "Upload Certificate"
-            }
+            text={"Upload Certificate"}
             size="md"
             className="flex-1"
             variant="primary"
@@ -426,6 +420,7 @@ const AddCert = ({ onRefresh }: { onRefresh: () => void }) => {
             disabled={
               !isFormValid() || loading.includes("uploading_certificate")
             }
+            loading={loading.includes("uploading_certificate")}
           />
         ) : null}
       </div>

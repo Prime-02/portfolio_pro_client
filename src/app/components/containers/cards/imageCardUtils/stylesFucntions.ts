@@ -4,7 +4,6 @@ import {
   BorderRadiusVariant,
   BorderStyleVariant,
   ColorVariant,
-  OverlayPosition,
   ShadowVariant,
   SpacingVariant,
   TextSizeVariant,
@@ -12,6 +11,7 @@ import {
   TransitionVariant,
 } from "@/app/components/types and interfaces/ImageCardTypes";
 import { keyframes } from "styled-components";
+import { PopOverPosition } from "../../divs/PopOver";
 
 // Keyframe animations
 export const gradientShift = keyframes`
@@ -303,7 +303,7 @@ export const getBorderCSS = (
 
 
 
-export const positionMap: Record<OverlayPosition, string> = {
+export const positionMap: Record<PopOverPosition, string> = {
   'top-right': 'top: 0.75rem; right: 0.75rem;',
   'top-left': 'top: 0.75rem; left: 0.75rem;',
   'top-center': 'top: 0.75rem; left: 50%; transform: translateX(-50%);',

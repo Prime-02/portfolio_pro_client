@@ -14,18 +14,7 @@ import GalleryCardActions, { ActionType } from "./GalleryCardActions"; // Import
 import ImageCard from "@/app/components/containers/cards/ImageCard";
 import MasonryGrid from "@/app/components/containers/divs/MasonryGrid";
 import { createAlbumUniversalActions } from "../imageActions";
-
-export interface AlbumProps {
-  id: string;
-  name: string;
-  description?: string;
-  is_public: boolean;
-  cover_media_url: string;
-  created_at: string;
-  updated_at: string | null;
-  media_count: number;
-  likes: number;
-}
+import { AlbumData } from "../[gallery]/page-components/MediaView";
 
 const GalleryView = () => {
   const {
@@ -42,10 +31,10 @@ const GalleryView = () => {
   const { loader, accentColor } = useTheme();
   const [galleries, setGalleries] = useState<{
     total: number;
-    items: AlbumProps[];
+    media: AlbumData[];
   }>({
     total: 0,
-    items: [],
+    media: [],
   });
   const [page, setPage] = useState(1);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -71,7 +60,7 @@ const GalleryView = () => {
           ? `${V1_BASE_URL}/media-gallery/users/${currentUser}/collections?page=${pageNum}`
           : `${V1_BASE_URL}/media-gallery/collections?page=${pageNum}`;
 
-        const galleryRes: { total: number; items: AlbumProps[] } =
+        const galleryRes: { total: number; media: AlbumData[] } =
           await GetAllData({
             access: accessToken,
             url: url,
@@ -80,9 +69,9 @@ const GalleryView = () => {
         if (galleryRes) {
           setGalleries((prev) => ({
             ...galleryRes,
-            items: append
-              ? [...prev.items, ...galleryRes.items]
-              : galleryRes.items,
+            media: append
+              ? [...prev.media, ...galleryRes.media]
+              : galleryRes.media,
           }));
         }
       } catch (error) {
@@ -154,7 +143,7 @@ const GalleryView = () => {
       </header>
 
       <div className="pb-8">
-        {galleries.items.length < 1 && !isInitialLoading ? (
+        {galleries.media.length < 1 && !isInitialLoading ? (
           <EmptyState
             imageHeight={200}
             imageWidth={200}
@@ -178,7 +167,7 @@ const GalleryView = () => {
           <MasonryGrid
             gap={5}
             totalItems={galleries.total}
-            loadedItems={galleries.items.length}
+            loadedItems={galleries.media.length}
             page={page}
             customMessage={`Showing All album`}
             setPage={setPage}
@@ -193,7 +182,7 @@ const GalleryView = () => {
             }
           >
             {/* Render actual gallery items */}
-            {galleries.items.map((gallery, i) => {
+            {galleries.media.map((gallery, i) => {
               const getUserType = (): ActionType => {
                 if (!currentUser) return "owner";
                 return "others";
@@ -202,8 +191,8 @@ const GalleryView = () => {
               const userType = getUserType();
               const actions = createAlbumUniversalActions(
                 gallery.id,
-                gallery.name,
-                gallery.cover_media_url,
+                gallery.name || "",
+                gallery.cover_media_url || "",
                 {
                   extendRoute: extendRoute,
                   extendRouteWithQuery: extendRouteWithQuery,
@@ -214,16 +203,44 @@ const GalleryView = () => {
               return (
                 <ImageCard
                   key={`${gallery.id}-${i}`}
-                  showGradientOverlay
+                  titleWeight={gallery.media?.titleWeight}
+                  titleSize={gallery.media?.titleSize}
+                  overlayOpacity={gallery.media?.overlayOpacity}
+                  contentPadding={gallery.media?.contentPadding}
+                  disableHover={gallery.media?.disableHover}
+                  showGradientOverlay={gallery.media?.showGradientOverlay}
+                  borderColor={gallery.media?.borderColor}
+                  borderStyle={gallery.media?.borderStyle}
+                  borderWidth={gallery.media?.borderWidth}
+                  fullText={gallery.media?.fullText}
+                  width={gallery.media?.width}
+                  height={gallery.media?.height}
+                  aspectRatio={gallery.media?.aspectRatio}
+                  borderRadius={gallery.media?.borderRadius}
+                  shadow={gallery.media?.shadow}
+                  hoverShadow={gallery.media?.hoverShadow}
+                  showContent={gallery.media?.showContent}
+                  contentPosition={gallery.media?.contentPosition}
+                  hoverScale={gallery.media?.hoverScale}
+                  transition={gallery.media?.transition}
+                  titleLines={gallery.media?.titleLines}
+                  hoverEffect={gallery.media?.hoverEffect}
+                  descriptionLines={gallery.media?.descriptionLines}
+                  priority={gallery.media?.priority}
+                  quality={gallery.media?.quality}
                   image_url={gallery.cover_media_url}
-                  aspectRatio="auto"
-                  contentPosition="overlay"
-                  borderWidth={1}
-                  borderRadius="2xl"
-                  borderColor="default"
-                  borderStyle="solid"
-                  titleLines={1}
-                  hoverEffect="lift"
+                  fill={gallery.media?.fill}
+                  imageHeight={gallery.media?.imageHeight}
+                  descriptionSize={gallery.media?.descriptionSize}
+                  descriptionWeight={gallery.media?.descriptionWeight}
+                  backgroundVariant={gallery.media?.backgroundVariant}
+                  textVariant={gallery.media?.textVariant}
+                  animation={gallery.media?.animation}
+                  disabled={gallery.media?.disabled}
+                  hideAction={gallery.media?.hideAction}
+                  actionPosition={gallery.media?.actionPosition}
+                  
+                  
                   id={gallery.id}
                   title={gallery.name}
                   onClick={(props) => {
@@ -235,10 +252,10 @@ const GalleryView = () => {
                   actions={() => (
                     <GalleryCardActions
                       albumId={gallery.id}
-                      albumTitle={gallery.name}
+                      albumTitle={gallery.name || ""}
                       actions={actions}
                       userType={userType}
-                      popoverPosition="bottom-left"
+                      popoverPosition={gallery.media?.actionPosition}
                     />
                   )}
                 />

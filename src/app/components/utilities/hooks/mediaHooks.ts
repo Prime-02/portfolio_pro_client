@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from "react";
-import { AcceptedTypes, ErrorState, MediaFile } from "../../inputs/MediaPicker";
+import { AcceptedTypes, ErrorState, MediaFile } from "../../types and interfaces/MediaInputElements";
+
 
 export const useFileProcessor = (
   maxFileSize: number,

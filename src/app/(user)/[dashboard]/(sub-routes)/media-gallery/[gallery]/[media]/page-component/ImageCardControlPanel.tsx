@@ -55,7 +55,7 @@ const ImageCardControlPanel = ({
   return (
     <div className="flex flex-col gap-y-4">
       <p className="text-xs text-[var(--accent)] animate-pulse ">
-       {` Click on the icon "-" above to minimize this tab and review changes`}
+        {` Click on the icon "-" above to minimize this tab and review changes`}
       </p>
       {/* Content Display & Layout Section */}
       <h2 className="font-semibold">Content Display & Layout</h2>
@@ -249,9 +249,10 @@ const ImageCardControlPanel = ({
               {CustomColor ? (
                 <span className="flex w-full justify-between items-center">
                   <ColorPicker
-                    value={mediaData.borderColor}
+                    value={String(mediaData.borderColor)}
                     onChangeComplete={(value: string) => {
-                      setMediaData((prev: ImageCardProps) => ({
+                      // Optionally validate that `value` is a valid key of BorderColorVariant
+                      setMediaData((prev) => ({
                         ...prev,
                         borderColor: value,
                       }));
@@ -263,15 +264,15 @@ const ImageCardControlPanel = ({
                 </span>
               ) : (
                 <Textinput
-                  value={mediaData.borderColor}
+                  value={String(mediaData.borderColor)}
                   type="dropdown"
                   options={borderColorVariantsOptions}
                   label="Border Color"
                   placeholder="Select Border Color"
                   onChange={(value: string) => {
-                    setMediaData((prev: ImageCardProps) => ({
+                    setMediaData((prev) => ({
                       ...prev,
-                      borderColor: value as BorderColorVariant,
+                      borderColor: value as keyof BorderColorVariant,
                     }));
                   }}
                 />

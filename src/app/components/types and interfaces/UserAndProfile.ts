@@ -1,4 +1,4 @@
-import { ProfileSettings } from "@/app/(user)/[dashboard]/(sub-routes)/profile/page-components/ProfileTemplate";
+import { ProfileSettings } from "../theme/ThemeContext ";
 import { ThemeVariant } from "./loaderTypes";
 
 export interface Profile {

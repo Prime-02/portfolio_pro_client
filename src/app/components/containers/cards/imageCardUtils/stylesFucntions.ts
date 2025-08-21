@@ -76,12 +76,13 @@ export const getShadow = (variant: ShadowVariant): string => {
   return map[variant];
 };
 
-export const useBorderColor = (variant: BorderColorVariant): string => {
+export const useBorderColor = (variant: keyof BorderColorVariant): string => {
   const { accentColor } = useTheme();
-  const colorMap = {
-    default: accentColor.color,
+  const colorMap: Record<keyof BorderColorVariant, string> = {
+    default: accentColor.color ?? "#3b82f6",
     transparent: "transparent",
     current: "currentColor",
+    inherit: "inherit",
     black: "#000000",
     white: "#ffffff",
     "gray-100": "#f3f4f6",
@@ -173,8 +174,47 @@ export const useBorderColor = (variant: BorderColorVariant): string => {
     warning: "#f59e0b",
     error: "#ef4444",
     info: "#06b6d4",
+    // Add missing keys
+    "slate-200": "#e2e8f0",
+    "slate-400": "#94a3b8",
+    "slate-600": "#475569",
+    "slate-800": "#1e293b",
+    "zinc-200": "#e4e4e7",
+    "zinc-400": "#a1a1aa",
+    "zinc-600": "#52525b",
+    "zinc-800": "#27272a",
+    "stone-200": "#e7e5e4",
+    "stone-400": "#a8a29e",
+    "stone-600": "#57534e",
+    "rose-200": "#ffe4e6",
+    "rose-500": "#f43f5e",
+    "rose-700": "#be123c",
+    "amber-200": "#fde68a",
+    "amber-500": "#f59e0b",
+    "amber-700": "#b45309",
+    "lime-200": "#d9f99d",
+    "lime-500": "#84cc16",
+    "lime-700": "#4d7c0f",
+    "emerald-200": "#a7f3d0",
+    "emerald-500": "#10b981",
+    "emerald-700": "#047857",
+    "teal-200": "#99f6e4",
+    "teal-500": "#14b8a6",
+    "teal-700": "#0f766e",
+    "cyan-200": "#a5f3fc",
+    "cyan-500": "#06b6d4",
+    "cyan-700": "#0e7490",
+    "sky-200": "#bae6fd",
+    "sky-500": "#0ea5e9",
+    "sky-700": "#0369a1",
+    "violet-200": "#ede9fe",
+    "violet-500": "#8b5cf6",
+    "violet-700": "#6d28d9",
+    "fuchsia-200": "#fae8ff",
+    "fuchsia-500": "#d946ef",
+    "fuchsia-700": "#a21caf",
   };
-  return colorMap[variant] as BorderColorVariant
+  return colorMap[variant] ?? "#000000";
 };
 
 export const getTextSize = (variant: TextSizeVariant): string => {
@@ -288,11 +328,9 @@ export const useColorTheme = (variant: ColorVariant) => {
 export const useBorderCSS = (
   style: BorderStyleVariant,
   width: number,
-  color: BorderColorVariant = "p"
+  color: keyof BorderColorVariant | string = "default"
 ): string => {
-  // Call the hook unconditionally at the top
-  const getBorderColor = useBorderColor(color as BorderColorVariant);
-
+  const getBorderColor = useBorderColor(color as keyof BorderColorVariant);
   // Early return if no border is needed
   if (style === "none" || width === 0) return "none";
 
@@ -304,7 +342,6 @@ export const useBorderCSS = (
 
   return `${width}px ${style} ${borderColor}`;
 };
-
 export const positionMap: Record<PopOverPosition, string> = {
   "top-right": "top: 0.75rem; right: 0.75rem;",
   "top-left": "top: 0.75rem; left: 0.75rem;",

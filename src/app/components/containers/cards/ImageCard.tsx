@@ -41,7 +41,7 @@ import TextFormatter from "../TextFormatters/TextFormatter";
 const CardContainer = styled.div<{
   $borderStyle: BorderStyleVariant;
   $borderWidth: number;
-  $borderColor: BorderColorVariant | string;
+  $borderColor: keyof BorderColorVariant | string;
   $borderRadius: BorderRadiusVariant;
   $shadow: ShadowVariant;
   $hoverShadow: HoverShadowVariant;
@@ -492,7 +492,7 @@ const ImageCard: React.FC<ImageCardProps> = (props) => {
       <LoadingContainer
         $borderStyle={borderStyle }
         $borderWidth={borderWidth}
-        $borderColor={borderColor}
+        $borderColor={borderColor as keyof BorderColorVariant}
         $borderRadius={borderRadius}
         $shadow={shadow}
         $hoverShadow="none"

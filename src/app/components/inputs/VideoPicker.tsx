@@ -1,35 +1,36 @@
-import React, { useState, useRef } from "react";
-import { AlertCircle, Music, Upload, X } from "lucide-react";
-import VideoTrimmer from "./VideoTrimmer";
+import { useRef, useState } from "react";
 import { useFileProcessor } from "../utilities/hooks/mediaHooks";
-import MediaPreview from "./MediaPreview";
+import { AlertCircle, Video, X } from "lucide-react";
 import Button from "../buttons/Buttons";
+import MediaPreview from "./MediaPreview";
 import {
+  AcceptedTypes,
   MediaFile,
-  MediaPickerProps,
+  VideoPickerProps,
 } from "../types and interfaces/MediaInputElements";
+import VideoTrimmer from "./VideoTrimmer";
 
-// MediaPicker Component (supports all media types)
-const MediaPicker: React.FC<MediaPickerProps> = ({
-  maxFiles = 20,
-  onMediaChange = () => {},
-  acceptedTypes = {
-    "image/*": [".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg"],
-    "video/*": [".mp4", ".webm", ".ogg", ".avi", ".mov"],
-    "audio/*": [".mp3", ".wav", ".ogg", ".m4a", ".aac"],
-  },
-  devMode = false,
+// VideoPicker Component (videos only, with auto-trim option)
+const VideoPicker: React.FC<VideoPickerProps> = ({
+  maxFiles = 10,
+  onVideoChange = () => {},
+  devMode = true,
   loading = false,
   onClick = () => {},
   maxFileSize = 200 * 1024 * 1024,
   uploadCooldown = 1000,
   maxVideoDuration = 30,
+  autoTrimToLimit = true,
 }) => {
-  const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
+  const [videoFiles, setVideoFiles] = useState<MediaFile[]>([]);
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [selectedPreviewIndex, setSelectedPreviewIndex] = useState<number>(0);
   const [trimmerFile, setTrimmerFile] = useState<MediaFile | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const acceptedTypes: AcceptedTypes = {
+    "video/*": [".mp4", ".webm", ".ogg", ".avi", ".mov"],
+  };
 
   const {
     isProcessing,
@@ -42,9 +43,9 @@ const MediaPicker: React.FC<MediaPickerProps> = ({
   } = useFileProcessor(maxFileSize, maxFiles, uploadCooldown, maxVideoDuration);
 
   const removeFile = (id: string): void => {
-    const updatedFiles = mediaFiles.filter((file) => file.id !== id);
-    setMediaFiles(updatedFiles);
-    onMediaChange(updatedFiles);
+    const updatedFiles = videoFiles.filter((file) => file.id !== id);
+    setVideoFiles(updatedFiles);
+    onVideoChange(updatedFiles);
     clearError();
 
     // Adjust selected preview index if needed
@@ -65,11 +66,11 @@ const MediaPicker: React.FC<MediaPickerProps> = ({
     trimEnd: number;
     trimmed_duration: number;
   }): void => {
-    const updatedFiles = mediaFiles.map((file) =>
+    const updatedFiles = videoFiles.map((file) =>
       file.id === trimmerFile?.id ? { ...file, ...trimData } : file
     );
-    setMediaFiles(updatedFiles);
-    onMediaChange(updatedFiles);
+    setVideoFiles(updatedFiles);
+    onVideoChange(updatedFiles);
     setTrimmerFile(null);
   };
 
@@ -108,11 +109,16 @@ const MediaPicker: React.FC<MediaPickerProps> = ({
     if (isProcessing) return;
 
     const files = e.dataTransfer.files;
-    const newFiles = await processFiles(files, acceptedTypes, mediaFiles);
+    const newFiles = await processFiles(
+      files,
+      acceptedTypes,
+      videoFiles,
+      autoTrimToLimit
+    );
     if (newFiles.length > 0) {
-      const updatedFiles = [...mediaFiles, ...newFiles];
-      setMediaFiles(updatedFiles);
-      onMediaChange(updatedFiles);
+      const updatedFiles = [...videoFiles, ...newFiles];
+      setVideoFiles(updatedFiles);
+      onVideoChange(updatedFiles);
     }
   };
 
@@ -121,18 +127,23 @@ const MediaPicker: React.FC<MediaPickerProps> = ({
   ): Promise<void> => {
     const files = e.target.files;
     if (files && !isProcessing) {
-      const newFiles = await processFiles(files, acceptedTypes, mediaFiles);
+      const newFiles = await processFiles(
+        files,
+        acceptedTypes,
+        videoFiles,
+        autoTrimToLimit
+      );
       if (newFiles.length > 0) {
-        const updatedFiles = [...mediaFiles, ...newFiles];
-        setMediaFiles(updatedFiles);
-        onMediaChange(updatedFiles);
+        const updatedFiles = [...videoFiles, ...newFiles];
+        setVideoFiles(updatedFiles);
+        onVideoChange(updatedFiles);
       }
     }
     e.target.value = "";
   };
 
   const openFileDialog = (): void => {
-    if (!isProcessing && mediaFiles.length < maxFiles) {
+    if (!isProcessing && videoFiles.length < maxFiles) {
       fileInputRef.current?.click();
     }
   };
@@ -141,7 +152,7 @@ const MediaPicker: React.FC<MediaPickerProps> = ({
     .flatMap(([type, extensions]) => [type, ...extensions])
     .join(",");
 
-  const isDisabled = mediaFiles.length >= maxFiles || isProcessing;
+  const isDisabled = videoFiles.length >= maxFiles || isProcessing;
 
   return (
     <div className="w-full max-w-4xl mx-auto">
@@ -162,72 +173,58 @@ const MediaPicker: React.FC<MediaPickerProps> = ({
         </div>
       )}
 
-      {/* Video Trimmer Modal */}
-      {trimmerFile && (
-        <VideoTrimmer
-          file={trimmerFile}
-          onTrim={handleTrimApply}
-          onCancel={handleTrimCancel}
-        />
+      {/* Auto-trim notification */}
+      {autoTrimToLimit && (
+        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-start space-x-2">
+          <Video className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-blue-700">
+            Videos longer than {maxVideoDuration} seconds will be automatically
+            trimmed to {maxVideoDuration}s. You can manually adjust the trim
+            later.
+          </p>
+        </div>
       )}
 
-      {/* Media Preview */}
-      {mediaFiles.length > 0 && !trimmerFile && (
+      {/* Video Preview */}
+      {videoFiles.length > 0 && (
         <div className="mb-6">
-          <div className="bg-[var(--background)] border border-gray-200 rounded-lg p-4">
-            {/* Selected Media Display */}
+          <div className="bg-white border border-gray-200 rounded-lg p-4">
+            {/* Selected Video Display */}
             <div className="mb-4">
-              {selectedPreviewIndex < mediaFiles.length && (
-                <div className=" rounded-lg  aspect-video flex items-center justify-center">
-                  {mediaFiles[selectedPreviewIndex].media_type === "image" && (
-                    <img
-                      src={mediaFiles[selectedPreviewIndex].preview_url}
-                      alt="Selected preview"
+              {selectedPreviewIndex < videoFiles.length && (
+                <div className="bg-black rounded-lg p-4 aspect-video flex items-center justify-center">
+                  <div className="relative w-full h-full flex items-center justify-center">
+                    <video
+                      src={videoFiles[selectedPreviewIndex].preview_url}
+                      controls
                       className="max-w-full max-h-full object-contain rounded-lg"
                     />
-                  )}
-
-                  {mediaFiles[selectedPreviewIndex].media_type === "video" && (
-                    <div className="relative w-full h-full flex items-center justify-center">
-                      <video
-                        src={mediaFiles[selectedPreviewIndex].preview_url}
-                        controls
-                        className="max-w-full max-h-full object-contain rounded-lg"
-                      />
-                      {mediaFiles[selectedPreviewIndex].trimmed_duration && (
-                        <div className="absolute top-2 right-2 bg-black bg-opacity-70 text-white px-2 py-1 rounded text-sm">
-                          Trimmed:{" "}
-                          {Math.round(
-                            mediaFiles[selectedPreviewIndex].trimmed_duration!
-                          )}
-                          s
+                    {videoFiles[selectedPreviewIndex].trimmed_duration && (
+                      <div className="absolute top-2 right-2 bg-black bg-opacity-70 text-white px-2 py-1 rounded text-sm">
+                        Trimmed:{" "}
+                        {Math.round(
+                          videoFiles[selectedPreviewIndex].trimmed_duration!
+                        )}
+                        s
+                      </div>
+                    )}
+                    {videoFiles[selectedPreviewIndex].duration &&
+                      videoFiles[selectedPreviewIndex].duration! >
+                        maxVideoDuration &&
+                      !videoFiles[selectedPreviewIndex].trimmed_duration && (
+                        <div className="absolute top-2 left-2 bg-yellow-600 bg-opacity-90 text-white px-2 py-1 rounded text-sm flex items-center gap-1">
+                          <AlertCircle className="w-4 h-4" />
+                          Exceeds {maxVideoDuration}s limit
                         </div>
                       )}
-                    </div>
-                  )}
-
-                  {mediaFiles[selectedPreviewIndex].media_type === "audio" && (
-                    <div className="flex flex-col items-center justify-center space-y-4">
-                      <div className="w-20 h-20 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center">
-                        <Music className="w-10 h-10 text-white" />
-                      </div>
-                      <audio
-                        src={mediaFiles[selectedPreviewIndex].preview_url}
-                        controls
-                        className="w-full max-w-md"
-                      />
-                      <p className="text-sm text-gray-600">
-                        {mediaFiles[selectedPreviewIndex].media_file.name}
-                      </p>
-                    </div>
-                  )}
+                  </div>
                 </div>
               )}
             </div>
 
-            {/* Media Thumbnails */}
+            {/* Video Thumbnails */}
             <MediaPreview
-              files={mediaFiles}
+              files={videoFiles}
               onRemove={removeFile}
               onTrimVideo={handleTrimVideo}
               selectedIndex={selectedPreviewIndex}
@@ -236,16 +233,16 @@ const MediaPicker: React.FC<MediaPickerProps> = ({
 
             {/* Upload Button */}
             <div className="mt-4 flex justify-between items-center">
-              <div className="text-sm opacity-65 ">
-                {mediaFiles.length} of {maxFiles} files selected
+              <div className="text-sm text-gray-600">
+                {videoFiles.length} of {maxFiles} videos selected
               </div>
               <Button
-                text="Upload"
+                text="Send Videos"
                 size="md"
                 loading={loading}
-                disabled={loading || mediaFiles.length === 0}
+                disabled={loading || videoFiles.length === 0}
                 onClick={onClick}
-                icon2={<Upload size={16} />}
+                icon2={<Video size={16} />}
                 customColor="green"
               />
             </div>
@@ -269,11 +266,12 @@ const MediaPicker: React.FC<MediaPickerProps> = ({
         onClick={!isDisabled ? openFileDialog : undefined}
         role="button"
         tabIndex={!isDisabled ? 0 : -1}
-        aria-label="Drop files here or click to select"
+        aria-label="Drop video files here or click to select"
       >
+        <label hidden htmlFor="video_upload"></label>
         <input
           ref={fileInputRef}
-          id="file_upload"
+          id="video_upload"
           type="file"
           multiple
           accept={acceptString}
@@ -283,7 +281,7 @@ const MediaPicker: React.FC<MediaPickerProps> = ({
         />
 
         <div className="flex flex-col items-center space-y-4">
-          <Upload
+          <Video
             className={`w-12 h-12 transition-colors ${
               isProcessing
                 ? "text-blue-500 animate-bounce"
@@ -296,57 +294,69 @@ const MediaPicker: React.FC<MediaPickerProps> = ({
           {isProcessing ? (
             <div>
               <p className="text-lg font-medium text-gray-700">
-                Processing files...
+                Processing videos...
               </p>
               <p className="text-sm text-gray-500">Please wait</p>
             </div>
-          ) : mediaFiles.length >= maxFiles ? (
+          ) : videoFiles.length >= maxFiles ? (
             <div>
               <p className="text-lg font-medium text-gray-700">
-                Maximum files reached
+                Maximum videos reached
               </p>
-              <p className="text-sm text-gray-500">Remove files to add more</p>
+              <p className="text-sm text-gray-500">Remove videos to add more</p>
             </div>
           ) : (
             <div>
-              <p className="text-lg font-medium ">
+              <p className="text-lg font-medium text-gray-700">
                 {isDragging
-                  ? "Drop your media files here"
-                  : "Drag & drop media files here"}
+                  ? "Drop your video files here"
+                  : "Drag & drop video files here"}
               </p>
               <p className="text-sm text-gray-500 mt-2">
-                or click to browse ({maxFiles - mediaFiles.length} remaining)
+                or click to browse ({maxFiles - videoFiles.length} remaining)
               </p>
               <p className="text-xs text-gray-400 mt-1">
-                Supports images, videos, and audio files (max{" "}
-                {formatFileSize(maxFileSize)} each)
-                {/* {maxVideoDuration && (
-                  <span>, videos limited to {maxVideoDuration}s</span>
-                )} */}
+                Supports MP4, WebM, OGG, AVI, MOV (max{" "}
+                {formatFileSize(maxFileSize)} each, {maxVideoDuration}s
+                duration)
+                {autoTrimToLimit && (
+                  <span className="block mt-1 text-blue-600">
+                    ✂️ Auto-trim enabled for long videos
+                  </span>
+                )}
               </p>
             </div>
           )}
         </div>
       </div>
 
+      {/* Video Trimmer Modal */}
+      {trimmerFile && (
+        <VideoTrimmer
+          file={trimmerFile}
+          onTrim={handleTrimApply}
+          onCancel={handleTrimCancel}
+        />
+      )}
+
       {/* Debug Info */}
       {devMode && (
-        <div className="mt-6 p-4  rounded-lg">
-          <h4 className="font-semibold mb-2">Debug Info:</h4>
+        <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+          <h4 className="font-semibold mb-2">Video Picker Debug Info:</h4>
           <div className="text-xs space-y-1 mb-2">
             <p>Upload attempts: {uploadAttempts}</p>
             <p>Recent uploads: {uploadTimestamps.length}/10</p>
             <p>Processing: {isProcessing ? "Yes" : "No"}</p>
             <p>Max file size: {formatFileSize(maxFileSize)}</p>
             <p>Max video duration: {maxVideoDuration}s</p>
+            <p>Auto-trim enabled: {autoTrimToLimit ? "Yes" : "No"}</p>
             <p>Selected preview: {selectedPreviewIndex}</p>
           </div>
-          <h5 className="font-medium text-xs mb-1">Current Files:</h5>
-          <pre className="text-xs overflow-auto max-h-40  p-2 ">
+          <h5 className="font-medium text-xs mb-1">Current Videos:</h5>
+          <pre className="text-xs overflow-auto max-h-40 bg-white p-2 rounded border">
             {JSON.stringify(
-              mediaFiles.map(({ media_file, preview_url, file_size, ...rest }) => ({
+              videoFiles.map(({ media_file, preview_url, ...rest }) => ({
                 ...rest,
-                file_size: `Size in MB ${file_size / 1024 / 1024} mb`,
                 media_file: `File: ${media_file.name}`,
                 preview_url: preview_url ? "blob:..." : null,
               })),
@@ -360,4 +370,5 @@ const MediaPicker: React.FC<MediaPickerProps> = ({
   );
 };
 
-export default MediaPicker;
+
+export default VideoPicker

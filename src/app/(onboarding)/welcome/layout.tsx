@@ -1,6 +1,5 @@
 "use client";
 import React from "react";
-import { useTheme } from "@/app/components/theme/ThemeContext ";
 import StepsMap from "./page-components/StepsMap";
 
 const OnBoardingLayout = ({
@@ -8,7 +7,6 @@ const OnBoardingLayout = ({
 }: Readonly<{
   children: React.ReactNode;
 }>) => {
-  const { theme } = useTheme();
   return (
     <div className="flex">
       <StepsMap />

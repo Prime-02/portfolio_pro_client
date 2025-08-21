@@ -1,8 +1,7 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { motion } from "framer-motion";
 import ProfileSideBar from "../components/ProfileSideBar";
-import { useTheme } from "@/app/components/theme/ThemeContext ";
 import { useGlobalState } from "@/app/globalStateProvider";
 import { useUser } from "@clerk/nextjs";
 import { useToast } from "@/app/components/toastify/Toastify";
@@ -13,7 +12,6 @@ const UsersLayout = ({
 }: Readonly<{
   children: React.ReactNode;
 }>) => {
-  const { theme } = useTheme();
   const { isLoaded, isSignedIn } = useUser();
   const toast = useToast();
 

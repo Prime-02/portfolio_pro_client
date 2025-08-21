@@ -6,6 +6,7 @@ import React from "react";
 import { Sun, Moon, Monitor } from "lucide-react";
 import { IconType } from "react-icons";
 import { ThemeVariant } from "@/app/components/types and interfaces/loaderTypes";
+import { SaveCancelButtons } from "@/app/components/theme/SaveThemeActions";
 
 const ThemeSettings = () => {
   const { themeVariant, setThemeVariant } = useTheme();
@@ -55,7 +56,7 @@ const ThemeSettings = () => {
                 className={`mr-3 ${
                   themeVariant === theme
                     ? "text-[var(--accent)]"
-                    : "text-gray-400 dark:text-gray-500"
+                    : "opacity-65"
                 }`}
               >
                 <Icon/>
@@ -64,6 +65,7 @@ const ThemeSettings = () => {
             </div>
           </div>
         ))}
+        <SaveCancelButtons/>
       </div>
       <div className="w-full">
         <Link

@@ -12,7 +12,6 @@ import {
 import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
 import {
   base64ToFile,
-  getCurrentUrl,
 } from "@/app/components/utilities/syncFunctions/syncs";
 import { toast } from "@/app/components/toastify/Toastify";
 import {
@@ -45,7 +44,6 @@ interface ProfileTemplateProps {
 }
 
 const ProfileTemplate: React.FC<ProfileTemplateProps> = ({
-  showSettings = false,
   className = "",
   children,
 }) => {

@@ -97,7 +97,13 @@ const SkillsDisplay = () => {
             "Loading..."
           )
         ) : skills.length < 1 ? (
-          <EmptyState />
+          <EmptyState
+          title="No skills found"
+          description="You have either not added one or something went wrong"
+          onAction={()=>{
+            extendRouteWithQuery({create: "true"})
+          }}
+          />
         ) : (
           <div className="space-y-4">
             {skills.map((skill, i) => (

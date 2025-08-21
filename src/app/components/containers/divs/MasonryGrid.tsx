@@ -162,20 +162,20 @@ const MasonryGrid = ({
 
       // Mobile-first breakpoint strategy
       if (containerWidth < 480) {
-        return 2; // Always single column on very small screens
+        return 1; // Always single column on very small screens
       } else if (containerWidth < 640) {
-        return Math.min(3, maxPossibleColumns);
+        return Math.min(2, maxPossibleColumns);
       } else if (containerWidth < 768) {
-        return Math.min(4, maxPossibleColumns);
+        return Math.min(3, maxPossibleColumns);
       } else if (containerWidth < 1024) {
-        return Math.min(4, maxPossibleColumns);
+        return Math.min(3, maxPossibleColumns);
       } else if (containerWidth < 1280) {
-        return Math.min(5, maxPossibleColumns);
+        return Math.min(4, maxPossibleColumns);
       } else {
-        return Math.min(6, maxPossibleColumns);
+        return Math.min(5, maxPossibleColumns);
       }
     } catch {
-      return 1;
+      return 2;
     }
   }, [isHydrated, minColumnWidth, gap]);
 
@@ -408,7 +408,7 @@ const MasonryGrid = ({
 
   // Create skeleton loading cards
   const createSkeletonCards = useCallback(() => {
-    return Array.from({ length: 4 }).map((_, i) => (
+    return Array.from({ length: getColumnCount() }).map((_, i) => (
       <ImageCard
         key={`loading-${i}`}
         id={`loading-${i}`}
@@ -528,7 +528,7 @@ const MasonryGrid = ({
 
       {/* Bouncing Load More Arrow */}
       {showLoadMoreArrow && hasMore && isOnline && !isLoading && (
-        <div className="fixed bottom-6 right-1/2 z-50">
+        <div className="fixed bottom-6 right-0 z-50">
           <button
             onClick={scrollToLoadMore}
             className={`
@@ -564,7 +564,7 @@ const MasonryGrid = ({
             <div className="flex items-center space-x-2">
               <MdWarning />
               <span className="text-sm">
-                You're offline. Check your connection.
+                {"You're offline. Check your connection."}
               </span>
             </div>
           </div>

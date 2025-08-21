@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 import { PopOverPosition } from "../containers/divs/PopOver";
+import { DisplayMode } from "@/app/(user)/[dashboard]/(sub-routes)/media-gallery/page-components/GalleryCardActions";
 
 // Type definitions
 export type BorderRadiusVariant =
@@ -95,108 +96,97 @@ export type BorderStyleVariant =
   | "inset"
   | "outset";
 
-export type BorderColorVariant =
-  | "transparent"
-  | "default"
-  | "current"
-  | "black"
-  | "white"
-  | "gray-100"
-  | "gray-200"
-  | "gray-300"
-  | "gray-400"
-  | "gray-500"
-  | "gray-600"
-  | "gray-700"
-  | "gray-800"
-  | "gray-900"
-  | "red-100"
-  | "red-200"
-  | "red-300"
-  | "red-400"
-  | "red-500"
-  | "red-600"
-  | "red-700"
-  | "red-800"
-  | "red-900"
-  | "orange-100"
-  | "orange-200"
-  | "orange-300"
-  | "orange-400"
-  | "orange-500"
-  | "orange-600"
-  | "orange-700"
-  | "orange-800"
-  | "orange-900"
-  | "yellow-100"
-  | "yellow-200"
-  | "yellow-300"
-  | "yellow-400"
-  | "yellow-500"
-  | "yellow-600"
-  | "yellow-700"
-  | "yellow-800"
-  | "yellow-900"
-  | "green-100"
-  | "green-200"
-  | "green-300"
-  | "green-400"
-  | "green-500"
-  | "green-600"
-  | "green-700"
-  | "green-800"
-  | "green-900"
-  | "blue-100"
-  | "blue-200"
-  | "blue-300"
-  | "blue-400"
-  | "blue-500"
-  | "blue-600"
-  | "blue-700"
-  | "blue-800"
-  | "blue-900"
-  | "indigo-100"
-  | "indigo-200"
-  | "indigo-300"
-  | "indigo-400"
-  | "indigo-500"
-  | "indigo-600"
-  | "indigo-700"
-  | "indigo-800"
-  | "indigo-900"
-  | "purple-100"
-  | "purple-200"
-  | "purple-300"
-  | "purple-400"
-  | "purple-500"
-  | "purple-600"
-  | "purple-700"
-  | "purple-800"
-  | "purple-900"
-  | "pink-100"
-  | "pink-200"
-  | "pink-300"
-  | "pink-400"
-  | "pink-500"
-  | "pink-600"
-  | "pink-700"
-  | "pink-800"
-  | "pink-900"
-  | "primary"
-  | "secondary"
-  | "accent"
-  | "neutral"
-  | "success"
-  | "warning"
-  | "error"
-  | "info";
+export interface BorderColorVariant {
+  transparent: string;
+  current: string;
+  inherit: string;
+  black: string;
+  white: string;
+  "slate-200": string;
+  "slate-400": string;
+  "slate-600": string;
+  "slate-800": string;
+  "gray-200": string;
+  "gray-400": string;
+  "gray-600": string;
+  "gray-800": string;
+  "zinc-200": string;
+  "zinc-400": string;
+  "zinc-600": string;
+  "zinc-800": string;
+  "stone-200": string;
+  "stone-400": string;
+  "stone-600": string;
+  "red-200": string;
+  "red-500": string;
+  "red-700": string;
+  "rose-200": string;
+  "rose-500": string;
+  "rose-700": string;
+  "orange-200": string;
+  "orange-500": string;
+  "orange-700": string;
+  "amber-200": string;
+  "amber-500": string;
+  "amber-700": string;
+  "yellow-200": string;
+  "yellow-500": string;
+  "yellow-600": string;
+  "lime-200": string;
+  "lime-500": string;
+  "lime-700": string;
+  "green-200": string;
+  "green-500": string;
+  "green-700": string;
+  "emerald-200": string;
+  "emerald-500": string;
+  "emerald-700": string;
+  "teal-200": string;
+  "teal-500": string;
+  "teal-700": string;
+  "cyan-200": string;
+  "cyan-500": string;
+  "cyan-700": string;
+  "sky-200": string;
+  "sky-500": string;
+  "sky-700": string;
+  "blue-200": string;
+  "blue-500": string;
+  "blue-700": string;
+  "indigo-200": string;
+  "indigo-500": string;
+  "indigo-700": string;
+  "violet-200": string;
+  "violet-500": string;
+  "violet-700": string;
+  "purple-200": string;
+  "purple-500": string;
+  "purple-700": string;
+  "fuchsia-200": string;
+  "fuchsia-500": string;
+  "fuchsia-700": string;
+  "pink-200": string;
+  "pink-500": string;
+  "pink-700": string;
+  primary: string;
+  secondary: string;
+  accent: string;
+  neutral: string;
+  success: string;
+  warning: string;
+  error: string;
+  info: string;
+  [key: string]: string; // Index signature for arbitrary string keys
+}
+
+export type ContentPosition = "bottom" | "overlay" | "none";
 
 export interface AlbumCoverProps {
   width?: number;
   height?: number;
   aspectRatio?: string;
   showContent?: boolean;
-  contentPosition?: "bottom" | "overlay" | "none";
+  contentPosition?: ContentPosition;
   hoverScale?: number;
   priority?: boolean;
   quality?: number;
@@ -216,13 +206,14 @@ export interface ImageCardProps {
   alt?: string;
   role?: string;
   tabIndex?: number;
+  is_public?: boolean;
 
   // Media Related Props
   media_type?: MediaType;
   media_url?: string;
   image_url: string | undefined;
   fallbackImage?: string;
-  onImageError?: (error: any) => void;
+  onImageError?: (error: unknown) => void;
 
   // Media Player Configuration
   videoProps?: {
@@ -247,7 +238,7 @@ export interface ImageCardProps {
   fill?: boolean;
 
   // Content Display & Layout
-  contentPosition?: "bottom" | "overlay" | "none";
+  contentPosition?: ContentPosition;
   contentPadding?: SpacingVariant;
   showContent?: boolean;
   titleLines?: number;
@@ -263,7 +254,7 @@ export interface ImageCardProps {
   // Styling & Appearance
   borderStyle?: BorderStyleVariant;
   borderWidth?: number;
-  borderColor?: BorderColorVariant | string;
+  borderColor?: BorderColorVariant ;
   borderRadius?: BorderRadiusVariant;
   backgroundVariant?: ColorVariant;
   textVariant?: ColorVariant;
@@ -292,10 +283,13 @@ export interface ImageCardProps {
   disableHover?: boolean;
   hideAction?: boolean;
   actionPosition?: PopOverPosition;
+  PopoverdisplayMode?: DisplayMode;
+  PopoverdisplayPosition?: PopOverPosition;
 
   // Loading State
   isLoading?: boolean;
   loadingHeight?: string | number;
   customLoadingContent?: ReactNode;
   loadingVariant?: ColorVariant;
+  [key: string]: unknown;
 }

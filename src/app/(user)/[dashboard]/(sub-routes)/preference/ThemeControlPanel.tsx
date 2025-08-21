@@ -8,6 +8,7 @@ import Loaders from "./tabs/Loaders";
 import Pro from "./tabs/Pro";
 import { useTheme } from "@/app/components/theme/ThemeContext ";
 import { tabConfig } from "@/app/components/utilities/indices/Themes";
+import { SaveCancelButtons } from "@/app/components/theme/SaveThemeActions";
 
 export interface ThemeColors {
   background: string;
@@ -34,7 +35,7 @@ const ThemeControlPanel = ({ component }: ThemeControlPanelProp) => {
   const currentTab = tabConfig.find((tab) => tab.key === activeTab);
 
   return (
-    <div className="min-h-screen rounded-3xl border flex transition-colors duration-300">
+    <div className="min-h-screen rounded-3xl relative border border-[var(--accent)]/20 flex transition-colors duration-300">
       <div className="relative">
         <SideBar
           activeTab={activeTab}
@@ -51,7 +52,7 @@ const ThemeControlPanel = ({ component }: ThemeControlPanelProp) => {
         {/* Tab Header */}
         <div className="mb-6">
           <div className="flex justify-between items-center gap-3 mb-2">
-            <div className="flex items-center justify-start gap-x-2">
+            <div className="flex items-center justify-between gap-x-2">
               {currentTab && <currentTab.icon className="w-5 h-5" />}
               <h2 className="text-2xl font-bold">
                 {currentTab?.label}
@@ -62,7 +63,10 @@ const ThemeControlPanel = ({ component }: ThemeControlPanelProp) => {
                 )}
               </h2>
             </div>
-            {component} 
+            <div className="flex items-center gap-x-2 sticky top-0">
+              <SaveCancelButtons />
+              {component}
+            </div>
           </div>
           <div
             className="flex items-start gap-3 p-3 rounded-lg bg-opacity-10"
@@ -74,9 +78,7 @@ const ThemeControlPanel = ({ component }: ThemeControlPanelProp) => {
         </div>
 
         {/* Tab Content */}
-        <div
-          className="space-y-6 p-4 min-w-md rounded-xl shadow-xl"
-        >
+        <div className="space-y-6 p-4 min-w-md rounded-xl shadow-xl">
           {activeTab === "themes" && <Themes />}
 
           {activeTab === "loaders" && <Loaders loaderRef={loaderRef} />}

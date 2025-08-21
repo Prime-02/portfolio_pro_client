@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Download, Upload, Check, X, Palette } from "lucide-react";
+import { Download, Upload, Check, X } from "lucide-react";
 import { useTheme } from "@/app/components/theme/ThemeContext ";
 import {
   Theme,

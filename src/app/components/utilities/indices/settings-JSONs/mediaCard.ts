@@ -5,6 +5,7 @@ export const mediaCardDefault: ImageCardProps = {
   // Image Optimization
   width: 350,
   height: 400,
+  is_public: true,
   aspectRatio: "auto",
   priority: false,
   quality: 100,
@@ -47,77 +48,110 @@ export const mediaCardDefault: ImageCardProps = {
   shadow: "2xl",
   hoverShadow: "none",
   transition: "normal",
-  hoverEffect: "scale",
-  hoverScale: 5,
+  hoverEffect: "none",
+  hoverScale: 1,
   animation: "none",
 
   // Interaction & Behavior
   disableHover: false,
   disabled: false,
-  hideAction: false,
+  hideAction: true,
   actionPosition: "top-right",
+  PopoverdisplayMode: "popover",
+  PopoverdisplayPosition: "top-left",
 };
 
-export function createMediaConfig(
-  response: AlbumData & { cover_media_url: string }
-) {
+export function createMediaConfig(response: AlbumData) {
   return {
     // Basic Identification
     id: response.id || mediaCardDefault.id,
     image_url: response.cover_media_url || mediaCardDefault.image_url,
+    is_public:
+      Boolean(response.cover_media_url) || Boolean(mediaCardDefault.is_public),
 
     // Dimensions
-    width: response.media?.width ?? mediaCardDefault.width,
-    height: response.media?.height ?? mediaCardDefault.height,
-    aspectRatio: response.media?.aspectRatio || mediaCardDefault.aspectRatio,
-    fill: response.media?.fill ?? mediaCardDefault.fill,
+    width: response.image_card_layout?.width ?? mediaCardDefault.width,
+    height: response.image_card_layout?.height ?? mediaCardDefault.height,
+    aspectRatio:
+      response.image_card_layout?.aspectRatio || mediaCardDefault.aspectRatio,
+    fill: response.image_card_layout?.fill ?? mediaCardDefault.fill,
 
     // Content Display & Layout
     contentPosition:
-      response.media?.contentPosition || mediaCardDefault.contentPosition,
+      response.image_card_layout?.contentPosition ||
+      mediaCardDefault.contentPosition,
     contentPadding:
-      response.media?.contentPadding || mediaCardDefault.contentPadding,
-    showContent: response.media?.showContent ?? mediaCardDefault.showContent,
-    titleLines: response.media?.titleLines ?? mediaCardDefault.titleLines,
+      response.image_card_layout?.contentPadding ||
+      mediaCardDefault.contentPadding,
+    showContent:
+      response.image_card_layout?.showContent ?? mediaCardDefault.showContent,
+    titleLines:
+      response.image_card_layout?.titleLines ?? mediaCardDefault.titleLines,
     descriptionLines:
-      response.media?.descriptionLines ?? mediaCardDefault.descriptionLines,
-    fullText: response.media?.fullText ?? mediaCardDefault.fullText,
+      response.image_card_layout?.descriptionLines ??
+      mediaCardDefault.descriptionLines,
+    fullText: response.image_card_layout?.fullText ?? mediaCardDefault.fullText,
 
     // Typography Props
-    titleSize: response.media?.titleSize || mediaCardDefault.titleSize,
+    titleSize:
+      response.image_card_layout?.titleSize || mediaCardDefault.titleSize,
     descriptionSize:
-      response.media?.descriptionSize || mediaCardDefault.descriptionSize,
-    titleWeight: response.media?.titleWeight || mediaCardDefault.titleWeight,
+      response.image_card_layout?.descriptionSize ||
+      mediaCardDefault.descriptionSize,
+    titleWeight:
+      response.image_card_layout?.titleWeight || mediaCardDefault.titleWeight,
     descriptionWeight:
-      response.media?.descriptionWeight || mediaCardDefault.descriptionWeight,
+      response.image_card_layout?.descriptionWeight ||
+      mediaCardDefault.descriptionWeight,
 
     // Styling & Appearance
-    borderStyle: response.media?.borderStyle || mediaCardDefault.borderStyle,
-    borderWidth: response.media?.borderWidth ?? mediaCardDefault.borderWidth,
-    borderColor: response.media?.borderColor || mediaCardDefault.borderColor,
-    borderRadius: response.media?.borderRadius || mediaCardDefault.borderRadius,
+    borderStyle:
+      response.image_card_layout?.borderStyle || mediaCardDefault.borderStyle,
+    borderWidth:
+      response.image_card_layout?.borderWidth ?? mediaCardDefault.borderWidth,
+    borderColor:
+      response.image_card_layout?.borderColor || mediaCardDefault.borderColor,
+    borderRadius:
+      response.image_card_layout?.borderRadius || mediaCardDefault.borderRadius,
     backgroundVariant:
-      response.media?.backgroundVariant || mediaCardDefault.backgroundVariant,
-    textVariant: response.media?.textVariant || mediaCardDefault.textVariant,
+      response.image_card_layout?.backgroundVariant ||
+      mediaCardDefault.backgroundVariant,
+    textVariant:
+      response.image_card_layout?.textVariant || mediaCardDefault.textVariant,
     overlayOpacity:
-      response.media?.overlayOpacity ?? mediaCardDefault.overlayOpacity,
+      response.image_card_layout?.overlayOpacity ??
+      mediaCardDefault.overlayOpacity,
     showGradientOverlay:
-      response.media?.showGradientOverlay ??
+      response.image_card_layout?.showGradientOverlay ??
       mediaCardDefault.showGradientOverlay,
 
     // Effects & Animation
-    shadow: response.media?.shadow || mediaCardDefault.shadow,
-    hoverShadow: response.media?.hoverShadow || mediaCardDefault.hoverShadow,
-    transition: response.media?.transition || mediaCardDefault.transition,
-    hoverEffect: response.media?.hoverEffect || mediaCardDefault.hoverEffect,
-    hoverScale: response.media?.hoverScale ?? mediaCardDefault.hoverScale,
-    animation: response.media?.animation || mediaCardDefault.animation,
+    shadow: response.image_card_layout?.shadow || mediaCardDefault.shadow,
+    hoverShadow:
+      response.image_card_layout?.hoverShadow || mediaCardDefault.hoverShadow,
+    transition:
+      response.image_card_layout?.transition || mediaCardDefault.transition,
+    hoverEffect:
+      response.image_card_layout?.hoverEffect || mediaCardDefault.hoverEffect,
+    hoverScale:
+      response.image_card_layout?.hoverScale ?? mediaCardDefault.hoverScale,
+    animation:
+      response.image_card_layout?.animation || mediaCardDefault.animation,
 
     // Interaction & Behavior
-    disableHover: response.media?.disableHover ?? mediaCardDefault.disableHover,
-    disabled: response.media?.disabled ?? mediaCardDefault.disabled,
-    hideAction: response.media?.hideAction ?? mediaCardDefault.hideAction,
+    disableHover:
+      response.image_card_layout?.disableHover ?? mediaCardDefault.disableHover,
+    disabled: response.image_card_layout?.disabled ?? mediaCardDefault.disabled,
+    hideAction:
+      response.image_card_layout?.hideAction ?? mediaCardDefault.hideAction,
     actionPosition:
-      response.media?.actionPosition || mediaCardDefault.actionPosition,
+      response.image_card_layout?.actionPosition ||
+      mediaCardDefault.actionPosition,
+    PopoverdisplayMode:
+      response.image_card_layout?.PopoverdisplayMode ||
+      mediaCardDefault.PopoverdisplayMode,
+    PopoverdisplayPosition:
+      response.image_card_layout?.PopoverdisplayPosition ||
+      mediaCardDefault.PopoverdisplayPosition,
   };
 }

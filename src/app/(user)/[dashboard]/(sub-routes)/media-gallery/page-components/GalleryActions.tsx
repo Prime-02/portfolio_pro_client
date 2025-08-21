@@ -38,10 +38,10 @@ const GalleryActions = ({
 
   const [albumData, setAlbumData] = useState<AlbumData>({
     id: "",
-    cover_media_url: "",
     name: "",
     description: "",
     is_public: true,
+    cover_media_file: null,
   });
 
   const [showCoverUpload, setShowCoverUpload] = useState(!edit);
@@ -89,10 +89,12 @@ const GalleryActions = ({
         setPendingCoverFile(convertedImg);
       } else {
         // Set directly for creation
-        handleFieldChange("cover_media_url", convertedImg);
+        handleFieldChange("cover_media_file", convertedImg);
       }
     } catch (error) {
       toast.error("Invalid image format");
+      console.log("Error converting image:", error);
+      
     } finally {
       setLoading("processing_image");
     }
@@ -103,7 +105,7 @@ const GalleryActions = ({
 
     setLoading("uploading_cover");
     try {
-      const coverData = { cover_media_url: pendingCoverFile, id: albumId };
+      const coverData = { cover_media_file: pendingCoverFile, id: albumId };
       const uploadRes = await UpdateAllData({
         method: "patch",
         access: accessToken,
@@ -118,7 +120,7 @@ const GalleryActions = ({
         setShowCoverUpload(false);
         fetchAlbum();
         // Update local state to reflect the new cover
-        handleFieldChange("cover_media_url", pendingCoverFile);
+        handleFieldChange("cover_media_file", pendingCoverFile);
       }
     } catch (error) {
       console.log("Error uploading cover:", error);
@@ -131,7 +133,7 @@ const GalleryActions = ({
   const createAlbum = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // Validate required fields (exclude description and cover_media_url for separate handling)
+    // Validate required fields (exclude description and cover_media_file for separate handling)
     const fieldsToValidate = {
       name: albumData.name,
       is_public: albumData.is_public,
@@ -141,7 +143,7 @@ const GalleryActions = ({
       return;
     }
 
-    if (!albumData.cover_media_url) {
+    if (!albumData.cover_media_file) {
       toast.warning("Please upload a cover image");
       return;
     }
@@ -165,7 +167,7 @@ const GalleryActions = ({
         // Reset form
         setAlbumData({
           id: "",
-          cover_media_url: "",
+          cover_media_file: null,
           name: "",
           description: "",
           is_public: true,
@@ -196,7 +198,7 @@ const GalleryActions = ({
 
     setLoading("updating_album");
     try {
-      // Send only the text fields, not the cover_media_url
+      // Send only the text fields, not the cover_media_file
       const updateData = {
         name: albumData.name,
         description: albumData.description,
@@ -261,7 +263,7 @@ const GalleryActions = ({
       if (albumRes) {
         setAlbumData({
           id: "",
-          cover_media_url: albumRes.cover_media_url,
+          cover_media_file: albumRes.cover_media_file,
           name: albumRes.name,
           description: albumRes.description || "",
           is_public: albumRes.is_public,
@@ -315,12 +317,12 @@ const GalleryActions = ({
             description="All image formats supported up to 5mb"
             onFinish={convertToCover}
             onResetImageChange={() => {
-              handleFieldChange("cover_media_url", null);
+              handleFieldChange("cover_media_file", null);
             }}
           />
         </section>
 
-        {albumData.cover_media_url && (
+        {albumData.cover_media_file && (
           <form
             onSubmit={createAlbum}
             className="flex flex-col gap-4 w-full md:max-w-md"
@@ -407,11 +409,11 @@ const GalleryActions = ({
         {!showCoverUpload ? (
           <div className="flex flex-col gap-3">
             <h2 className="text-lg font-semibold">Cover Photo</h2>
-            {albumData.cover_media_url &&
-              typeof albumData.cover_media_url === "string" && (
+            {albumData.cover_media_file &&
+              typeof albumData.cover_media_file === "string" && (
                 <div className="w-32 h-32 rounded-lg overflow-hidden border">
                   <img
-                    src={albumData.cover_media_url}
+                    src={albumData.cover_media_file}
                     alt="Current cover"
                     className="w-full h-full object-cover"
                   />

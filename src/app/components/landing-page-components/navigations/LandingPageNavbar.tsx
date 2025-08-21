@@ -89,7 +89,7 @@ const LandingPageNavbar = () => {
         {isSignedIn && !isMobile && (
           <div className="min-w-0">
             <div className="w-full max-w-3xl lg:max-w-4xl xl:max-w-5xl">
-              <AbsoluteSearch />
+              <AbsoluteSearch labelBgHexIntensity={1} />
             </div>
           </div>
         )}
@@ -119,7 +119,7 @@ const LandingPageNavbar = () => {
               <Bell />
             </Link>
             <Popover
-              position="bottom-left"
+              position="top-left"
               clicker={
                 <div className="relative inline-block" title="Profile">
                   <span className="overflow-hidden rounded-full block">

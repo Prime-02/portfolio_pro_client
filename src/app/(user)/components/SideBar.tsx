@@ -45,7 +45,7 @@ const SideBar = ({
 
   return (
     <div
-      className={`min-h-screen h-full flex z-10 left-0 flex-col border-r transition-all duration-300 rounded-l-3xl ease-in-out ${
+      className={`min-h-screen h-full flex z-10 left-0 flex-col border-r border-[var(--accent)]/20 transition-all duration-300 rounded-l-3xl ease-in-out ${
         isCollapsed ? "w-16" : "w-64"
       }`}
     >
@@ -53,7 +53,8 @@ const SideBar = ({
       <div className="p-3 border-b border-[var(--accent)]">
         <button
           onClick={toggleCollapse}
-          className="p-2 rounded-lg flex items-center justify-center w-full transition-all duration-300 ease-in-out hover:bg-opacity-20 hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-opacity-50 "
+          className="p-2 rounded-lg flex items-center justify-center w-full transition-all duration-300 ease-in-out hover:bg-[var(--foreground)]/20  focus:ring-opacity-50 focus:ring-2 ring-[var(--accent)] "
+          aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {isCollapsed ? (
             <ChevronRight className="w-5 h-5" />

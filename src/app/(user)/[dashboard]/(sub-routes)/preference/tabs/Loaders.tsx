@@ -1,3 +1,4 @@
+import Button from "@/app/components/buttons/Buttons";
 import { Textinput } from "@/app/components/inputs/Textinput";
 import { getLoader } from "@/app/components/loaders/Loader";
 import { useTheme } from "@/app/components/theme/ThemeContext ";
@@ -52,6 +53,10 @@ const Loaders = ({ loaderRef }: LoadersProps) => {
       {/* Loader Grid Display */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Available Loaders</h3>
+        <Button
+        size="sm"
+        loading
+        />
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {loaderOptions.map((option) => {
             const OptionLoader = getLoader(option.id);

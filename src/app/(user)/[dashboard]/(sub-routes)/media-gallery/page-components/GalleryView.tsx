@@ -243,9 +243,9 @@ const GalleryView = () => {
                   
                   id={gallery.id}
                   title={gallery.name}
-                  onClick={(props) => {
-                    if (props.id) {
-                      extendRoute(props.id);
+                  onClick={() => {
+                    if (gallery.id) {
+                      extendRoute(gallery.id);
                     }
                   }}
                   description={gallery.description}

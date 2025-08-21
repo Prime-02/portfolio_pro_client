@@ -76,7 +76,7 @@ export const getShadow = (variant: ShadowVariant): string => {
   return map[variant];
 };
 
-export const getBorderColor = (variant: BorderColorVariant): string => {
+export const useBorderColor = (variant: BorderColorVariant): string => {
   const { accentColor } = useTheme();
   const colorMap = {
     default: accentColor.color,
@@ -174,7 +174,7 @@ export const getBorderColor = (variant: BorderColorVariant): string => {
     error: "#ef4444",
     info: "#06b6d4",
   };
-  return colorMap[variant];
+  return colorMap[variant] as BorderColorVariant
 };
 
 export const getTextSize = (variant: TextSizeVariant): string => {
@@ -230,8 +230,8 @@ export const getFontWeight = (variant: TextWeightVariant): string => {
   return map[variant];
 };
 
-export const getColorTheme = (variant: ColorVariant) => {
-  const { theme } = useTheme();
+export const useColorTheme = (variant: ColorVariant) => {
+  const { theme, accentColor } = useTheme();
   const themes = {
     primary: {
       bg: theme.background,
@@ -246,8 +246,8 @@ export const getColorTheme = (variant: ColorVariant) => {
       textDark: "#f9fafb",
     },
     accent: {
-      bg: "#faf5ff",
-      bgDark: "rgba(88, 28, 135, 0.2)",
+      bg: accentColor.color,
+      bgDark: accentColor.color,
       text: "#581c87",
       textDark: "#f3e8ff",
     },
@@ -285,31 +285,33 @@ export const getColorTheme = (variant: ColorVariant) => {
   return themes[variant];
 };
 
-// Helper function to get border CSS
-export const getBorderCSS = (
+export const useBorderCSS = (
   style: BorderStyleVariant,
   width: number,
-  color: BorderColorVariant | string = "primary"
+  color: BorderColorVariant = "p"
 ): string => {
+  // Call the hook unconditionally at the top
+  const getBorderColor = useBorderColor(color as BorderColorVariant);
+
+  // Early return if no border is needed
   if (style === "none" || width === 0) return "none";
 
+  // Determine the border color
   const borderColor =
     color.startsWith("#") || color.startsWith("rgb") || color.startsWith("hsl")
       ? color
-      : getBorderColor(color as BorderColorVariant);
+      : getBorderColor;
 
   return `${width}px ${style} ${borderColor}`;
 };
 
-
-
 export const positionMap: Record<PopOverPosition, string> = {
-  'top-right': 'top: 0.75rem; right: 0.75rem;',
-  'top-left': 'top: 0.75rem; left: 0.75rem;',
-  'top-center': 'top: 0.75rem; left: 50%; transform: translateX(-50%);',
-  'bottom-right': 'bottom: 0.75rem; right: 0.75rem;',
-  'bottom-left': 'bottom: 0.75rem; left: 0.75rem;',
-  'bottom-center': 'bottom: 0.75rem; left: 50%; transform: translateX(-50%);',
-  'center-right': 'top: 50%; right: 0.75rem; transform: translateY(-50%);',
-  'center-left': 'top: 50%; left: 0.75rem; transform: translateY(-50%);',
+  "top-right": "top: 0.75rem; right: 0.75rem;",
+  "top-left": "top: 0.75rem; left: 0.75rem;",
+  "top-center": "top: 0.75rem; left: 50%; transform: translateX(-50%);",
+  "bottom-right": "bottom: 0.75rem; right: 0.75rem;",
+  "bottom-left": "bottom: 0.75rem; left: 0.75rem;",
+  "bottom-center": "bottom: 0.75rem; left: 50%; transform: translateX(-50%);",
+  "center-right": "top: 50%; right: 0.75rem; transform: translateY(-50%);",
+  "center-left": "top: 50%; left: 0.75rem; transform: translateY(-50%);",
 };

@@ -167,7 +167,7 @@ const Dropdown: React.FC<DropdownProps> = ({
   type,
   value,
   label,
-  disabled =false
+  // disabled =false
 }) => {
   const { theme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);

@@ -1,4 +1,3 @@
-import { useTheme } from "@/app/components/theme/ThemeContext ";
 import { onboardingSteps } from "@/app/components/utilities/indices/MultiStepWriteUp";
 import { useGlobalState } from "@/app/globalStateProvider";
 import { ChevronLeft, ChevronRight, Check, Circle } from "lucide-react";
@@ -13,16 +12,10 @@ interface OnboardingStep {
   icons?: { icon: IconType; label: string }[];
 }
 
-// Define types for theme
-interface Theme {
-  background: string;
-  foreground?: string;
-  accent?: string;
-}
+
 
 const Sidebar: React.FC = () => {
   const { extendRouteWithQuery, searchParams } = useGlobalState();
-  const { theme } = useTheme() as { theme: Theme | undefined };
 
   // Initialize with SSR-safe defaults
   const [isCollapsed, setIsCollapsed] = useState(true);

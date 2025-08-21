@@ -10,6 +10,7 @@ interface CheckBoxProps {
   description?: string;
   showDescriptionOn?: "hover" | "checked" | "always";
   direction?: "left" | "right" | "top" | "bottom";
+  label?: string;
 }
 
 const CheckBox: React.FC<CheckBoxProps> = ({
@@ -20,6 +21,7 @@ const CheckBox: React.FC<CheckBoxProps> = ({
   description,
   showDescriptionOn = "hover",
   direction = "right",
+  label = "",
 }) => {
   const { theme, accentColor } = useTheme();
   const descriptionRef = useRef<HTMLDivElement>(null);
@@ -225,49 +227,51 @@ const CheckBox: React.FC<CheckBoxProps> = ({
   return (
     <>
       <style>{scopedStyles}</style>
-
-      <div style={containerStyles}>
-        <div style={checkboxWrapperStyles}>
-          <input
-            id={id}
-            type="checkbox"
-            style={inputStyles}
-            checked={isChecked}
-            onChange={target ? handleCheckboxTarget : handleCheckboxChange}
-            aria-checked={isChecked}
-            aria-describedby={description ? `${id}-description` : undefined}
-          />
-          <div style={checkboxStyles}>
-            <FaCheck style={checkIconStyles} />
-          </div>
-        </div>
-
-        {description && (
-          <div
-            className={`${uniqueId}-info-wrapper`}
-            style={infoIconWrapperStyles}
-          >
-            {(showDescriptionOn === "hover" ||
-              showDescriptionOn === "always") && (
-              <FaInfoCircle
-                className={`${uniqueId}-info-icon`}
-                style={infoIconStyles}
-              />
-            )}
-            <div
-              id={`${id}-description`}
-              className={
-                showDescriptionOn === "hover"
-                  ? `${uniqueId}-description-hover`
-                  : ""
-              }
-              style={getHoverPopupStyles()}
-              ref={descriptionRef}
-            >
-              {description}
+      <div className="flex items-center gap-x-2">
+        <div style={containerStyles}>
+          <div style={checkboxWrapperStyles}>
+            <input
+              id={id}
+              type="checkbox"
+              style={inputStyles}
+              checked={isChecked}
+              onChange={target ? handleCheckboxTarget : handleCheckboxChange}
+              aria-checked={isChecked}
+              aria-describedby={description ? `${id}-description` : undefined}
+            />
+            <div style={checkboxStyles}>
+              <FaCheck style={checkIconStyles} />
             </div>
           </div>
-        )}
+
+          {description && (
+            <div
+              className={`${uniqueId}-info-wrapper`}
+              style={infoIconWrapperStyles}
+            >
+              {(showDescriptionOn === "hover" ||
+                showDescriptionOn === "always") && (
+                <FaInfoCircle
+                  className={`${uniqueId}-info-icon`}
+                  style={infoIconStyles}
+                />
+              )}
+              <div
+                id={`${id}-description`}
+                className={
+                  showDescriptionOn === "hover"
+                    ? `${uniqueId}-description-hover`
+                    : ""
+                }
+                style={getHoverPopupStyles()}
+                ref={descriptionRef}
+              >
+                {description}
+              </div>
+            </div>
+          )}
+        </div>
+        <span className="text-xs text-[var(--accent)] ">{label}</span>
       </div>
     </>
   );

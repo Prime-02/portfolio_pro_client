@@ -3,13 +3,11 @@ import React, { useState } from "react";
 import InfiniteScrollDiv from "@/app/components/containers/divs/infinitescroll/InfiniteScrollDiv ";
 import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
 import PortfolioGrid from "@/app/components/containers/cards/PortfolioGrid";
-import { useTheme } from "@/app/components/theme/ThemeContext ";
 
 const PortfolioPage = () => {
   const [viewMode, setViewMode] = useState("grid");
   const [searchTerm, setSearchTerm] = useState("");
   const [filterTag, setFilterTag] = useState("");
-  const { theme } = useTheme();
 
   const handlePortfolioClick = (portfolio = {}) => {
     console.log("Portfolio clicked:", portfolio);

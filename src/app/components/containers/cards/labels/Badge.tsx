@@ -4,10 +4,9 @@ import React from 'react';
 interface BadgeProps {
   text: string;
   color?: 'primary' | 'secondary' | 'success' | 'danger' | 'warning';
-  item?: any; // Optional: pass the full item data if needed
 }
 
-export const Badge = ({ text, color = 'primary', item }: BadgeProps) => {
+export const Badge = ({ text, color = 'primary' }: BadgeProps) => {
   const colorClasses = {
     primary: 'bg-blue-500 text-white',
     secondary: 'bg-gray-500 text-white',

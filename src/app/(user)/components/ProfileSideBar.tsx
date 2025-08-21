@@ -1,4 +1,3 @@
-import { useTheme } from "@/app/components/theme/ThemeContext ";
 import { privateRoutes } from "@/app/components/utilities/indices/NavigationItems";
 import { useGlobalState } from "@/app/globalStateProvider";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -32,7 +31,7 @@ const ProfileSideBar = () => {
       <div className="p-3 border-[var(--accent)]/20 border-b transition-colors duration-300 ease-in-out">
         <button
           onClick={toggleCollapse}
-          className="p-2 rounded-lg flex items-center justify-center w-full transition-all duration-300 ease-in-out hover:bg-[var(--foreground)]/20  focus:ring-opacity-50 "
+          className="p-2 rounded-lg flex items-center justify-center w-full transition-all duration-300 ease-in-out hover:bg-[var(--foreground)]/20  focus:ring-opacity-50 focus:ring-2 ring-[var(--accent)] "
           aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {isCollapsed ? (

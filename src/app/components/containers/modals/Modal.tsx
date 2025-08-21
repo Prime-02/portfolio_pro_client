@@ -194,25 +194,25 @@ const Modal: React.FC<ModalProps> = ({
     },
   };
 
-  // Animation variants for minimized state
-  const minimizedVariants: Variants = {
-    minimized: {
-      scale: 0,
-      opacity: 0,
-      transition: {
-        duration: 0.2,
-        ease: "easeIn",
-      },
-    },
-    expanded: {
-      scale: 1,
-      opacity: 1,
-      transition: {
-        ...springConfig,
-        duration: springConfig.type === "tween" ? animationDuration : undefined,
-      },
-    },
-  };
+  // // Animation variants for minimized state
+  // const minimizedVariants: Variants = {
+  //   minimized: {
+  //     scale: 0,
+  //     opacity: 0,
+  //     transition: {
+  //       duration: 0.2,
+  //       ease: "easeIn",
+  //     },
+  //   },
+  //   expanded: {
+  //     scale: 1,
+  //     opacity: 1,
+  //     transition: {
+  //       ...springConfig,
+  //       duration: springConfig.type === "tween" ? animationDuration : undefined,
+  //     },
+  //   },
+  // };
 
   // Minimized icon variants
   const minimizedIconVariants: Variants = {
@@ -346,7 +346,7 @@ const Modal: React.FC<ModalProps> = ({
               centered
                 ? "items-center justify-center"
                 : "items-end justify-center"
-            } px-4 py-4 bg-black/50 backdrop-blur-sm ${backdropClassName}`}
+            } px-4 py-4 bg-black/50 ${!showMinimizeButton && "backdrop-blur-sm"} ${backdropClassName}`}
             style={{ zIndex }}
             onClick={handleBackdropClick}
           >

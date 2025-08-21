@@ -45,6 +45,7 @@ interface TextInputProps {
   loading?: boolean;
   required?: boolean;
   pattern?: string;
+  step?: number;
 }
 
 export const Textinput: React.FC<TextInputProps> = ({
@@ -74,6 +75,7 @@ export const Textinput: React.FC<TextInputProps> = ({
   loading = false,
   required = false,
   pattern,
+  step,
 }) => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const { theme } = useTheme();
@@ -183,6 +185,7 @@ export const Textinput: React.FC<TextInputProps> = ({
         id={id}
         className={`${className} block px-2.5 pb-2.5 pt-4 w-full text-sm bg-transparent border-1 border-gray-300 appearance-none dark:border-gray-600 dark:focus:border-[var(--accent)] focus:outline-none focus:ring-0 focus:border-[var(--accent)] peer rounded-full text-center`}
         placeholder=" "
+        step={step}
       />
     );
   };

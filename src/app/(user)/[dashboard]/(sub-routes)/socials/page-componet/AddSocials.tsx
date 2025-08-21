@@ -93,6 +93,8 @@ const AddSocials = ({ onRefresh }: { onRefresh: () => void }) => {
           return setAddSocial((prev) => ({ ...prev, url_type: "website" }));
         } catch (e) {
           // Not a valid URL
+          console.log("Invalid URL format, defaulting to 'link'", e);
+          
         }
 
         // Default to 'link' if none of the above match

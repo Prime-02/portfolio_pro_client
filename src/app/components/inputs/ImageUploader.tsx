@@ -16,6 +16,8 @@ import {
 import { getColorShade } from "../utilities/syncFunctions/syncs";
 import { useTheme } from "../theme/ThemeContext ";
 import Button from "../buttons/Buttons";
+import RangeInput from "./RangeInput";
+import { Textinput } from "./Textinput";
 
 interface ImageCropperProps {
   onFinish?: (data: { file: File | null; croppedImage: string | null }) => void;
@@ -571,89 +573,66 @@ export default function ImageCropper({
               {/* Adjustment Sliders */}
               <div className="space-y-2">
                 <div>
-                  <label
-                    htmlFor="brightness"
-                    className="text-xs flex justify-between"
-                  >
-                    <span>Brightness</span>
-                    <span>{brightness}%</span>
-                  </label>
-                  <input
+                  <RangeInput
+                    label={`Brightness`}
                     id="brightness"
-                    type="range"
-                    min="0"
-                    max="200"
+                    min={0}
+                    size="sm"
+                    max={200}
                     value={brightness}
-                    onChange={(e) => setBrightness(Number(e.target.value))}
-                    className="w-full h-1  rounded-lg appearance-none cursor-pointer"
+                    onChange={(e) => setBrightness(Number(e))}
                   />
                 </div>
                 <div>
-                  <label
-                    htmlFor="contrast"
-                    className="text-xs flex justify-between"
-                  >
-                    <span>Contrast</span>
-                    <span>{contrast}%</span>
-                  </label>
-                  <input
+                  <RangeInput
+                    label="Contrast"
                     id="contrast"
-                    type="range"
-                    min="0"
-                    max="200"
+                    min={0}
+                    size="sm"
+                    max={200}
                     value={contrast}
-                    onChange={(e) => setContrast(Number(e.target.value))}
-                    className="w-full h-1  rounded-lg appearance-none cursor-pointer"
+                    onChange={(e) => setContrast(Number(e))}
                   />
                 </div>
                 <div>
-                  <label
-                    htmlFor="saturation"
-                    className="text-xs flex justify-between"
-                  >
-                    <span>Saturation</span>
-                    <span>{saturation}%</span>
-                  </label>
-                  <input
+                  <RangeInput
+                    label="Saturation"
                     id="saturation"
-                    type="range"
-                    min="0"
-                    max="200"
+                    min={0}
+                    size="sm"
+                    max={200}
                     value={saturation}
-                    onChange={(e) => setSaturation(Number(e.target.value))}
-                    className="w-full h-1  rounded-lg appearance-none cursor-pointer"
+                    onChange={(e) => setSaturation(Number(e))}
                   />
                 </div>
               </div>
               {/* Export Settings */}
-              <div className="grid grid-cols-2 gap-2">
+              <div className="flex w-full flex-col gap-3">
                 <div>
-                  <label className="text-xs block mb-1">Format</label>
-                  <select
+                  <Textinput
+                    type="dropdown"
+                    label="Format"
+                    options={[
+                      { id: "jpeg", code: "JPEG" },
+                      { id: "png", code: "PNG" },
+                      { id: "webp", code: "WebP" },
+                    ]}
                     value={format}
-                    onChange={(e) => setFormat(e.target.value as ImageFormat)}
-                    className="w-full text-xs p-1 border rounded card"
-                    aria-label="Select image format"
-                  >
-                    <option value="jpeg">JPEG</option>
-                    <option value="png">PNG</option>
-                    <option value="webp">WebP</option>
-                  </select>
+                    onChange={(e) => setFormat(e as ImageFormat)}
+                  />
                 </div>
                 <div>
-                  <label htmlFor="quality" className="text-xs block mb-1">
-                    Quality {Math.round(quality * 100)}%
-                  </label>
-                  <input
+                  <RangeInput
+                    label={`Quality ${Math.round(quality * 100)}%`}
                     id="quality"
-                    type="range"
-                    min="0.1"
-                    max="1"
-                    step="0.1"
+                    min={0.1}
+                    max={1}
+                    step={0.1}
+                    size="sm"
                     value={quality}
-                    onChange={(e) => setQuality(Number(e.target.value))}
-                    className="w-full h-1  rounded-lg appearance-none cursor-pointer"
-                    aria-label="Set image quality"
+                    onChange={(value) => setQuality(Number(value))}
+                    showMinMax={false}
+                    showValue={false}
                   />
                 </div>
               </div>

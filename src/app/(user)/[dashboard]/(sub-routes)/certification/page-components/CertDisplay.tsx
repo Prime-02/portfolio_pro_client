@@ -74,7 +74,7 @@ const CertDisplay = () => {
 
       <div className="pb-8">
         <header className="p-8">
-          <div className="flex flex-col  w-full gap-4 mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4 mb-6">
             <div>
               <h2 className={`text-2xl sm:text-3xl font-semibold`}>
                 {`Certificates & Awards`}
@@ -114,7 +114,7 @@ const CertDisplay = () => {
               "Loading..."
             )
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
+            <div className="flex flex-col gap-6 w-full">
               {certificates.map((certificate) => (
                 <CertCard
                   key={certificate.id}

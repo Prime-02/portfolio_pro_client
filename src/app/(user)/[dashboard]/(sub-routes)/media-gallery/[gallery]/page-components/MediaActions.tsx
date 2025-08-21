@@ -1,9 +1,8 @@
-import MediaPicker, { MediaFile } from "@/app/components/inputs/MediaPicker";
+import MediaPicker from "@/app/components/inputs/MediaPicker";
 import { toast } from "@/app/components/toastify/Toastify";
 import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
 import { useGlobalState } from "@/app/globalStateProvider";
 import React, { useEffect, useState } from "react";
-import { Media } from "./MediaCollection";
 import { TextArea, Textinput } from "@/app/components/inputs/Textinput";
 import CheckBox from "@/app/components/inputs/CheckBox";
 import Button from "@/app/components/buttons/Buttons";
@@ -13,6 +12,13 @@ import {
   UpdateAllData,
 } from "@/app/components/utilities/asyncFunctions/lib/crud";
 import { AlbumData } from "./MediaView";
+import { MediaFile } from "@/app/components/types and interfaces/MediaInputElements";
+import { createMediaConfig } from "@/app/components/utilities/indices/settings-JSONs/mediaCard";
+
+export interface Media {
+  allow_download: boolean;
+  is_featured: boolean;
+}
 
 // Extracted and exported functions
 export const getMediaData = async ({
@@ -27,7 +33,7 @@ export const getMediaData = async ({
   id: string;
   currentAction: string;
   setLoading: (state: string) => void;
-  setMediaData: React.Dispatch<React.SetStateAction<Media>>;
+  setMediaData: React.Dispatch<React.SetStateAction<AlbumData>>;
   currentUser?: string | null;
 }) => {
   setLoading("getting_medium_data");
@@ -35,26 +41,26 @@ export const getMediaData = async ({
     ? `${V1_BASE_URL}/media-gallery/users/${currentUser}/collections/${id}/media/${currentAction}`
     : `${V1_BASE_URL}/media-gallery/collections/${id}/media/${currentAction}`;
   try {
-    const mediumRes: AlbumData & Media = await GetAllData({
+    const mediumRes: AlbumData = await GetAllData({
       access: accessToken,
       url: url,
       type: "Medium Data",
     });
     if (mediumRes) {
+      console.log(mediumRes);
       setMediaData((prev) => ({
         ...prev,
         id: mediumRes.id,
         title: mediumRes.title || "",
         description: mediumRes.description || "",
         is_public: mediumRes.is_public || true,
-        allow_download: mediumRes.allow_download || true,
-        is_featured: mediumRes.is_featured || false,
         media_type: mediumRes.media_type || "image",
-        media_url: mediumRes.media_url || "/vectors/undraw_monitor_ypga.svg",
+        image_url: mediumRes.media_url || "/vectors/undraw_monitor_ypga.svg",
+        image_card_layout: createMediaConfig(mediumRes),
       }));
     }
   } catch (error) {
-    console.log("Error fetching medium data");
+    console.log("Error fetching medium data: ", error);
   } finally {
     setLoading("getting_medium_data");
   }
@@ -72,7 +78,7 @@ export const updateMediaData = async ({
   accessToken: string;
   id: string;
   currentAction: string;
-  mediaData: Media;
+  mediaData: AlbumData;
   setLoading: (state: string) => void;
   fetchAllAlbumMedia: () => void;
   clearQuerryParam: () => void;
@@ -82,7 +88,7 @@ export const updateMediaData = async ({
     const updateRes = await UpdateAllData({
       access: accessToken,
       url: `${V1_BASE_URL}/media-gallery/collections/${id}/media/${currentAction}`,
-      field: mediaData,
+      field: mediaData as  AlbumData,
       method: "patch",
     });
     if (updateRes) {
@@ -113,7 +119,7 @@ export const deleteMediaData = async ({
 }) => {
   setLoading("deleting_media_data");
   try {
-    const deleteRes = await DeleteData({
+    await DeleteData({
       access: accessToken,
       url: `${V1_BASE_URL}/media-gallery/collections/${id}/media/${currentAction}`,
     });
@@ -133,13 +139,13 @@ interface MediaActionsProps {
 
 const MediaActions = ({ id, fetchAllAlbumMedia }: MediaActionsProps) => {
   const [mediaState, setMediaState] = useState<MediaFile[]>([]);
-  const [mediaData, setMediaData] = useState<Media & AlbumProps>({
+  const [mediaData, setMediaData] = useState<AlbumData>({
     title: "",
     description: "",
-    is_featured: false,
-    allow_download: false,
     is_public: false,
     media_type: "image",
+    image_url: "",
+    id: "",
   });
   const {
     setLoading,
@@ -177,13 +183,13 @@ const MediaActions = ({ id, fetchAllAlbumMedia }: MediaActionsProps) => {
         (sum, file) => sum + file.file_size,
         0
       );
-      const fileTypes = validFiles.reduce(
-        (acc, file) => {
-          acc[file.media_type] = (acc[file.media_type] || 0) + 1;
-          return acc;
-        },
-        {} as Record<string, number>
-      );
+      // const fileTypes = validFiles.reduce(
+      //   (acc, file) => {
+      //     acc[file.media_type] = (acc[file.media_type] || 0) + 1;
+      //     return acc;
+      //   },
+      //   {} as Record<string, number>
+      // );
 
       console.log(
         `Starting upload: ${validFiles.length} files (${(totalSize / 1024 / 1024).toFixed(2)} MB total)`
@@ -194,9 +200,8 @@ const MediaActions = ({ id, fetchAllAlbumMedia }: MediaActionsProps) => {
         uploadData.append("files", mediaFile.media_file);
       });
 
-      const metadataArray = validFiles.map((mediaFile, index) => ({
+      const metadataArray = validFiles.map((mediaFile) => ({
         media_type: mediaFile.media_type,
-        title: mediaFile.name,
         description: "",
         is_featured: false,
         file_size: mediaFile.file_size,
@@ -323,7 +328,7 @@ const MediaActions = ({ id, fetchAllAlbumMedia }: MediaActionsProps) => {
             <span className="flex items-center gap-2">
               <CheckBox
                 id="is_public"
-                isChecked={mediaData.is_public}
+                isChecked={mediaData.is_public || false}
                 setIsChecked={(e) => {
                   setMediaData((prev) => ({
                     ...prev,
@@ -346,7 +351,7 @@ const MediaActions = ({ id, fetchAllAlbumMedia }: MediaActionsProps) => {
       ) : deleteAction ? (
         <div className="flex flex-col items-center gap-y-4">
           <h1 className="text-lg font-semibold text-center">
-            Are you sure you want to delete this {mediaData.albumCover?.media_type}?
+            Are you sure you want to delete this {mediaData.media_type}?
           </h1>
           <p className="text-sm opacity-65 text-center">
             This action cannot be undone. Click cancel to return to album
@@ -359,7 +364,7 @@ const MediaActions = ({ id, fetchAllAlbumMedia }: MediaActionsProps) => {
               onClick={() => clearQuerryParam()}
             />
             <Button
-              text={`Delete ${mediaData.albumCover?.media_type}`}
+              text={`Delete ${mediaData?.media_type}`}
               customColor="red"
               size="md"
               onClick={handleDeleteMediaData}
@@ -373,6 +378,10 @@ const MediaActions = ({ id, fetchAllAlbumMedia }: MediaActionsProps) => {
           onMediaChange={setMediaState}
           onClick={uploadMedia}
           loading={loading.includes("uploading_media")}
+          maxVideoDuration={30}
+          maxFiles={5}
+          devMode
+          maxFileSize={5 * 1024 * 1024}
         />
       )}
     </div>

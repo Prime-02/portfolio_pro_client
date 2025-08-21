@@ -7,24 +7,34 @@ import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
 import { GetAllData } from "@/app/components/utilities/asyncFunctions/lib/crud";
 import Modal from "@/app/components/containers/modals/Modal";
 import GalleryActions from "../../page-components/GalleryActions";
-import { ImageCardProps } from "@/app/components/types and interfaces/ImageCardTypes";
+import {
+  ImageCardProps,
+  MediaType,
+} from "@/app/components/types and interfaces/ImageCardTypes";
 import {
   createMediaConfig,
   mediaCardDefault,
 } from "@/app/components/utilities/indices/settings-JSONs/mediaCard";
 
 export interface AlbumData {
+  media_file?: File | null;
+  cover_media_file?: File | null;
   id: string;
+  title?: string;
   name?: string;
   description?: string;
   cover_media_url?: string;
   image_url?: string;
+  media_url?: string;
+  media_type?: MediaType;
   media_count?: number;
   is_public?: boolean;
   created_at?: string;
   updated_at?: string | null;
   likes?: number;
   media?: ImageCardProps;
+  image_card_layout?: ImageCardProps;
+  [key: string]: unknown;
 }
 
 const MediaView = () => {
@@ -64,11 +74,10 @@ const MediaView = () => {
       ? `${V1_BASE_URL}/media-gallery/users/${currentUser}/collections/${lastPathSegment}`
       : `${V1_BASE_URL}/media-gallery/collections/${lastPathSegment}`;
     try {
-      const response: AlbumData & { cover_media_url: string } =
-        await GetAllData({
-          access: accessToken,
-          url: url,
-        });
+      const response: AlbumData = await GetAllData({
+        access: accessToken,
+        url: url,
+      });
       if (response) {
         setAlbumData({
           ...albumData,
@@ -80,6 +89,7 @@ const MediaView = () => {
           likes: response.likes || 0,
           created_at: response.created_at,
           media: createMediaConfig(response),
+          image_card_layout: createMediaConfig(response),
         });
       }
     } catch (error) {
@@ -122,7 +132,7 @@ const MediaView = () => {
           fetchAlbum={fetchAlbumCover}
         />
       </Modal>
-      <div className="grid w-full">
+      <div className="grid b w-full">
         <div className="w-full">
           <MediaCollection collectionId={lastPathSegment} props={albumData} />
         </div>

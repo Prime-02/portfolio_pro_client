@@ -30,7 +30,6 @@ import {
   Image as ImageIcon,
   Edit2,
 } from "lucide-react";
-import { useTheme } from "@/app/components/theme/ThemeContext ";
 
 const CertCard = (props: CertificateCardProps) => {
   const {
@@ -40,7 +39,6 @@ const CertCard = (props: CertificateCardProps) => {
     setLoading,
     extendRouteWithQuery,
   } = useGlobalState();
-  const { theme } = useTheme();
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [imageError, setImageError] = useState(false);
 

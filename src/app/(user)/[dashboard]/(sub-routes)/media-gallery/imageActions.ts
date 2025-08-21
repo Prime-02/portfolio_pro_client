@@ -1,4 +1,3 @@
-import { toast } from "@/app/components/toastify/Toastify";
 import {
   copyToClipboard,
   downloadMediaFile,
@@ -172,7 +171,7 @@ export const createAlbumUniversalActions = (
       actionName: `Download ${type === "Album" ? "Cover" : capitalizedType}`,
       onClick: async () => {
         try {
-          toast.info("Starting download...");
+          // toast.info("Starting download...");
           await downloadMediaFile(
             coverUrl,
             `${title}-${type === "Album" ? "cover" : type.toLowerCase()}`
@@ -193,7 +192,7 @@ export const createAlbumUniversalActions = (
       actionName: `Edit ${capitalizedType}`,
       onClick: () => {
         try {
-          toast.info(`Editing ${type.toLowerCase()}: ${title}`);
+          // toast.info(`Editing ${type.toLowerCase()}: ${title}`);
           const customUrl = mediaCustomPathAction({
             action: "update",
             value: id,
@@ -226,7 +225,6 @@ export const createAlbumUniversalActions = (
       actionName: `Like ${capitalizedType}`,
       onClick: () => {
         try {
-          toast.success(`${capitalizedType} liked!`);
         } catch (error) {
           console.log(error);
           noop();
@@ -243,7 +241,7 @@ export const createAlbumUniversalActions = (
       actionName: `View ${capitalizedType} Analytics`,
       onClick: () => {
         try {
-          toast.info(`Loading ${type.toLowerCase()} analytics...`);
+          // toast.info(`Loading ${type.toLowerCase()} analytics...`);
           const customUrl = mediaCustomPathAction({
             action: "analytics",
             value: id,
@@ -272,7 +270,7 @@ export const createAlbumUniversalActions = (
       actionName: `Report ${capitalizedType}`,
       onClick: () => {
         try {
-          toast.info("Report submitted");
+          // toast.info("Report submitted");
           const customUrl = mediaCustomPathAction({
             action: "report",
             value: id,
@@ -316,7 +314,6 @@ export const createAlbumUniversalActions = (
           } else {
             noop();
           }
-          toast.warning(`Delete confirmation for: ${title}`);
         } catch (error) {
           console.log(error);
           noop();

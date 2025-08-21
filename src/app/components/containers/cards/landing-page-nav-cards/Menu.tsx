@@ -50,7 +50,7 @@ const Menu = () => {
          maxHeight: "65dvh" 
       }}
       //          style={{ maxHeight: "65dvh" }}
-      className="border rounded-xl p-2 overflow-auto min-w-md max-w-lg h-full flex flex-col"
+      className="rounded-xl p-2 overflow-auto min-w-md max-w-lg h-full flex flex-col"
     >
       <h2 className="font-semibold text-xl mb-3">{"Menu"}</h2>
       <div className="flex gap-x-2 ">

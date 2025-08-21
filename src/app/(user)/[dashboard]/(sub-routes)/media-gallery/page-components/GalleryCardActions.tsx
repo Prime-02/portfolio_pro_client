@@ -46,7 +46,7 @@ const GalleryCardActions = ({
     "w-full px-4 py-2 text-left hover:underline cursor-pointer transition-colors flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed";
 
   const circularIconClassName =
-    "w-6 h-6 flex items-center justify-center rounded-full  bg-[var(--background)] hover:bg-gray-100 dark:hover:bg-[var(--accent)] border cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md";
+    "w-8 h-8 flex items-center justify-center rounded-full  bg-[var(--background)] hover:bg-gray-100 dark:hover:bg-[var(--accent)] border cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md";
 
   const buttonClassName =
     "flex items-center gap-2 px-3 py-2 rounded-md bg-[var(--background)] hover:bg-gray-100 dark:hover:bg-[var(--accent)] hover:border cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm";
@@ -87,7 +87,7 @@ const GalleryCardActions = ({
               title={action.actionName}
               aria-label={action.actionName}
             >
-              <Icon size={18} />
+              <Icon size={16} />
             </button>
           );
         })}
@@ -114,7 +114,7 @@ const GalleryCardActions = ({
               title={action.actionName}
               aria-label={action.actionName}
             >
-              <Icon size={12} />
+              <Icon size={16} />
             </button>
           );
         })}

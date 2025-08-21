@@ -1,6 +1,9 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useGlobalState } from "@/app/globalStateProvider";
-import { GetAllData } from "@/app/components/utilities/asyncFunctions/lib/crud";
+import {
+  GetAllData,
+  UpdateAllData,
+} from "@/app/components/utilities/asyncFunctions/lib/crud";
 import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
 import { getLoader } from "@/app/components/loaders/Loader";
 import { useTheme } from "@/app/components/theme/ThemeContext ";
@@ -15,9 +18,14 @@ import GalleryCardActions, {
   ActionType,
 } from "../../page-components/GalleryCardActions";
 import { ImageCardProps } from "@/app/components/types and interfaces/ImageCardTypes";
+import { mediaCardDefault } from "@/app/components/utilities/indices/settings-JSONs/mediaCard";
+import Button from "@/app/components/buttons/Buttons";
+import TextFormatter from "@/app/components/containers/TextFormatters/TextFormatter";
+import ImageCardControlPanel from "../[media]/page-component/ImageCardControlPanel";
+import { toast } from "@/app/components/toastify/Toastify";
 
 interface AllMedia {
-  media: ImageCardProps[];
+  media: AlbumData[];
   total: number;
 }
 interface MediaCollectionProps {
@@ -46,8 +54,12 @@ const MediaCollection = ({ props, collectionId }: MediaCollectionProps) => {
     total: 0,
   });
   const [page, setPage] = useState(1);
+  const [coverLayout, setCoverLayout] = useState<ImageCardProps>(
+    props.image_card_layout as ImageCardProps
+  );
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const uploadAction = checkParams("upload") === "true";
+  const personaliseAction = checkParams("personalise") === "true";
   const updateAction = checkParams("update");
   const deleteAction = checkParams("delete");
   const currentAction =
@@ -123,49 +135,110 @@ const MediaCollection = ({ props, collectionId }: MediaCollectionProps) => {
       allowOpen: false,
       extendRoute: extendRoute,
       extendRouteWithQuery: extendRouteWithQuery,
-      allowCreate: true,
     },
     "Album Cover"
   );
 
+  const updateCoverLayout = async () => {
+    setLoading("updating_cover_layout");
+    try {
+      const updateRes = await UpdateAllData({
+        url: `${V1_BASE_URL}/media-gallery/collections/${collectionId}`,
+        access: accessToken,
+        field: { image_card_layout: coverLayout },
+        method: "patch",
+      });
+      if (updateRes) {
+        toast.success("Cover layout updated successfully!", {
+          title: "Success",
+        });
+        clearQuerryParam();
+      }
+    } catch (error) {
+      console.log("Error updating cover layout: ", error);
+    } finally {
+      setLoading("updating_cover_layout");
+    }
+  };
+
+  useEffect(() => {
+    setCoverLayout(props.image_card_layout as ImageCardProps);
+  }, [props.image_card_layout]);
+
   return (
-    <div>
+    <div className="p-8">
       <Modal
-        isOpen={checkValidId(currentAction || "") || uploadAction}
+        showMinimizeButton={personaliseAction}
+        isOpen={
+          checkValidId(currentAction || "") || uploadAction || personaliseAction
+        }
         onClose={() => {
           clearQuerryParam();
         }}
         title={`${updateAction === "true" ? "Update" : deleteAction === "true" ? "Delete" : ""} Media`}
         size="md"
       >
-        <MediaActions
-          id={props.id}
-          fetchAllAlbumMedia={fetchAllAlbumMedia}
-        />{" "}
+        {personaliseAction ? (
+          <ImageCardControlPanel
+            mediaData={coverLayout}
+            setMediaData={setCoverLayout}
+            onClick={updateCoverLayout}
+            loading={loading.includes("updating_cover_layout")}
+          />
+        ) : (
+          <MediaActions id={props.id} fetchAllAlbumMedia={fetchAllAlbumMedia} />
+        )}
       </Modal>
 
-      <div className="w-full flex flex-col gap-4">
+      <div className="w-full flex  flex-col">
         {props?.name && (
-          <div className="flex flex-col  max-w-3xl gap-4">
+          <div className="flex flex-col mb-5 max-w-3xl">
             <h2 className={`text-2xl sm:text-3xl font-semibold`}>
               {props.name}
             </h2>
-            <p className={`opacity-70 mt-2`}>
-              {props.description || "Album media collection"}
+            <p className={`opacity-70 `}>
+              <TextFormatter>
+                {props.description || "Album media collection"}
+              </TextFormatter>
             </p>
-            <GalleryCardActions
-              albumId={props.id}
-              albumTitle={props.name}
-              actions={actions}
-              userType={userType}
-              displayMode="buttons"
-            />
+            {!currentUser && (
+              <div className="flex flex-wrap justify-start gap-x-3">
+                <span>
+                  <Button
+                    text="Upload new media"
+                    size="sm"
+                    onClick={() => {
+                      extendRouteWithQuery({ upload: "true" });
+                    }}
+                  />
+                </span>
+                {!personaliseAction && (
+                  <span>
+                    <Button
+                      text="Personalise"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        extendRouteWithQuery({ personalise: "true" });
+                      }}
+                    />
+                  </span>
+                )}
+                <GalleryCardActions
+                  albumId={props.id}
+                  albumTitle={props.name}
+                  actions={actions}
+                  userType={userType}
+                  displayMode="popover"
+                />
+              </div>
+            )}
           </div>
         )}
 
-        <div className="w-full bg-[var(--background)] border-[var(--accent)] border rounded-2xl py-1">
+        <div className="">
           {albumMedia.total < 1 && !isInitialLoading ? (
-            <div className="w-sm">
+            <div className="">
               <EmptyState
                 imageHeight={200}
                 imageWidth={200}
@@ -178,7 +251,7 @@ const MediaCollection = ({ props, collectionId }: MediaCollectionProps) => {
               />
             </div>
           ) : isInitialLoading ? (
-            <div className="w-sm h-[10rem] flex items-center justify-center  mx-auto ">
+            <div className=" h-[10rem] flex items-center justify-center  mx-auto ">
               {LoaderComponent ? (
                 <LoaderComponent color={accentColor.color} />
               ) : (
@@ -213,34 +286,38 @@ const MediaCollection = ({ props, collectionId }: MediaCollectionProps) => {
                   loading.includes("fetching_album")
                 }
                 title={"Album Cover Photo"}
-                titleWeight={props.media?.titleWeight}
-                titleSize={props.media?.titleSize}
-                overlayOpacity={props.media?.overlayOpacity}
-                contentPadding={props.media?.contentPadding}
-                disableHover={props.media?.disableHover}
-                showGradientOverlay={props.media?.showGradientOverlay}
-                borderColor={props.media?.borderColor}
-                borderStyle={props.media?.borderStyle}
-                borderWidth={props.media?.borderWidth}
-                fullText={props.media?.fullText}
-                width={props.media?.width}
-                height={props.media?.height}
-                aspectRatio={props.media?.aspectRatio}
-                borderRadius={props.media?.borderRadius}
-                shadow={props.media?.shadow}
-                hoverShadow={props.media?.hoverShadow}
-                showContent={props.media?.showContent}
-                contentPosition={props.media?.contentPosition}
-                hoverScale={props.media?.hoverScale}
-                transition={props.media?.transition}
-                titleLines={props.media?.titleLines}
-                hoverEffect={props.media?.hoverEffect}
-                descriptionLines={props.media?.descriptionLines}
-                priority={props.media?.priority}
-                quality={props.media?.quality}
+                titleWeight={coverLayout?.titleWeight}
+                titleSize={coverLayout?.titleSize}
+                overlayOpacity={coverLayout?.overlayOpacity}
+                contentPadding={coverLayout?.contentPadding}
+                disableHover={coverLayout?.disableHover}
+                showGradientOverlay={coverLayout?.showGradientOverlay}
+                borderColor={coverLayout?.borderColor}
+                borderStyle={coverLayout?.borderStyle}
+                borderWidth={coverLayout?.borderWidth}
+                fullText={coverLayout?.fullText}
+                width={coverLayout?.width}
+                height={coverLayout?.height}
+                aspectRatio={coverLayout?.aspectRatio}
+                borderRadius={coverLayout?.borderRadius}
+                shadow={coverLayout?.shadow}
+                hoverShadow={coverLayout?.hoverShadow}
+                showContent={coverLayout?.showContent}
+                contentPosition={coverLayout?.contentPosition}
+                hoverScale={coverLayout?.hoverScale}
+                transition={coverLayout?.transition}
+                titleLines={coverLayout?.titleLines}
+                hoverEffect={coverLayout?.hoverEffect}
+                descriptionLines={coverLayout?.descriptionLines}
+                priority={coverLayout?.priority}
+                quality={coverLayout?.quality}
+                animation={coverLayout?.animation}
+                disabled={coverLayout?.disabled}
+                hideAction={coverLayout?.hideAction}
+                loadingHeight={`${500}px`}
+                actionPosition={coverLayout?.actionPosition}
                 placeholder="empty"
                 fallbackImage="/vectors/undraw_monitor_ypga.svg"
-                loadingHeight={`${props.media?.height}px`}
                 alt={props.name ? `Cover for ${props.name}` : "Album cover"}
               />
               {albumMedia.media.map((media, i) => {
@@ -263,30 +340,59 @@ const MediaCollection = ({ props, collectionId }: MediaCollectionProps) => {
                 return (
                   <ImageCard
                     key={`${media.id}-${i}`}
-                    showGradientOverlay
                     media_type={media.media_type}
                     image_url={
                       media.media_url || "/vectors/undraw_monitor_ypga.svg"
                     }
-                    contentPosition="overlay"
-                    titleLines={1}
-                    aspectRatio="auto"
-                    hoverEffect="lift"
                     id={String(media.id)}
+                    description={media.description}
+                    titleWeight={media.image_card_layout?.titleWeight}
+                    titleSize={media.image_card_layout?.titleSize}
+                    overlayOpacity={media.image_card_layout?.overlayOpacity}
+                    contentPadding={media.image_card_layout?.contentPadding}
+                    disableHover={media.image_card_layout?.disableHover}
+                    showGradientOverlay={
+                      media.image_card_layout?.showGradientOverlay
+                    }
+                    borderColor={media.image_card_layout?.borderColor}
+                    borderStyle={media.image_card_layout?.borderStyle}
+                    borderWidth={media.image_card_layout?.borderWidth}
+                    fullText={media.image_card_layout?.fullText}
+                    width={media.image_card_layout?.width}
+                    height={media.image_card_layout?.height}
+                    aspectRatio={media.image_card_layout?.aspectRatio}
+                    borderRadius={media.image_card_layout?.borderRadius}
+                    shadow={media.image_card_layout?.shadow}
+                    hoverShadow={media.image_card_layout?.hoverShadow}
+                    showContent={media.image_card_layout?.showContent}
+                    contentPosition={media.image_card_layout?.contentPosition}
+                    hoverScale={media.image_card_layout?.hoverScale}
+                    transition={media.image_card_layout?.transition}
+                    titleLines={media.image_card_layout?.titleLines}
+                    hoverEffect={media.image_card_layout?.hoverEffect}
+                    descriptionLines={media.image_card_layout?.descriptionLines}
+                    priority={media.image_card_layout?.priority}
+                    quality={media.image_card_layout?.quality}
+                    animation={media?.image_card_layout?.animation}
+                    disabled={media?.image_card_layout?.disabled}
+                    hideAction={media?.image_card_layout?.hideAction}
+                    loadingHeight={`${500}px`}
+                    actionPosition={media?.image_card_layout?.PopoverdisplayPosition}
                     onClick={() => {
                       extendRoute(String(media.id));
                     }}
                     title={media.title}
                     fallbackImage="/vectors/undraw_monitor_ypga.svg"
-                    description={media.description}
                     actions={() => (
                       <GalleryCardActions
                         albumId={String(media.id)}
                         albumTitle={String(media.title)}
                         actions={actions}
                         userType={userType}
-                        popoverPosition="bottom-left"
-                        displayMode="circular-icons-horizontal"
+                        displayMode={
+                          media.image_card_layout?.PopoverdisplayMode ??
+                          mediaCardDefault.PopoverdisplayMode
+                        }
                       />
                     )}
                   />

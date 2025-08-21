@@ -23,7 +23,6 @@ const EmptyState: React.FC<EmptyStateProps> = ({
   onAction,
   hasFilters = false,
   onClearFilters,
-  className = "",
   imageUrl = "/vectors/undraw_search-engines_k649.svg", // Default image URL
   imageWidth = 100, // Default width
   imageHeight = 100, // Default height

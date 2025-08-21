@@ -882,3 +882,282 @@ export const proficiencyLevel = [
   { id: "advanced", code: "Advanced (7-10 years)" },
   { id: "master", code: "Master (10+ years)" },
 ];
+
+export const contentPositionOptions = [
+  { id: "bottom", code: "Bottom" },
+  { id: "overlay", code: "Overlay" },
+  { id: "none", code: "None" },
+];
+
+export const borderColorVariantsOptions = [
+  // Basic colors
+  { id: "transparent", code: "Transparent" },
+  { id: "current", code: "Current Color" },
+  { id: "inherit", code: "Inherit" },
+  { id: "black", code: "Black" },
+  { id: "white", code: "White" },
+
+  // Slate (cool gray)
+  { id: "slate-200", code: "Light Slate" },
+  { id: "slate-400", code: "Medium Slate" },
+  { id: "slate-600", code: "Dark Slate" },
+  { id: "slate-800", code: "Very Dark Slate" },
+
+  // Gray (neutral)
+  { id: "gray-200", code: "Light Gray" },
+  { id: "gray-400", code: "Medium Gray" },
+  { id: "gray-600", code: "Dark Gray" },
+  { id: "gray-800", code: "Very Dark Gray" },
+
+  // Zinc (warm gray)
+  { id: "zinc-200", code: "Light Zinc" },
+  { id: "zinc-400", code: "Medium Zinc" },
+  { id: "zinc-600", code: "Dark Zinc" },
+  { id: "zinc-800", code: "Very Dark Zinc" },
+
+  // Stone (earthy gray)
+  { id: "stone-200", code: "Light Stone" },
+  { id: "stone-400", code: "Medium Stone" },
+  { id: "stone-600", code: "Dark Stone" },
+
+  // Red
+  { id: "red-200", code: "Light Red" },
+  { id: "red-500", code: "Medium Red" },
+  { id: "red-700", code: "Dark Red" },
+
+  // Rose
+  { id: "rose-200", code: "Light Rose" },
+  { id: "rose-500", code: "Medium Rose" },
+  { id: "rose-700", code: "Dark Rose" },
+
+  // Orange
+  { id: "orange-200", code: "Light Orange" },
+  { id: "orange-500", code: "Medium Orange" },
+  { id: "orange-700", code: "Dark Orange" },
+
+  // Amber
+  { id: "amber-200", code: "Light Amber" },
+  { id: "amber-500", code: "Medium Amber" },
+  { id: "amber-700", code: "Dark Amber" },
+
+  // Yellow
+  { id: "yellow-200", code: "Light Yellow" },
+  { id: "yellow-500", code: "Medium Yellow" },
+  { id: "yellow-600", code: "Dark Yellow" },
+
+  // Lime
+  { id: "lime-200", code: "Light Lime" },
+  { id: "lime-500", code: "Medium Lime" },
+  { id: "lime-700", code: "Dark Lime" },
+
+  // Green
+  { id: "green-200", code: "Light Green" },
+  { id: "green-500", code: "Medium Green" },
+  { id: "green-700", code: "Dark Green" },
+
+  // Emerald
+  { id: "emerald-200", code: "Light Emerald" },
+  { id: "emerald-500", code: "Medium Emerald" },
+  { id: "emerald-700", code: "Dark Emerald" },
+
+  // Teal
+  { id: "teal-200", code: "Light Teal" },
+  { id: "teal-500", code: "Medium Teal" },
+  { id: "teal-700", code: "Dark Teal" },
+
+  // Cyan
+  { id: "cyan-200", code: "Light Cyan" },
+  { id: "cyan-500", code: "Medium Cyan" },
+  { id: "cyan-700", code: "Dark Cyan" },
+
+  // Sky
+  { id: "sky-200", code: "Light Sky Blue" },
+  { id: "sky-500", code: "Medium Sky Blue" },
+  { id: "sky-700", code: "Dark Sky Blue" },
+
+  // Blue
+  { id: "blue-200", code: "Light Blue" },
+  { id: "blue-500", code: "Medium Blue" },
+  { id: "blue-700", code: "Dark Blue" },
+
+  // Indigo
+  { id: "indigo-200", code: "Light Indigo" },
+  { id: "indigo-500", code: "Medium Indigo" },
+  { id: "indigo-700", code: "Dark Indigo" },
+
+  // Violet
+  { id: "violet-200", code: "Light Violet" },
+  { id: "violet-500", code: "Medium Violet" },
+  { id: "violet-700", code: "Dark Violet" },
+
+  // Purple
+  { id: "purple-200", code: "Light Purple" },
+  { id: "purple-500", code: "Medium Purple" },
+  { id: "purple-700", code: "Dark Purple" },
+
+  // Fuchsia
+  { id: "fuchsia-200", code: "Light Fuchsia" },
+  { id: "fuchsia-500", code: "Medium Fuchsia" },
+  { id: "fuchsia-700", code: "Dark Fuchsia" },
+
+  // Pink
+  { id: "pink-200", code: "Light Pink" },
+  { id: "pink-500", code: "Medium Pink" },
+  { id: "pink-700", code: "Dark Pink" },
+
+  // Semantic colors (if you're using a design system)
+  { id: "primary", code: "Primary Brand" },
+  { id: "secondary", code: "Secondary Brand" },
+  { id: "accent", code: "Accent Color" },
+  { id: "neutral", code: "Neutral" },
+  { id: "success", code: "Success Green" },
+  { id: "warning", code: "Warning Orange" },
+  { id: "error", code: "Error Red" },
+  { id: "info", code: "Info Blue" },
+];
+
+// Border Radius
+export const borderRadiusVariantsOptions = [
+  { id: "none", code: "None" },
+  { id: "sm", code: "Small" },
+  { id: "md", code: "Medium" },
+  { id: "lg", code: "Large" },
+  { id: "xl", code: "Extra Large" },
+  { id: "2xl", code: "2X Large" },
+  { id: "3xl", code: "3X Large" },
+  { id: "full", code: "Full (Circular)" },
+];
+
+// Shadow
+export const shadowVariantsOptions = [
+  { id: "none", code: "None" },
+  { id: "sm", code: "Small" },
+  { id: "md", code: "Medium" },
+  { id: "lg", code: "Large" },
+  { id: "xl", code: "Extra Large" },
+  { id: "2xl", code: "2X Large" },
+  { id: "inner", code: "Inner Shadow" },
+  { id: "colored", code: "Colored" },
+];
+
+// Hover Shadow
+export const hoverShadowVariantsOptions = [
+  { id: "none", code: "None" },
+  { id: "sm", code: "Small" },
+  { id: "md", code: "Medium" },
+  { id: "lg", code: "Large" },
+  { id: "xl", code: "Extra Large" },
+  { id: "2xl", code: "2X Large" },
+  { id: "colored", code: "Colored" },
+  { id: "glow", code: "Glow" },
+];
+
+// Text Size
+export const textSizeVariantsOptions = [
+  { id: "xs", code: "Extra Small" },
+  { id: "sm", code: "Small" },
+  { id: "base", code: "Base" },
+  { id: "lg", code: "Large" },
+  { id: "xl", code: "Extra Large" },
+  { id: "2xl", code: "2X Large" },
+  { id: "3xl", code: "3X Large" },
+  { id: "4xl", code: "4X Large" },
+];
+
+// Spacing
+export const spacingVariantsOptions = [
+  { id: "none", code: "None" },
+  { id: "xs", code: "Extra Small" },
+  { id: "sm", code: "Small" },
+  { id: "md", code: "Medium" },
+  { id: "lg", code: "Large" },
+  { id: "xl", code: "Extra Large" },
+  { id: "2xl", code: "2X Large" },
+  { id: "3xl", code: "3X Large" },
+];
+
+// Transition
+export const transitionVariantsOptions = [
+  { id: "none", code: "None" },
+  { id: "fast", code: "Fast" },
+  { id: "normal", code: "Normal" },
+  { id: "slow", code: "Slow" },
+  { id: "slower", code: "Slower" },
+];
+
+// Hover Effect
+export const hoverEffectVariantsOptions = [
+  { id: "none", code: "None" },
+  { id: "scale", code: "Scale" },
+  { id: "rotate", code: "Rotate" },
+  { id: "lift", code: "Lift" },
+  { id: "tilt", code: "Tilt" },
+  { id: "blur", code: "Blur" },
+  { id: "brightness", code: "Brightness" },
+  { id: "fade", code: "Fade" },
+  { id: "glow", code: "Glow" },
+];
+
+// Color
+export const colorVariantsOptions = [
+  { id: "primary", code: "Primary" },
+  { id: "secondary", code: "Secondary" },
+  { id: "accent", code: "Accent" },
+  { id: "neutral", code: "Neutral" },
+  { id: "success", code: "Success" },
+  { id: "warning", code: "Warning" },
+  { id: "error", code: "Error" },
+  { id: "info", code: "Info" },
+];
+
+// Text Weight
+export const textWeightVariantsOptions = [
+  { id: "thin", code: "Thin" },
+  { id: "light", code: "Light" },
+  { id: "normal", code: "Normal" },
+  { id: "medium", code: "Medium" },
+  { id: "semibold", code: "Semi Bold" },
+  { id: "bold", code: "Bold" },
+  { id: "extrabold", code: "Extra Bold" },
+  { id: "black", code: "Black" },
+];
+
+// Animation
+export const animationVariantsOptions = [
+  { id: "none", code: "None" },
+  { id: "spin", code: "Spin" },
+  { id: "pulse", code: "Pulse" },
+  { id: "bounce", code: "Bounce" },
+  { id: "float", code: "Float" },
+  { id: "shake", code: "Shake" },
+];
+
+// Border Style
+export const borderStyleVariantsOptions = [
+  { id: "none", code: "None" },
+  { id: "solid", code: "Solid" },
+  { id: "dashed", code: "Dashed" },
+  { id: "dotted", code: "Dotted" },
+  { id: "double", code: "Double" },
+  { id: "groove", code: "Groove" },
+  { id: "ridge", code: "Ridge" },
+  { id: "inset", code: "Inset" },
+  { id: "outset", code: "Outset" },
+];
+
+export const popOverPositionsOption = [
+  { id: "top-left", code: "Top Left" },
+  { id: "top-right", code: "Top Right" },
+  { id: "bottom-left", code: "Bottom Left" },
+  { id: "bottom-right", code: "Bottom Right" },
+  { id: "top-center", code: "Top Center" },
+  { id: "center-right", code: "Center Right" },
+  { id: "center-left", code: "Center Left" },
+  { id: "bottom-center", code: "Bottom Center" },
+];
+export const popOverDisplayModeOption = [
+  { id: "popover", code: "Popover" },
+  { id: "buttons", code: "Buttons" },
+  { id: "circular-icons-vertical", code: "Circular, Vertical Icons" },
+  { id: "circular-icons-horizontal", code: "Circular, Horizontal Icons" },
+];

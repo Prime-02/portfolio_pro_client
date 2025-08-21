@@ -20,13 +20,12 @@ export interface ThemeProps {
 
 const Pro = () => {
   const {
-    theme,
     lightTheme,
     darkTheme,
     accentColor,
-    setAccentColor,
-    setLightTheme,
-    setDarkTheme,
+    // setAccentColor,
+    // setLightTheme,
+    // setDarkTheme,
   } = useTheme();
   const { accessToken, loading, setLoading } = useGlobalState();
 
@@ -55,65 +54,65 @@ const Pro = () => {
     });
   }, [lightTheme, darkTheme, accentColor]);
 
-  // Hex color validation
-  const isValidHex = (color: string): boolean => {
-    if (!color) return true; // Allow empty values
-    const hexRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
-    return hexRegex.test(color);
-  };
+  // // Hex color validation
+  // const isValidHex = (color: string): boolean => {
+  //   if (!color) return true; // Allow empty values
+  //   const hexRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
+  //   return hexRegex.test(color);
+  // };
 
-  // Apply theme changes to context
-  const applyThemeChanges = () => {
-    // Validate all hex colors first
-    const errors: { [key: string]: string } = {};
+  // // Apply theme changes to context
+  // const applyThemeChanges = () => {
+  //   // Validate all hex colors first
+  //   const errors: { [key: string]: string } = {};
 
-    if (themeData.primary_theme && !isValidHex(themeData.primary_theme)) {
-      errors.primary_theme = "Invalid hex color format";
-    }
-    if (themeData.secondary_theme && !isValidHex(themeData.secondary_theme)) {
-      errors.secondary_theme = "Invalid hex color format";
-    }
-    if (themeData.accent && !isValidHex(themeData.accent)) {
-      errors.accent = "Invalid hex color format";
-    }
-    if (
-      themeData.primary_theme_dark &&
-      !isValidHex(themeData.primary_theme_dark)
-    ) {
-      errors.primary_theme_dark = "Invalid hex color format";
-    }
-    if (
-      themeData.secondary_theme_dark &&
-      !isValidHex(themeData.secondary_theme_dark)
-    ) {
-      errors.secondary_theme_dark = "Invalid hex color format";
-    }
+  //   if (themeData.primary_theme && !isValidHex(themeData.primary_theme)) {
+  //     errors.primary_theme = "Invalid hex color format";
+  //   }
+  //   if (themeData.secondary_theme && !isValidHex(themeData.secondary_theme)) {
+  //     errors.secondary_theme = "Invalid hex color format";
+  //   }
+  //   if (themeData.accent && !isValidHex(themeData.accent)) {
+  //     errors.accent = "Invalid hex color format";
+  //   }
+  //   if (
+  //     themeData.primary_theme_dark &&
+  //     !isValidHex(themeData.primary_theme_dark)
+  //   ) {
+  //     errors.primary_theme_dark = "Invalid hex color format";
+  //   }
+  //   if (
+  //     themeData.secondary_theme_dark &&
+  //     !isValidHex(themeData.secondary_theme_dark)
+  //   ) {
+  //     errors.secondary_theme_dark = "Invalid hex color format";
+  //   }
 
-    setValidationErrors(errors);
+  //   setValidationErrors(errors);
 
-    // Only apply if no validation errors
-    if (Object.keys(errors).length === 0) {
-      if (themeData.primary_theme && themeData.secondary_theme) {
-        setLightTheme({
-          background: themeData.primary_theme,
-          foreground: themeData.secondary_theme,
-        });
-      }
+  //   // Only apply if no validation errors
+  //   if (Object.keys(errors).length === 0) {
+  //     if (themeData.primary_theme && themeData.secondary_theme) {
+  //       setLightTheme({
+  //         background: themeData.primary_theme,
+  //         foreground: themeData.secondary_theme,
+  //       });
+  //     }
 
-      if (themeData.primary_theme_dark && themeData.secondary_theme_dark) {
-        setDarkTheme({
-          background: themeData.primary_theme_dark,
-          foreground: themeData.secondary_theme_dark,
-        });
-      }
+  //     if (themeData.primary_theme_dark && themeData.secondary_theme_dark) {
+  //       setDarkTheme({
+  //         background: themeData.primary_theme_dark,
+  //         foreground: themeData.secondary_theme_dark,
+  //       });
+  //     }
 
-      if (themeData.accent) {
-        setAccentColor({ color: themeData.accent });
-      }
+  //     if (themeData.accent) {
+  //       setAccentColor({ color: themeData.accent });
+  //     }
 
-      toast.success("Theme applied successfully!", { title: "Success" });
-    }
-  };
+  //     toast.success("Theme applied successfully!", { title: "Success" });
+  //   }
+  // };
 
   const uploadTheme = async () => {
     // Validate before uploading

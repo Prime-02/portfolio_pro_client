@@ -23,13 +23,14 @@ const SkillCard = ({ skill, onEdit, className = "" }: Props) => {
 
   return (
     <div
-      className={`group relative bg-[var(--background)] rounded-lg p-3 hover:shadow-xl shadow-md  transition-all duration-200 hover:border-gray-300 dark:hover:border-gray-600 ${className}`}
+      onClick={() => setExpanded(!expanded)}
+      className={`group cursor-pointer relative  rounded-lg p-3 border-[var(--accent)]  transition-all duration-200 hover:border  ${className}`}
     >
       {/* Edit Button */}
       {onEdit && (
         <button
           onClick={onEdit}
-          className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 shadow- transition-opacity duration-200 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+          className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[var(--foreground)]/50"
           aria-label="Edit skill"
         >
           <Pen size={16} className="" />
@@ -48,28 +49,26 @@ const SkillCard = ({ skill, onEdit, className = "" }: Props) => {
       {/* Dropdown Toggle */}
       <button
         onClick={() => setExpanded(!expanded)}
-        className="flex items-center text-sm  hover:text-gray-700 dark:hover:text-gray-300 w-full justify-end cursor-pointer"
+        className="flex items-center text-sm  hover:text-[var(--foreground)]/50 dark:hover:text-gray-300 w-full justify-end cursor-pointer"
       >
         {expanded ? (
-          <>
-            <ChevronUp size={16} />
-          </>
+          <ChevronUp className="w-4 h-4" />
         ) : (
-          <>
-            <ChevronDown size={16} />
-          </>
+          <ChevronDown className="w-4 h-4" />
         )}
       </button>
 
       {/* Expanded Details */}
       {expanded && (
-        <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 space-y-3">
+        <div className="mt-3 pt-3 border-t border-gray-200 dark:border-[var(--foreground)]/50 space-y-3">
           {/* Proficiency Level */}
           <div>
             <h4 className="text-xs font-medium opacity-65  mb-1">
               Proficiency
             </h4>
-            <p className="text-sm font-semibold uppercase ">{skill.proficiency_level}</p>
+            <p className="text-sm font-semibold uppercase ">
+              {skill.proficiency_level}
+            </p>
           </div>
 
           {/* Category and Subcategory */}

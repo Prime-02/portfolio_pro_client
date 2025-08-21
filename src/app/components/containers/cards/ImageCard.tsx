@@ -1,4 +1,4 @@
-import React, { ReactNode, useState } from "react";
+import React from "react";
 import styled, { css } from "styled-components";
 import Image from "next/image";
 import {
@@ -19,9 +19,9 @@ import {
 import {
   bounce,
   float,
-  getBorderCSS,
+  useBorderCSS,
   getBorderRadius,
-  getColorTheme,
+  useColorTheme,
   getFontWeight,
   getPadding,
   getShadow,
@@ -35,6 +35,7 @@ import {
 } from "./imageCardUtils/stylesFucntions";
 import { mediaCardDefault } from "../../utilities/indices/settings-JSONs/mediaCard";
 import { PopOverPosition } from "../divs/PopOver";
+import TextFormatter from "../TextFormatters/TextFormatter";
 
 // Styled components
 const CardContainer = styled.div<{
@@ -54,9 +55,9 @@ const CardContainer = styled.div<{
 }>`
   border-radius: ${(props) => getBorderRadius(props.$borderRadius)};
   border: ${(props) =>
-    getBorderCSS(props.$borderStyle, props.$borderWidth, props.$borderColor)};
+    useBorderCSS(props.$borderStyle, props.$borderWidth, props.$borderColor)};
   box-shadow: ${(props) => getShadow(props.$shadow)};
-  background-color: ${(props) => getColorTheme(props.$colorVariant).bg};
+  background-color: ${(props) => useColorTheme(props.$colorVariant).bg};
   transition: all ${(props) => getTransitionDuration(props.$transition)}
     ease-in-out;
   overflow: hidden;
@@ -95,7 +96,7 @@ const CardContainer = styled.div<{
   ${(props) =>
     props.$animation === "shake" &&
     css`
-      animation: ${shake} 0.82s cubic-bezier(0.36, 0.07, 0.19, 0.97) both ;
+      animation: ${shake} 0.82s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
     `}
 
   ${(props) =>
@@ -156,7 +157,7 @@ const CardContainer = styled.div<{
     `}
 
   @media (prefers-color-scheme: dark) {
-    background-color: ${(props) => getColorTheme(props.$colorVariant).bgDark};
+    background-color: ${(props) => useColorTheme(props.$colorVariant).bgDark};
   }
 `;
 
@@ -218,10 +219,10 @@ const AudioContainer = styled.div<{
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: ${(props) => getColorTheme(props.$colorVariant).bg};
+  background: ${(props) => useColorTheme(props.$colorVariant).bg};
 
   @media (prefers-color-scheme: dark) {
-    background: ${(props) => getColorTheme(props.$colorVariant).bgDark};
+    background: ${(props) => useColorTheme(props.$colorVariant).bgDark};
   }
 `;
 
@@ -234,11 +235,11 @@ const AudioIcon = styled.div<{
   $colorVariant: ColorVariant;
 }>`
   font-size: 3rem;
-  color: ${(props) => getColorTheme(props.$colorVariant).text};
+  color: ${(props) => useColorTheme(props.$colorVariant).text};
   margin-bottom: 1rem;
 
   @media (prefers-color-scheme: dark) {
-    color: ${(props) => getColorTheme(props.$colorVariant).textDark};
+    color: ${(props) => useColorTheme(props.$colorVariant).textDark};
   }
 `;
 
@@ -295,12 +296,12 @@ const ContentContainer = styled.div<{
           color: white;
         `
       : css`
-          background-color: ${getColorTheme(props.$colorVariant).bg};
-          color: ${getColorTheme(props.$colorVariant).text};
+          background-color: ${useColorTheme(props.$colorVariant).bg};
+          color: ${useColorTheme(props.$colorVariant).text};
 
           @media (prefers-color-scheme: dark) {
-            background-color: ${getColorTheme(props.$colorVariant).bgDark};
-            color: ${getColorTheme(props.$colorVariant).textDark};
+            background-color: ${useColorTheme(props.$colorVariant).bgDark};
+            color: ${useColorTheme(props.$colorVariant).textDark};
           }
         `}
 `;
@@ -359,9 +360,9 @@ const LoadingImagePlaceholder = styled.div<{
     typeof props.$height === "number" ? `${props.$height}px` : props.$height};
   background: linear-gradient(
     -45deg,
-    ${(props) => getColorTheme(props.$colorVariant).bg},
-    ${(props) => getColorTheme(props.$colorVariant).text}20,
-    ${(props) => getColorTheme(props.$colorVariant).bg}
+    ${(props) => useColorTheme(props.$colorVariant).bg},
+    ${(props) => useColorTheme(props.$colorVariant).text}20,
+    ${(props) => useColorTheme(props.$colorVariant).bg}
   );
   background-size: 400% 400%;
   animation: ${gradientShift} 2s ease infinite;
@@ -376,9 +377,9 @@ const LoadingTextPlaceholder = styled.div<{
   height: ${(props) => props.$height};
   background: linear-gradient(
     -45deg,
-    ${(props) => getColorTheme(props.$colorVariant).bg},
-    ${(props) => getColorTheme(props.$colorVariant).text}20,
-    ${(props) => getColorTheme(props.$colorVariant).bg}
+    ${(props) => useColorTheme(props.$colorVariant).bg},
+    ${(props) => useColorTheme(props.$colorVariant).text}20,
+    ${(props) => useColorTheme(props.$colorVariant).bg}
   );
   background-size: 400% 400%;
   animation: ${gradientShift} 2s ease infinite;
@@ -394,7 +395,7 @@ const ImageCard: React.FC<ImageCardProps> = (props) => {
       autoplay: true,
       loop: true,
       muted: true,
-      controls: false,
+      controls: true,
     },
     audioProps = {
       autoplay: false,
@@ -407,27 +408,27 @@ const ImageCard: React.FC<ImageCardProps> = (props) => {
     onClick,
 
     // Layout & Sizing
-    width = mediaCardDefault.width,
-    height = mediaCardDefault.height,
-    aspectRatio = mediaCardDefault.aspectRatio,
-    imageHeight = mediaCardDefault.imageHeight,
+    width = mediaCardDefault.width || 300,
+    height = mediaCardDefault.height || 450,
+    aspectRatio = mediaCardDefault.aspectRatio || "auto",
+    imageHeight = mediaCardDefault.imageHeight || "auto",
 
     // Border Props
-    borderStyle = mediaCardDefault.borderStyle,
-    borderWidth = mediaCardDefault.borderWidth,
-    borderColor = mediaCardDefault.borderColor,
-    borderRadius = mediaCardDefault.borderRadius,
-    shadow = mediaCardDefault.shadow,
-    hoverShadow = mediaCardDefault.hoverShadow,
-    titleSize = mediaCardDefault.titleSize,
-    descriptionSize = mediaCardDefault.descriptionSize,
-    contentPadding = mediaCardDefault.contentPadding,
-    transition = mediaCardDefault.transition,
-    hoverEffect = mediaCardDefault.hoverEffect,
-    titleWeight = mediaCardDefault.titleWeight,
-    descriptionWeight = mediaCardDefault.descriptionWeight,
-    overlayOpacity = mediaCardDefault.overlayOpacity,
-    animation = mediaCardDefault.animation,
+    borderStyle = mediaCardDefault.borderStyle || "solid",
+    borderWidth = mediaCardDefault.borderWidth || 1,
+    borderColor = mediaCardDefault.borderColor || "current",
+    borderRadius = mediaCardDefault.borderRadius || "2xl",
+    shadow = mediaCardDefault.shadow || "none",
+    hoverShadow = mediaCardDefault.hoverShadow || "none",
+    titleSize = mediaCardDefault.titleSize || "base",
+    descriptionSize = mediaCardDefault.descriptionSize || "sm",
+    contentPadding = mediaCardDefault.contentPadding || "md",
+    transition = mediaCardDefault.transition || "none",
+    hoverEffect = mediaCardDefault.hoverEffect || "none",
+    titleWeight = mediaCardDefault.titleWeight || "bold",
+    descriptionWeight = mediaCardDefault.descriptionWeight || "normal",
+    overlayOpacity = mediaCardDefault.overlayOpacity || 50,
+    animation = mediaCardDefault.animation || "none",
 
     // Content
     titleLines = mediaCardDefault.titleLines,
@@ -459,8 +460,8 @@ const ImageCard: React.FC<ImageCardProps> = (props) => {
     fill = false,
 
     // Interaction
-    disabled = mediaCardDefault.disabled,
-    disableHover = mediaCardDefault.disableHover,
+    disabled = mediaCardDefault.disabled || false,
+    disableHover = mediaCardDefault.disableHover || false,
     hideAction = mediaCardDefault.hideAction,
     actionPosition = mediaCardDefault.actionPosition,
 
@@ -469,21 +470,19 @@ const ImageCard: React.FC<ImageCardProps> = (props) => {
     onImageError,
 
     // Background & Colors
-    backgroundVariant = mediaCardDefault.backgroundVariant,
-    textVariant = mediaCardDefault.textVariant,
+    backgroundVariant = mediaCardDefault.backgroundVariant || "primary",
+    textVariant = mediaCardDefault.textVariant || "primary",
 
     ...cardProps
   } = props;
 
   const mediaUrl = media_url || props.image_url;
 
-  const [imageError, setImageError] = useState(false);
-
   // Custom loading content or default loading placeholder
   if (isLoading) {
     if (customLoadingContent) {
       return (
-        <div style={{ borderRadius: getBorderRadius(borderRadius) }}>
+        <div style={{ borderRadius: getBorderRadius(borderRadius || "2xl") }}>
           {customLoadingContent}
         </div>
       );
@@ -491,7 +490,7 @@ const ImageCard: React.FC<ImageCardProps> = (props) => {
 
     return (
       <LoadingContainer
-        $borderStyle={borderStyle}
+        $borderStyle={borderStyle }
         $borderWidth={borderWidth}
         $borderColor={borderColor}
         $borderRadius={borderRadius}
@@ -511,7 +510,7 @@ const ImageCard: React.FC<ImageCardProps> = (props) => {
         />
 
         {showContent && contentPosition === "bottom" && (
-          <div style={{ padding: getPadding(contentPadding) }}>
+          <div style={{ padding: getPadding(contentPadding || "md") }}>
             <LoadingTextPlaceholder
               $width="75%"
               $height="1rem"
@@ -553,8 +552,7 @@ const ImageCard: React.FC<ImageCardProps> = (props) => {
   };
 
   // Handle image error
-  const handleImageError = (error: any) => {
-    setImageError(true);
+  const handleImageError = (error: unknown) => {
     if (onImageError) {
       onImageError(error);
     }
@@ -777,7 +775,7 @@ const ImageCard: React.FC<ImageCardProps> = (props) => {
                 $lines={!fullText ? descriptionLines : undefined}
                 $position="bottom"
               >
-                {props.description}
+                <TextFormatter>{props.description}</TextFormatter>
               </Description>
             )}
           </ContentContainer>

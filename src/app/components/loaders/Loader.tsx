@@ -108,11 +108,20 @@ export const animations = `
     100% { transform: rotate(360deg) scale(1); }
   }
   
-  @keyframes particle {
-    0% { transform: translate(0, 0) scale(0); opacity: 1; }
-    50% { transform: translate(20px, -20px) scale(1); opacity: 0.8; }
-    100% { transform: translate(0, 0) scale(0); opacity: 0; }
+@keyframes particle {
+  0% {
+    transform: translate(-50%, -50%) translate(0, 0) scale(0);
+    opacity: 1;
   }
+  50% {
+    transform: translate(-50%, -50%) translate(20px, -20px) scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(-50%, -50%) translate(0, 0) scale(0);
+    opacity: 0;
+  }
+}
   
   @keyframes radar {
     0% { transform: rotate(0deg) scaleX(1); opacity: 0; }
@@ -120,12 +129,22 @@ export const animations = `
     100% { transform: rotate(360deg) scaleX(0.5); opacity: 0; }
   }
   
-  @keyframes infinity {
-    0% { transform: translate(0, 0) rotate(0deg); }
-    25% { transform: translate(20px, 10px) rotate(90deg); }
-    50% { transform: translate(0, 20px) rotate(180deg); }
-    75% { transform: translate(-20px, 10px) rotate(270deg); }
-    100% { transform: translate(0, 0) rotate(360deg); }
+@keyframes infinity {
+    0% { 
+      transform: translate(0, 0) rotate(0deg) scale(1); 
+    }
+    25% { 
+      transform: translate(25px, -10px) rotate(90deg) scale(1.1); 
+    }
+    50% { 
+      transform: translate(0, -15px) rotate(180deg) scale(1); 
+    }
+    75% { 
+      transform: translate(-25px, -10px) rotate(270deg) scale(1.1); 
+    }
+    100% { 
+      transform: translate(0, 0) rotate(360deg) scale(1); 
+    }
   }
   
   @keyframes magnetic {
@@ -169,17 +188,17 @@ export const SpinLoader: React.FC<LoaderProps> = ({
   <LoaderContainer>
     <div
       className="animate-spin rounded-full border-solid border-opacity-25 "
-     style={{
-      width: size,
-      height: size,
-      borderWidth: thickness,
-      borderTopColor: "transparent",
-      borderRightColor: color,
-      borderBottomColor: color,
-      borderLeftColor: color,
-      animation: "spin 0.8s linear infinite",
-    }}
-  />
+      style={{
+        width: size,
+        height: size,
+        borderWidth: thickness,
+        borderTopColor: "transparent",
+        borderRightColor: color,
+        borderBottomColor: color,
+        borderLeftColor: color,
+        animation: "spin 0.8s linear infinite",
+      }}
+    />
   </LoaderContainer>
 );
 
@@ -360,16 +379,22 @@ export const SpiralLoader: React.FC<LoaderProps> = ({
   size = 40,
 }) => (
   <LoaderContainer>
-    <div className="relative" style={{ width: size, height: size }}>
+    <div
+      className="relative w-auto h-auto flex justify-center items-center"
+      style={{ width: size, height: size }}
+    >
       {[0, 1, 2, 3].map((i) => (
         <div
           key={i}
           className="absolute w-2 h-2 rounded-full"
           style={{
             backgroundColor: color,
-            animation: `spiral 1.5s linear infinite`,
-            animationDelay: `${i * 0.375}s`,
-            transformOrigin: `${size / 2}px ${size / 2}px`,
+            animation: `spiral 0.75s linear infinite`,
+            animationDelay: `${i * 0.1875}s`,
+            transformOrigin: `${size / 5}px ${size / 5}px`,
+            top: `${size / 5}px`,
+            left: `${size / 5}px`,
+            transform: "translate(-50%, -50%)", // Centers each dot
           }}
         />
       ))}
@@ -501,18 +526,29 @@ export const LiquidLoader: React.FC<LoaderProps> = ({
   color = "#3b82f6",
   size = 40,
 }) => (
-  <LoaderContainer>
+  <LoaderContainer
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      width: "100%",
+      height: "100%",
+    }}
+  >
     <div className="relative" style={{ width: size, height: size }}>
-      {[0, 1, 2].map((i) => (
+      {[0, 1, 2, 3].map((i) => (
         <div
           key={i}
           className="absolute rounded-full"
           style={{
-            width: size * 0.25,
-            height: size * 0.25,
+            width: size * 0.35,
+            height: size * 0.35,
             backgroundColor: color,
             animation: `liquid 2s ease-in-out infinite`,
             animationDelay: `${i * 0.4}s`,
+            top: `${size / 3}px`,
+            left: `${size / 3}px`,
+            transform: "translate(-50%, -50%)", // Centers each dot
           }}
         />
       ))}
@@ -542,7 +578,15 @@ export const ParticleLoader: React.FC<LoaderProps> = ({
   color = "#3b82f6",
   size = 40,
 }) => (
-  <LoaderContainer>
+  <LoaderContainer
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      width: "100%",
+      height: "100%",
+    }}
+  >
     <div className="relative" style={{ width: size, height: size }}>
       {[0, 1, 2, 3, 4, 5].map((i) => (
         <div
@@ -554,6 +598,9 @@ export const ParticleLoader: React.FC<LoaderProps> = ({
             backgroundColor: color,
             animation: `particle 3s ease-in-out infinite`,
             animationDelay: `${i * 0.5}s`,
+            bottom: `${size / 9}px`,
+            right: `${size / 1}px`,
+            transform: "translate(-50%, -50%)", // Centers each dot
           }}
         />
       ))}
@@ -593,14 +640,17 @@ export const InfinityLoader: React.FC<LoaderProps> = ({
   size = 40,
 }) => (
   <LoaderContainer>
-    <div className="relative" style={{ width: size, height: size * 0.5 }}>
+    <div
+      className="relative flex justify-center items-center"
+      style={{ width: size, height: size * 0.5 }}
+    >
       <div
         className="absolute rounded-full"
         style={{
           width: size * 0.2,
           height: size * 0.2,
           backgroundColor: color,
-          animation: "infinity 2s ease-in-out infinite",
+          animation: "infinity 1.5s ease-in-out infinite",
         }}
       />
     </div>
@@ -636,18 +686,18 @@ export const SpinnerDotsLoader: React.FC<LoaderProps> = ({
 }) => (
   <LoaderContainer>
     <div className="relative" style={{ width: size, height: size }}>
-      {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
+      {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
         <div
           key={i}
-          className="absolute rounded-full"
+          className="absolute  rounded-full"
           style={{
-            width: size * 0.15,
-            height: size * 0.15,
+            width: size * 0.2,
+            height: size * 0.2,
             backgroundColor: color,
-            top: "50%",
-            left: "50%",
-            transformOrigin: `0 ${size * 0.35}px`,
-            transform: `rotate(${i * 45}deg)`,
+            top: "20%",
+            left: "60%",
+            transformOrigin: `0 ${size * 0.45}px`,
+            transform: `translate(-50%, -50%) rotate(${i * 45}deg)`,
             animation: `spinnerDots 1s linear infinite`,
             animationDelay: `${i * 0.125}s`,
           }}

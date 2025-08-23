@@ -12,6 +12,7 @@ import {
 } from "@/app/components/types and interfaces/ImageCardTypes";
 import { keyframes } from "styled-components";
 import { PopOverPosition } from "../../divs/PopOver";
+import { themePresets } from "@/app/components/utilities/indices/Themes";
 
 // Keyframe animations
 export const gradientShift = keyframes`
@@ -270,59 +271,32 @@ export const getFontWeight = (variant: TextWeightVariant): string => {
   return map[variant];
 };
 
-export const useColorTheme = (variant: ColorVariant) => {
-  const { theme, accentColor } = useTheme();
-  const themes = {
-    primary: {
-      bg: theme.background,
-      bgDark: theme.background,
-      text: theme.foreground,
-      textDark: theme.foreground,
-    },
-    secondary: {
-      bg: "#f9fafb",
-      bgDark: "rgba(17, 24, 39, 0.2)",
-      text: "#111827",
-      textDark: "#f9fafb",
-    },
-    accent: {
-      bg: accentColor.color,
-      bgDark: accentColor.color,
-      text: "#581c87",
-      textDark: "#f3e8ff",
-    },
-    neutral: {
-      bg: "#fafafa",
-      bgDark: "rgba(23, 23, 23, 0.2)",
-      text: "#171717",
-      textDark: "#fafafa",
-    },
-    success: {
-      bg: "#f0fdf4",
-      bgDark: "rgba(21, 128, 61, 0.2)",
-      text: "#15803d",
-      textDark: "#dcfce7",
-    },
-    warning: {
-      bg: "#fefce8",
-      bgDark: "rgba(161, 98, 7, 0.2)",
-      text: "#a16207",
-      textDark: "#fef3c7",
-    },
-    error: {
-      bg: "#fef2f2",
-      bgDark: "rgba(185, 28, 28, 0.2)",
-      text: "#b91c1c",
-      textDark: "#fecaca",
-    },
-    info: {
-      bg: "#f0f9ff",
-      bgDark: "rgba(7, 89, 133, 0.2)",
-      text: "#075985",
-      textDark: "#e0f2fe",
-    },
-  };
-  return themes[variant];
+// Generate themes dynamically from themePresets
+const generateThemesFromPresets = () => {
+  const themes: Record<string, any> = {};
+
+  themePresets.forEach((preset) => {
+    const key = `${preset.name.toLowerCase().replace(/\s+/g, "")}_theme`; // Convert "Portfolio Pro" to "portfoliopro_theme"
+    themes[key] = {
+      bg: preset.light.background,
+      bgDark: preset.dark.background,
+      textDark: preset.dark.foreground,
+      text: preset.light.foreground,
+      border: preset.accent,
+    };
+  });
+
+  return themes;
+};
+
+export const useColorTheme = (variant: keyof ColorVariant | string) => {
+  const validatedVariant = variant.includes("_theme")
+    ? variant
+    : "portfoliopro_theme";
+  // Generate dynamic themes from presets
+  const themes = generateThemesFromPresets();
+
+  return themes[validatedVariant];
 };
 
 export const useBorderCSS = (

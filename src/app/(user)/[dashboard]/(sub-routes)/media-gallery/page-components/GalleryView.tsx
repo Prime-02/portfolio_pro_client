@@ -14,7 +14,7 @@ import GalleryCardActions, { ActionType } from "./GalleryCardActions"; // Import
 import ImageCard from "@/app/components/containers/cards/ImageCard";
 import MasonryGrid from "@/app/components/containers/divs/MasonryGrid";
 import { createAlbumUniversalActions } from "../imageActions";
-import { AlbumData } from "../[gallery]/page-components/MediaView";
+import { AlbumData } from "../[gallery]/page-components/AlbumView";
 
 const GalleryView = () => {
   const {
@@ -71,7 +71,9 @@ const GalleryView = () => {
             ...galleryRes,
             media: append
               ? [...prev.media, ...galleryRes.media]
-              : galleryRes.media,
+              : galleryRes?.media?.length > 0 && galleryRes?.media
+                ? galleryRes.media
+                : [],
           }));
         }
       } catch (error) {
@@ -143,7 +145,7 @@ const GalleryView = () => {
       </header>
 
       <div className="pb-8">
-        {galleries.media.length < 1 && !isInitialLoading ? (
+        {galleries.media?.length < 1 && !isInitialLoading ? (
           <EmptyState
             imageHeight={200}
             imageWidth={200}
@@ -153,7 +155,7 @@ const GalleryView = () => {
               extendRouteWithQuery({ create: "true" });
             }}
             description="No image album or gallery found"
-            className="border-[var(--accent)] border "
+            className="border-[var(--accent)] border"
           />
         ) : isInitialLoading ? (
           LoaderComponent ? (
@@ -165,7 +167,7 @@ const GalleryView = () => {
           )
         ) : (
           <MasonryGrid
-            gap={5}
+            gap={3}
             totalItems={galleries.total}
             loadedItems={galleries.media.length}
             page={page}
@@ -239,8 +241,6 @@ const GalleryView = () => {
                   disabled={gallery.media?.disabled}
                   hideAction={gallery.media?.hideAction}
                   actionPosition={gallery.media?.actionPosition}
-                  
-                  
                   id={gallery.id}
                   title={gallery.name}
                   onClick={() => {

@@ -47,7 +47,7 @@ const CardContainer = styled.div<{
   $hoverShadow: HoverShadowVariant;
   $transition: TransitionVariant;
   $hoverEffect: HoverEffectVariant;
-  $colorVariant: ColorVariant;
+  $colorVariant: keyof ColorVariant | string;
   $isClickable: boolean;
   $disabled: boolean;
   $animation: AnimationVariant;
@@ -170,10 +170,12 @@ const StyledImage = styled(Image)<{
   $transition: TransitionVariant;
   $hoverScale?: number;
   $disableHover: boolean;
+  $borderRadius: BorderRadiusVariant;
 }>`
   width: 100%;
   height: 100%;
   object-fit: cover;
+  border-radius: ${(props) => getBorderRadius(props.$borderRadius)};
   transition: transform ${(props) => getTransitionDuration(props.$transition)}
     ease-in-out;
 
@@ -210,7 +212,7 @@ const StyledVideo = styled.video<{
 
 const AudioContainer = styled.div<{
   $height: string | number;
-  $colorVariant: ColorVariant;
+  $colorVariant: keyof ColorVariant | string;
 }>`
   width: 100%;
   height: ${(props) =>
@@ -232,7 +234,7 @@ const StyledAudio = styled.audio`
 `;
 
 const AudioIcon = styled.div<{
-  $colorVariant: ColorVariant;
+  $colorVariant: keyof ColorVariant | string;
 }>`
   font-size: 3rem;
   color: ${(props) => useColorTheme(props.$colorVariant).text};
@@ -280,7 +282,7 @@ const GradientOverlay = styled.div<{
 
 const ContentContainer = styled.div<{
   $padding: SpacingVariant;
-  $colorVariant: ColorVariant;
+  $colorVariant: keyof ColorVariant | string;
   $position: "bottom" | "overlay";
 }>`
   padding: ${(props) => getPadding(props.$padding)};
@@ -353,7 +355,7 @@ const LoadingContainer = styled(CardContainer)`
 
 const LoadingImagePlaceholder = styled.div<{
   $height: string | number;
-  $colorVariant: ColorVariant;
+  $colorVariant: keyof ColorVariant | string;
 }>`
   width: 100%;
   height: ${(props) =>
@@ -371,7 +373,7 @@ const LoadingImagePlaceholder = styled.div<{
 const LoadingTextPlaceholder = styled.div<{
   $width: string;
   $height: string;
-  $colorVariant: ColorVariant;
+  $colorVariant: keyof ColorVariant | string;
 }>`
   width: ${(props) => props.$width};
   height: ${(props) => props.$height};
@@ -444,7 +446,7 @@ const ImageCard: React.FC<ImageCardProps> = (props) => {
     // Loading
     loadingHeight = "12rem",
     customLoadingContent,
-    loadingVariant = "secondary",
+    loadingVariant = "portfoliopro_theme",
 
     // Accessibility
     alt,
@@ -470,8 +472,9 @@ const ImageCard: React.FC<ImageCardProps> = (props) => {
     onImageError,
 
     // Background & Colors
-    backgroundVariant = mediaCardDefault.backgroundVariant || "primary",
-    textVariant = mediaCardDefault.textVariant || "primary",
+    backgroundVariant = mediaCardDefault.backgroundVariant ||
+      "portfoliopro_theme",
+    textVariant = mediaCardDefault.textVariant || "portfoliopro_theme",
 
     ...cardProps
   } = props;
@@ -490,7 +493,7 @@ const ImageCard: React.FC<ImageCardProps> = (props) => {
 
     return (
       <LoadingContainer
-        $borderStyle={borderStyle }
+        $borderStyle={borderStyle}
         $borderWidth={borderWidth}
         $borderColor={borderColor as keyof BorderColorVariant}
         $borderRadius={borderRadius}
@@ -642,6 +645,7 @@ const ImageCard: React.FC<ImageCardProps> = (props) => {
             blurDataURL={blurDataURL}
             sizes={sizes}
             onError={handleImageError}
+            $borderRadius={"none"}
           />
         ) : (
           <div
@@ -666,6 +670,7 @@ const ImageCard: React.FC<ImageCardProps> = (props) => {
               blurDataURL={blurDataURL}
               sizes={sizes}
               onError={handleImageError}
+              $borderRadius={"none"}
             />
           </div>
         );
@@ -755,7 +760,7 @@ const ImageCard: React.FC<ImageCardProps> = (props) => {
         (props.title || props.description) && (
           <ContentContainer
             $padding={contentPadding}
-            $colorVariant={textVariant}
+            $colorVariant={backgroundVariant}
             $position="bottom"
           >
             {props.title && (

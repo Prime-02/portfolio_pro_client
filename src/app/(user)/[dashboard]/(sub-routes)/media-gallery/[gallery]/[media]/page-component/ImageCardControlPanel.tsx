@@ -51,7 +51,7 @@ const ImageCardControlPanel = ({
   setMediaData: React.Dispatch<React.SetStateAction<ImageCardProps>>;
   onClick: () => void;
 }) => {
-  const [CustomColor, setCustomColor] = useState(true);
+  const [CustomColor, setCustomColor] = useState(false);
   return (
     <div className="flex flex-col gap-y-4">
       <p className="text-xs text-[var(--accent)] animate-pulse ">
@@ -311,7 +311,7 @@ const ImageCardControlPanel = ({
                 onChange={(value: string) => {
                   setMediaData((prev: ImageCardProps) => ({
                     ...prev,
-                    backgroundVariant: value as ColorVariant,
+                    backgroundVariant: value as keyof ColorVariant,
                   }));
                 }}
               />
@@ -326,7 +326,7 @@ const ImageCardControlPanel = ({
                 onChange={(value: string) => {
                   setMediaData((prev: ImageCardProps) => ({
                     ...prev,
-                    textVariant: value as ColorVariant,
+                    textVariant: value as keyof ColorVariant,
                   }));
                 }}
               />

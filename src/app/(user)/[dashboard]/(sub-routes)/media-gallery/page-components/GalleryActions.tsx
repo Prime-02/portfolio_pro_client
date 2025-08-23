@@ -16,7 +16,7 @@ import {
 } from "@/app/components/utilities/syncFunctions/syncs";
 import { useGlobalState } from "@/app/globalStateProvider";
 import React, { FormEvent, useState, useEffect } from "react";
-import { AlbumData } from "../[gallery]/page-components/MediaView";
+import { AlbumData } from "../[gallery]/page-components/AlbumView";
 
 const GalleryActions = ({
   fetchAlbum,
@@ -94,7 +94,6 @@ const GalleryActions = ({
     } catch (error) {
       toast.error("Invalid image format");
       console.log("Error converting image:", error);
-      
     } finally {
       setLoading("processing_image");
     }

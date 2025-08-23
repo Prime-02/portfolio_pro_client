@@ -1,4 +1,4 @@
-import { AlbumData } from "@/app/(user)/[dashboard]/(sub-routes)/media-gallery/[gallery]/page-components/MediaView";
+import { AlbumData } from "@/app/(user)/[dashboard]/(sub-routes)/media-gallery/[gallery]/page-components/AlbumView";
 import { ImageCardProps } from "@/app/components/types and interfaces/ImageCardTypes";
 
 export const mediaCardDefault: ImageCardProps = {

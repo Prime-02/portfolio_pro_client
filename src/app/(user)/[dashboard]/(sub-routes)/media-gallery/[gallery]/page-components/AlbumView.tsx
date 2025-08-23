@@ -37,7 +37,7 @@ export interface AlbumData {
   [key: string]: unknown;
 }
 
-const MediaView = () => {
+const AlbumView = () => {
   const {
     currentUser,
     accessToken,
@@ -141,4 +141,4 @@ const MediaView = () => {
   );
 };
 
-export default MediaView;
+export default AlbumView;

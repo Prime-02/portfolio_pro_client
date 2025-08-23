@@ -59,15 +59,20 @@ export type HoverEffectVariant =
   | "brightness"
   | "fade"
   | "glow";
-export type ColorVariant =
-  | "primary"
-  | "secondary"
-  | "accent"
-  | "neutral"
-  | "success"
-  | "warning"
-  | "error"
-  | "info";
+export type ColorVariant = {
+  portfoliopro_theme: string;
+  ocean_theme: string;
+  forest_theme: string;
+  sunset_theme: string;
+  midnight_theme: string;
+  rose_theme: string;
+  violet_theme: string;
+  crimson_theme: string;
+  amber_theme: string;
+  emerald_theme: string;
+  indigo_theme: string;
+  coral_theme: string;
+};
 export type TextWeightVariant =
   | "thin"
   | "light"
@@ -309,8 +314,8 @@ export interface ImageCardProps {
   borderWidth?: number;
   borderColor?: keyof BorderColorVariant | string;
   borderRadius?: BorderRadiusVariant;
-  backgroundVariant?: ColorVariant;
-  textVariant?: ColorVariant;
+  backgroundVariant?: keyof ColorVariant | string;
+  textVariant?: keyof ColorVariant | string;
   overlayOpacity?: number;
   showGradientOverlay?: boolean;
 
@@ -343,6 +348,6 @@ export interface ImageCardProps {
   isLoading?: boolean;
   loadingHeight?: string | number;
   customLoadingContent?: ReactNode;
-  loadingVariant?: ColorVariant;
+  loadingVariant?: keyof ColorVariant | string;
   [key: string]: unknown;
 }

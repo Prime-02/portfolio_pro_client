@@ -1,6 +1,6 @@
 import React from "react";
 import { Heart, Share, MoreVertical, Eye, Download, Edit } from "lucide-react";
-import { AlbumData } from "@/app/(user)/[dashboard]/(sub-routes)/media-gallery/[gallery]/page-components/MediaView";
+import { AlbumData } from "@/app/(user)/[dashboard]/(sub-routes)/media-gallery/[gallery]/page-components/AlbumView";
 
 // Example action components
 export const ActionButton = ({

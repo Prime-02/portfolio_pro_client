@@ -1100,14 +1100,18 @@ export const hoverEffectVariantsOptions = [
 
 // Color
 export const colorVariantsOptions = [
-  { id: "primary", code: "Primary" },
-  { id: "secondary", code: "Secondary" },
-  { id: "accent", code: "Accent" },
-  { id: "neutral", code: "Neutral" },
-  { id: "success", code: "Success" },
-  { id: "warning", code: "Warning" },
-  { id: "error", code: "Error" },
-  { id: "info", code: "Info" },
+  { id: "portfoliopro_theme", code: "Portfolio Pro" },
+  { id: "ocean_theme", code: "Ocean" },
+  { id: "forest_theme", code: "Forest" },
+  { id: "sunset_theme", code: "Sunset" },
+  { id: "midnight_theme", code: "Midnight" },
+  { id: "rose_theme", code: "Rose" },
+  { id: "violet_theme", code: "Violet" },
+  { id: "crimson_theme", code: "Crimson" },
+  { id: "amber_theme", code: "Amber" },
+  { id: "emerald_theme", code: "Emerald" },
+  { id: "indigo_theme", code: "Indigo" },
+  { id: "coral_theme", code: "Coral" },
 ];
 
 // Text Weight

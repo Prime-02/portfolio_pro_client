@@ -12,7 +12,7 @@ import Modal from "@/app/components/containers/modals/Modal";
 import MasonryGrid from "@/app/components/containers/divs/MasonryGrid";
 import ImageCard from "@/app/components/containers/cards/ImageCard";
 import MediaActions from "./MediaActions";
-import { AlbumData } from "./MediaView";
+import { AlbumData } from "./AlbumView";
 import { createAlbumUniversalActions } from "../../imageActions";
 import GalleryCardActions, {
   ActionType,
@@ -23,6 +23,7 @@ import Button from "@/app/components/buttons/Buttons";
 import TextFormatter from "@/app/components/containers/TextFormatters/TextFormatter";
 import ImageCardControlPanel from "../[media]/page-component/ImageCardControlPanel";
 import { toast } from "@/app/components/toastify/Toastify";
+import { PathUtil } from "@/app/components/utilities/syncFunctions/syncs";
 
 interface AllMedia {
   media: AlbumData[];
@@ -316,6 +317,7 @@ const MediaCollection = ({ props, collectionId }: MediaCollectionProps) => {
                 hideAction={coverLayout?.hideAction}
                 loadingHeight={`${500}px`}
                 actionPosition={coverLayout?.actionPosition}
+                backgroundVariant={coverLayout?.backgroundVariant}
                 placeholder="empty"
                 fallbackImage="/vectors/undraw_monitor_ypga.svg"
                 alt={props.name ? `Cover for ${props.name}` : "Album cover"}
@@ -334,6 +336,7 @@ const MediaCollection = ({ props, collectionId }: MediaCollectionProps) => {
                     extendRouteWithQuery: extendRouteWithQuery,
                     isAlbum: false,
                     extendRoute: extendRoute,
+                    newUrl: `${currentPath}/${media?.id || ""}`
                   },
                   String(media.media_type)
                 );
@@ -376,8 +379,13 @@ const MediaCollection = ({ props, collectionId }: MediaCollectionProps) => {
                     animation={media?.image_card_layout?.animation}
                     disabled={media?.image_card_layout?.disabled}
                     hideAction={media?.image_card_layout?.hideAction}
+                    backgroundVariant={
+                      media?.image_card_layout?.backgroundVariant
+                    }
                     loadingHeight={`${500}px`}
-                    actionPosition={media?.image_card_layout?.PopoverdisplayPosition}
+                    actionPosition={
+                      media?.image_card_layout?.PopoverdisplayPosition
+                    }
                     onClick={() => {
                       extendRoute(String(media.id));
                     }}

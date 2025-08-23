@@ -19,7 +19,7 @@ import ImageCardControlPanel from "./ImageCardControlPanel";
 import { UpdateAllData } from "@/app/components/utilities/asyncFunctions/lib/crud";
 import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
 import { toast } from "@/app/components/toastify/Toastify";
-import { AlbumData } from "../../page-components/MediaView";
+import { AlbumData } from "../../page-components/AlbumView";
 
 const MediaView = () => {
   const {
@@ -56,6 +56,10 @@ const MediaView = () => {
       currentUser,
     });
   };
+
+  useEffect(() => {
+    console.log(mediaLayout);
+  }, [mediaLayout]);
 
   useEffect(() => {
     if (accessToken) {
@@ -107,6 +111,8 @@ const MediaView = () => {
   useEffect(() => {
     setMediaLayout(mediaData.image_card_layout as ImageCardProps);
   }, [mediaData.image_card_layout]);
+
+
 
   return (
     <>
@@ -197,6 +203,7 @@ const MediaView = () => {
                   actionPosition={mediaLayout?.PopoverdisplayPosition}
                   PopoverdisplayPosition={mediaLayout?.PopoverdisplayPosition}
                   PopoverdisplayMode={mediaLayout?.PopoverdisplayMode}
+                  backgroundVariant={mediaLayout?.backgroundVariant}
                   alt={
                     mediaData ? `Cover for ${mediaData.title}` : "Album cover"
                   }

@@ -11,7 +11,7 @@ import {
   GetAllData,
   UpdateAllData,
 } from "@/app/components/utilities/asyncFunctions/lib/crud";
-import { AlbumData } from "./MediaView";
+import { AlbumData } from "./AlbumView";
 import { MediaFile } from "@/app/components/types and interfaces/MediaInputElements";
 import { createMediaConfig } from "@/app/components/utilities/indices/settings-JSONs/mediaCard";
 
@@ -47,7 +47,6 @@ export const getMediaData = async ({
       type: "Medium Data",
     });
     if (mediumRes) {
-      console.log(mediumRes);
       setMediaData((prev) => ({
         ...prev,
         id: mediumRes.id,
@@ -88,7 +87,7 @@ export const updateMediaData = async ({
     const updateRes = await UpdateAllData({
       access: accessToken,
       url: `${V1_BASE_URL}/media-gallery/collections/${id}/media/${currentAction}`,
-      field: mediaData as  AlbumData,
+      field: mediaData as AlbumData,
       method: "patch",
     });
     if (updateRes) {

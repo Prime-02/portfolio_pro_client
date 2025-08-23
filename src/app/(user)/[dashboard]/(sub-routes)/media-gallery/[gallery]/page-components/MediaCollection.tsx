@@ -23,7 +23,6 @@ import Button from "@/app/components/buttons/Buttons";
 import TextFormatter from "@/app/components/containers/TextFormatters/TextFormatter";
 import ImageCardControlPanel from "../[media]/page-component/ImageCardControlPanel";
 import { toast } from "@/app/components/toastify/Toastify";
-import { PathUtil } from "@/app/components/utilities/syncFunctions/syncs";
 
 interface AllMedia {
   media: AlbumData[];

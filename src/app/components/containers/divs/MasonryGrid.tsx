@@ -175,7 +175,7 @@ const MasonryGrid = ({
       if (!containerRef.current) return;
 
       const expectedColumnCount = getColumnCount();
-      const actualColumnElements = containerRef.current.children.length;
+      // const actualColumnElements = containerRef.current.children.length;
 
       // Check if the current column count makes sense
       const isValidColumnCount =

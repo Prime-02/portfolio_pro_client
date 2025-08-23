@@ -271,9 +271,17 @@ export const getFontWeight = (variant: TextWeightVariant): string => {
   return map[variant];
 };
 
+interface Theme {
+  bg: string;
+  bgDark: string;
+  textDark: string;
+  text: string;
+  border: string;
+}
+
 // Generate themes dynamically from themePresets
 const generateThemesFromPresets = () => {
-  const themes: Record<string, unknown> = {};
+  const themes: Record<string, Theme> = {};
 
   themePresets.forEach((preset) => {
     const key = `${preset.name.toLowerCase().replace(/\s+/g, "")}_theme`; // Convert "Portfolio Pro" to "portfoliopro_theme"

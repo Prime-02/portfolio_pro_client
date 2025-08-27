@@ -328,7 +328,7 @@ const Title = styled.h3<{
     `}
 `;
 
-const Description = styled.p<{
+const Description = styled.span<{
   $size: TextSizeVariant;
   $weight: TextWeightVariant;
   $lines?: number;

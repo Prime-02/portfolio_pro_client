@@ -35,7 +35,7 @@ const GalleryCardActions = ({
   albumId,
   actions,
   userType,
-  popoverPosition = "top-left",
+  popoverPosition = "bottom-right",
   triggerClassName,
   displayMode: overrideDisplayMode,
 }: GalleryCardActionsProps) => {

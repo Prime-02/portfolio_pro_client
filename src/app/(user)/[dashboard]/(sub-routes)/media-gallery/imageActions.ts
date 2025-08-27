@@ -17,6 +17,7 @@ import {
 import { ActionItem } from "./page-components/GalleryCardActions";
 import { PathUtil } from "@/app/components/utilities/syncFunctions/syncs";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { toast } from "@/app/components/toastify/Toastify";
 
 interface AlbumActionsConfig {
   allowCreate?: boolean;

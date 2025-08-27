@@ -259,8 +259,8 @@ const MediaPicker: React.FC<MediaPickerProps> = ({
           isDisabled
             ? "border-gray-300 bg-gray-50 cursor-not-allowed opacity-60"
             : isDragging
-              ? "border-blue-500 bg-blue-50 cursor-pointer"
-              : "border-gray-300 hover:border-blue-500 cursor-pointer"
+              ? "border-[var(--accent)] cursor-pointer"
+              : "border-gray-300 hover:border-[var(--accent)] cursor-pointer"
         } ${isProcessing ? "animate-pulse" : ""}`}
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
@@ -286,10 +286,10 @@ const MediaPicker: React.FC<MediaPickerProps> = ({
           <Upload
             className={`w-12 h-12 transition-colors ${
               isProcessing
-                ? "text-blue-500 animate-bounce"
+                ? "text-[var(--acent)] animate-bounce"
                 : isDragging
-                  ? "text-blue-500"
-                  : "text-gray-400 hover:text-blue-500"
+                  ? "text-[var(--acent)]"
+                  : "text-gray-400 hover:text-[var(--acent)]"
             }`}
           />
 

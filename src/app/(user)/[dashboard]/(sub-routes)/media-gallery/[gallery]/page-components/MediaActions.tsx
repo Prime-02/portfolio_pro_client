@@ -14,6 +14,8 @@ import {
 import { AlbumData } from "./AlbumView";
 import { MediaFile } from "@/app/components/types and interfaces/MediaInputElements";
 import { createMediaConfig } from "@/app/components/utilities/indices/settings-JSONs/mediaCard";
+import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { PathUtil } from "@/app/components/utilities/syncFunctions/syncs";
 
 export interface Media {
   allow_download: boolean;
@@ -107,14 +109,16 @@ export const deleteMediaData = async ({
   currentAction,
   setLoading,
   fetchAllAlbumMedia,
-  clearQuerryParam,
+  router,
+  backUrl,
 }: {
   accessToken: string;
   id: string;
   currentAction: string;
   setLoading: (state: string) => void;
   fetchAllAlbumMedia: () => void;
-  clearQuerryParam: () => void;
+  router?: AppRouterInstance;
+  backUrl?: string;
 }) => {
   setLoading("deleting_media_data");
   try {
@@ -123,7 +127,7 @@ export const deleteMediaData = async ({
       url: `${V1_BASE_URL}/media-gallery/collections/${id}/media/${currentAction}`,
     });
     fetchAllAlbumMedia();
-    clearQuerryParam();
+    router?.push(`${backUrl}`);
   } catch (error) {
     console.log("Error deleting media data: ", error);
   } finally {
@@ -153,6 +157,8 @@ const MediaActions = ({ id, fetchAllAlbumMedia }: MediaActionsProps) => {
     clearQuerryParam,
     checkParams,
     currentUser,
+    currentPath,
+    router,
   } = useGlobalState();
   const updateAction = checkParams("update");
   const deleteAction = checkParams("delete");
@@ -279,14 +285,15 @@ const MediaActions = ({ id, fetchAllAlbumMedia }: MediaActionsProps) => {
     });
   };
 
-  const handleDeleteMediaData = () => {
-    deleteMediaData({
+  const handleDeleteMediaData = async () => {
+    await deleteMediaData({
       accessToken,
       id,
       currentAction,
       setLoading,
       fetchAllAlbumMedia,
-      clearQuerryParam,
+      router: router,
+      backUrl: PathUtil.removeLastSegment(currentPath),
     });
   };
 

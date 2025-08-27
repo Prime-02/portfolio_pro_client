@@ -44,7 +44,7 @@ const UsersLayout = ({
       <div className="flex">
         <ProfileSideBar />
         <motion.div
-          className="flex items-center justify-center min-h-screen h-auto w-full mx-auto overflow-auto py-5 px-2"
+          className="flex items-start justify-center min-h-screen h-auto w-full mx-auto overflow-auto py-5 px-2"
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{

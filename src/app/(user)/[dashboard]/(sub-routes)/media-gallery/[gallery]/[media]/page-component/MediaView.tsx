@@ -5,7 +5,7 @@ import { createAlbumUniversalActions } from "../../../imageActions";
 import GalleryCardActions, {
   ActionType,
 } from "../../../page-components/GalleryCardActions";
-import { getMediaData } from "../../page-components/MediaActions";
+import MediaActions, { getMediaData } from "../../page-components/MediaActions";
 import { getLoader } from "@/app/components/loaders/Loader";
 import { PathUtil } from "@/app/components/utilities/syncFunctions/syncs";
 import ImageCard from "@/app/components/containers/cards/ImageCard";
@@ -32,13 +32,14 @@ const MediaView = () => {
     currentUser,
     searchParams,
     clearQuerryParam,
+    checkParams,
   } = useGlobalState();
   const { loader, accentColor } = useTheme();
   const collectionId = PathUtil.getPathSegment(currentPath, 2);
   const mediaId = PathUtil.getPathSegment(currentPath, 3);
-  const backToAlbum = PathUtil.removeSegmentByValue(currentPath, mediaId);
   const customize = searchParams.get("customize");
-
+  const updateAction = checkParams("update") === "true";
+  const deleteAction = checkParams("delete") === "true";
   const [mediaData, setMediaData] = useState<AlbumData>(mediaCardDefault);
   const [mediaLayout, setMediaLayout] = useState<ImageCardProps>(
     mediaData.image_card_layout as ImageCardProps
@@ -81,7 +82,6 @@ const MediaView = () => {
       allowOpen: false,
       extendRouteWithQuery: extendRouteWithQuery,
       isAlbum: false,
-      newUrl: backToAlbum,
       router: router,
     }
   );
@@ -112,24 +112,35 @@ const MediaView = () => {
     setMediaLayout(mediaData.image_card_layout as ImageCardProps);
   }, [mediaData.image_card_layout]);
 
-
-
   return (
     <>
       <Modal
         showMinimizeButton
-        isOpen={Boolean(customize && !currentUser)}
+        isOpen={
+          Boolean(customize && !currentUser) || updateAction || deleteAction
+        }
         onClose={clearQuerryParam}
-        title={`Customize this ${
+        title={` ${updateAction ? "Update" : deleteAction ? "Delete" : customize && "Customize"} this ${
           mediaData.media_type ? mediaData.media_type : "media"
-        } look`}
+        } ${customize ? "look" : ""}`}
       >
-        <ImageCardControlPanel
-          mediaData={mediaLayout as ImageCardProps}
-          setMediaData={setMediaLayout}
-          onClick={updateCoverLayout}
-          loading={loading.includes("updating_Image_card_layout")}
-        />
+        {customize ? (
+          <ImageCardControlPanel
+            mediaData={mediaLayout as ImageCardProps}
+            setMediaData={setMediaLayout}
+            onClick={updateCoverLayout}
+            loading={loading.includes("updating_Image_card_layout")}
+          />
+        ) : (
+          <>
+            <MediaActions
+              id={collectionId}
+              fetchAllAlbumMedia={() => {
+                handleGetMediaData();
+              }}
+            />
+          </>
+        )}
       </Modal>
       <div>
         {loading.includes("getting_medium_data") ? (
@@ -198,7 +209,7 @@ const MediaView = () => {
                   quality={mediaLayout?.quality}
                   animation={mediaLayout?.animation}
                   disabled={mediaLayout?.disabled}
-                  hideAction={mediaLayout?.hideAction}
+                  hideAction={false}
                   loadingHeight={`${500}px`}
                   actionPosition={mediaLayout?.PopoverdisplayPosition}
                   PopoverdisplayPosition={mediaLayout?.PopoverdisplayPosition}
@@ -213,7 +224,7 @@ const MediaView = () => {
                       albumTitle={mediaData.title || ""}
                       actions={actions}
                       userType={userType}
-                      popoverPosition={"center-left"}
+                      // popoverPosition={mediaLayout?.PopoverdisplayPosition}
                       displayMode={mediaLayout?.PopoverdisplayMode}
                     />
                   )}

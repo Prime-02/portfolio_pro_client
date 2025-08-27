@@ -40,6 +40,7 @@ const Popover: React.FC<PopoverProps> = ({
   const [clickerRect, setClickerRect] = useState<DOMRect | null>(null);
   const [popoverRect, setPopoverRect] = useState<DOMRect | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [isPositioned, setIsPositioned] = useState(false); // New state to track positioning
   const popoverRef = useRef<HTMLDivElement>(null);
   const clickerRef = useRef<HTMLDivElement>(null);
 
@@ -56,13 +57,32 @@ const Popover: React.FC<PopoverProps> = ({
     }
   }, [isOpen]);
 
-  // Update popover dimensions when it renders
+  // Update popover dimensions when it renders - Fixed positioning logic
   useEffect(() => {
     if (isOpen && popoverRef.current && !isMobile) {
-      const rect = popoverRef.current.getBoundingClientRect();
-      setPopoverRect(rect);
+      // Use requestAnimationFrame to ensure DOM has fully rendered
+      const updateDimensions = () => {
+        if (popoverRef.current) {
+          const rect = popoverRef.current.getBoundingClientRect();
+          setPopoverRect(rect);
+          setIsPositioned(true); // Mark as positioned after getting real dimensions
+        }
+      };
+
+      // Give the DOM time to render the content
+      requestAnimationFrame(() => {
+        requestAnimationFrame(updateDimensions);
+      });
     }
   }, [isOpen, isMobile, children]);
+
+  // Reset positioning state when popover closes
+  useEffect(() => {
+    if (!isOpen) {
+      setIsPositioned(false);
+      setPopoverRect(null);
+    }
+  }, [isOpen]);
 
   // Update position on scroll/resize
   useEffect(() => {
@@ -189,9 +209,9 @@ const Popover: React.FC<PopoverProps> = ({
     const scrollX = window.scrollX;
     const scrollY = window.scrollY;
 
-    // Estimate popover dimensions if not available yet
-    const estimatedWidth = popoverRect?.width || 300; // Default fallback
-    const estimatedHeight = popoverRect?.height || 200; // Default fallback
+    // Use actual dimensions if available, otherwise use more conservative estimates
+    const popoverWidth = popoverRect?.width || 250; // Reduced default estimate
+    const popoverHeight = popoverRect?.height || 150; // Reduced default estimate
 
     let popoverTop = 0;
     let popoverLeft = 0;
@@ -200,20 +220,20 @@ const Popover: React.FC<PopoverProps> = ({
     // Calculate initial position based on the requested position
     switch (position) {
       case "top-left":
-        popoverTop = scrollY + top - estimatedHeight - 8;
-        popoverLeft = scrollX + right - estimatedWidth;
+        popoverTop = scrollY + top - popoverHeight - 8;
+        popoverLeft = scrollX + right - popoverWidth;
         break;
       case "top-right":
-        popoverTop = scrollY + top - estimatedHeight - 8;
+        popoverTop = scrollY + top - popoverHeight - 8;
         popoverLeft = scrollX + left;
         break;
       case "top-center":
-        popoverTop = scrollY + top - estimatedHeight - 8;
-        popoverLeft = scrollX + left + width / 2 - estimatedWidth / 2;
+        popoverTop = scrollY + top - popoverHeight - 8;
+        popoverLeft = scrollX + left + width / 2 - popoverWidth / 2;
         break;
       case "bottom-left":
         popoverTop = scrollY + bottom + 8;
-        popoverLeft = scrollX + right - estimatedWidth;
+        popoverLeft = scrollX + right - popoverWidth;
         break;
       case "bottom-right":
         popoverTop = scrollY + bottom + 8;
@@ -221,19 +241,19 @@ const Popover: React.FC<PopoverProps> = ({
         break;
       case "bottom-center":
         popoverTop = scrollY + bottom + 8;
-        popoverLeft = scrollX + left + width / 2 - estimatedWidth / 2;
+        popoverLeft = scrollX + left + width / 2 - popoverWidth / 2;
         break;
       case "center-left":
-        popoverTop = scrollY + top + height / 2 - estimatedHeight / 2;
-        popoverLeft = scrollX + left - estimatedWidth - 8;
+        popoverTop = scrollY + top + height / 2 - popoverHeight / 2;
+        popoverLeft = scrollX + left - popoverWidth - 8;
         break;
       case "center-right":
-        popoverTop = scrollY + top + height / 2 - estimatedHeight / 2;
+        popoverTop = scrollY + top + height / 2 - popoverHeight / 2;
         popoverLeft = scrollX + right + 8;
         break;
       default:
         popoverTop = scrollY + bottom + 8;
-        popoverLeft = scrollX + left + width / 2 - estimatedWidth / 2;
+        popoverLeft = scrollX + left + width / 2 - popoverWidth / 2;
         break;
     }
 
@@ -241,8 +261,8 @@ const Popover: React.FC<PopoverProps> = ({
     const constrainedPosition = constrainToViewport(
       popoverTop,
       popoverLeft,
-      estimatedWidth,
-      estimatedHeight
+      popoverWidth,
+      popoverHeight
     );
 
     // Check if we need to flip the position due to viewport constraints
@@ -261,20 +281,20 @@ const Popover: React.FC<PopoverProps> = ({
         const newConstrained = constrainToViewport(
           newTop,
           popoverLeft,
-          estimatedWidth,
-          estimatedHeight
+          popoverWidth,
+          popoverHeight
         );
         if (newConstrained.top < popoverTop) {
           popoverTop = newConstrained.top;
         }
       } else if (position.includes("bottom") && popoverTop < originalTop) {
         // Was trying to go below, but got pushed up - try above instead
-        const newTop = scrollY + top - estimatedHeight - 8;
+        const newTop = scrollY + top - popoverHeight - 8;
         const newConstrained = constrainToViewport(
           newTop,
           popoverLeft,
-          estimatedWidth,
-          estimatedHeight
+          popoverWidth,
+          popoverHeight
         );
         if (newConstrained.top > popoverTop) {
           popoverTop = newConstrained.top;
@@ -290,20 +310,20 @@ const Popover: React.FC<PopoverProps> = ({
         const newConstrained = constrainToViewport(
           popoverTop,
           newLeft,
-          estimatedWidth,
-          estimatedHeight
+          popoverWidth,
+          popoverHeight
         );
         if (newConstrained.left < popoverLeft) {
           popoverLeft = newConstrained.left;
         }
       } else if (position.includes("right") && popoverLeft < originalLeft) {
         // Was trying to go right, but got pushed left - try left instead
-        const newLeft = scrollX + left - estimatedWidth - 8;
+        const newLeft = scrollX + left - popoverWidth - 8;
         const newConstrained = constrainToViewport(
           popoverTop,
           newLeft,
-          estimatedWidth,
-          estimatedHeight
+          popoverWidth,
+          popoverHeight
         );
         if (newConstrained.left > popoverLeft) {
           popoverLeft = newConstrained.left;
@@ -318,6 +338,9 @@ const Popover: React.FC<PopoverProps> = ({
       transform,
       transformOrigin: position.includes("top") ? "bottom" : "top",
       zIndex: 9999,
+      // Hide initially until properly positioned
+      opacity: isPositioned ? 1 : 0,
+      transition: isPositioned ? "opacity 0.15s ease-out" : "none",
     };
   };
 

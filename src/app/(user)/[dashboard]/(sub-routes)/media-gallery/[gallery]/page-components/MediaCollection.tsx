@@ -46,6 +46,7 @@ const MediaCollection = ({ props, collectionId }: MediaCollectionProps) => {
     checkValidId,
     extendRoute,
     currentPath,
+    router,
   } = useGlobalState();
   const { loader, accentColor } = useTheme();
 
@@ -166,7 +167,7 @@ const MediaCollection = ({ props, collectionId }: MediaCollectionProps) => {
   }, [props.image_card_layout]);
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-6">
       <Modal
         showMinimizeButton={personaliseAction}
         isOpen={
@@ -313,7 +314,7 @@ const MediaCollection = ({ props, collectionId }: MediaCollectionProps) => {
                 quality={coverLayout?.quality}
                 animation={coverLayout?.animation}
                 disabled={coverLayout?.disabled}
-                hideAction={coverLayout?.hideAction}
+                hideAction={false}
                 loadingHeight={`${500}px`}
                 actionPosition={coverLayout?.actionPosition}
                 backgroundVariant={coverLayout?.backgroundVariant}
@@ -332,10 +333,9 @@ const MediaCollection = ({ props, collectionId }: MediaCollectionProps) => {
                   String(media.title),
                   String(media.image_url),
                   {
-                    extendRouteWithQuery: extendRouteWithQuery,
                     isAlbum: false,
-                    extendRoute: extendRoute,
-                    newUrl: `${currentPath}/${media?.id || ""}`
+                    newUrl: `${currentPath}/${media?.id || ""}`,
+                    router: router,
                   },
                   String(media.media_type)
                 );
@@ -377,7 +377,7 @@ const MediaCollection = ({ props, collectionId }: MediaCollectionProps) => {
                     quality={media.image_card_layout?.quality}
                     animation={media?.image_card_layout?.animation}
                     disabled={media?.image_card_layout?.disabled}
-                    hideAction={media?.image_card_layout?.hideAction}
+                    hideAction={false}
                     backgroundVariant={
                       media?.image_card_layout?.backgroundVariant
                     }

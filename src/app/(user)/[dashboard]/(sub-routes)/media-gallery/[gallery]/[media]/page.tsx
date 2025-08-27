@@ -1,11 +1,13 @@
-import React from 'react'
-import MediaView from './page-component/MediaView'
+"use client";
+import React from "react";
+import MediaView from "./page-component/MediaView";
 
 const page = () => {
-  
   return (
-    <MediaView/>
-  )
-}
+    <div>
+      <MediaView />
+    </div>
+  );
+};
 
-export default page
+export default page;

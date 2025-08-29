@@ -1,9 +1,16 @@
-import React from 'react'
+import { useGlobalState } from "@/app/globalStateProvider";
+import React from "react";
+import Approved from "./Approved";
+import UnApproved from "./UnApproved";
 
 const LinkedIn = () => {
-  return (
-    <div>LinkedIn</div>
-  )
-}
+  const { checkParams } = useGlobalState();
+  const code = checkParams("code");
+  const error = checkParams("error");
 
-export default LinkedIn
+  if (code) {
+    return <Approved />;
+  } else return <UnApproved />;
+};
+
+export default LinkedIn;

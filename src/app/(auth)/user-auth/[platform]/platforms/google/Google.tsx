@@ -1,9 +1,15 @@
-import React from 'react'
+import { useGlobalState } from "@/app/globalStateProvider";
+import React from "react";
+import Approved from "./Approved";
+import UnApproved from "./UnApproved";
 
 const Google = () => {
-  return (
-    <div>Google</div>
-  )
-}
+  const { checkParams } = useGlobalState();
+  const code = checkParams("code");
 
-export default Google
+  if (code) {
+    return <Approved />;
+  } else return <UnApproved />;
+};
+
+export default Google;

@@ -331,17 +331,17 @@ export function findMatch<T extends Record<string, unknown>>(
   );
 }
 
-import { StaticImageData } from "next/image";
 import { toast } from "../../toastify/Toastify";
 
-export type ImageSource = string | StaticImageData | null | undefined;
+export type ImageSource = string | null | undefined;
 
 export function getImageSrc(
-  profilePicture: ImageSource
-): string | StaticImageData {
+  profilePicture: ImageSource,
+  initials?: string
+): string {
   // Handle cases where profilePicture is null, undefined, or empty string
   if (!profilePicture) {
-    return "/vectors/undraw_monitor_ypga.svg";
+    return `https://avatar.oxro.io/avatar.svg?name=${initials}`;
   }
 
   // Handle StaticImageData (imported images)
@@ -359,7 +359,7 @@ export function getImageSrc(
   }
 
   // Fallback to default image
-  return "/vectors/undraw_monitor_ypga.svg";
+  return `https://avatar.oxro.io/avatar.svg?name=${initials}`;
 }
 
 /**
@@ -549,7 +549,7 @@ type UrlPart =
  * @param segmentIndex - When part='pathSegment', the index to retrieve (0-based)
  * @returns The requested URL part as a string
  */
-//This utility function is now depreciated, use The PathUtil class for all path operations 
+//This utility function is now depreciated, use The PathUtil class for all path operations
 export function getCurrentUrl(
   part: UrlPart = "full",
   segmentIndex?: number
@@ -1289,3 +1289,12 @@ export class PathUtil {
 //   const clearedUrl = PathUtil.clearQueryParams(existingUrl);
 //   console.log("Cleared params:", clearedUrl); // "/search"
 // }
+
+
+
+export class DetailedError extends Error {
+  constructor(public details: string) {
+    super(details);
+  }
+}
+

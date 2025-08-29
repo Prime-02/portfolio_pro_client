@@ -1,11 +1,12 @@
 "use client";
 import Button from "@/app/components/buttons/Buttons";
-import Modal from "@/app/components/containers/modals/Modal";
 import { Textinput } from "@/app/components/inputs/Textinput";
+import { toast } from "@/app/components/toastify/Toastify";
+import { PostAllData } from "@/app/components/utilities/asyncFunctions/lib/crud";
+import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
+import { PathUtil } from "@/app/components/utilities/syncFunctions/syncs";
 import { useGlobalState } from "@/app/globalStateProvider";
-import { useSignUp } from "@clerk/nextjs";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 const SignUp = () => {
   const {
@@ -14,22 +15,21 @@ const SignUp = () => {
     extendRouteWithQuery,
     clearQuerryParam,
     searchParams,
+    accessToken,
+    currentPath,
+    checkParams,
   } = useGlobalState();
-  const { isLoaded, signUp, setActive } = useSignUp();
-  const router = useRouter();
 
+  const [verificationEmail, setVerificationEmail] = useState("");
   const [formData, setFormData] = useState({
-    email: "",
     password: "",
     confirmPassword: "",
-    verificationCode: "",
   });
 
   const [errors, setErrors] = useState({
-    email: "",
     password: "",
     confirmPassword: "",
-    verificationCode: "",
+    email: "",
     general: "",
   });
 
@@ -46,32 +46,22 @@ const SignUp = () => {
     }
   };
 
-  useEffect(() => {
-    if (isLoaded && !verifyEmail) {
-      const captchaContainer = document.getElementById("clerk-captcha");
-      if (captchaContainer && captchaContainer.children.length === 0) {
-        // Don't create empty signUp call
-      }
+  const handleEmailChange = (value: string) => {
+    setVerificationEmail(value);
+    // Clear email error when user starts typing
+    if (errors.email) {
+      setErrors((prev) => ({ ...prev, email: "" }));
     }
-  }, [isLoaded, verifyEmail]);
+  };
 
   const validateForm = () => {
     let isValid = true;
     const newErrors = {
-      email: "",
       password: "",
       confirmPassword: "",
-      verificationCode: "",
+      email: "",
       general: "",
     };
-
-    if (!formData.email) {
-      newErrors.email = "Email is required";
-      isValid = false;
-    } else if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email address";
-      isValid = false;
-    }
 
     if (!formData.password) {
       newErrors.password = "Password is required";
@@ -81,7 +71,10 @@ const SignUp = () => {
       isValid = false;
     }
 
-    if (formData.password !== formData.confirmPassword) {
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = "Please confirm your password";
+      isValid = false;
+    } else if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = "Passwords do not match";
       isValid = false;
     }
@@ -90,13 +83,80 @@ const SignUp = () => {
     return isValid;
   };
 
+  const validateEmail = () => {
+    if (!verificationEmail) {
+      setErrors((prev) => ({ ...prev, email: "Email is required" }));
+      return false;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(verificationEmail)) {
+      setErrors((prev) => ({
+        ...prev,
+        email: "Please enter a valid email address",
+      }));
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleVerifyEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!validateEmail()) return;
+
+    const constructedParameter = PathUtil.buildUrlWithQuery(
+      `${V1_BASE_URL}/auth/verify-email`,
+      {
+        email: verificationEmail,
+      }
+    ).slice(1);
+
+    setLoading("verifying_email");
+
+    try {
+      const verificationRes: { message: string; email: string } =
+        await PostAllData({
+          url: constructedParameter,
+        });
+
+      if (verificationRes?.message) {
+        toast.success(verificationRes.message);
+
+        // Navigate to signup form with verification code
+        if (verificationRes.email) {
+          extendRouteWithQuery({ verify_email: "true" });
+        }
+      } else {
+        toast.error(
+          "An error occurred while verifying your email. Please check your email and if this persists, reach out to our support team.",
+          {
+            title: "Email Verification Error",
+          }
+        );
+      }
+    } catch (error) {
+      console.error("Email verification error:", error);
+      toast.error(
+        "An error occurred while verifying your email. Please check your email and if this persists, reach out to our support team.",
+        {
+          title: "Email Verification Error",
+        }
+      );
+    } finally {
+      setLoading("verifying_email"); // Clear loading state
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Clear previous errors
     setErrors({
-      email: "",
       password: "",
       confirmPassword: "",
-      verificationCode: "",
+      email: "",
       general: "",
     });
 
@@ -104,183 +164,104 @@ const SignUp = () => {
 
     setLoading("signup_in_progress");
 
-    if (!isLoaded) {
-      setErrors((prev) => ({
-        ...prev,
-        general: "System is not ready. Please try again.",
-      }));
-      setLoading("");
-      return;
-    }
-
     try {
-      await signUp.create({
-        emailAddress: formData.email,
-        password: formData.password,
-      });
-
-      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
-      extendRouteWithQuery({ verify_email: "true" });
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setErrors((prev) => ({ ...prev, general: err.message }));
-      } else if (typeof err === "object" && err !== null && "errors" in err) {
-        const errorWithErrors = err as { errors?: Array<{ message?: string }> };
+      const signUpCode = checkParams("code");
+      if (!signUpCode) {
         setErrors((prev) => ({
           ...prev,
           general:
-            errorWithErrors.errors?.[0]?.message ||
-            "Sign up failed. Please try again.",
+            "Invalid signup link. Please request a new verification email.",
         }));
-      } else {
-        setErrors((prev) => ({
-          ...prev,
-          general: "Sign up failed. Please try again.",
-        }));
+        return;
       }
-    } finally {
-      setLoading("");
-    }
-  };
 
-  const handleVerify = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrors({
-      email: "",
-      password: "",
-      confirmPassword: "",
-      verificationCode: "",
-      general: "",
-    });
-
-    if (!formData.verificationCode) {
-      setErrors((prev) => ({
-        ...prev,
-        verificationCode: "Verification code is required",
-      }));
-      return;
-    }
-
-    setLoading("email_verification_in_progress");
-
-    if (!isLoaded) {
-      setErrors((prev) => ({
-        ...prev,
-        general: "System is not ready. Please try again.",
-      }));
-      setLoading("");
-      return;
-    }
-
-    try {
-      const completeSignUp = await signUp.attemptEmailAddressVerification({
-        code: formData.verificationCode,
+      const signUpRes = await PostAllData({
+        url: `${V1_BASE_URL}/auth/signup`,
+        data: {
+          code: signUpCode,
+          password: formData.password,
+        },
       });
 
-      if (completeSignUp.status === "complete") {
-        await setActive({ session: completeSignUp.createdSessionId });
-        router.push("/welcome");
+      if (signUpRes) {
+        toast.success(
+          "Glad to have you onboard! Kindly login to get started with Portfolio Pro.",
+          {
+            title: "Welcome onboard",
+          }
+        );
+
+        // Navigate to login page
+        const newUrl = PathUtil.buildUrlWithQuery(currentPath, {
+          new_user: "true",
+          auth_mode: "login",
+        });
+        clearQuerryParam();
+        window.location.href = newUrl;
       }
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setErrors((prev) => ({ ...prev, general: err.message }));
-      } else if (typeof err === "object" && err !== null && "errors" in err) {
-        const errorWithErrors = err as { errors?: Array<{ message?: string }> };
-        setErrors((prev) => ({
-          ...prev,
-          general:
-            errorWithErrors.errors?.[0]?.message ||
-            "Verification failed. Please try again.",
-        }));
-      } else {
-        setErrors((prev) => ({
-          ...prev,
-          general: "Verification failed. Please try again.",
-        }));
-      }
+    } catch (error) {
+      console.error("Signup error:", error);
+      setErrors((prev) => ({
+        ...prev,
+        general:
+          "An error occurred during signup. Please try again and if this persists, reach out to our support team.",
+      }));
     } finally {
-      setLoading("");
+      setLoading("signup_in_progress"); // Clear loading state
     }
   };
 
-  const handleModalClose = () => {
-    clearQuerryParam();
-    setErrors({
-      email: "",
-      password: "",
-      confirmPassword: "",
-      verificationCode: "",
-      general: "",
-    });
-    setFormData((prev) => ({ ...prev, verificationCode: "" }));
-  };
-
-  return (
-    <>
-      {/* Verification Modal */}
-      <Modal
-        showCloseButton={false}
-        closeOnBackdropClick={false}
-        isOpen={verifyEmail}
-        onClose={handleModalClose}
-        title="Verify Your Email"
-      >
-        <div className="p-4">
-          <p className="mb-4">
-            {`We've sent a verification code to`} {formData.email}
-          </p>
-          <form onSubmit={handleVerify} className="space-y-4">
-            <Textinput
-              label="Verification Code"
-              type="text"
-              value={formData.verificationCode}
-              onChange={handleChange("verificationCode")}
-              placeholder="Enter verification code"
-              className="w-full p-2 border rounded"
-              error={errors.verificationCode}
-            />
-            {errors.general && (
-              <p className="text-red-500 text-sm">{errors.general}</p>
-            )}
-            <Button
-              type="submit"
-              loading={loading.includes("email_verification_in_progress")}
-              disabled={loading.includes("email_verification_in_progress")}
-              className="w-full"
-              text="Verify Email"
-            />
-          </form>
-        </div>
-      </Modal>
-
-      {/* Sign Up Form */}
+  const renderVerifyEmail = () => {
+    return (
       <div className="max-w-md mx-auto p-6 rounded-lg shadow-sm">
-        <h1 className="text-2xl font-bold text mb-4">Create an Account</h1>
-        {errors.general && !verifyEmail && (
-          <p className="text-red-500 mb-4">{errors.general}</p>
-        )}
+        <h1 className="text-2xl font-bold mb-4">Verify Your Email</h1>
+        <p className="opacity-65 mb-6">
+          Please enter your email address to receive a verification link.
+        </p>
 
-        <div
-          id="clerk-captcha"
-          className="mb-4 h-auto flex items-center justify-center"
-        >
-          {/* Clerk will inject captcha here */}
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleVerifyEmail} className="space-y-4">
           <div>
             <Textinput
+              label="Email"
               type="email"
               id="email"
-              value={formData.email}
-              onChange={handleChange("email")}
+              value={verificationEmail}
+              onChange={handleEmailChange}
               className="w-full p-2 border rounded"
-              label="Email"
               labelBgHexIntensity={1}
               error={errors.email}
+              required
             />
           </div>
 
+          <Button
+            type="submit"
+            loading={loading.includes("verifying_email")}
+            disabled={loading.includes("verifying_email")}
+            className="w-full"
+            size="sm"
+            text="Send Verification Email"
+          />
+        </form>
+      </div>
+    );
+  };
+
+  const renderSignupForm = () => {
+    return (
+      <div className="max-w-md mx-auto p-6 rounded-lg shadow-sm">
+        <h1 className="text-2xl font-bold mb-4">Create Your Account</h1>
+        <p className="opacity-65 mb-6">
+          Please set your password to complete your account setup.
+        </p>
+
+        {errors.general && (
+          <div className="bg-red-50 border border-red-200 text-red-700 p-3 rounded mb-4">
+            {errors.general}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Textinput
               label="Password"
@@ -292,8 +273,10 @@ const SignUp = () => {
               minLength={8}
               labelBgHexIntensity={1}
               error={errors.password}
+              required
             />
           </div>
+
           <div>
             <Textinput
               label="Confirm Password"
@@ -305,20 +288,31 @@ const SignUp = () => {
               minLength={8}
               labelBgHexIntensity={1}
               error={errors.confirmPassword}
+              required
             />
           </div>
+
           <Button
             type="submit"
             loading={loading.includes("signup_in_progress")}
             disabled={loading.includes("signup_in_progress")}
             className="w-full"
             size="sm"
-            text="Sign Up"
+            text="Create Account"
           />
         </form>
       </div>
-    </>
-  );
+    );
+  };
+
+  // Main render logic - FIXED: Now properly returns JSX
+  const code = checkParams("code");
+
+  if (code) {
+    return renderSignupForm();
+  } else {
+    return renderVerifyEmail();
+  }
 };
 
 export default SignUp;

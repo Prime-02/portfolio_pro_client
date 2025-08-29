@@ -1,15 +1,13 @@
 "use client";
 import React from "react";
-import { useAuth } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
 import UserAuth from "./auth-mode/UserAuth";
 import { useGlobalState } from "@/app/globalStateProvider";
 
 const MainAuth = () => {
-  const { isSignedIn } = useAuth();
-  const { userData } = useGlobalState();
+  const { userData, accessToken } = useGlobalState();
 
-  if (isSignedIn) {
+  if (accessToken) {
     redirect(`/${userData?.username || "dashboard"}`);
   }
 

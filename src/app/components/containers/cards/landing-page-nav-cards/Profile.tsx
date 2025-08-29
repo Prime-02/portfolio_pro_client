@@ -21,10 +21,16 @@ import Link from "next/link";
 import Image from "next/image";
 
 const Profile = () => {
-  const { userData, clerkUserData } = useGlobalState();
+  const { userData, accessToken } = useGlobalState();
   const { theme } = useTheme();
   const [activeTab, setActiveTab] = useState("");
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
+  const handleImageError = () => {
+    setImageError(true);
+  };
+  const fallbackLetter = userData?.username?.toUpperCase() || "User";
 
   const tabs = [
     {
@@ -96,18 +102,43 @@ const Profile = () => {
         <div className="flex flex-col gap-y-3 p-3 rounded-2xl bg-[var(--background)] shadow-md">
           <div className="flex">
             <div className="flex items-center justify-start gap-x-5">
-              <Image
-                src={getImageSrc(String(userData?.profile_picture))}
-                alt="Profile Picture"
-                className="w-12 h-12 rounded-full object-cover"
-                width={100}
-                height={100}
-              />
+              <div
+                className="relative flex h-12 w-12 items-center justify-center"
+                title="Profile"
+                aria-label="User Profile"
+              >
+                <span className="block overflow-hidden rounded-full">
+                  {imageError ? (
+                    <Image
+                      src={`https://avatar.oxro.io/avatar.svg?name=${fallbackLetter}`}
+                      alt={`${userData?.username || "User"}'s Profile Picture`}
+                      width={48}
+                      height={48}
+                      className="h-full w-full object-cover"
+                      onError={handleImageError}
+                      loading="lazy"
+                    />
+                  ) : (
+                    <Image
+                      src={getImageSrc(
+                        userData?.profile_picture,
+                        userData?.username
+                      )}
+                      alt={`${userData?.username || "User"}'s Profile Picture`}
+                      width={48}
+                      height={48}
+                      className="h-full w-full object-cover"
+                      onError={handleImageError}
+                      loading="lazy"
+                    />
+                  )}
+                </span>
+              </div>
               <span className="flex flex-col">
                 <h3 className="text-lg font-semibold">
                   {userData.username
                     ? userData.username
-                    : clerkUserData.user?.id && !userData.username
+                    : accessToken && !userData.username
                       ? "Your Profile Is Incomplete"
                       : "Sign Up"}
                 </h3>
@@ -123,7 +154,7 @@ const Profile = () => {
             href={`/${
               userData.username
                 ? `${userData.username}/profile`
-                : clerkUserData.user?.id && !userData.username
+                : accessToken && !userData.username
                   ? "welcome"
                   : "/user-auth?auth_mode=signup"
             }`}

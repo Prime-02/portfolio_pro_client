@@ -1,4 +1,4 @@
-export const local = "https://sean-finland-flying-apparently.trycloudflare.com";
+export const local = "https://had-hunger-thus-shareware.trycloudflare.com";
 
 export const cloud = `https://d22qn4oxzh4x4y.cloudfront.net`;
 

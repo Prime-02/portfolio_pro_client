@@ -1,6 +1,4 @@
 "use client";
-import { useAuth } from "@clerk/clerk-react";
-import { useUser } from "@clerk/nextjs";
 import React, {
   createContext,
   useContext,
@@ -11,15 +9,9 @@ import React, {
   SetStateAction,
   useCallback,
 } from "react";
-import {
-  GetAllData,
-  PostAllData,
-} from "./components/utilities/asyncFunctions/lib/crud";
+import { GetAllData } from "./components/utilities/asyncFunctions/lib/crud";
 import { BASE_URL, V1_BASE_URL } from "./components/utilities/indices/urls";
-import {
-  AuthTokenResponse,
-  User,
-} from "./components/types and interfaces/UserAndProfile";
+import { User } from "./components/types and interfaces/UserAndProfile";
 import {
   ReadonlyURLSearchParams,
   usePathname,
@@ -53,24 +45,19 @@ const defaultUserData: UserData = {
   updated_at: "",
 };
 
-// Define clerk user data type
-interface ClerkUserData {
-  user: ReturnType<typeof useUser>["user"];
-}
-
 // Define the type for the global state
 interface GlobalStateContextType {
-  clerkUserData: ClerkUserData;
   userData: UserData;
   setUserData: (userData: UserData | ((prev: UserData) => UserData)) => void;
   accessToken: string;
+  mockLogOut: () => void;
+  setAccessToken: (token: string) => void;
   loading: string[];
   setLoading: (
     value: string,
     setArray?: Dispatch<SetStateAction<string[]>>
   ) => void;
   fetchUserData: () => Promise<void>;
-  fetchServerAccess: () => Promise<void>;
   updateUserData: () => Promise<void>;
   router: AppRouterInstance;
   currentPath: string;
@@ -95,16 +82,10 @@ const GlobalStateContext = createContext<GlobalStateContextType | undefined>(
 
 // Provider component
 export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
-  const [clerkUserData, setClerkUserData] = useState<ClerkUserData>({
-    user: null,
-  });
   const [userData, setUserData] = useState<UserData>(defaultUserData);
   const [accessToken, setAccessToken] = useState<string>("");
   const [loading, _setLoading] = useState<string[]>([]);
   const [currentUser, setCurrentUser] = useState<string | undefined>("");
-
-  const { userId } = useAuth();
-  const { user } = useUser();
   const searchParams = useSearchParams(); // current query params
   const router = useRouter();
   const currentPath = usePathname();
@@ -162,57 +143,47 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
   );
 
   // Simple user data update function to be used by other components
-  const updateUserData = useCallback(async (): Promise<void> => {
-    if (!accessToken) {
-      console.warn("No access token available for updateUserData");
-      return;
-    }
-
-    await fetchUserData(accessToken);
-  }, [accessToken, fetchUserData]);
-
-  // Type-safe server access fetching
-  const fetchServerAccess = useCallback(async (): Promise<void> => {
-    if (!userId) {
-      console.warn("No clerk user ID available for fetchServerAccess");
-      return;
-    }
-
-    setLoading("fetching_access_token");
-    try {
-      const serverAccessRes: AuthTokenResponse = await PostAllData({
-        access: "",
-        url: `${BASE_URL}/api/v1/clerk/exchange?clerk_id=${userId}`,
-      });
-
-      if (serverAccessRes?.access_token) {
-        setAccessToken(serverAccessRes.access_token);
-        console.log("Access Token: ", serverAccessRes.access_token);
-
-        // Fetch user data after getting access token
-        await fetchUserData(serverAccessRes.access_token);
-      } else {
-        console.warn("No access token received from server");
+  const updateUserData = useCallback(
+    async (token = accessToken): Promise<void> => {
+      if (!token) {
+        console.warn("No access token available for updateUserData");
+        return;
       }
-    } catch (error) {
-      console.error("Error fetching server access:", error);
-    } finally {
-      setLoading("fetching_access_token");
-    }
-  }, [userId, fetchUserData]);
 
-  // Initialize clerk user data and fetch server access
-  useEffect(() => {
-    if (userId && user) {
-      setClerkUserData({ user });
-      fetchServerAccess();
-    }
-  }, [userId, user]);
+      await fetchUserData(token);
+    },
+    [accessToken, fetchUserData]
+  );
 
-  // Debug logging for clerk user data
+  // Effect for initial load (mount)
   useEffect(() => {
-    console.log("User Data: ", clerkUserData);
-  }, [clerkUserData]);
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("session_token");
+      if (token) {
+        setAccessToken(token);
+        updateUserData(token);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      if (accessToken) {
+        localStorage.setItem("session_token", accessToken);
+      } else {
+        localStorage.removeItem("session_token");
+      }
+    }
+  }, [accessToken]);
+
+  const mockLogOut = () => {
+    setAccessToken("");
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("session_token");
+    }
+
+    // Optional: Also clear any related user data
+  };
 
   /**
    * Used to make a central multi-linked loading points for different async activities
@@ -337,14 +308,14 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const contextValue: GlobalStateContextType = {
-    clerkUserData,
     userData,
+    mockLogOut,
     setUserData,
+    setAccessToken,
     accessToken,
     loading,
     setLoading,
     fetchUserData,
-    fetchServerAccess,
     updateUserData,
     router,
     currentPath,
@@ -392,11 +363,6 @@ export const useAccessToken = (): string => {
 export const useLoading = (): [string[], (value: string) => void] => {
   const { loading, setLoading } = useGlobalState();
   return [loading, setLoading];
-};
-
-export const useClerkUserData = (): ClerkUserData => {
-  const { clerkUserData } = useGlobalState();
-  return clerkUserData;
 };
 
 export const useUpdateUserData = (): (() => Promise<void>) => {

@@ -3,7 +3,6 @@ import React, { useEffect } from "react";
 import { motion } from "framer-motion";
 import ProfileSideBar from "../components/ProfileSideBar";
 import { useGlobalState } from "@/app/globalStateProvider";
-import { useUser } from "@clerk/nextjs";
 import { useToast } from "@/app/components/toastify/Toastify";
 import { Info } from "lucide-react";
 
@@ -12,15 +11,15 @@ const UsersLayout = ({
 }: Readonly<{
   children: React.ReactNode;
 }>) => {
-  const { isLoaded, isSignedIn } = useUser();
   const toast = useToast();
 
-  const { currentUser, getCurrentUser, router, accessToken } = useGlobalState();
+  const { currentUser, getCurrentUser, router, accessToken, setAccessToken } =
+    useGlobalState();
 
   useEffect(() => {
-    if (!isLoaded) return;
+    if (!accessToken) return;
 
-    if (!isSignedIn) {
+    if (!accessToken) {
       toast.toast("Please Login to continue", {
         type: "default",
         icon: <Info className="w-5 h-5 text-[var(--accent)]" />,
@@ -32,7 +31,19 @@ const UsersLayout = ({
       });
       router.replace("/user-auth?auth_mode=login");
     }
-  }, [isLoaded, isSignedIn]);
+  }, [accessToken]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("session_token");
+      if (token) {
+        setAccessToken(token);
+      } else {
+        toast.info("Kindly login to continue");
+        router.replace("/user-auth");
+      }
+    }
+  }, []);
 
   useEffect(() => {
     if (!accessToken) return;

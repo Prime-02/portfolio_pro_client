@@ -1,3 +1,4 @@
+import SidebarToggle from "@/app/components/buttons/CollapseButton";
 import { onboardingSteps } from "@/app/components/utilities/indices/MultiStepWriteUp";
 import { useGlobalState } from "@/app/globalStateProvider";
 import { ChevronLeft, ChevronRight, Check, Circle } from "lucide-react";
@@ -11,8 +12,6 @@ interface OnboardingStep {
   description: string;
   icons?: { icon: IconType; label: string }[];
 }
-
-
 
 const Sidebar: React.FC = () => {
   const { extendRouteWithQuery, searchParams } = useGlobalState();
@@ -44,7 +43,7 @@ const Sidebar: React.FC = () => {
   useEffect(() => {
     if (!isClient) return;
 
-    const step = searchParams.get("step") || "1";
+    const step = searchParams.get("step") || "0";
     setCurrentStep(step);
   }, [searchParams, isClient]);
 
@@ -86,12 +85,6 @@ const Sidebar: React.FC = () => {
   if (!isClient) {
     return (
       <div className="flex h-auto min-h-screen p-4 relative">
-        <span
-          onClick={toggleSidebar}
-          className="absolute z-10 top-1/2 bg-[var(--background)] -right-2 rounded-md cursor-pointer w-fit h-8 focus:outline-none border border-[var(--accent)]/20  transition-colors flex items-center justify-center"
-        >
-          <ChevronLeft size={20} />
-        </span>
         <div className="h-full rounded-2xl border border-[var(--accent)]/20 transition-all duration-300 ease-in-out w-80 md:w-80 md:flex-shrink-0 relative">
           <div className="p-4">
             <div className="space-y-4">
@@ -169,18 +162,15 @@ const Sidebar: React.FC = () => {
   }
 
   return (
-    <div
-      onClick={toggleSidebar}
-      className="flex h-auto min-h-screen p-4 relative"
-    >
-      <span className="absolute z-10 top-1/2 -right-2 rounded-md border border-[var(--accent)]/20 bg-[var(--background)] cursor-pointer w-fit h-8 focus:outline-none transition-colors flex items-center justify-center">
-        {!isCollapsed ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
-      </span>
+    <div className="flex h-auto min-h-screen p-4 relative">
       <div
         className={`h-full rounded-2xl border border-[var(--accent)]/20 transition-all duration-300 ease-in-out ${
           isCollapsed ? "w-16" : "w-80"
         } md:${isCollapsed ? "w-16" : "w-80"} md:flex-shrink-0 relative`}
       >
+        {/* Collapse Button - Fixed at top */}
+        <SidebarToggle onToggle={toggleSidebar} isCollapsed={isCollapsed} />
+
         <div className="p-4">
           <div className="space-y-4">
             {onboardingSteps.map((step: OnboardingStep, index: number) => {
@@ -191,9 +181,7 @@ const Sidebar: React.FC = () => {
               return (
                 <div key={step.step} className="relative">
                   {!isLast && !isCollapsed && (
-                    <div
-                      className="absolute left-9 top-12 w-0.5 h-16 bg-[var(--accent)]"
-                    ></div>
+                    <div className="absolute left-9 top-12 w-0.5 h-16 bg-[var(--accent)]"></div>
                   )}
 
                   <div

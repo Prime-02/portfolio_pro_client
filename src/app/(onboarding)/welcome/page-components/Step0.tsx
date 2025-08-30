@@ -33,7 +33,7 @@ const Step0 = () => {
   return (
     <TemplateStructure
       headerAlignment="left"
-      step={gettingStarted.step + "/6"}
+      step={gettingStarted.step}
       headerDescription={gettingStarted.description}
       greeting={gettingStarted.greeting}
       pageWriteup={gettingStarted.page_writeup}

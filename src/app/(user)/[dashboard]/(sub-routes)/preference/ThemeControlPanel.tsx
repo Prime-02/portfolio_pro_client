@@ -35,18 +35,7 @@ const ThemeControlPanel = ({ component }: ThemeControlPanelProp) => {
   const currentTab = tabConfig.find((tab) => tab.key === activeTab);
 
   return (
-    <div className="min-h-screen rounded-3xl relative border border-[var(--accent)]/20 flex transition-colors duration-300">
-      <div className="relative">
-        <SideBar
-          activeTab={activeTab}
-          themeVariant={themeVariant}
-          accentColor={accentColor}
-          theme={theme}
-          tabConfig={tabConfig}
-          setActiveTab={setActiveTab}
-        />
-      </div>
-
+    <div className={`min-h-screen ${!component && "border"} rounded-3xl relative  border-[var(--accent)]/20 flex transition-colors duration-300`}>
       {/* Main Content */}
       <div className="flex-1 p-6 mx-auto w-full overflow-auto">
         {/* Tab Header */}
@@ -85,6 +74,16 @@ const ThemeControlPanel = ({ component }: ThemeControlPanelProp) => {
 
           {activeTab === "pro" && <Pro />}
         </div>
+      </div>
+         <div className="relative">
+        <SideBar
+          activeTab={activeTab}
+          themeVariant={themeVariant}
+          accentColor={accentColor}
+          theme={theme}
+          tabConfig={tabConfig}
+          setActiveTab={setActiveTab}
+        />
       </div>
     </div>
   );

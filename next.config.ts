@@ -11,11 +11,6 @@ const nextConfig: NextConfig = {
       /*
       {
         protocol: 'https',
-        hostname: 'img.clerk.com',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
         hostname: 'res.cloudinary.com',
         pathname: '/**',
       },
@@ -24,7 +19,6 @@ const nextConfig: NextConfig = {
     ],
   },
   experimental: {
-    optimizePackageImports: ["@clerk/nextjs"],
   },
 };
 

@@ -38,7 +38,7 @@ const Step6 = () => {
   return (
     <TemplateStructure
       headerAlignment="left"
-      step={completionMessage.step + "/6"}
+      step={String(completionMessage.step)}
       headerDescription={completionMessage.description}
       greeting={completionMessage.greeting}
       pageWriteup={completionMessage.page_writeup}

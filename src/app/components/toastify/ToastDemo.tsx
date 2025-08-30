@@ -1,18 +1,16 @@
 "use client";
 import { Bell } from "lucide-react";
 import { useToast } from "./Toastify";
-import { useAuth, useUser } from "@clerk/nextjs";
 // Demo Component
 export const ToastDemo: React.FC = () => {
   const toast = useToast();
-  const { userId } = useAuth();
-  const user = useUser().user;
+
 
   const demoToasts = [
     {
       label: "Success Toast",
       action: () => {
-        console.log("Possible User Info ", user);
+        console.log("Possible User Info ",);
 
         toast.success("Operation completed successfully!", {
           title: "Success",
@@ -93,11 +91,6 @@ export const ToastDemo: React.FC = () => {
           capabilities. Features include multiple types, positions, animations,
           progress bars, actions, and more.
         </p>
-
-        <div>
-          <p>User ID: {userId}</p>
-          <p>User email: {user?.emailAddresses[0]?.emailAddress}</p>
-        </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
           {demoToasts.map((demo, index) => (

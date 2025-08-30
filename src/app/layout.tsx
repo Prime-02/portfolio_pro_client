@@ -4,7 +4,6 @@ import "./globals.css";
 import { GlobalStateProvider } from "./globalStateProvider";
 import { ThemeProvider } from "./components/theme/ThemeContext ";
 import { ToastProvider } from "./components/toastify/Toastify";
-import { ClerkProvider } from "@clerk/nextjs";
 import ClientLayout from "./ClientLayout";
 import { Suspense } from "react";
 import PortfolioProLogo from "./components/logo/PortfolioProTextLogo";
@@ -124,7 +123,6 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
       <html lang="en">
         <head>
           {/* Additional SEO meta tags */}
@@ -210,7 +208,6 @@ export default function RootLayout({
             <DynamicTitle/>
               <ToastProvider>
                 <ThemeProvider>
-                  {/* Header with Clerk auth buttons */}
                   <ClientLayout>{children}</ClientLayout>
                 </ThemeProvider>
               </ToastProvider>
@@ -218,6 +215,5 @@ export default function RootLayout({
           </Suspense>
         </body>
       </html>
-    </ClerkProvider>
   );
 }

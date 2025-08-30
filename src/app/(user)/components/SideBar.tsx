@@ -1,3 +1,4 @@
+import SidebarToggle from "@/app/components/buttons/CollapseButton";
 import { useTheme } from "@/app/components/theme/ThemeContext ";
 import {
   Accent,
@@ -9,8 +10,6 @@ import {
   Moon,
   Sun,
   Zap,
-  ChevronLeft,
-  ChevronRight,
 } from "lucide-react";
 import React, { useState } from "react";
 
@@ -45,24 +44,12 @@ const SideBar = ({
 
   return (
     <div
-      className={`min-h-screen h-full flex z-10 left-0 flex-col border-r border-[var(--accent)]/20 transition-all duration-300 rounded-l-3xl ease-in-out ${
+      className={`min-h-screen h-full flex z-10 left-0 flex-col border-l border-[var(--accent)]/20 transition-all duration-300 rounded-r-3xl ease-in-out ${
         isCollapsed ? "w-16" : "w-64"
       }`}
     >
-      {/* Collapse Button */}
-      <div className="p-3 border-b border-[var(--accent)]">
-        <button
-          onClick={toggleCollapse}
-          className="p-2 rounded-lg flex items-center justify-center w-full transition-all duration-300 ease-in-out hover:bg-[var(--foreground)]/20  focus:ring-opacity-50 focus:ring-2 ring-[var(--accent)] "
-          aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-        >
-          {isCollapsed ? (
-            <ChevronRight className="w-5 h-5" />
-          ) : (
-            <ChevronLeft className="w-5 h-5" />
-          )}
-        </button>
-      </div>
+      {/* Collapse Button - Fixed at top */}
+      <SidebarToggle className="rotate-180 border-none" onToggle={toggleCollapse} showKeyboardHints={false} isCollapsed={isCollapsed} />
 
       <div className="p-4 overflow-y-auto flex-1">
         <div className="mb-8">

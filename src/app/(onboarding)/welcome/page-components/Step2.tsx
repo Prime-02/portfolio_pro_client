@@ -147,7 +147,7 @@ const Step2 = () => {
     <TemplateStructure
       headerAlignment="right"
       // Header (A) Props
-      step={professionalInformation.step + "/6"}
+      step={String(professionalInformation.step)}
       title={professionalInformation.title}
       headerDescription={professionalInformation.description}
       // Description (B) Props
@@ -235,8 +235,8 @@ const Step2 = () => {
         </div>
 
         {/* Work Type and Years of Experience */}
-        <div className="flex flex-col gap-y-3 md:justify-between md:flex-row gap-x-2">
-          <span className="min-w-[45%]">
+        <div className="flex flex-col gap-y-3 md:justify-between items-center md:flex-row gap-x-2">
+          <span className="w-full md:min-w-[55%]">
             <Textinput
               loading={loading.includes("fetching_pro_info")}
               type="dropdown"
@@ -250,7 +250,7 @@ const Step2 = () => {
               desc={professionalInformation.fields[5].description}
             />
           </span>
-          <span className="min-w-[55%]">
+          <span className="w-full md:min-w-[45%] md:translate-y-3 ">
             <Textinput
               loading={loading.includes("fetching_pro_info")}
               type="number"

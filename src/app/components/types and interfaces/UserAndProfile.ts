@@ -51,5 +51,4 @@ export type AuthTokenResponse = {
   token_type: "bearer";
   expires_in: number;
   user_id: string;
-  clerk_id: string;
 };

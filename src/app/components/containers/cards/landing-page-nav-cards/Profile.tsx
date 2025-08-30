@@ -102,19 +102,15 @@ const Profile = () => {
         <div className="flex flex-col gap-y-3 p-3 rounded-2xl bg-[var(--background)] shadow-md">
           <div className="flex">
             <div className="flex items-center justify-start gap-x-5">
-              <div
-                className="relative flex h-12 w-12 items-center justify-center"
-                title="Profile"
-                aria-label="User Profile"
-              >
-                <span className="block overflow-hidden rounded-full">
+              
+                <span className="relative flex h-16 w-16 items-center justify-center object-cover rounded-full overflow-hidden ">
                   {imageError ? (
                     <Image
                       src={`https://avatar.oxro.io/avatar.svg?name=${fallbackLetter}`}
                       alt={`${userData?.username || "User"}'s Profile Picture`}
-                      width={48}
-                      height={48}
-                      className="h-full w-full object-cover"
+                      width={100}
+                      height={100}
+                      className="h-full w-full "
                       onError={handleImageError}
                       loading="lazy"
                     />
@@ -125,15 +121,15 @@ const Profile = () => {
                         userData?.username
                       )}
                       alt={`${userData?.username || "User"}'s Profile Picture`}
-                      width={48}
-                      height={48}
-                      className="h-full w-full object-cover"
+                      width={100}
+                      height={100}
+                      className="h-full w-full "
                       onError={handleImageError}
                       loading="lazy"
                     />
                   )}
                 </span>
-              </div>
+              
               <span className="flex flex-col">
                 <h3 className="text-lg font-semibold">
                   {userData.username

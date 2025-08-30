@@ -5,6 +5,7 @@ import ProfileImageSkeleton from "@/app/components/containers/skeletons/ProfileI
 import { User } from "@/app/components/types and interfaces/UserAndProfile";
 import { ModalType } from "@/app/components/types and interfaces/userprofile";
 import { useGlobalState } from "@/app/globalStateProvider";
+import { getImageSrc } from "@/app/components/utilities/syncFunctions/syncs";
 
 interface ProfilePictureProps {
   userData: User;
@@ -26,9 +27,9 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
       }}
       className={className}
     >
-      {userData.profile_picture ? (
+      {userData?.profile_picture ? (
         <Image
-          src={userData.profile_picture}
+          src={getImageSrc(userData.profile_picture)}
           width={1000}
           height={1000}
           alt="Profile Picture"

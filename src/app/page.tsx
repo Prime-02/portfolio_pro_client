@@ -2,13 +2,12 @@
 import Link from "next/link";
 import PortfolioPro from "./components/logo/PortfolioProTextLogo";
 import { headlines } from "./components/utilities/indices/LandingPageTexts";
-import { SignedIn, SignedOut } from "@clerk/nextjs";
 import Button from "./components/buttons/Buttons";
 import { ArrowRight } from "lucide-react";
 import { useGlobalState } from "./globalStateProvider";
 
 export default function Home() {
-  const { userData } = useGlobalState();
+  const { userData, accessToken } = useGlobalState();
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8 md:p-12 font-[family-name:var(--font-geist-sans)]">
       <main className="w-full max-w-4xl flex flex-col items-center text-center gap-8 sm:gap-12">
@@ -29,7 +28,7 @@ export default function Home() {
             </p>
           </div>
         </div>
-        <SignedOut>
+        {!accessToken && (
           <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
             <Link href="/user-auth?auth_mode=signup">
               <Button
@@ -51,8 +50,8 @@ export default function Home() {
               />
             </Link>
           </div>
-        </SignedOut>
-        <SignedIn>
+        )}
+        {accessToken && (
           <Link href={`/${userData.username ? userData.username : "welcome"}`}>
             <Button
               variant="primary"
@@ -63,7 +62,7 @@ export default function Home() {
               icon2={<ArrowRight />}
             />
           </Link>
-        </SignedIn>
+        )}
       </main>
     </div>
   );

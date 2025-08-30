@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import ProfileSideBar from "../components/ProfileSideBar";
 import { useGlobalState } from "@/app/globalStateProvider";
@@ -12,12 +12,25 @@ const UsersLayout = ({
   children: React.ReactNode;
 }>) => {
   const toast = useToast();
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const { currentUser, getCurrentUser, router, accessToken, setAccessToken } =
     useGlobalState();
 
+  // First, check localStorage and initialize the token
   useEffect(() => {
-    if (!accessToken) return;
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("session_token");
+      if (token) {
+        setAccessToken(token);
+      }
+      setIsInitialized(true); // Mark as initialized regardless of token presence
+    }
+  }, []); // Removed setAccessToken from dependencies
+
+  // Then, check for authentication after initialization
+  useEffect(() => {
+    if (!isInitialized) return; // Wait for initialization
 
     if (!accessToken) {
       toast.toast("Please Login to continue", {
@@ -31,24 +44,26 @@ const UsersLayout = ({
       });
       router.replace("/user-auth?auth_mode=login");
     }
-  }, [accessToken]);
+  }, [accessToken, isInitialized]); // Removed toast and router from dependencies
 
+  // Get current user when token is available (with additional safeguards)
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const token = localStorage.getItem("session_token");
-      if (token) {
-        setAccessToken(token);
-      } else {
-        toast.info("Kindly login to continue");
-        router.replace("/user-auth");
-      }
+    if (!accessToken || !isInitialized) return;
+    
+    // Only call getCurrentUser if we don't already have user data
+    if (!currentUser) {
+      getCurrentUser();
     }
-  }, []);
+  }, [accessToken, isInitialized, currentUser]);
 
-  useEffect(() => {
-    if (!accessToken) return;
-    getCurrentUser();
-  }, [currentUser, accessToken]);
+  // Show loading state during initialization
+  if (!isInitialized) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-pulse">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -67,7 +82,7 @@ const UsersLayout = ({
           }}
         >
           <motion.div
-            className={`rounded-3xl h-auto max-w-fit border-[var(--accent)]/20 border `} // Changed from w-fit to w-full
+            className={`rounded-3xl h-auto max-w-fit border-[var(--accent)]/20 border `}
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{

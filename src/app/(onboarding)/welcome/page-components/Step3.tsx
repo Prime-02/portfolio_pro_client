@@ -127,7 +127,7 @@ const Step3 = () => {
   return (
     <TemplateStructure
       headerAlignment="right"
-      step={contactAndLocation.step + "/6"}
+      step={String(contactAndLocation.step)}
       headerDescription={contactAndLocation.description}
       greeting={contactAndLocation.greeting}
       pageWriteup={contactAndLocation.page_writeup}
@@ -179,14 +179,12 @@ const Step3 = () => {
         <div className="flex flex-col gap-y-3 md:justify-between md:flex-row gap-x-2">
           <span className="flex flex-wrap items-center md:justify-end min-w-min-w-[35%] gap-x-1">
             <CheckBox
+              label="Available for contact"
               isChecked={formData.available_for_contact}
               setIsChecked={(e) =>
                 handleFieldChange("available_for_contact", e)
               }
             />
-            <p className="text-xs text-[var(--accent)]">
-              {"Available for contact"}
-            </p>
           </span>
           <span className="min-w-[65%]">
             <Textinput

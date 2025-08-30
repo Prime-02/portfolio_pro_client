@@ -1,4 +1,3 @@
-import { Eye, EyeClosed } from "lucide-react";
 import React, {
   useState,
   useRef,
@@ -10,6 +9,7 @@ import Dropdown from "./DynamicDropdown";
 import PhoneInputComponent from "./PhoneInput";
 import { getColorShade } from "../utilities/syncFunctions/syncs";
 import { useTheme } from "../theme/ThemeContext ";
+import CheckBox from "./CheckBox";
 
 interface TextInputProps {
   label?: string;
@@ -182,7 +182,7 @@ export const Textinput: React.FC<TextInputProps> = ({
                 onChange(e.target.value)
         }
         onFocus={() => desc && setShowDesc(true)}
-        id={id}
+        id={id || label}
         className={`${className} block px-2.5 pb-2.5 pt-4 w-full text-sm bg-transparent border-1 border-gray-300 appearance-none dark:border-gray-600 dark:focus:border-[var(--accent)] focus:outline-none focus:ring-0 focus:border-[var(--accent)] peer rounded-full text-center`}
         placeholder=" "
         step={step}
@@ -191,48 +191,47 @@ export const Textinput: React.FC<TextInputProps> = ({
   };
 
   return (
-    <div className="relative" ref={wrapperRef}>
-      {renderInput()}
-      {error && <span className="text-red-500 text-xs">{error}</span>}
+    <div className="flex flex-col">
+      <div className="relative" ref={wrapperRef}>
+        {renderInput()}
+        {error && <span className="text-red-500 text-xs">{error}</span>}
 
-      {type !== "dropdown" && type !== "phone" && (
-        <label
-          htmlFor={id}
-          className={`absolute text-sm dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 origin-[0] px-2 peer-focus:px-2 peer-focus:text-[var(--accent)] peer-focus:dark:text-[var(--accent)] peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1 ${labelStyle}`}
-          style={{
-            backgroundColor:
-              (labelBgHex || theme.background) && labelBgHexIntensity
-                ? getColorShade(
-                    labelBgHex || theme.background,
-                    labelBgHexIntensity
-                  )
-                : "none",
-          }}
-        >
-          {label}
-        </label>
-      )}
-
+        {type !== "dropdown" && type !== "phone" && (
+          <label
+            htmlFor={id}
+            className={`absolute text-sm dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 origin-[0] px-2 peer-focus:px-2 peer-focus:text-[var(--accent)] peer-focus:dark:text-[var(--accent)] peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1 ${labelStyle}`}
+            style={{
+              backgroundColor:
+                (labelBgHex || theme.background) && labelBgHexIntensity
+                  ? getColorShade(
+                      labelBgHex || theme.background,
+                      labelBgHexIntensity
+                    )
+                  : "none",
+            }}
+          >
+            {label}
+          </label>
+        )}
+        {desc && showDesc && (
+          <div
+            ref={descRef}
+            className="absolute z-10 w-64 p-3 mt-1 text-sm rounded-lg shadow-lg bg-[var(--background)] border-[var(--accent)] border "
+            style={{ bottom: "100%", left: 0 }}
+          >
+            {desc}
+            <div className="absolute w-4 h-4 transform rotate-45  bg-[var(--background)] border-[var(--accent)]  -bottom-1 left-4 border-b border-r "></div>
+          </div>
+        )}
+      </div>
       {type === "password" && !loading && (
-        <button
-          type="button"
-          className="absolute top-3 right-5 cursor-pointer"
-          onClick={toggleShowPassword}
-          aria-label={passwordVisible ? "Hide password" : "Show password"}
-        >
-          {passwordVisible ? <Eye /> : <EyeClosed />}
-        </button>
-      )}
-
-      {desc && showDesc && (
-        <div
-          ref={descRef}
-          className="absolute z-10 w-64 p-3 mt-1 text-sm rounded-lg shadow-lg bg-[var(--background)] border-[var(--accent)] border "
-          style={{ bottom: "100%", left: 0 }}
-        >
-          {desc}
-          <div className="absolute w-4 h-4 transform rotate-45  bg-[var(--background)] border-[var(--accent)]  -bottom-1 left-4 border-b border-r "></div>
-        </div>
+        <span className="mt-2 flex">
+          <CheckBox
+            isChecked={passwordVisible}
+            setIsChecked={toggleShowPassword}
+            label="Show Password"
+          />
+        </span>
       )}
     </div>
   );
@@ -271,55 +270,57 @@ export const TextArea: React.FC<TextAreaProps> = ({
 }) => {
   const { theme } = useTheme();
   return (
-    <div className="relative h-full">
-      {loading ? (
-        <div
-          className={`${className} rounded-2xl block px-2.5 pb-2.5 pt-4 w-full h-24 text-sm bg-gray-200 dark:bg-gray-700 animate-pulse border-1 border-gray-600`}
-        />
-      ) : (
-        <>
-          <textarea
-            maxLength={maxLength}
-            value={value}
-            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-              onChange(e.target.value)
-            }
-            id={id}
-            className={`${className} rounded-2xl block px-2.5 pb-2.5 pt-4 w-full text-sm bg-transparent border-1 border-gray-300 appearance-none dark:border-gray-600 dark:focus:border-[var(--accent)] focus:outline-none focus:ring-0 focus:border-[var(--accent)] peer`}
-            placeholder=" "
-            required={required}
-          ></textarea>
-          <label
-            htmlFor={id}
-            className={`absolute text-sm dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] px-2 peer-focus:px-2 peer-focus:text-[var(--accent)] peer-focus:dark:text-[var(--accent)] peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1 ${
-              labelStyle ? labelStyle : `card`
-            }`}
-            style={{
-              backgroundColor:
-                (labelBgHex || theme.background) && labelBgHexIntensity
-                  ? getColorShade(
-                      labelBgHex || theme.background,
-                      labelBgHexIntensity
-                    )
-                  : "none",
-            }}
-          >
-            {label}
-          </label>
-          {showLimit && (
-            <span
-              className={`absolute z-10 bg-[var(--background)] bottom-4.5 right-4 font-thin text-xs ${
-                value?.length === maxLength
-                  ? "text-red-500"
-                  : "px-1 rounded-sm "
-              } `}
+    <>
+      <div className="relative h-full">
+        {loading ? (
+          <div
+            className={`${className} rounded-2xl block px-2.5 pb-2.5 pt-4 w-full h-24 text-sm bg-gray-200 dark:bg-gray-700 animate-pulse border-1 border-gray-600`}
+          />
+        ) : (
+          <>
+            <textarea
+              maxLength={maxLength}
+              value={value}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                onChange(e.target.value)
+              }
+              id={id}
+              className={`${className} rounded-2xl block px-2.5 pb-2.5 pt-4 w-full text-sm bg-transparent border-1 border-gray-300 appearance-none dark:border-gray-600 dark:focus:border-[var(--accent)] focus:outline-none focus:ring-0 focus:border-[var(--accent)] peer`}
+              placeholder=" "
+              required={required}
+            ></textarea>
+            <label
+              htmlFor={id}
+              className={`absolute text-sm dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] px-2 peer-focus:px-2 peer-focus:text-[var(--accent)] peer-focus:dark:text-[var(--accent)] peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1 ${
+                labelStyle ? labelStyle : `card`
+              }`}
+              style={{
+                backgroundColor:
+                  (labelBgHex || theme.background) && labelBgHexIntensity
+                    ? getColorShade(
+                        labelBgHex || theme.background,
+                        labelBgHexIntensity
+                      )
+                    : "none",
+              }}
             >
-              {value?.length}/{maxLength}
-            </span>
-          )}
-          <p className="text-xs opacity-80">{desc as ReactNode}</p>
-        </>
-      )}
-    </div>
+              {label}
+            </label>
+            {showLimit && (
+              <span
+                className={`absolute z-10 bg-[var(--background)] bottom-4.5 right-4 font-thin text-xs ${
+                  value?.length === maxLength
+                    ? "text-red-500"
+                    : "px-1 rounded-sm "
+                } `}
+              >
+                {value?.length}/{maxLength}
+              </span>
+            )}
+          </>
+        )}
+      </div>
+        <p className="text-xs opacity-80">{desc as ReactNode}</p>
+    </>
   );
 };

@@ -1,3 +1,4 @@
+"use client";
 import { useState } from "react";
 import Button from "@/app/components/buttons/Buttons";
 import { Textinput } from "@/app/components/inputs/Textinput";
@@ -5,6 +6,7 @@ import { toast } from "@/app/components/toastify/Toastify";
 import { useGlobalState } from "@/app/globalStateProvider";
 import { PostAllData } from "@/app/components/utilities/asyncFunctions/lib/crud";
 import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
+import { DetailedError } from "@/app/components/utilities/syncFunctions/syncs";
 
 const Login = () => {
   const { loading, setLoading, checkParams, setAccessToken, router } =
@@ -102,6 +104,42 @@ const Login = () => {
       }
     } catch (error) {
       console.error("Login error:", error);
+
+      // Then you can use instanceof
+      if (error instanceof DetailedError) {
+        const errorMessage = error.details.toLowerCase();
+
+        if (
+          errorMessage.includes("unauthorized") ||
+          errorMessage.includes("incorrect")
+        ) {
+          setErrors((prev) => ({
+            ...prev,
+            general: "Invalid email/username or password. Please try again.",
+          }));
+        } else if (
+          errorMessage.includes("network") ||
+          errorMessage.includes("fetch")
+        ) {
+          setErrors((prev) => ({
+            ...prev,
+            general:
+              "Network error. Please check your connection and try again.",
+          }));
+        } else {
+          setErrors((prev) => ({
+            ...prev,
+            general:
+              "An unexpected error occurred. Please try again and if this persists, contact our support team.",
+          }));
+        }
+      } else {
+        setErrors((prev) => ({
+          ...prev,
+          general:
+            "An unexpected error occurred. Please try again and if this persists, contact our support team.",
+        }));
+      }
     } finally {
       setLoading("login_in_progress"); // Clear loading state
     }

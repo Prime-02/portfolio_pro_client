@@ -23,11 +23,11 @@ const ProfileInfo: React.FC<ProfileInfoProps> = ({
   if (isLoading) {
     return (
       <div className={className}>
-        <BasicSkeleton className="h-9 w-64 mb-2" />
-        <BasicSkeleton className="h-6 w-48 mb-2" />
-        <BasicSkeleton className="h-5 w-32 mb-4" />
-        <BasicSkeleton className="h-16 w-full mb-2" />
-        <BasicSkeleton className="h-5 w-36" />
+        <BasicSkeleton className=" rounded-md h-9 w-64 mb-2" />
+        <BasicSkeleton className=" rounded-md h-6 w-48 mb-2" />
+        <BasicSkeleton className=" rounded-md h-5 w-32 mb-4" />
+        <BasicSkeleton className=" rounded-md h-16 w-full mb-2" />
+        <BasicSkeleton className=" rounded-md h-5 w-36" />
       </div>
     );
   }
@@ -38,26 +38,26 @@ const ProfileInfo: React.FC<ProfileInfoProps> = ({
         {userInfo.firstname && <span>{userInfo.firstname}</span>}
         {userInfo.lastname && <span className="ml-2">{userInfo.lastname}</span>}
         {!userInfo.firstname && !userInfo.lastname && (
-          <BasicSkeleton className="h-9 w-64 inline-block" />
+          <BasicSkeleton className=" rounded-md h-9 w-64 inline-block" />
         )}
       </h1>
 
       {userProfileDetails.profession ? (
         <p className="text-lg opacity-60">{userProfileDetails.profession}</p>
       ) : (
-        <BasicSkeleton className="h-6 w-48" />
+        <BasicSkeleton className=" rounded-md h-6 w-48" />
       )}
 
       {userInfo.username ? (
         <p className="text-sm font-thin opacity-80">{`@${userInfo.username}`}</p>
       ) : (
-        <BasicSkeleton className="h-5 w-32" />
+        <BasicSkeleton className=" rounded-md h-5 w-32" />
       )}
 
       {userProfileDetails.bio ? (
         <p className="text-base opacity-80 mt-2">{userProfileDetails.bio}</p>
       ) : (
-        <BasicSkeleton className="h-16 w-full mt-2" />
+        <BasicSkeleton className=" rounded-md h-16 w-full mt-2" />
       )}
 
       {userProfileDetails.website_url ? (
@@ -69,14 +69,14 @@ const ProfileInfo: React.FC<ProfileInfoProps> = ({
         </Link>
       ) : (
         <span className="flex items-center">
-        🔗 <BasicSkeleton className="h-5 w-36" />
+        🔗 <BasicSkeleton className=" rounded-md h-5 w-36" />
         </span>
       )}
 
       {userProfileDetails.location ? (
         <p className="text-sm opacity-60">{userProfileDetails.location}</p>
       ) : (
-        <BasicSkeleton className="h-5 w-36" />
+        <BasicSkeleton className=" rounded-md h-5 w-36" />
       )}
     </div>
   );

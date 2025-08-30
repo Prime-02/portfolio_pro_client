@@ -181,8 +181,24 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
     if (typeof window !== "undefined") {
       localStorage.removeItem("session_token");
     }
+    const newUserData: UserData = {
+      id: "",
+      username: "",
+      email: "",
+      is_superuser: false,
+      firstname: "",
+      middlename: "",
+      lastname: "",
+      profile_picture: null,
+      profile_picture_id: "",
+      phone_number: "",
+      is_active: true,
+      role: "user",
+      created_at: "",
+      updated_at: "",
+    };
 
-    // Optional: Also clear any related user data
+    setUserData(newUserData);
   };
 
   /**

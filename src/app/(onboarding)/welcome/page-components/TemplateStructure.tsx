@@ -90,6 +90,7 @@ const TemplateStructure = ({
   const [showLayoutSelector, setShowLayoutSelector] =
     useState<ComponentType | null>(null);
   const [hasAnimated, setHasAnimated] = useState(false);
+  const [hasScrolledOnMount, setHasScrolledOnMount] = useState(false);
 
   // Refs for each component to handle scrolling
   const componentRefs = useRef<Record<ComponentType, HTMLDivElement | null>>({
@@ -99,12 +100,12 @@ const TemplateStructure = ({
     D: null,
   });
 
-  // Handle scrolling to focused component
   useEffect(() => {
     if (
       focusedComponent &&
       componentRefs.current[focusedComponent] &&
-      hasAnimated
+      hasAnimated &&
+      !hasScrolledOnMount // Only scroll if we haven't scrolled on mount yet
     ) {
       const element = componentRefs.current[focusedComponent];
 
@@ -126,19 +127,22 @@ const TemplateStructure = ({
             behavior: scrollBehavior,
             ...scrollIntoViewOptions,
           });
+          setHasScrolledOnMount(true); // Mark that we've completed the initial scroll
         }, 700); // Wait for layout animations to complete
 
         return () => clearTimeout(scrollTimer);
+      } else {
+        // Even if element is in viewport, mark as scrolled to prevent future scrolling
+        setHasScrolledOnMount(true);
       }
     }
   }, [
     focusedComponent,
-    arrangement,
+    hasAnimated,
     scrollBehavior,
     scrollIntoViewOptions,
-    hasAnimated,
+    hasScrolledOnMount, 
   ]);
-
   // Get all possible arrangements for a given component as first
   const getArrangementsWithComponentFirst = (
     component: ComponentType
@@ -184,7 +188,7 @@ const TemplateStructure = ({
         <span
           className={`flex flex-col ${headerAlignment === "left" ? "justify-start text-left" : "justify-start text-right"}`}
         >
-          <p className="text-sm opacity-65">Step {step}</p>
+          <p className="text-sm opacity-65">Step {step} {`/6`}</p>
           <PortfolioPro
             tracking={0.1}
             fontWeight={"bold"}
@@ -251,9 +255,7 @@ const TemplateStructure = ({
               key={index}
               onClick={() => handleLayoutChange(arr)}
               className={`p-3 border rounded-lg hover:bg-[var(--background)] transition-colors text-sm ${
-                arr === arrangement
-                  ? "border-[var(--accent)]/20"
-                  : "border"
+                arr === arrangement ? "border-[var(--accent)]/20" : "border"
               }`}
             >
               <div className="grid grid-cols-2 gap-1 mb-2">

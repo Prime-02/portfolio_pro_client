@@ -129,18 +129,18 @@ const LandingPageNavbar = () => {
               position="top-left"
               clicker={
                 <div
-                  className="relative flex h-12 w-12 items-center justify-center"
+                  className="relative flex "
                   title="Profile"
                   aria-label="User Profile"
                 >
-                  <span className="block overflow-hidden rounded-full">
+                  <span className="relative flex h-10 w-10 items-center justify-center object-cover rounded-full overflow-hidden ">
                     {imageError ? (
                       <Image
                         src={`https://avatar.oxro.io/avatar.svg?name=${fallbackLetter}`}
                         alt={`${userData?.username || "User"}'s Profile Picture`}
-                        width={48}
-                        height={48}
-                        className="h-full w-full object-cover"
+                        width={100}
+                        height={100}
+                        className="h-full w-full "
                         onError={handleImageError}
                         loading="lazy"
                       />
@@ -151,9 +151,9 @@ const LandingPageNavbar = () => {
                           userData?.username
                         )}
                         alt={`${userData?.username || "User"}'s Profile Picture`}
-                        width={48}
-                        height={48}
-                        className="h-full w-full object-cover"
+                        width={100}
+                        height={100}
+                        className="h-full w-full "
                         onError={handleImageError}
                         loading="lazy"
                       />

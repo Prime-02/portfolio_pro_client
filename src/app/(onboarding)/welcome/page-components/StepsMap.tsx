@@ -1,7 +1,7 @@
 import SidebarToggle from "@/app/components/buttons/CollapseButton";
 import { onboardingSteps } from "@/app/components/utilities/indices/MultiStepWriteUp";
 import { useGlobalState } from "@/app/globalStateProvider";
-import { ChevronLeft, ChevronRight, Check, Circle } from "lucide-react";
+import { Check, Circle } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import { IconType } from "react-icons";
 

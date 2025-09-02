@@ -7,7 +7,7 @@ import Button from "@/app/components/buttons/Buttons";
 import Link from "next/link";
 import OAuthComponent, { OAuthProvider } from "./platforms/OAuthComponent";
 
-const page = () => {
+const DynamicMultiPlatformsPage = () => {
   const { currentPath, checkParams } = useGlobalState();
   const currentPage = PathUtil.getLastSegment(currentPath);
   const code = checkParams("code");
@@ -43,4 +43,4 @@ const page = () => {
   return renderPage();
 };
 
-export default page;
+export default DynamicMultiPlatformsPage;

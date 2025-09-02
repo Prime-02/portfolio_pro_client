@@ -14,8 +14,6 @@ const SignUp = () => {
     setLoading,
     extendRouteWithQuery,
     clearQuerryParam,
-    searchParams,
-    accessToken,
     currentPath,
     checkParams,
   } = useGlobalState();
@@ -32,8 +30,6 @@ const SignUp = () => {
     email: "",
     general: "",
   });
-
-  const verifyEmail = searchParams.get("verify_email") === "true";
 
   const handleChange = (field: keyof typeof formData) => (value: string) => {
     setFormData((prev) => ({

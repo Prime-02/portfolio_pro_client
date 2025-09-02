@@ -57,7 +57,7 @@ interface GlobalStateContextType {
     value: string,
     setArray?: Dispatch<SetStateAction<string[]>>
   ) => void;
-  fetchUserData: () => Promise<void>;
+  fetchUserData: (access?: string) => Promise<void>;
   updateUserData: () => Promise<void>;
   router: AppRouterInstance;
   currentPath: string;
@@ -91,69 +91,63 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
   const currentPath = usePathname();
   const pathname = usePathname();
 
-  const fetchUserData = useCallback(
-    async (access: string = accessToken): Promise<void> => {
-      if (!access) {
-        console.warn("No access token provided for fetchUserData");
-        return;
-      }
+  const fetchUserData = async (access: string = accessToken): Promise<void> => {
+    if (!access) {
+      console.warn("No access token provided for fetchUserData");
+      return;
+    }
 
+    setLoading("fetching_user_data");
+    try {
+      const userDataUrl = currentUser
+        ? `${BASE_URL}/api/v1/settings/info/${currentUser}`
+        : `${BASE_URL}/api/v1/settings/info`;
+
+      const userDataRes = await GetAllData<undefined, UserData>({
+        access,
+        url: userDataUrl,
+        type: "User Data",
+      });
+
+      if (userDataRes) {
+        const newUserData: UserData = {
+          id: userDataRes.id ?? "",
+          username: userDataRes.username ?? "",
+          email: userDataRes.email ?? "",
+          is_superuser: userDataRes.is_superuser ?? false,
+          firstname: userDataRes.firstname ?? "",
+          middlename: userDataRes.middlename ?? "",
+          lastname: userDataRes.lastname ?? "",
+          profile_picture: userDataRes.profile_picture ?? null,
+          profile_picture_id: userDataRes.profile_picture_id ?? "",
+          phone_number: userDataRes.phone_number ?? "",
+          is_active: userDataRes.is_active ?? true,
+          role: userDataRes.role ?? "user",
+          created_at: userDataRes.created_at ?? "",
+          updated_at: userDataRes.updated_at ?? "",
+        };
+
+        setUserData(newUserData);
+        console.log("Client User Data: ", userDataRes);
+      } else {
+        console.log("No User Info Recovered");
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    } finally {
       setLoading("fetching_user_data");
-      try {
-        const userDataUrl = currentUser
-          ? `${BASE_URL}/api/v1/settings/info/${currentUser}`
-          : `${BASE_URL}/api/v1/settings/info`;
-
-        const userDataRes = await GetAllData<undefined, UserData>({
-          access,
-          url: userDataUrl,
-          type: "User Data",
-        });
-
-        if (userDataRes) {
-          const newUserData: UserData = {
-            id: userDataRes.id ?? "",
-            username: userDataRes.username ?? "",
-            email: userDataRes.email ?? "",
-            is_superuser: userDataRes.is_superuser ?? false,
-            firstname: userDataRes.firstname ?? "",
-            middlename: userDataRes.middlename ?? "",
-            lastname: userDataRes.lastname ?? "",
-            profile_picture: userDataRes.profile_picture ?? null,
-            profile_picture_id: userDataRes.profile_picture_id ?? "",
-            phone_number: userDataRes.phone_number ?? "",
-            is_active: userDataRes.is_active ?? true,
-            role: userDataRes.role ?? "user",
-            created_at: userDataRes.created_at ?? "",
-            updated_at: userDataRes.updated_at ?? "",
-          };
-
-          setUserData(newUserData);
-          console.log("Client User Data: ", userDataRes);
-        } else {
-          console.log("No User Info Recovered");
-        }
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-      } finally {
-        setLoading("fetching_user_data");
-      }
-    },
-    [accessToken, currentUser]
-  );
+    }
+  };
 
   // Simple user data update function to be used by other components
-  const updateUserData = useCallback(
-    async (token = accessToken): Promise<void> => {
-      if (!token) {
-        console.warn("No access token available for updateUserData");
-        return;
-      }
+  const updateUserData = async (token = accessToken): Promise<void> => {
+    if (!token) {
+      console.warn("No access token available for updateUserData");
+      return;
+    }
 
-      await fetchUserData(token);
-    },
-    [accessToken, fetchUserData]
-  );
+    await fetchUserData(token);
+  };
 
   // Effect for initial load (mount)
   useEffect(() => {

@@ -110,12 +110,12 @@ const UserAuth = () => {
           </motion.div>
         </AnimatePresence>
       </div>
-      <div className="flex mx-auth items-center justify-between w-sm">
+      <div className="flex mx-auth items-center justify-between w-full">
         <span className="w-[40%] h-[0.25px] bg-[var(--accent)]"></span>
         <span>or</span>
         <span className="w-[40%] h-[0.25px] bg-[var(--accent)]"></span>
       </div>
-      <div className="w-sm">
+      <div className="w-full">
         <OAuth />
       </div>
       <div className="flex flex-col items-center gap-y-2">

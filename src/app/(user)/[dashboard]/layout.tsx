@@ -5,6 +5,7 @@ import ProfileSideBar from "../components/ProfileSideBar";
 import { useGlobalState } from "@/app/globalStateProvider";
 import { useToast } from "@/app/components/toastify/Toastify";
 import { Info } from "lucide-react";
+import PortfolioProLogo from "@/app/components/logo/PortfolioProTextLogo";
 
 const UsersLayout = ({
   children,
@@ -49,7 +50,7 @@ const UsersLayout = ({
   // Get current user when token is available (with additional safeguards)
   useEffect(() => {
     if (!accessToken || !isInitialized) return;
-    
+
     // Only call getCurrentUser if we don't already have user data
     if (!currentUser) {
       getCurrentUser();
@@ -60,7 +61,14 @@ const UsersLayout = ({
   if (!isInitialized) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-pulse">Loading...</div>
+        <div>
+          <PortfolioProLogo
+            tracking={0.2}
+            scale={0.75}
+            fontWeight={"extrabold"}
+            reanimateDelay={3000}
+          />
+        </div>
       </div>
     );
   }

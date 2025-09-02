@@ -1,4 +1,4 @@
-export const local = "https://folks-among-boring-principal.trycloudflare.com";
+export const local = "http://localhost:8000";
 
 export const cloud = `https://d22qn4oxzh4x4y.cloudfront.net`;
 

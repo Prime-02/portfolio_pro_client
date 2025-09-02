@@ -1,18 +1,26 @@
 "use client"; // Required for hooks
-import GitHubButton from "../[platform]/platforms/github/GitHubButton";
-import GioogleButton from "../[platform]/platforms/google/GoogleButton";
-import LinkedInButton from "../[platform]/platforms/linkedIn/LinkedInButton";
+import OAuthButton from "../[platform]/platforms/OAuthButton";
+import VercelButton from "../[platform]/platforms/vercel/VercelButton";
 
 const OAuth = () => {
   return (
-    <div className="flex flex-col gap-2">
-      <GioogleButton />
-      <div className="flex gap-2">
-        <span>
-          <LinkedInButton />
+    <div className="flex flex-col gap-2 w-full ">
+      <OAuthButton fullWidth provider="google"  />
+      <div className="flex gap-2 w-full ">
+        <span className="w-1/2">
+          <OAuthButton fullWidth provider="linkedin" />
         </span>
-        <span>
-          <GitHubButton />
+        <span className="w-1/2">
+          <OAuthButton fullWidth provider="github" />
+        </span>
+      </div>
+      <OAuthButton fullWidth provider="canva"  />
+      <div className="flex gap-2">
+        <span className="w-1/2">
+          <OAuthButton fullWidth provider="figma" />
+        </span>
+        <span className="w-1/2">
+          <VercelButton />
         </span>
       </div>
     </div>

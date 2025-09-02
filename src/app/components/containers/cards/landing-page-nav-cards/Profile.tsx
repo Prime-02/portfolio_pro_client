@@ -102,34 +102,33 @@ const Profile = () => {
         <div className="flex flex-col gap-y-3 p-3 rounded-2xl bg-[var(--background)] shadow-md">
           <div className="flex">
             <div className="flex items-center justify-start gap-x-5">
-              
-                <span className="relative flex h-16 w-16 items-center justify-center object-cover rounded-full overflow-hidden ">
-                  {imageError ? (
-                    <Image
-                      src={`https://avatar.oxro.io/avatar.svg?name=${fallbackLetter}`}
-                      alt={`${userData?.username || "User"}'s Profile Picture`}
-                      width={100}
-                      height={100}
-                      className="h-full w-full "
-                      onError={handleImageError}
-                      loading="lazy"
-                    />
-                  ) : (
-                    <Image
-                      src={getImageSrc(
-                        userData?.profile_picture,
-                        userData?.username
-                      )}
-                      alt={`${userData?.username || "User"}'s Profile Picture`}
-                      width={100}
-                      height={100}
-                      className="h-full w-full "
-                      onError={handleImageError}
-                      loading="lazy"
-                    />
-                  )}
-                </span>
-              
+              <span className="relative flex h-16 w-16 items-center justify-center object-cover rounded-full overflow-hidden ">
+                {imageError ? (
+                  <Image
+                    src={`https://avatar.oxro.io/avatar.svg?name=${fallbackLetter}`}
+                    alt={`${userData?.username || "User"}'s Profile Picture`}
+                    width={100}
+                    height={100}
+                    className="h-full w-full "
+                    onError={handleImageError}
+                    loading="lazy"
+                  />
+                ) : (
+                  <Image
+                    src={getImageSrc(
+                      userData?.profile_picture,
+                      userData?.username
+                    )}
+                    alt={`${userData?.username || "User"}'s Profile Picture`}
+                    width={100}
+                    height={100}
+                    className="h-full w-full "
+                    onError={handleImageError}
+                    loading="lazy"
+                  />
+                )}
+              </span>
+
               <span className="flex flex-col">
                 <h3 className="text-lg font-semibold">
                   {userData.username
@@ -142,6 +141,7 @@ const Profile = () => {
                   <p>{userData.firstname}</p>
                   <p>{userData.lastname}</p>
                 </span>
+                <p className="text-sm opacity-65">{userData.email}</p>
               </span>
             </div>
           </div>

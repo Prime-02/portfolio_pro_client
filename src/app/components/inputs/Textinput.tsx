@@ -229,7 +229,7 @@ export const Textinput: React.FC<TextInputProps> = ({
           <CheckBox
             isChecked={passwordVisible}
             setIsChecked={toggleShowPassword}
-            label="Show Password"
+            label={`Show ${label}`}
           />
         </span>
       )}
@@ -320,7 +320,7 @@ export const TextArea: React.FC<TextAreaProps> = ({
           </>
         )}
       </div>
-        <p className="text-xs opacity-80">{desc as ReactNode}</p>
+      <p className="text-xs opacity-80">{desc as ReactNode}</p>
     </>
   );
 };

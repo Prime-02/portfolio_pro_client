@@ -55,7 +55,7 @@ const PROVIDER_CONFIG = {
     endpoint: "vercel/login",
     loadingKey: "vercel_verification_in_progress",
     logoSrc: (isDarkMode: boolean) =>
-      `/socials/vercel/vercel/logotype/${isDarkMode ? "dark" : "light"}/vercel-logotype-${isDarkMode ? "dark" : "light"}.png`,
+      `/socials/vercel/vercel-logotype-${isDarkMode ? "dark" : "light"}.svg`,
     logoAlt: "Vercel Logo",
     logoClass: "object-cover rounded-full w-10 h-10",
     unapprovedLogoClass: "object-cover rounded-full w-32 h-32",

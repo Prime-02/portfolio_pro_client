@@ -168,6 +168,8 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
         localStorage.removeItem("session_token");
       }
     }
+    console.log("Token: ", accessToken);
+    
   }, [accessToken]);
 
   const mockLogOut = () => {

@@ -7,7 +7,7 @@ import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
 import { PathUtil } from "@/app/components/utilities/syncFunctions/syncs";
 import { useGlobalState } from "@/app/globalStateProvider";
 import Image from "next/image";
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import Link from "next/link";
 import OAuthButton from "./OAuthButton";
 import VercelButton from "./vercel/VercelButton";
@@ -96,6 +96,7 @@ const OAuthComponent: React.FC<OAuthComponentProps> = ({
     fetchUserData,
   } = useGlobalState();
   const { isDarkMode } = useTheme();
+  const hasCalledApproveUser = useRef(false);
 
   const config = PROVIDER_CONFIG[provider];
 
@@ -118,6 +119,10 @@ const OAuthComponent: React.FC<OAuthComponentProps> = ({
       : "";
 
   const approveUser = async () => {
+    if (hasCalledApproveUser.current) {
+      return;
+    }
+    hasCalledApproveUser.current = true;
     setLoading(config.loadingKey);
     try {
       const getVerification: {
@@ -133,19 +138,24 @@ const OAuthComponent: React.FC<OAuthComponentProps> = ({
 
       if (getVerification) {
         await fetchUserData(getVerification.session_token);
+
+        // Handle success message first
+        if (getVerification.message) {
+          toast.success(getVerification.message);
+        }
+
+        // Handle session token
+        if (getVerification.session_token) {
+          console.log("Data retrieved after verification", getVerification);
+          setAccessToken(getVerification.session_token);
+          localStorage.setItem("session_token", getVerification.session_token);
+        }
+
+        // Handle routing based on user status
         if (!getVerification.is_new) {
           router.replace(`/${getVerification?.user?.username ?? "dashboard"}`);
         } else {
           router.replace(`/welcome`);
-        }
-        if (getVerification.message) {
-          toast.success(getVerification.message);
-        }
-        if (getVerification.session_token) {
-          console.log("Data retrieved after verification", getVerification);
-
-          setAccessToken(getVerification.session_token);
-          localStorage.setItem("session_token", getVerification.session_token);
         }
       } else {
         toast.error("We were unable to verify you. Please try again", {

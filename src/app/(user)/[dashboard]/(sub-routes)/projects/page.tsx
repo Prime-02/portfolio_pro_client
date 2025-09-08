@@ -1,9 +1,12 @@
-import React from 'react'
+import React from "react";
+import Main from "./page-components/Main";
 
-const page = () => {
+const ProjectPage = () => {
   return (
-    <div>page</div>
-  )
-}
+    <div className="w-full min-h-screen">
+      <Main />
+    </div>
+  );
+};
 
-export default page
+export default ProjectPage;

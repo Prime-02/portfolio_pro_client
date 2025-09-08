@@ -90,7 +90,7 @@ const UsersLayout = ({
           }}
         >
           <motion.div
-            className={`rounded-3xl h-auto max-w-fit border-[var(--accent)]/20 border `}
+            className={`rounded-3xl min-h-screen h-auto w-full `}
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{

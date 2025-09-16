@@ -26,7 +26,8 @@ interface DropdownProps {
   type?: string;
   value?: string;
   label?: string;
-  disabled?: boolean
+  disabled?: boolean;
+  labelBgHexIntensity?: number
 }
 
 interface DropdownMenuProps {
@@ -44,6 +45,7 @@ interface DropdownMenuProps {
   placeholder: string;
   displayKey: string;
   searchInputRef: React.RefObject<HTMLInputElement | null>;
+  labelBgHexIntensity?: number
 }
 
 const DropdownMenu: React.FC<DropdownMenuProps> = ({
@@ -61,6 +63,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
   displayKey,
   searchInputRef,
   placeholder,
+  labelBgHexIntensity = 10
 }) => {
   const [position, setPosition] = useState<"top" | "bottom">("bottom");
   const menuRef = useRef<HTMLDivElement>(null);
@@ -108,7 +111,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
     >
       {type === "datalist" && (
         <div className="p-2 relative w-full">
-          <Search className="mr-2 h-4 w-4 absolute right-0 top-1/3" />
+          <Search className="mr-2 absolute right-3 top-4.5" />
           <Textinput
             ref={searchInputRef as React.RefObject<HTMLInputElement>}
             type="text"
@@ -116,6 +119,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
             className="w-full"
             value={searchQuery}
             onChange={setSearchQuery}
+            labelBgHexIntensity={labelBgHexIntensity}
           />
         </div>
       )}
@@ -167,6 +171,7 @@ const Dropdown: React.FC<DropdownProps> = ({
   type,
   value,
   label,
+  labelBgHexIntensity = 10
   // disabled =false
 }) => {
   const { theme } = useTheme();
@@ -287,7 +292,7 @@ const Dropdown: React.FC<DropdownProps> = ({
 
   return (
     <>
-      <span className=" text-xs">{label}</span>
+      {type !== "datalist" && <span className=" text-xs">{label}</span>}
       <div
         tabIndex={0}
         onFocus={onFocus}
@@ -334,6 +339,7 @@ const Dropdown: React.FC<DropdownProps> = ({
               valueKey={valueKey}
               displayKey={displayKey}
               searchInputRef={searchInputRef}
+              labelBgHexIntensity={labelBgHexIntensity}
             />
           </div>,
           document.body

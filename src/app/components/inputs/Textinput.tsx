@@ -46,6 +46,7 @@ interface TextInputProps {
   required?: boolean;
   pattern?: string;
   step?: number;
+  icon?: ReactNode;
 }
 
 export const Textinput: React.FC<TextInputProps> = ({
@@ -76,6 +77,7 @@ export const Textinput: React.FC<TextInputProps> = ({
   required = false,
   pattern,
   step,
+  icon,
 }) => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const { theme } = useTheme();
@@ -119,7 +121,7 @@ export const Textinput: React.FC<TextInputProps> = ({
       );
     }
 
-    if (type === "dropdown") {
+    if (type === "dropdown" || type === "datalist") {
       return (
         <Dropdown
           type={type}
@@ -199,7 +201,7 @@ export const Textinput: React.FC<TextInputProps> = ({
         {type !== "dropdown" && type !== "phone" && (
           <label
             htmlFor={id}
-            className={`absolute text-sm dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 origin-[0] px-2 peer-focus:px-2 peer-focus:text-[var(--accent)] peer-focus:dark:text-[var(--accent)] peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1 ${labelStyle}`}
+            className={`absolute text-sm dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 origin-[0] px-2 peer-focus:px-2 peer-focus:text-[var(--accent)] peer-focus:dark:text-[var(--accent)] peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto flex items-center gap-1 start-1 ${labelStyle}`}
             style={{
               backgroundColor:
                 (labelBgHex || theme.background) && labelBgHexIntensity
@@ -210,7 +212,8 @@ export const Textinput: React.FC<TextInputProps> = ({
                   : "none",
             }}
           >
-            {label}
+            <span className="scale-80">{icon}</span>
+            <span>{label}</span>
           </label>
         )}
         {desc && showDesc && (

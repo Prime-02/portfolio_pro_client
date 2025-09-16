@@ -1298,3 +1298,42 @@ export class DetailedError extends Error {
   }
 }
 
+export function generateQueryParams(params: Record<string, string | number | boolean | null | undefined> = {}): string {
+  const validParams = Object.entries(params)
+    .filter(
+      ([_, value]) => value !== undefined && value !== null && value !== ""
+    )
+    .map(
+      ([key, value]) =>
+        `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`
+    );
+
+  return validParams.length > 0 ? `?${validParams.join("&")}` : "";
+}
+
+
+export function replaceCharacters(
+  findChars: string[],
+  replaceChars: string[],
+  inputString: string
+): string {
+  // Validate input arrays have the same length
+  if (findChars.length !== replaceChars.length) {
+    throw new Error('findChars and replaceChars arrays must have the same length');
+  }
+  
+  // Create a mapping object
+  const charMap: Record<string, string> = {};
+  
+  // Build the character mapping
+  findChars.forEach((char, index) => {
+    charMap[char] = replaceChars[index];
+  });
+  
+  // Use regex for more efficient replacement (especially for longer strings)
+  const regex = new RegExp(`[${findChars.map(char => 
+    char.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') // Escape regex special characters
+  ).join('')}]`, 'g');
+  
+  return inputString.replace(regex, match => charMap[match] || match);
+}

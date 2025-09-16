@@ -18,8 +18,8 @@ import Image from "next/image";
 
 const LandingPageNavbar = () => {
   const { theme } = useTheme();
-  const { userData, accessToken } = useGlobalState();
-  const [viewportWidth, setViewportWidth] = useState(0);
+  const { userData, accessToken, viewportWidth, setViewportWidth } =
+    useGlobalState();
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [imageError, setImageError] = useState(false);
 

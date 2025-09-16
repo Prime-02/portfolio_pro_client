@@ -33,3 +33,75 @@ export interface ProjectItem {
 }
 
 export type ProjectsResponseData = ProjectItem[];
+
+export type SupportedPlatforms =
+  | "portfolio-pro"
+  | "vercel"
+  | "github"
+  | "figma"
+  | "canva";
+
+export type ProjectStatusProps = "active" | "inactive" | "cancelled";
+
+export interface ProjectCreateFormData {
+  project_name: string;
+  project_description: string;
+  project_platform: SupportedPlatforms;
+  project_category: string;
+  contribution_description: string;
+  contribution: string;
+  project_url: string;
+  is_concept: boolean;
+  is_completed: boolean;
+  is_public: boolean;
+  stack: string[];
+  other_project_url: string[];
+  tags: string[];
+  start_date: string;
+  end_date: string;
+  budget: number;
+  client_name: string;
+  status: ProjectStatusProps;
+  featured_in: string[];
+  project_media: File[] | string[] | null;
+  [key: string]: unknown;
+}
+
+
+export interface ImageUrlsProps {
+  url: string;
+  public_id: string;
+}
+
+export interface OtherProjectsImageUrlsProps {
+  hero_media: ImageUrlsProps;
+  media_1: ImageUrlsProps;
+  media_2: ImageUrlsProps;
+  media_3: ImageUrlsProps;
+}
+
+export interface AllProjectsDisplayCardProps {
+  id: string;
+  project_name: string;
+  project_description: string;
+  project_platform: string;
+  project_category: string;
+  project_url: string;
+  project_image_url: string;
+  is_public: boolean;
+  is_completed: boolean;
+  is_concept: boolean;
+  stack: string[];
+  other_project_image_url: OtherProjectsImageUrlsProps;
+  other_project_url: Record<string, unknown>;
+  tags: string[];
+  start_date: string;
+  end_date: string;
+  budget: number | null;
+  client_name: string | null;
+  status: string;
+  featured_in: string[];
+  last_updated: string;
+  created_at: string;
+  [key: string]: unknown;
+}

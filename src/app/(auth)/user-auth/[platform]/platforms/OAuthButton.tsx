@@ -42,7 +42,7 @@ const OAUTH_BUTTON_CONFIG = {
     endpoint: "canva-auth/login",
     loadingKey: "canva_verification_in_progress",
     logoSrc: "/socials/canva/Canva_Logo_0.svg",
-    logoAlt: "LinkedIn Logo",
+    logoAlt: "Canva Logo",
     buttonText: "Continue with ",
   },
   //vercel has a different integration method

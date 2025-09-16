@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { AlertCircle, Music, Upload, X } from "lucide-react";
+import { AlertCircle, ImagePlus, Music, Upload, X } from "lucide-react";
 import VideoTrimmer from "./VideoTrimmer";
 import { useFileProcessor } from "../utilities/hooks/mediaHooks";
 import MediaPreview from "./MediaPreview";
@@ -20,7 +20,7 @@ const MediaPicker: React.FC<MediaPickerProps> = ({
   },
   devMode = false,
   loading = false,
-  onClick = () => {},
+  onClick,
   maxFileSize = 200 * 1024 * 1024,
   uploadCooldown = 1000,
   maxVideoDuration = 30,
@@ -171,12 +171,35 @@ const MediaPicker: React.FC<MediaPickerProps> = ({
         />
       )}
 
-      {/* Media Preview */}
+      {/* Media Preview - Now acts as dropzone when files exist */}
       {mediaFiles.length > 0 && !trimmerFile && (
-        <div className="mb-6">
-          <div className="bg-[var(--background)] border border-gray-200 rounded-lg p-4">
+        <div className="mb-6 relative">
+          <span className="absolute right-0 top-1">
+            <Button
+              size="sm"
+              onClick={!isDisabled ? openFileDialog : undefined}
+              icon={<ImagePlus size={18} />}
+              variant="ghost"
+            />
+          </span>
+          <div
+            className={`bg-[var(--background)]  border-2 border-dashed rounded-lg p-4 transition-all duration-200 ${
+              isDisabled
+                ? "border-gray-300 cursor-not-allowed opacity-100"
+                : isDragging
+                  ? "border-[var(--accent)] cursor-pointer"
+                  : "border-gray-300 hover:border-[var(--accent)] cursor-pointer"
+            } ${isProcessing ? "animate-pulse" : ""}`}
+            onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+            role="button"
+            tabIndex={!isDisabled ? 0 : -1}
+            aria-label="Drop files here or click to select"
+          >
             {/* Selected Media Display */}
-            <div className="mb-4">
+            <div className="mb-4 ">
               {selectedPreviewIndex < mediaFiles.length && (
                 <div className=" rounded-lg  aspect-video flex items-center justify-center">
                   {mediaFiles[selectedPreviewIndex].media_type === "image" && (
@@ -238,96 +261,104 @@ const MediaPicker: React.FC<MediaPickerProps> = ({
             <div className="mt-4 flex justify-between items-center">
               <div className="text-sm opacity-65 ">
                 {mediaFiles.length} of {maxFiles} files selected
+                {isDragging && " - Drop files to add more"}
               </div>
-              <Button
-                text="Upload"
-                size="md"
-                loading={loading}
-                disabled={loading || mediaFiles.length === 0}
-                onClick={onClick}
-                icon2={<Upload size={16} />}
-                customColor="green"
-              />
+              {onClick && (
+                <Button
+                  text="Upload"
+                  size="md"
+                  loading={loading}
+                  disabled={loading || mediaFiles.length === 0}
+                  onClick={onClick}
+                  icon2={<Upload size={16} />}
+                  customColor="green"
+                />
+              )}
             </div>
           </div>
         </div>
       )}
 
-      {/* Drop Zone */}
-      <div
-        className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-all duration-200 ${
-          isDisabled
-            ? "border-gray-300 bg-gray-50 cursor-not-allowed opacity-60"
-            : isDragging
-              ? "border-[var(--accent)] cursor-pointer"
-              : "border-gray-300 hover:border-[var(--accent)] cursor-pointer"
-        } ${isProcessing ? "animate-pulse" : ""}`}
-        onDragEnter={handleDragEnter}
-        onDragLeave={handleDragLeave}
-        onDragOver={handleDragOver}
-        onDrop={handleDrop}
-        onClick={!isDisabled ? openFileDialog : undefined}
-        role="button"
-        tabIndex={!isDisabled ? 0 : -1}
-        aria-label="Drop files here or click to select"
-      >
-        <input
-          ref={fileInputRef}
-          id="file_upload"
-          type="file"
-          multiple
-          accept={acceptString}
-          onChange={handleFileSelect}
-          className="hidden"
-          disabled={isDisabled}
-        />
+      {/* Drop Zone - Only shown when no files are uploaded */}
+      {mediaFiles.length === 0 && (
+        <div
+          className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-all duration-200 ${
+            isDisabled
+              ? "border-gray-300 bg-gray-50 cursor-not-allowed opacity-60"
+              : isDragging
+                ? "border-[var(--accent)] cursor-pointer"
+                : "border-gray-300 hover:border-[var(--accent)] cursor-pointer"
+          } ${isProcessing ? "animate-pulse" : ""}`}
+          onDragEnter={handleDragEnter}
+          onDragLeave={handleDragLeave}
+          onDragOver={handleDragOver}
+          onDrop={handleDrop}
+          onClick={!isDisabled ? openFileDialog : undefined}
+          role="button"
+          tabIndex={!isDisabled ? 0 : -1}
+          aria-label="Drop files here or click to select"
+        >
+          <div className="flex flex-col items-center space-y-4">
+            <Upload
+              className={`w-12 h-12 transition-colors ${
+                isProcessing
+                  ? "text-[var(--acent)] animate-bounce"
+                  : isDragging
+                    ? "text-[var(--acent)]"
+                    : "text-gray-400 hover:text-[var(--acent)]"
+              }`}
+            />
 
-        <div className="flex flex-col items-center space-y-4">
-          <Upload
-            className={`w-12 h-12 transition-colors ${
-              isProcessing
-                ? "text-[var(--acent)] animate-bounce"
-                : isDragging
-                  ? "text-[var(--acent)]"
-                  : "text-gray-400 hover:text-[var(--acent)]"
-            }`}
-          />
-
-          {isProcessing ? (
-            <div>
-              <p className="text-lg font-medium text-gray-700">
-                Processing files...
-              </p>
-              <p className="text-sm text-gray-500">Please wait</p>
-            </div>
-          ) : mediaFiles.length >= maxFiles ? (
-            <div>
-              <p className="text-lg font-medium text-gray-700">
-                Maximum files reached
-              </p>
-              <p className="text-sm text-gray-500">Remove files to add more</p>
-            </div>
-          ) : (
-            <div>
-              <p className="text-lg font-medium ">
-                {isDragging
-                  ? "Drop your media files here"
-                  : "Drag & drop media files here"}
-              </p>
-              <p className="text-sm text-gray-500 mt-2">
-                or click to browse ({maxFiles - mediaFiles.length} remaining)
-              </p>
-              <p className="text-xs text-gray-400 mt-1">
-                Supports images, videos, and audio files (max{" "}
-                {formatFileSize(maxFileSize)} each)
-                {/* {maxVideoDuration && (
-                  <span>, videos limited to {maxVideoDuration}s</span>
-                )} */}
-              </p>
-            </div>
-          )}
+            {isProcessing ? (
+              <div>
+                <p className="text-lg font-medium text-gray-700">
+                  Processing files...
+                </p>
+                <p className="text-sm text-gray-500">Please wait</p>
+              </div>
+            ) : mediaFiles.length >= maxFiles ? (
+              <div>
+                <p className="text-lg font-medium text-gray-700">
+                  Maximum files reached
+                </p>
+                <p className="text-sm text-gray-500">
+                  Remove files to add more
+                </p>
+              </div>
+            ) : (
+              <div>
+                <p className="text-lg font-medium ">
+                  {isDragging
+                    ? "Drop your media files here"
+                    : "Drag & drop media files here"}
+                </p>
+                <p className="text-sm text-gray-500 mt-2">
+                  or click to browse ({maxFiles - mediaFiles.length} remaining)
+                </p>
+                <p className="text-xs text-gray-400 mt-1">
+                  Supports images, videos, and audio files (max{" "}
+                  {formatFileSize(maxFileSize)} each)
+                  {/* {maxVideoDuration && (
+                    <span>, videos limited to {maxVideoDuration}s</span>
+                  )} */}
+                </p>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        id="file_upload"
+        type="file"
+        multiple
+        accept={acceptString}
+        onChange={handleFileSelect}
+        className="hidden"
+        disabled={isDisabled}
+      />
 
       {/* Debug Info */}
       {devMode && (
@@ -344,12 +375,14 @@ const MediaPicker: React.FC<MediaPickerProps> = ({
           <h5 className="font-medium text-xs mb-1">Current Files:</h5>
           <pre className="text-xs overflow-auto max-h-40  p-2 ">
             {JSON.stringify(
-              mediaFiles.map(({ media_file, preview_url, file_size, ...rest }) => ({
-                ...rest,
-                file_size: `Size in MB ${file_size / 1024 / 1024} mb`,
-                media_file: `File: ${media_file.name}`,
-                preview_url: preview_url ? "blob:..." : null,
-              })),
+              mediaFiles.map(
+                ({ media_file, preview_url, file_size, ...rest }) => ({
+                  ...rest,
+                  file_size: `Size in MB ${file_size / 1024 / 1024} mb`,
+                  media_file: `File: ${media_file.name}`,
+                  preview_url: preview_url ? "blob:..." : null,
+                })
+              ),
               null,
               2
             )}

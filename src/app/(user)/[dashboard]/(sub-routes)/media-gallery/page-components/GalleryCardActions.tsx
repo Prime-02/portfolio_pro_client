@@ -153,6 +153,7 @@ const GalleryCardActions = ({
     <Popover
       position={popoverPosition}
       clickerClassName={triggerClassName || defaultTriggerClassName}
+      clickerContainerClassName=""
       clicker={
         <span>
           <MoreVertical size={16} />

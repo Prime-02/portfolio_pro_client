@@ -191,7 +191,7 @@ const MediaCollection = ({ props, collectionId }: MediaCollectionProps) => {
         )}
       </Modal>
 
-      <div className="w-full flex  flex-col">
+      <div className="w-full flex flex-col">
         {props?.name && (
           <div className="flex flex-col mb-5 max-w-3xl">
             <h2 className={`text-2xl sm:text-3xl font-semibold`}>
@@ -203,7 +203,7 @@ const MediaCollection = ({ props, collectionId }: MediaCollectionProps) => {
               </TextFormatter>
             </p>
             {!currentUser && (
-              <div className="flex flex-wrap justify-start gap-x-3">
+              <div className="flex flex-row justify-start gap-x-3">
                 <span>
                   <Button
                     text="Upload new media"

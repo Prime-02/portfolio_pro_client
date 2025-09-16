@@ -7,7 +7,7 @@ import React from "react";
 const Header = () => {
   const { extendRoute } = useGlobalState();
   return (
-    <header className="h-auto w-full  flex justify-between flex-wrap items-center gap-2 py-2 px-2 md:px-4">
+    <header className="h-auto w-full  flex justify-between flex-wrap items-center gap-2 py-2">
       <div className="flex flex-col gap-y-2 items-start ">
         <h1 className="md:text-3xl text-2xl  ">Your Projects</h1>
         <h3 className="md:text-base text-sm w-xs md:w-lg opacity-65 font-thin">

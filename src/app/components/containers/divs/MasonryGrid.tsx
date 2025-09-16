@@ -27,6 +27,15 @@ export interface MasonryGridProps {
   enablePullToRefresh?: boolean;
   onRefresh?: () => Promise<void> | void;
   customMessage?: string;
+  layout?: {
+    stage1: number;
+    stage2: number;
+    stage3: number;
+    stage4: number;
+    stage5: number;
+    stage6: number;
+    stage7: number;
+  };
 }
 
 const MasonryGrid = ({
@@ -44,6 +53,15 @@ const MasonryGrid = ({
   enablePullToRefresh = true,
   onRefresh,
   customMessage,
+  layout = {
+    stage1: 1,
+    stage2: 2,
+    stage3: 3,
+    stage4: 3,
+    stage5: 4,
+    stage6: 5,
+    stage7: 6,
+  },
 }: MasonryGridProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -54,7 +72,8 @@ const MasonryGrid = ({
   const isPullingRef = useRef(false);
   const failsafeIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const lastValidColumnCountRef = useRef<number>(1);
-  // const columnCalculationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const resizeObserverRef = useRef<ResizeObserver | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
 
   // Mobile-specific state
   const [columnCount, setColumnCount] = useState(1);
@@ -64,6 +83,7 @@ const MasonryGrid = ({
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showLoadMoreArrow, setShowLoadMoreArrow] = useState(false);
   const [gridStabilized, setGridStabilized] = useState(false);
+  const [containerWidth, setContainerWidth] = useState(0);
   const [deviceInfo, setDeviceInfo] = useState({
     isMobile: false,
     hasTouch: false,
@@ -75,19 +95,19 @@ const MasonryGrid = ({
     return typeof totalItems === "number" ? loadedItems < totalItems : true;
   }, [totalItems, loadedItems]);
 
-  // Enhanced column calculation with better validation
-  const getColumnCount = useCallback(() => {
-    if (!containerRef.current || !isHydrated) return 1;
+  // Enhanced column calculation with real-time width tracking
+  const getColumnCount = useCallback((width?: number) => {
+    if (!isHydrated) return 1;
 
     try {
-      const containerWidth = containerRef.current.offsetWidth;
+      const currentWidth = width || containerWidth || (containerRef.current?.offsetWidth) || 0;
 
       // Ensure we have valid dimensions
-      if (!containerWidth || containerWidth < 100) {
+      if (!currentWidth || currentWidth < 100) {
         return lastValidColumnCountRef.current || 1;
       }
 
-      const availableWidth = containerWidth - gap * 1;
+      const availableWidth = currentWidth - gap * 1;
       let calculatedColumns = 1;
 
       // Use minColumnWidth if provided, otherwise use breakpoint strategy
@@ -98,20 +118,20 @@ const MasonryGrid = ({
         );
       } else {
         // Mobile-first breakpoint strategy with more precise calculations
-        if (containerWidth < 480) {
-          calculatedColumns = 1;
-        } else if (containerWidth < 640) {
-          calculatedColumns = 2;
-        } else if (containerWidth < 768) {
-          calculatedColumns = 3;
-        } else if (containerWidth < 1024) {
-          calculatedColumns = 3;
-        } else if (containerWidth < 1280) {
-          calculatedColumns = 4;
-        } else if (containerWidth < 1536) {
-          calculatedColumns = 5;
+        if (currentWidth < 480) {
+          calculatedColumns = layout.stage1;
+        } else if (currentWidth < 640) {
+          calculatedColumns = layout.stage2;
+        } else if (currentWidth < 768) {
+          calculatedColumns = layout.stage3;
+        } else if (currentWidth < 1024) {
+          calculatedColumns = layout.stage4;
+        } else if (currentWidth < 1280) {
+          calculatedColumns = layout.stage5;
+        } else if (currentWidth < 1536) {
+          calculatedColumns = layout.stage6;
         } else {
-          calculatedColumns = 6;
+          calculatedColumns = layout.stage7;
         }
       }
 
@@ -128,7 +148,23 @@ const MasonryGrid = ({
       console.warn("Error calculating column count:", error);
       return lastValidColumnCountRef.current || 2;
     }
-  }, [isHydrated, minColumnWidth, gap]);
+  }, [isHydrated, minColumnWidth, gap, layout, containerWidth]);
+
+  // Real-time column count updater
+  const updateColumnCount = useCallback((newWidth?: number) => {
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+    }
+
+    animationFrameRef.current = requestAnimationFrame(() => {
+      const newCount = getColumnCount(newWidth);
+      if (newCount !== columnCount && newCount > 0) {
+        console.log(`[Dynamic] Updating column count: ${columnCount} → ${newCount}`);
+        setColumnCount(newCount);
+        setGridStabilized(false);
+      }
+    });
+  }, [getColumnCount, columnCount]);
 
   // Detect device capabilities and preferences
   useEffect(() => {
@@ -164,18 +200,71 @@ const MasonryGrid = ({
     };
   }, []);
 
+  // ResizeObserver for precise container width tracking
+  useEffect(() => {
+    if (!containerRef.current || !isHydrated) return;
+
+    // Modern ResizeObserver for real-time width changes
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserverRef.current = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          const newWidth = entry.contentRect.width;
+          if (newWidth !== containerWidth && newWidth > 0) {
+            setContainerWidth(newWidth);
+            updateColumnCount(newWidth);
+          }
+        }
+      });
+
+      resizeObserverRef.current.observe(containerRef.current);
+    }
+
+    // Fallback for browsers without ResizeObserver
+    const handleResize = () => {
+      if (containerRef.current) {
+        const newWidth = containerRef.current.offsetWidth;
+        if (newWidth !== containerWidth && newWidth > 0) {
+          setContainerWidth(newWidth);
+          updateColumnCount(newWidth);
+        }
+      }
+    };
+
+    if (!resizeObserverRef.current) {
+      window.addEventListener('resize', handleResize);
+      // Initial measurement
+      handleResize();
+    }
+
+    return () => {
+      if (resizeObserverRef.current) {
+        resizeObserverRef.current.disconnect();
+        resizeObserverRef.current = null;
+      }
+      window.removeEventListener('resize', handleResize);
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, [isHydrated, containerWidth, updateColumnCount]);
+
   // FAILSAFE: Grid system consistency checker and corrector
   useEffect(() => {
     if (!isHydrated || !containerRef.current) return;
 
     let consecutiveValidChecks = 0;
-    const requiredValidChecks = 3; // Need 3 consecutive valid checks to consider stable
+    const requiredValidChecks = 3;
 
     const checkAndCorrectGrid = () => {
       if (!containerRef.current) return;
 
-      const expectedColumnCount = getColumnCount();
-      // const actualColumnElements = containerRef.current.children.length;
+      const currentWidth = containerRef.current.offsetWidth;
+      const expectedColumnCount = getColumnCount(currentWidth);
+
+      // Update container width if it changed
+      if (currentWidth !== containerWidth && currentWidth > 0) {
+        setContainerWidth(currentWidth);
+      }
 
       // Check if the current column count makes sense
       const isValidColumnCount =
@@ -183,7 +272,7 @@ const MasonryGrid = ({
         expectedColumnCount <= 8 &&
         expectedColumnCount !== columnCount;
 
-      const hasValidContainer = containerRef.current.offsetWidth > 0;
+      const hasValidContainer = currentWidth > 0;
       const hasValidCalculation = expectedColumnCount > 0;
 
       if (hasValidContainer && hasValidCalculation && isValidColumnCount) {
@@ -191,7 +280,7 @@ const MasonryGrid = ({
           `[Failsafe] Correcting column count: ${columnCount} → ${expectedColumnCount}`
         );
         setColumnCount(expectedColumnCount);
-        consecutiveValidChecks = 0; // Reset counter when correction is made
+        consecutiveValidChecks = 0;
         setGridStabilized(false);
       } else if (
         hasValidContainer &&
@@ -209,18 +298,17 @@ const MasonryGrid = ({
       }
 
       // Additional check for stuck states
-      const containerWidth = containerRef.current.offsetWidth;
-      if (containerWidth > 1200 && columnCount === 1) {
+      if (currentWidth > 1200 && columnCount === 1) {
         console.log(
           "[Failsafe] Detected stuck single-column on wide screen, forcing recalculation"
         );
-        setColumnCount(getColumnCount());
+        setColumnCount(getColumnCount(currentWidth));
         setGridStabilized(false);
-      } else if (containerWidth < 500 && columnCount > 2) {
+      } else if (currentWidth < 500 && columnCount > 2) {
         console.log(
           "[Failsafe] Detected too many columns on narrow screen, forcing recalculation"
         );
-        setColumnCount(getColumnCount());
+        setColumnCount(getColumnCount(currentWidth));
         setGridStabilized(false);
       }
     };
@@ -229,7 +317,7 @@ const MasonryGrid = ({
     const initialTimeout = setTimeout(checkAndCorrectGrid, 100);
 
     // Set up periodic checks (more frequent initially, then less frequent)
-    let checkInterval = 1000; // Start with 1 second
+    let checkInterval = 1000;
 
     const scheduleNextCheck = () => {
       failsafeIntervalRef.current = setTimeout(() => {
@@ -239,7 +327,7 @@ const MasonryGrid = ({
         if (gridStabilized && checkInterval < 5000) {
           checkInterval = Math.min(checkInterval * 1.5, 5000);
         } else if (!gridStabilized) {
-          checkInterval = 1000; // Reset to frequent checks if unstable
+          checkInterval = 1000;
         }
 
         scheduleNextCheck();
@@ -255,7 +343,7 @@ const MasonryGrid = ({
         failsafeIntervalRef.current = null;
       }
     };
-  }, [isHydrated, columnCount, getColumnCount, gridStabilized]);
+  }, [isHydrated, columnCount, getColumnCount, gridStabilized, containerWidth]);
 
   // Monitor scroll position to show/hide load more arrow
   useEffect(() => {
@@ -301,37 +389,34 @@ const MasonryGrid = ({
   // Handle hydration with mobile-optimized initial setup
   useLayoutEffect(() => {
     setIsHydrated(true);
-    const initialCount = getColumnCount();
-    setColumnCount(initialCount);
-    lastValidColumnCountRef.current = initialCount;
+    if (containerRef.current) {
+      const initialWidth = containerRef.current.offsetWidth;
+      setContainerWidth(initialWidth);
+      const initialCount = getColumnCount(initialWidth);
+      setColumnCount(initialCount);
+      lastValidColumnCountRef.current = initialCount;
+    }
   }, [getColumnCount]);
 
-  // Enhanced resize handler with debouncing and failsafe triggers
+  // Enhanced resize handler with debouncing and orientation change support
   useEffect(() => {
     if (!isHydrated) return;
 
     let timeoutId: NodeJS.Timeout;
     let isOrientationChange = false;
 
-    const updateColumnCount = () => {
-      const newCount = getColumnCount();
-      if (newCount !== columnCount && newCount > 0) {
-        console.log(
-          `[Resize] Updating column count: ${columnCount} → ${newCount}`
-        );
-        setColumnCount(newCount);
-        setGridStabilized(false); // Reset stability when resizing
-      }
-    };
-
     const handleOrientationChange = () => {
       isOrientationChange = true;
-      setGridStabilized(false); // Always reset on orientation change
+      setGridStabilized(false);
 
       clearTimeout(timeoutId);
       // Faster response for orientation changes
       timeoutId = setTimeout(() => {
-        updateColumnCount();
+        if (containerRef.current) {
+          const newWidth = containerRef.current.offsetWidth;
+          setContainerWidth(newWidth);
+          updateColumnCount(newWidth);
+        }
         isOrientationChange = false;
       }, 50);
     };
@@ -339,16 +424,30 @@ const MasonryGrid = ({
     const handleResize = () => {
       if (isOrientationChange) return;
 
-      setGridStabilized(false); // Reset stability on any resize
+      setGridStabilized(false);
       clearTimeout(timeoutId);
 
       const delay = deviceInfo.preferReducedMotion ? 200 : 100;
-      timeoutId = setTimeout(updateColumnCount, delay);
+      timeoutId = setTimeout(() => {
+        if (containerRef.current) {
+          const newWidth = containerRef.current.offsetWidth;
+          if (newWidth !== containerWidth) {
+            setContainerWidth(newWidth);
+            updateColumnCount(newWidth);
+          }
+        }
+      }, delay);
     };
 
     // Also listen for font loading which can affect layout
     const handleFontLoad = () => {
-      setTimeout(updateColumnCount, 100);
+      setTimeout(() => {
+        if (containerRef.current) {
+          const newWidth = containerRef.current.offsetWidth;
+          setContainerWidth(newWidth);
+          updateColumnCount(newWidth);
+        }
+      }, 100);
     };
 
     window.addEventListener("resize", handleResize);
@@ -367,7 +466,7 @@ const MasonryGrid = ({
       );
       clearTimeout(timeoutId);
     };
-  }, [getColumnCount, isHydrated, deviceInfo.preferReducedMotion, columnCount]);
+  }, [getColumnCount, isHydrated, deviceInfo.preferReducedMotion, containerWidth, updateColumnCount]);
 
   // Enhanced load more with mobile network considerations
   const handleLoadMore = useCallback(async () => {
@@ -539,6 +638,7 @@ const MasonryGrid = ({
     threshold,
     deviceInfo.isMobile,
     isOnline,
+    handleLoadMore,
   ]);
 
   // Create skeleton loading cards
@@ -612,7 +712,6 @@ const MasonryGrid = ({
 
   return (
     <div className={`w-full overflow-auto relative ${className}`}>
-
       {/* Pull-to-refresh indicator */}
       {enablePullToRefresh && (pullDistance > 0 || isRefreshing) && (
         <div

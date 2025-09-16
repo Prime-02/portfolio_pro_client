@@ -62,6 +62,7 @@ interface GlobalStateContextType {
   router: AppRouterInstance;
   currentPath: string;
   pathname: string;
+  currentPathWithQuery: string;
   extendRoute: (segment: string) => void;
   searchParams: ReadonlyURLSearchParams;
   extendRouteWithQuery: (newParams: Record<string, string>) => void;
@@ -73,6 +74,8 @@ interface GlobalStateContextType {
   setCurrentUser: (currentUser: string | undefined) => void;
   checkValidId: (id: string) => boolean;
   checkParams: (param: string) => string | null;
+  viewportWidth: number;
+  setViewportWidth: (value: number) => void;
 }
 
 // Context initialization
@@ -86,11 +89,17 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
   const [accessToken, setAccessToken] = useState<string>("");
   const [loading, _setLoading] = useState<string[]>([]);
   const [currentUser, setCurrentUser] = useState<string | undefined>("");
+  const [viewportWidth, setViewportWidth] = useState(0);
   const searchParams = useSearchParams(); // current query params
   const router = useRouter();
   const currentPath = usePathname();
   const pathname = usePathname();
-
+  
+  // Compute currentPathWithQuery
+  const currentPathWithQuery = searchParams.toString() 
+    ? `${currentPath}?${searchParams.toString()}`
+    : currentPath;
+  
   const fetchUserData = async (access: string = accessToken): Promise<void> => {
     if (!access) {
       console.warn("No access token provided for fetchUserData");
@@ -169,7 +178,6 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
       }
     }
     console.log("Token: ", accessToken);
-    
   }, [accessToken]);
 
   const mockLogOut = () => {
@@ -332,6 +340,7 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
     router,
     currentPath,
     pathname,
+    currentPathWithQuery,
     extendRoute,
     searchParams,
     extendRouteWithQuery,
@@ -343,6 +352,8 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
     getCurrentUser,
     checkValidId,
     checkParams,
+    viewportWidth,
+    setViewportWidth,
   };
 
   return (

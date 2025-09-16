@@ -20,9 +20,12 @@ export interface PostAllDataParams<T = Record<string, unknown>> {
 }
 
 // Helper type to ensure data is serializable
-type SerializableData = Record<string, FormDataValue | FormDataValue[]>;
+type SerializableData = Record<
+  string,
+  FormDataValue | FormDataValue[] | Record<string, unknown>
+>;
 
-// Type guard for checking if data is serializable
+// Enhanced type guard that handles nested objects and arrays
 function isSerializableData(data: unknown): data is SerializableData {
   if (typeof data !== "object" || data === null) {
     return false;
@@ -39,6 +42,17 @@ function isSerializableData(data: unknown): data is SerializableData {
           item instanceof Blob
       );
     }
+
+    // Allow nested objects (they'll be stringified)
+    if (
+      typeof value === "object" &&
+      value !== null &&
+      !(value instanceof File) &&
+      !(value instanceof Blob)
+    ) {
+      return true; // We'll stringify this
+    }
+
     return (
       typeof value === "string" ||
       typeof value === "number" ||
@@ -74,45 +88,104 @@ export const PostAllData = async <
     };
 
     if (useFormData && data) {
-      if (!isSerializableData(data)) {
-        throw new Error("Data must be serializable for FormData conversion");
-      }
-
+      // Skip the type guard check - just build FormData directly
       const formData = new FormData();
       const cleanedData = removeEmptyStringValues(data);
 
+      console.log("Building FormData from:", cleanedData);
+
       Object.entries(cleanedData).forEach(([key, value]) => {
-        if (value != null) {
-          let processedValue: FormDataValue = value as FormDataValue;
+        if (value === null || value === undefined) {
+          return; // Skip null/undefined values
+        }
 
-          // Convert to number if it's a numeric string
-          if (typeof value === "string" && isNumericString(value)) {
-            processedValue = parseInt(value, 10);
+        console.log(`Processing ${key}:`, typeof value, value);
+
+        // Handle arrays
+        if (Array.isArray(value)) {
+          if (value.length === 0) {
+            return; // Skip empty arrays
           }
 
-          // Handle different value types for FormData
-          if (typeof processedValue === "boolean") {
-            formData.append(key, processedValue.toString());
-          } else if (typeof processedValue === "number") {
-            formData.append(key, processedValue.toString());
+          // Check if it's a File array
+          if (value.every((item) => item instanceof File)) {
+            console.log(`Appending ${value.length} files for ${key}`);
+            value.forEach((file) => {
+              formData.append(key, file);
+            });
           } else {
-            formData.append(key, processedValue as string | File | Blob);
+            // For other arrays (strings, numbers, etc.), stringify
+            console.log(`Stringifying array for ${key}:`, value);
+            formData.append(key, JSON.stringify(value));
           }
+          return;
+        }
+
+        // Handle objects (but not Files or Blobs)
+        if (
+          typeof value === "object" &&
+          !(value instanceof File) &&
+          !(value instanceof Blob)
+        ) {
+          console.log(`Stringifying object for ${key}:`, value);
+          formData.append(key, JSON.stringify(value));
+          return;
+        }
+
+        // Handle primitives and Files/Blobs
+        if (typeof value === "boolean") {
+          formData.append(key, value.toString());
+        } else if (typeof value === "number") {
+          formData.append(key, value.toString());
+        } else if (typeof value === "string") {
+          // Convert numeric strings if needed
+          if (intToString && isNumericString(value)) {
+            formData.append(key, parseInt(value, 10).toString());
+          } else {
+            formData.append(key, value);
+          }
+        } else if (value instanceof File || value instanceof Blob) {
+          formData.append(key, value);
+        } else {
+          // Fallback: convert to string
+          console.log(`Fallback string conversion for ${key}:`, value);
+          formData.append(key, String(value));
         }
       });
 
       requestData = formData;
-      delete headers["Content-Type"]; // Let browser set multipart boundary
+
+      // Log FormData contents for debugging
+      console.log("FormData entries:");
+      for (const [key, value] of formData.entries()) {
+        console.log(
+          `  ${key}:`,
+          value instanceof File ? `File: ${value.name}` : value
+        );
+      }
+    } else {
+      // For non-FormData requests, set Content-Type
+      headers["Content-Type"] = "application/json";
     }
 
-    console.log("Post Data", requestData);
+    console.log("Making request with:", { url, headers: Object.keys(headers) });
 
     const response: AxiosResponse<R> = await axios.post(url, requestData, {
       headers,
     });
+
     return response.data;
   } catch (error) {
     console.error("Upload failed:", error);
+
+    // Enhanced error handling
+    if (axios.isAxiosError(error)) {
+      const axiosError = error as AxiosError;
+      console.error("Response data:", axiosError.response?.data);
+      console.error("Response status:", axiosError.response?.status);
+      console.error("Response headers:", axiosError.response?.headers);
+    }
+
     throw error;
   }
 };

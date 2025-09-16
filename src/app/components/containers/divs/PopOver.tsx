@@ -19,6 +19,7 @@ interface PopoverProps {
   children?: React.ReactNode; // Content to display in the popover - now optional
   position?: PopOverPosition;
   className?: string; // Optional className for styling
+  clickerContainerClassName?: string; // Optional className for styling
   clickerClassName?: string; // Optional className for styling
   closeOnOutsideClick?: boolean; // Whether to close when clicking outside
   mobileBreakpoint?: number; // Screen width threshold for mobile behavior (default: 768px)
@@ -29,9 +30,10 @@ const Popover: React.FC<PopoverProps> = ({
   children,
   position = "bottom-left",
   className = "",
+  clickerContainerClassName = "w-full flex items-center justify-center",
   clickerClassName = "w-12 h-12 cursor-pointer rounded-full flex items-center justify-center bg-[var(--background)]",
   closeOnOutsideClick = true,
-  mobileBreakpoint = 475,
+  mobileBreakpoint = 670,
 }) => {
   const { accentColor } = useTheme();
   const { pathname } = useGlobalState();
@@ -406,7 +408,7 @@ const Popover: React.FC<PopoverProps> = ({
   };
 
   return (
-    <div className="relative inline-block">
+    <div className={clickerContainerClassName}>
       <div
         ref={clickerRef}
         onClick={togglePopover}

@@ -63,6 +63,7 @@ interface DropdownContentProps {
   theme: Theme;
   accentColor: Accent;
   loading: string[];
+  onSelectItem?: (item: SearchItem) => void; // Add this line
 }
 
 // Dropdown component to be rendered in portal
@@ -82,6 +83,7 @@ const DropdownContent: React.FC<DropdownContentProps> = ({
   onSetValue,
   setShowDropdown,
   loading,
+  onSelectItem,
 }) => {
   const { theme, loader, accentColor } = useTheme();
   const LoaderComponent = getLoader(loader);
@@ -234,8 +236,15 @@ const DropdownContent: React.FC<DropdownContentProps> = ({
               text="Click to add manually"
               className="mx-auto mt-2"
               onClick={() => {
-                onSetValue(query);
-                setShowDropdown(false);
+                // Create a manual item object using the query
+                const manualItem: SearchItem = {
+                  name: query,
+                  title: query,
+                  label: query,
+                  value: query,
+                  isManual: true,
+                };
+                handleItemSelect(manualItem, -1);
               }}
             />
           </div>
@@ -631,6 +640,7 @@ const DataList = ({
             theme={theme}
             accentColor={accentColor}
             loading={loading}
+            onSelectItem={onSelectItem} // Add this line
           />,
           document.body
         )}

@@ -80,7 +80,7 @@ const Profile = () => {
 
   return (
     <div
-      className="flex w-sm mx-auto rounded-xl overflow-hidden flex-col gap-y-6 p-2 relative"
+      className="flex w-full mx-auto h-full rounded-xl overflow-hidden flex-col gap-y-6 p-2 relative"
       style={{
         backgroundColor: activeTab
           ? "var(--background)"

@@ -19,6 +19,7 @@ const VercelButton = () => {
     clearQuerryParam,
     currentPath,
     router,
+    currentPathWithQuery,
   } = useGlobalState();
   const tokenModal = checkParams("token_modal");
   const [token, setToken] = useState("");
@@ -39,7 +40,7 @@ const VercelButton = () => {
           title: "Validation successful",
         });
         router.push(
-          `${PathUtil.buildUrlWithQuery(`${currentPath}/vercel`, {
+          `${PathUtil.buildUrlWithQuery(`/user-auth/vercel`, {
             code: token,
           })}`
         );
@@ -109,7 +110,7 @@ const VercelButton = () => {
         className="w-full"
         onClick={() => {
           router.push(
-            `${PathUtil.buildUrlWithQuery(`/user-auth`, {
+            `${PathUtil.addQueryParams(currentPathWithQuery, {
               token_modal: "true",
               auth_mode: "login",
             })}`

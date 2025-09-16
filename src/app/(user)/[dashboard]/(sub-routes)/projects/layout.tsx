@@ -1,4 +1,4 @@
-"use client"; // If using hooks like useSelectedLayoutSegment
+'use client'; // If using hooks like useSelectedLayoutSegment
 
 export default function ConnectLayout({
   children,
@@ -7,6 +7,7 @@ export default function ConnectLayout({
   children: React.ReactNode;
   connect: React.ReactNode;
 }) {
+
   return (
     <div>
       {children}

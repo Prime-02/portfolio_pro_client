@@ -3,31 +3,32 @@ import BasicHeader from "@/app/components/containers/divs/header/BasicHeader";
 import MasonryGrid from "@/app/components/containers/divs/MasonryGrid";
 import { getLoader } from "@/app/components/loaders/Loader";
 import { useTheme } from "@/app/components/theme/ThemeContext ";
-import { toast } from "@/app/components/toastify/Toastify";
-import { AllProjectsDisplayCardProps } from "@/app/components/types and interfaces/ProjectsAndPortfolios";
-import { GetAllData } from "@/app/components/utilities/asyncFunctions/lib/crud";
-import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
-import { generateQueryParams } from "@/app/components/utilities/syncFunctions/syncs";
 import { useGlobalState } from "@/app/globalStateProvider";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect } from "react";
 import AllProjectsCard from "./AllProjectsCard";
 import SearchAndFilter from "./SearchAndFilter";
-
-interface AllProjectsDisplayProps {
-  projects: AllProjectsDisplayCardProps[];
-  total: number;
-}
+import ProjectsActions from "./ProjectsActions";
+import Modal from "@/app/components/containers/modals/Modal";
+import { useProjectsStore } from "@/app/stores/project_stores/ProjectsStore";
+import EmptyState from "@/app/components/containers/cards/EmptyState";
+import { useLoadProjectStats } from "@/app/stores/project_stores/ProjectStats";
 
 const AllProjectsDisplay = () => {
   const { checkParams, accessToken, loading, setLoading } = useGlobalState();
   const { loader, accentColor } = useTheme();
-  const [page, setPage] = useState(1);
   const LoaderComponent = getLoader(loader) || null;
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [projects, setProjects] = useState<AllProjectsDisplayProps>({
-    projects: [],
-    total: 0,
-  });
+  const loadProjectStats = useLoadProjectStats();
+
+  // Get everything from the store
+  const {
+    clearProjectsNames,
+    projectsNames,
+    projects,
+    page,
+    isLoadingMore,
+    getAllProjects,
+    handleLoadMore,
+  } = useProjectsStore();
 
   const platformTitle = checkParams("filter") || "all";
   const filter = checkParams("filter");
@@ -44,87 +45,80 @@ const AllProjectsDisplay = () => {
     }
   };
 
-  const getAllProjects = useCallback(
-    async (pageNum = 1, append = false) => {
-      try {
-        if (append) {
-          setIsLoadingMore(true);
-        } else {
-          setLoading("fetching_projects");
-        }
-        const projectRes: AllProjectsDisplayProps = await GetAllData({
-          access: accessToken,
-          url: `${V1_BASE_URL}/projects/me${generateQueryParams({
-            filter_platform: filter,
-            query: query,
-            sort: sort,
-            sort_direction: sortDirection,
-            page: pageNum,
-            size: 25,
-          })}`,
-        });
-        if (projectRes) {
-          setProjects((prev) => ({
-            ...projectRes, // Use the new response data for metadata
-            projects: append
-              ? [...prev.projects, ...projectRes.projects]
-              : projectRes.projects,
-          }));
+  useEffect(() => {
+    clearProjectsNames();
+  }, [clearProjectsNames]);
 
-          // Update page state when appending
-          if (append) {
-            setPage(pageNum);
-          }
-        } else {
-          toast.error(
-            "We couldn't fetch your github projects please try again.",
-            {
-              title: "Error fetching projects preview",
-            }
-          );
-        }
-      } catch (error) {
-        console.log(
-          "Something went wrong while fetching this user's projects: ",
-          error
-        );
-        toast.error("We couldn't fetch your projects please try again.", {
-          title: "Error fetching projects",
-        });
-      } finally {
-        if (append) {
-          setIsLoadingMore(false);
-        } else {
-          setLoading("fetching_projects");
-        }
-      }
+  // Wrapper function to call the store method with current params
+  const fetchProjects = useCallback(
+    (pageNum = 1, append = false) => {
+      return getAllProjects({
+        accessToken,
+        setLoading,
+        filter: filter || undefined,
+        query: query || undefined,
+        sort: sort || undefined,
+        sortDirection: sortDirection || undefined,
+        pageNum,
+        append,
+      });
     },
-    [accessToken, setLoading, platformTitle, filter, query, sort, sortDirection]
+    [
+      accessToken,
+      setLoading,
+      filter,
+      query,
+      sort,
+      sortDirection,
+      getAllProjects,
+    ]
   );
 
-  const handleLoadMore = useCallback(async () => {
-    const nextPage = page + 1;
-    await getAllProjects(nextPage, true);
-  }, [getAllProjects, page]);
+  // Wrapper function for load more
+  const loadMore = useCallback(() => {
+    return handleLoadMore({
+      accessToken,
+      setLoading,
+      filter: filter || undefined,
+      query: query || undefined,
+      sort: sort || undefined,
+      sortDirection: sortDirection || undefined,
+    });
+  }, [
+    accessToken,
+    setLoading,
+    filter,
+    query,
+    sort,
+    sortDirection,
+    handleLoadMore,
+  ]);
 
   useEffect(() => {
     if (accessToken) {
-      getAllProjects();
+      fetchProjects();
+      loadProjectStats();
     }
-  }, [accessToken, getAllProjects]);
+  }, [accessToken, fetchProjects]);
 
   // Check if initial loading
   const isInitialLoading = loading.includes("fetching_projects") && page === 1;
 
   return (
-    <div className="flex flex-col gap-y-3 ">
+    <div className="flex relative flex-col gap-y-3 ">
       <BasicHeader
         heading={`${formattedPlatformTitle(platformTitle)} projects`.toUpperCase()}
+        subHeading="Click on a project's card to see further actions."
       />
       <SearchAndFilter />
       {projects.total < 1 && !isInitialLoading ? (
-        <div className="text-center py-8">
-          <p>No repositories found.</p>
+        <div className="text-center py-8 w-sm mx-auto px-4 rounded-lg border border-[var(--accent)]/20 ">
+          <EmptyState
+            title="No projects found"
+            description="We couldn't find any projects affiliated to your account. Either add new project or refresh if you have any project."
+            actionText="Refresh"
+            onAction={fetchProjects}
+          />
         </div>
       ) : isInitialLoading ? (
         <div className="h-[10rem] flex items-center justify-center mx-auto">
@@ -136,13 +130,13 @@ const AllProjectsDisplay = () => {
         </div>
       ) : (
         <MasonryGrid
-          gap={3}
+          gap={10}
           totalItems={projects.total}
-          loadedItems={projects.projects.length} // Use actual loaded items count
+          loadedItems={projects.projects.length}
           page={page}
           customMessage="Showing all repositories"
-          setPage={setPage}
-          onLoadMore={handleLoadMore}
+          setPage={() => {}} // This is now handled by the store
+          onLoadMore={loadMore}
           isLoading={isLoadingMore}
           loadingIndicator={
             LoaderComponent ? (
@@ -162,10 +156,21 @@ const AllProjectsDisplay = () => {
           }}
         >
           {projects.projects.map((project, i) => (
-            <AllProjectsCard key={i} {...project} />
+            <AllProjectsCard key={`${project.id || i}`} {...project} />
           ))}
         </MasonryGrid>
       )}
+      <Modal
+        isOpen={projectsNames.length > 0}
+        title={`${projectsNames.length} Project${projectsNames.length > 1 ? "s" : ""}`}
+        onClose={clearProjectsNames}
+        showMinimizeButton
+        closeOnBackdropClick={false}
+        showBackdrop={false}
+        size="auto"
+      >
+        <ProjectsActions />
+      </Modal>
     </div>
   );
 };

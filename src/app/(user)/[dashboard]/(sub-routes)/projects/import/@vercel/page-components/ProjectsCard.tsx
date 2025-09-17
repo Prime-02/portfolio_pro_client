@@ -2,14 +2,14 @@ import React from "react";
 import { ExternalLink, Globe, Settings } from "lucide-react";
 import { ProjectsProps } from "./ProjectsDisplay";
 import ImageCard from "@/app/components/containers/cards/ImageCard";
-import { useGitHubProjectsStore } from "@/app/stores/project_stores/GitHubProjectsStore";
+import { useProjectsStore } from "@/app/stores/project_stores/ProjectsStore";
 
 const ProjectsCard: React.FC<ProjectsProps> = ({
   name,
   framework,
   production_url,
 }) => {
-  const { toggleProjectName, projectsNames } = useGitHubProjectsStore();
+  const { toggleProjectName, projectsNames } = useProjectsStore();
 
   const handleVisitProject = () => {
     if (production_url) {

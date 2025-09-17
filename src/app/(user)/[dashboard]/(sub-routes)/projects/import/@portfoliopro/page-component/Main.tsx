@@ -1,6 +1,7 @@
 "use client";
 import { MediaFile } from "@/app/components/types and interfaces/MediaInputElements";
 import {
+  AllProjectsDisplayCardProps,
   ProjectCreateFormData,
   ProjectStatusProps,
 } from "@/app/components/types and interfaces/ProjectsAndPortfolios";
@@ -11,8 +12,14 @@ import Step1Form from "./Step1Form";
 import Step2Form from "./Step2Form";
 import StepIndicator from "./StepIndicator";
 import { toast } from "@/app/components/toastify/Toastify";
-import { PostAllData } from "@/app/components/utilities/asyncFunctions/lib/crud";
+import {
+  GetAllData,
+  PostAllData,
+  UpdateAllData,
+} from "@/app/components/utilities/asyncFunctions/lib/crud";
 import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
+import { PathUtil } from "@/app/components/utilities/syncFunctions/syncs";
+import { useProjectsStore } from "@/app/stores/project_stores/ProjectsStore";
 
 const Main = () => {
   const [mediaState, setMediaState] = useState<MediaFile[]>([]);
@@ -21,9 +28,21 @@ const Main = () => {
   const [projectData, setProjectData] = useState<ProjectCreateFormData>(
     initialProjectFormData
   );
-  const { checkParams, loading, setLoading, accessToken } = useGlobalState();
+  const {
+    checkParams,
+    setLoading,
+    accessToken,
+    checkValidId,
+    currentPath,
+    router,
+    isOnline,
+  } = useGlobalState();
+  const { projectsNames } = useProjectsStore();
   const mode = checkParams("mode") || "create";
-  const projectId = checkParams("projectId");
+  const rawProjectId = checkParams("projectId") || "";
+  const projectId = checkValidId(rawProjectId)
+    ? rawProjectId
+    : projectsNames[0];
 
   useEffect(() => {
     const mediaFiles = mediaState.map((mediaData) => mediaData.media_file);
@@ -75,7 +94,7 @@ const Main = () => {
   };
 
   const handleNextStep = () => {
-    if (isStep1Valid()) {
+    if (isStep1Valid() || checkValidId(projectId)) {
       setCurrentStep(2);
     }
   };
@@ -85,7 +104,11 @@ const Main = () => {
   };
 
   const handleSave = () => {
-    handleSubmit();
+    if (projectId) {
+      updateProjectData();
+    } else {
+      handleSubmit();
+    }
   };
 
   const handleSubmit = async () => {
@@ -126,6 +149,12 @@ const Main = () => {
           title: "Project Success",
         });
         handleReset();
+        router.push(
+          PathUtil.buildUrlWithQuery(`${currentPath}/import`, {
+            mode: "edit",
+            projectId: projectId,
+          })
+        );
       }
     } catch (error) {
       console.error("An Error occurred uploading this project:", error);
@@ -136,6 +165,71 @@ const Main = () => {
       setLoading("uploading_projects");
     }
   };
+
+  const getProjectByProjectId = async () => {
+    setLoading("fetching_project_by_id");
+    try {
+      const projectDataRes: AllProjectsDisplayCardProps = await GetAllData({
+        access: accessToken,
+        url: `${V1_BASE_URL}/projects/${projectId}`,
+      });
+      if (projectDataRes) {
+        Object.entries(projectData).forEach(([key]) => {
+          handleFieldValues(
+            key,
+            projectDataRes[key] as string | boolean | ProjectStatusProps
+          );
+        });
+      }
+    } catch (error) {
+      console.log("Error fetching this project data: ", error);
+      toast.error(
+        "We couldn't retrieve this project's data, plase try again.",
+        {
+          title: "Error fetching project data",
+        }
+      );
+    } finally {
+      setLoading("fetching_project_by_id");
+    }
+  };
+
+  const updateProjectData = async () => {
+    if (!isOnline) {
+      toast.warning(
+        "You are currently offline. Please check your internet and try again",
+        { title: "Connection Error" }
+      );
+      return;
+    }
+    setLoading("updating_project");
+    console.log("Update Data: ", projectData);
+
+    try {
+      const editRes = await UpdateAllData({
+        access: accessToken,
+        url: `${V1_BASE_URL}/projects/${projectId}`,
+        field: projectData,
+        useFormData: true,
+      });
+      if (editRes) {
+        toast.success("This project has been updated successfully");
+      }
+    } catch (error) {
+      console.log("An error occured while updating this project: ", error);
+      toast.error(
+        "An error occured while updating this project. Please try again or contact support"
+      );
+    } finally {
+      setLoading("updating_project");
+    }
+  };
+
+  useEffect(() => {
+    if (accessToken && isOnline) {
+      getProjectByProjectId();
+    }
+  }, [accessToken, isOnline]);
 
   return (
     <div className="flex flex-col gap-4 w-full min-h-screen h-auto p-4">
@@ -163,6 +257,7 @@ const Main = () => {
           onNext={handleNextStep}
           onSave={handleSave}
           isValid={isStep1Valid()}
+          projectId={projectId}
         />
       </div>
 
@@ -176,8 +271,9 @@ const Main = () => {
           onStackAdd={handleStackAdd}
           onStackRemove={handleStackRemove}
           onPrevious={handlePreviousStep}
-          onSubmit={handleSubmit}
+          onSubmit={projectId ? handleSave : handleSubmit}
           onReset={handleReset}
+          projectId={projectId}
         />
       )}
 

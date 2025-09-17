@@ -9,6 +9,9 @@ import { ProjectCreateFormData } from "@/app/components/types and interfaces/Pro
 import { projectCategory } from "@/app/components/utilities/indices/projects-JSONs/projectCreate";
 import { Upload, ArrowRight } from "lucide-react";
 import { useGlobalState } from "@/app/globalStateProvider";
+import { useTheme } from "@/app/components/theme/ThemeContext ";
+import { getLoader } from "@/app/components/loaders/Loader";
+import ImageCard from "@/app/components/containers/cards/ImageCard";
 
 interface Step1FormProps {
   projectData: ProjectCreateFormData;
@@ -18,6 +21,7 @@ interface Step1FormProps {
   onNext: () => void;
   onSave?: () => void;
   isValid: boolean;
+  projectId?: string;
 }
 
 const Step1Form: React.FC<Step1FormProps> = ({
@@ -27,19 +31,90 @@ const Step1Form: React.FC<Step1FormProps> = ({
   onNext,
   onSave,
   isValid,
+  projectId,
 }) => {
-  const { loading } = useGlobalState();
+  const { loading, checkValidId } = useGlobalState();
+  const { accentColor, loader } = useTheme();
+  const LoaderComponent = getLoader(loader) || null;
+
+  // Check if we should ignore isValid (when projectId exists and is valid)
+  const shouldIgnoreIsValid = projectId && checkValidId(projectId);
+  const isFormValid = shouldIgnoreIsValid || isValid;
+
+  // Filter out hero_media from other images
+  const getOtherImages = () => {
+    if (!projectData.other_project_image_url) return [];
+
+    return Object.entries(projectData.other_project_image_url).filter(
+      ([key]) => key !== "hero_media"
+    );
+  };
+
   return (
     <div className="flex flex-col md:flex-row w-full h-full flex-1 gap-4 md:gap-6">
       {/* Media Picker Section */}
-      <div className="w-full md:w-1/2 flex flex-col">
-        <MediaPicker
-          onMediaChange={onMediaChange}
-          maxVideoDuration={30}
-          maxFiles={4}
-          devMode={false}
-          maxFileSize={5 * 1024 * 1024}
-        />
+      <div className="w-full md:w-1/2 flex items-center justify-center flex-col">
+        {loading.includes("fetching_project_by_id") ? (
+          LoaderComponent && <LoaderComponent color={accentColor.color} />
+        ) : (
+          <div className="w-full">
+            {projectId ? (
+              <div className="flex flex-col w-full gap-y-4">
+                {/* Hero Image */}
+                {projectData.other_project_image_url.hero_media?.url && (
+                  <div className="w-full flex items-center justify-center">
+                    <div className="relative w-full max-w-md">
+                      <ImageCard
+                        image_url={
+                          projectData.other_project_image_url.hero_media.url
+                        }
+                        id={
+                          projectData.other_project_image_url.hero_media
+                            .public_id ||
+                          projectData.other_project_image_url.hero_media.url ||
+                          ""
+                        }
+                      />
+                      <div className="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                        Hero Image
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Other Images */}
+                {getOtherImages().length > 0 && (
+                  <div className="w-full">
+                    <h4 className="text-sm font-medium mb-2 opacity-70">
+                      Other Images
+                    </h4>
+                    <div className="grid gap-2 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
+                      {getOtherImages().map(([key, value]) => (
+                        <div key={key} className="aspect-square">
+                          <ImageCard
+                            image_url={value.url}
+                            id={value.public_id || key}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <MediaPicker
+                onMediaChange={onMediaChange}
+                maxVideoDuration={30}
+                maxFiles={4}
+                devMode={false}
+                maxFileSize={5 * 1024 * 1024}
+                acceptedTypes={{
+                  "image/*": [".jpg", ".jpeg", ".png", ".gif", ".webp"],
+                }}
+              />
+            )}
+          </div>
+        )}
       </div>
 
       {/* Vertical Divider - Only visible on md+ screens */}
@@ -63,6 +138,7 @@ const Step1Form: React.FC<Step1FormProps> = ({
 
         <span>
           <Textinput
+            loading={loading.includes("fetching_project_by_id")}
             value={projectData.project_name}
             onChange={(e) => onFieldChange("project_name", e)}
             labelBgHexIntensity={1}
@@ -107,6 +183,7 @@ const Step1Form: React.FC<Step1FormProps> = ({
             labelBgHexIntensity={1}
             label="Project Description *"
             className="w-full"
+            maxLength={1500}
           />
         </span>
 
@@ -118,15 +195,22 @@ const Step1Form: React.FC<Step1FormProps> = ({
               variant="secondary"
               icon2={<Upload size={18} />}
               onClick={onSave}
-              loading={loading.includes("uploading_projects")}
-              disabled={loading.includes("uploading_projects") || !isValid}
+              loading={
+                loading.includes("uploading_projects") ||
+                loading.includes("updating_project")
+              }
+              disabled={
+                loading.includes("uploading_projects") ||
+                loading.includes("updating_project") ||
+                !isFormValid
+              }
             />
           )}
           <Button
             text="Next Step"
             icon2={<ArrowRight size={18} />}
             onClick={onNext}
-            disabled={!isValid}
+            disabled={!isFormValid}
           />
         </div>
       </div>

@@ -250,6 +250,7 @@ interface UpdateParams<T = Record<string, unknown>> {
   url: string;
   method?: "patch" | "put";
   useFormData?: boolean;
+  intToString?: boolean;
   message?: string;
 }
 
@@ -262,6 +263,7 @@ export const UpdateAllData = async <
   url,
   method = "put",
   useFormData = false,
+  intToString = true,
   message = "Updated successfully",
 }: UpdateParams<T>): Promise<R> => {
   try {
@@ -269,60 +271,126 @@ export const UpdateAllData = async <
     const axiosMethod =
       method.toLowerCase() === "put" ? axios.put : axios.patch;
 
-    // Prepare the request data and headers
     let requestData: T | FormData | undefined = field
-      ? (convertNumericStrings(removeEmptyStringValues(field)) as T)
+      ? intToString
+        ? (convertNumericStrings(removeEmptyStringValues(field)) as T)
+        : (removeEmptyStringValues(field) as T)
       : undefined;
+
     const headers: Record<string, string> = {
-      Authorization: `Bearer ${access}`,
-      "ngrok-skip-browser-warning": "true",
+      ...(access && {
+        Authorization: `Bearer ${access}`,
+        "ngrok-skip-browser-warning": "true",
+      }),
     };
 
-    if (useFormData) {
-      if (!isSerializableData(field)) {
-        throw new Error(
-          "Field data must be serializable for FormData conversion"
-        );
-      }
-
-      // Convert the field object to FormData
+    if (useFormData && field) {
+      // Skip the type guard check - just build FormData directly
       const formData = new FormData();
-      Object.entries(field).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          if (typeof value === "boolean") {
-            formData.append(key, value.toString());
-          } else if (typeof value === "number") {
-            formData.append(key, value.toString());
-          } else {
-            formData.append(key, value as string | File | Blob);
+      const cleanedData = removeEmptyStringValues(field);
+
+      console.log("Building FormData from:", cleanedData);
+
+      Object.entries(cleanedData).forEach(([key, value]) => {
+        if (value === null || value === undefined) {
+          return; // Skip null/undefined values
+        }
+
+        console.log(`Processing ${key}:`, typeof value, value);
+
+        // Handle arrays
+        if (Array.isArray(value)) {
+          if (value.length === 0) {
+            return; // Skip empty arrays
           }
+
+          // Check if it's a File array
+          if (value.every((item) => item instanceof File)) {
+            console.log(`Appending ${value.length} files for ${key}`);
+            value.forEach((file) => {
+              formData.append(key, file);
+            });
+          } else {
+            // For other arrays (strings, numbers, etc.), stringify
+            console.log(`Stringifying array for ${key}:`, value);
+            formData.append(key, JSON.stringify(value));
+          }
+          return;
+        }
+
+        // Handle objects (but not Files or Blobs)
+        if (
+          typeof value === "object" &&
+          !(value instanceof File) &&
+          !(value instanceof Blob)
+        ) {
+          console.log(`Stringifying object for ${key}:`, value);
+          formData.append(key, JSON.stringify(value));
+          return;
+        }
+
+        // Handle primitives and Files/Blobs
+        if (typeof value === "boolean") {
+          formData.append(key, value.toString());
+        } else if (typeof value === "number") {
+          formData.append(key, value.toString());
+        } else if (typeof value === "string") {
+          // Convert numeric strings if needed
+          if (intToString && isNumericString(value)) {
+            formData.append(key, parseInt(value, 10).toString());
+          } else {
+            formData.append(key, value);
+          }
+        } else if (value instanceof File || value instanceof Blob) {
+          formData.append(key, value);
+        } else {
+          // Fallback: convert to string
+          console.log(`Fallback string conversion for ${key}:`, value);
+          formData.append(key, String(value));
         }
       });
+
       requestData = formData;
-      // Remove Content-Type to let browser set multipart boundary
+
+      // Log FormData contents for debugging
+      console.log("FormData entries:");
+      for (const [key, value] of formData.entries()) {
+        console.log(
+          `  ${key}:`,
+          value instanceof File ? `File: ${value.name}` : value
+        );
+      }
     } else {
-      // Default to application/json
-      requestData = field;
+      // For non-FormData requests, set Content-Type
       headers["Content-Type"] = "application/json";
     }
 
+    console.log("Making request with:", { url, headers: Object.keys(headers) });
+
     // Make the request
-    const config: AxiosRequestConfig = { headers };
-    const response: AxiosResponse<R> = await axiosMethod(
-      url,
-      requestData,
-      config
-    );
+    const response: AxiosResponse<R> = await axiosMethod(url, requestData, {
+      headers,
+    });
 
     // Show success toast
     if (message !== "custom") {
       // toast.success(message);
     }
+
     return response.data;
   } catch (error) {
+    console.error("Update failed:", error);
+
+    // Enhanced error handling
+    if (axios.isAxiosError(error)) {
+      const axiosError = error as AxiosError;
+      console.error("Response data:", axiosError.response?.data);
+      console.error("Response status:", axiosError.response?.status);
+      console.error("Response headers:", axiosError.response?.headers);
+    }
+
     const errorMessage = handleAxiosError(error as AxiosError);
     toast.error(errorMessage);
-    console.error("Update failed:", error);
     throw error;
   }
 };

@@ -55,7 +55,8 @@ export interface ProjectCreateFormData {
   is_completed: boolean;
   is_public: boolean;
   stack: string[];
-  other_project_url: string[];
+  // other_project_url: {};
+  other_project_image_url: OtherProjectsImageUrlsProps;
   tags: string[];
   start_date: string;
   end_date: string;
@@ -67,17 +68,33 @@ export interface ProjectCreateFormData {
   [key: string]: unknown;
 }
 
-
 export interface ImageUrlsProps {
   url: string;
   public_id: string;
 }
 
 export interface OtherProjectsImageUrlsProps {
-  hero_media: ImageUrlsProps;
-  media_1: ImageUrlsProps;
-  media_2: ImageUrlsProps;
-  media_3: ImageUrlsProps;
+  hero_media?: ImageUrlsProps;
+  media_1?: ImageUrlsProps;
+  media_2?: ImageUrlsProps;
+  media_3?: ImageUrlsProps;
+}
+
+export interface BasicUserProps {
+  id: string;
+  username: string;
+  email: string;
+  profile_picture: string;
+}
+
+export interface UserAssocProps {
+  user_id: string;
+  role: string;
+  contribution: string;
+  contribution_description: string;
+  can_edit: boolean;
+  created_at: string;
+  user: BasicUserProps;
 }
 
 export interface AllProjectsDisplayCardProps {
@@ -99,9 +116,10 @@ export interface AllProjectsDisplayCardProps {
   end_date: string;
   budget: number | null;
   client_name: string | null;
-  status: string;
+  status: ProjectStatusProps;
   featured_in: string[];
   last_updated: string;
   created_at: string;
+  user_associations: UserAssocProps[];
   [key: string]: unknown;
 }

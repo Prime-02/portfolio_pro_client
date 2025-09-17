@@ -2,7 +2,7 @@ import React from "react";
 import { ExternalLink, Globe } from "lucide-react";
 import { gitHubLanguageColors } from "@/app/components/utilities/indices/projects-JSONs/projectCreate";
 import Link from "next/link";
-import { useGitHubProjectsStore } from "@/app/stores/project_stores/GitHubProjectsStore";
+import { useProjectsStore } from "@/app/stores/project_stores/ProjectsStore";
 import { RepoProps } from "./ProjectsDisplay";
 
 const ProjectsCard: React.FC<RepoProps> = ({
@@ -15,7 +15,7 @@ const ProjectsCard: React.FC<RepoProps> = ({
 }) => {
   const languageColor = gitHubLanguageColors[language] || "#858585";
 
-  const { toggleProjectName, projectsNames } = useGitHubProjectsStore();
+  const { toggleProjectName, projectsNames } = useProjectsStore();
 
   return (
     <button

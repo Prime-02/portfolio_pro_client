@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useMemo } from "react";
 import { AlertCircle, ImagePlus, Music, Upload, X } from "lucide-react";
 import VideoTrimmer from "./VideoTrimmer";
 import { useFileProcessor } from "../utilities/hooks/mediaHooks";
@@ -40,6 +40,68 @@ const MediaPicker: React.FC<MediaPickerProps> = ({
     uploadAttempts,
     uploadTimestamps,
   } = useFileProcessor(maxFileSize, maxFiles, uploadCooldown, maxVideoDuration);
+
+  // Generate user-friendly text based on accepted types
+  const acceptedTypesInfo = useMemo(() => {
+    const mimeTypes = Object.keys(acceptedTypes);
+    const extensions = Object.values(acceptedTypes).flat();
+    
+    // Categorize MIME types
+    const categories = {
+      images: [] as string[],
+      videos: [] as string[],
+      audio: [] as string[],
+      documents: [] as string[],
+      other: [] as string[]
+    };
+
+    mimeTypes.forEach(mimeType => {
+      if (mimeType.startsWith('image/')) {
+        categories.images.push(...acceptedTypes[mimeType]);
+      } else if (mimeType.startsWith('video/')) {
+        categories.videos.push(...acceptedTypes[mimeType]);
+      } else if (mimeType.startsWith('audio/')) {
+        categories.audio.push(...acceptedTypes[mimeType]);
+      } else if (mimeType.includes('pdf') || mimeType.includes('document') || mimeType.includes('text')) {
+        categories.documents.push(...acceptedTypes[mimeType]);
+      } else {
+        categories.other.push(...acceptedTypes[mimeType]);
+      }
+    });
+
+    // Generate readable category names
+    const categoryNames = [];
+    if (categories.images.length > 0) categoryNames.push('images');
+    if (categories.videos.length > 0) categoryNames.push('videos');
+    if (categories.audio.length > 0) categoryNames.push('audio');
+    if (categories.documents.length > 0) categoryNames.push('documents');
+    if (categories.other.length > 0) categoryNames.push('files');
+
+    // Format category names into readable text
+    let supportText = '';
+    if (categoryNames.length === 0) {
+      supportText = 'files';
+    } else if (categoryNames.length === 1) {
+      supportText = categoryNames[0];
+    } else if (categoryNames.length === 2) {
+      supportText = `${categoryNames[0]} and ${categoryNames[1]}`;
+    } else {
+      supportText = `${categoryNames.slice(0, -1).join(', ')}, and ${categoryNames[categoryNames.length - 1]}`;
+    }
+
+    // Generate extensions text (limit to show most common ones)
+    const displayExtensions = extensions.slice(0, 8); // Show first 8 extensions
+    const extensionsText = displayExtensions.length < extensions.length 
+      ? `${displayExtensions.join(', ')} and ${extensions.length - displayExtensions.length} more`
+      : extensions.join(', ');
+
+    return {
+      supportText,
+      extensionsText,
+      totalExtensions: extensions.length,
+      categories
+    };
+  }, [acceptedTypes]);
 
   const removeFile = (id: string): void => {
     const updatedFiles = mediaFiles.filter((file) => file.id !== id);
@@ -180,6 +242,7 @@ const MediaPicker: React.FC<MediaPickerProps> = ({
               onClick={!isDisabled ? openFileDialog : undefined}
               icon={<ImagePlus size={18} />}
               variant="ghost"
+              title={`Add more ${acceptedTypesInfo.supportText}`}
             />
           </span>
           <div
@@ -196,7 +259,7 @@ const MediaPicker: React.FC<MediaPickerProps> = ({
             onDrop={handleDrop}
             role="button"
             tabIndex={!isDisabled ? 0 : -1}
-            aria-label="Drop files here or click to select"
+            aria-label={`Drop ${acceptedTypesInfo.supportText} here or click to select`}
           >
             {/* Selected Media Display */}
             <div className="mb-4 ">
@@ -261,7 +324,7 @@ const MediaPicker: React.FC<MediaPickerProps> = ({
             <div className="mt-4 flex justify-between items-center">
               <div className="text-sm opacity-65 ">
                 {mediaFiles.length} of {maxFiles} files selected
-                {isDragging && " - Drop files to add more"}
+                {isDragging && ` - Drop ${acceptedTypesInfo.supportText} to add more`}
               </div>
               {onClick && (
                 <Button
@@ -296,16 +359,16 @@ const MediaPicker: React.FC<MediaPickerProps> = ({
           onClick={!isDisabled ? openFileDialog : undefined}
           role="button"
           tabIndex={!isDisabled ? 0 : -1}
-          aria-label="Drop files here or click to select"
+          aria-label={`Drop ${acceptedTypesInfo.supportText} here or click to select`}
         >
           <div className="flex flex-col items-center space-y-4">
             <Upload
               className={`w-12 h-12 transition-colors ${
                 isProcessing
-                  ? "text-[var(--acent)] animate-bounce"
+                  ? "text-[var(--accent)] animate-bounce"
                   : isDragging
-                    ? "text-[var(--acent)]"
-                    : "text-gray-400 hover:text-[var(--acent)]"
+                    ? "text-[var(--accent)]"
+                    : "text-gray-400 hover:text-[var(--accent)]"
               }`}
             />
 
@@ -329,18 +392,18 @@ const MediaPicker: React.FC<MediaPickerProps> = ({
               <div>
                 <p className="text-lg font-medium ">
                   {isDragging
-                    ? "Drop your media files here"
-                    : "Drag & drop media files here"}
+                    ? `Drop your ${acceptedTypesInfo.supportText} here`
+                    : `Drag & drop ${acceptedTypesInfo.supportText} here`}
                 </p>
                 <p className="text-sm text-gray-500 mt-2">
                   or click to browse ({maxFiles - mediaFiles.length} remaining)
                 </p>
                 <p className="text-xs text-gray-400 mt-1">
-                  Supports images, videos, and audio files (max{" "}
+                  Supports {acceptedTypesInfo.extensionsText} (max{" "}
                   {formatFileSize(maxFileSize)} each)
-                  {/* {maxVideoDuration && (
+                  {acceptedTypesInfo.categories.videos.length > 0 && maxVideoDuration && (
                     <span>, videos limited to {maxVideoDuration}s</span>
-                  )} */}
+                  )}
                 </p>
               </div>
             )}
@@ -371,6 +434,8 @@ const MediaPicker: React.FC<MediaPickerProps> = ({
             <p>Max file size: {formatFileSize(maxFileSize)}</p>
             <p>Max video duration: {maxVideoDuration}s</p>
             <p>Selected preview: {selectedPreviewIndex}</p>
+            <p>Accepted types: {acceptedTypesInfo.supportText}</p>
+            <p>Extensions: {acceptedTypesInfo.extensionsText}</p>
           </div>
           <h5 className="font-medium text-xs mb-1">Current Files:</h5>
           <pre className="text-xs overflow-auto max-h-40  p-2 ">

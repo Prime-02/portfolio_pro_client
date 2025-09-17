@@ -86,7 +86,7 @@ const Popover: React.FC<PopoverProps> = ({
     }
   }, [isOpen]);
 
-  // Update position on scroll/resize
+  // Update position on scroll/resize - FIXED: Only update on resize, not scroll
   useEffect(() => {
     if (!isOpen || !clickerRef.current) return;
 
@@ -102,14 +102,12 @@ const Popover: React.FC<PopoverProps> = ({
       }
     };
 
-    const handleScroll = () => updatePosition();
+    // Only update on resize, not on scroll for fixed positioning
     const handleResize = () => updatePosition();
 
-    window.addEventListener("scroll", handleScroll, true);
     window.addEventListener("resize", handleResize);
 
     return () => {
-      window.removeEventListener("scroll", handleScroll, true);
       window.removeEventListener("resize", handleResize);
     };
   }, [isOpen, isMobile]);
@@ -204,12 +202,14 @@ const Popover: React.FC<PopoverProps> = ({
   };
 
   // Calculate popover position based on clicker position with viewport constraints
+  // FIXED: Use fixed positioning relative to viewport, not absolute with scroll offsets
   const getPopoverStyles = (): React.CSSProperties => {
     if (!clickerRect || isMobile) return {};
 
     const { top, left, right, bottom, width, height } = clickerRect;
-    const scrollX = window.scrollX;
-    const scrollY = window.scrollY;
+    // REMOVED: Don't add scroll offsets for fixed positioning
+    // const scrollX = window.scrollX;
+    // const scrollY = window.scrollY;
 
     // Use actual dimensions if available, otherwise use more conservative estimates
     const popoverWidth = popoverRect?.width || 250; // Reduced default estimate
@@ -220,42 +220,43 @@ const Popover: React.FC<PopoverProps> = ({
     const transform = "none";
 
     // Calculate initial position based on the requested position
+    // FIXED: Use viewport coordinates directly (no scroll offsets)
     switch (position) {
       case "top-left":
-        popoverTop = scrollY + top - popoverHeight - 8;
-        popoverLeft = scrollX + right - popoverWidth;
+        popoverTop = top - popoverHeight - 8;
+        popoverLeft = right - popoverWidth;
         break;
       case "top-right":
-        popoverTop = scrollY + top - popoverHeight - 8;
-        popoverLeft = scrollX + left;
+        popoverTop = top - popoverHeight - 8;
+        popoverLeft = left;
         break;
       case "top-center":
-        popoverTop = scrollY + top - popoverHeight - 8;
-        popoverLeft = scrollX + left + width / 2 - popoverWidth / 2;
+        popoverTop = top - popoverHeight - 8;
+        popoverLeft = left + width / 2 - popoverWidth / 2;
         break;
       case "bottom-left":
-        popoverTop = scrollY + bottom + 8;
-        popoverLeft = scrollX + right - popoverWidth;
+        popoverTop = bottom + 8;
+        popoverLeft = right - popoverWidth;
         break;
       case "bottom-right":
-        popoverTop = scrollY + bottom + 8;
-        popoverLeft = scrollX + left;
+        popoverTop = bottom + 8;
+        popoverLeft = left;
         break;
       case "bottom-center":
-        popoverTop = scrollY + bottom + 8;
-        popoverLeft = scrollX + left + width / 2 - popoverWidth / 2;
+        popoverTop = bottom + 8;
+        popoverLeft = left + width / 2 - popoverWidth / 2;
         break;
       case "center-left":
-        popoverTop = scrollY + top + height / 2 - popoverHeight / 2;
-        popoverLeft = scrollX + left - popoverWidth - 8;
+        popoverTop = top + height / 2 - popoverHeight / 2;
+        popoverLeft = left - popoverWidth - 8;
         break;
       case "center-right":
-        popoverTop = scrollY + top + height / 2 - popoverHeight / 2;
-        popoverLeft = scrollX + right + 8;
+        popoverTop = top + height / 2 - popoverHeight / 2;
+        popoverLeft = right + 8;
         break;
       default:
-        popoverTop = scrollY + bottom + 8;
-        popoverLeft = scrollX + left + width / 2 - popoverWidth / 2;
+        popoverTop = bottom + 8;
+        popoverLeft = left + width / 2 - popoverWidth / 2;
         break;
     }
 
@@ -279,7 +280,7 @@ const Popover: React.FC<PopoverProps> = ({
       // If vertical position was significantly adjusted, try flipping
       if (position.includes("top") && popoverTop > originalTop) {
         // Was trying to go above, but got pushed down - try below instead
-        const newTop = scrollY + bottom + 8;
+        const newTop = bottom + 8;
         const newConstrained = constrainToViewport(
           newTop,
           popoverLeft,
@@ -291,7 +292,7 @@ const Popover: React.FC<PopoverProps> = ({
         }
       } else if (position.includes("bottom") && popoverTop < originalTop) {
         // Was trying to go below, but got pushed up - try above instead
-        const newTop = scrollY + top - popoverHeight - 8;
+        const newTop = top - popoverHeight - 8;
         const newConstrained = constrainToViewport(
           newTop,
           popoverLeft,
@@ -308,7 +309,7 @@ const Popover: React.FC<PopoverProps> = ({
       // If horizontal position was significantly adjusted, try flipping
       if (position.includes("left") && popoverLeft > originalLeft) {
         // Was trying to go left, but got pushed right - try right instead
-        const newLeft = scrollX + right + 8;
+        const newLeft = right + 8;
         const newConstrained = constrainToViewport(
           popoverTop,
           newLeft,
@@ -320,7 +321,7 @@ const Popover: React.FC<PopoverProps> = ({
         }
       } else if (position.includes("right") && popoverLeft < originalLeft) {
         // Was trying to go right, but got pushed left - try left instead
-        const newLeft = scrollX + left - popoverWidth - 8;
+        const newLeft = left - popoverWidth - 8;
         const newConstrained = constrainToViewport(
           popoverTop,
           newLeft,
@@ -334,7 +335,7 @@ const Popover: React.FC<PopoverProps> = ({
     }
 
     return {
-      position: "absolute",
+      position: "fixed", // FIXED: Use fixed instead of absolute
       top: popoverTop,
       left: popoverLeft,
       transform,

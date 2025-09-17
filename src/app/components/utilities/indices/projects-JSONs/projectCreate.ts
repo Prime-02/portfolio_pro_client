@@ -13,7 +13,8 @@ export const initialProjectFormData: ProjectCreateFormData = {
   contribution_description: "",
   project_url: "",
   stack: [],
-  other_project_url: [],
+  // other_project_url: {},
+  other_project_image_url: {},
   tags: [],
   start_date: "",
   end_date: "",
@@ -515,6 +516,6 @@ export const ConnectionPlatforms = [
 
 export const filterPlatform = (platformName: string) => {
   return ConnectionPlatforms.find(
-    platform => platformName === platform.platformKey
+    (platform) => platformName === platform.platformKey
   );
 };

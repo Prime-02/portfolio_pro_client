@@ -1,7 +1,8 @@
 import ImageCard from "@/app/components/containers/cards/ImageCard";
 import TextFormatter from "@/app/components/containers/TextFormatters/TextFormatter";
+import CheckBox from "@/app/components/inputs/CheckBox";
 import { useTheme } from "@/app/components/theme/ThemeContext ";
-import { AllProjectsDisplayCardProps } from "@/app/components/types and interfaces/ProjectsAndPortfolios";
+import { AllProjectsDisplayCardProps, ProjectStatusProps } from "@/app/components/types and interfaces/ProjectsAndPortfolios";
 import { filterPlatform } from "@/app/components/utilities/indices/projects-JSONs/projectCreate";
 import {
   getColorShade,
@@ -9,12 +10,16 @@ import {
   replaceCharacters,
 } from "@/app/components/utilities/syncFunctions/syncs";
 import { useGlobalState } from "@/app/globalStateProvider";
+import { useProjectsStore } from "@/app/stores/project_stores/ProjectsStore";
 import Image from "next/image";
-import React from "react";
+import React, { useState } from "react";
 
 const AllProjectsCard = (prop: AllProjectsDisplayCardProps) => {
-  const { checkParams } = useGlobalState();
+  const { checkParams, viewportWidth } = useGlobalState();
   const { theme, isDarkMode } = useTheme();
+  const { toggleProjectName, projectsNames } = useProjectsStore();
+  const [isHovered, setIsHovered] = useState(false);
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
@@ -22,27 +27,44 @@ const AllProjectsCard = (prop: AllProjectsDisplayCardProps) => {
     });
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "completed":
-        return "text-green-600";
-      case "in-progress":
-        return "text-yellow-600";
-      case "on-hold":
-        return "text-red-600";
+  const getStatusColor = (status: ProjectStatusProps) => {
+    switch (status) {
+      case "active":
+        return "text-green-600 bg-green-50 border-green-200";
+      case "inactive":
+        return "text-yellow-600 bg-yellow-50 border-yellow-200";
+      case "cancelled":
+        return "text-red-600 bg-red-50 border-red-200";
       default:
-        return "text-gray-600";
+        return "text-gray-600 bg-gray-50 border-gray-200";
     }
   };
 
-  const view = checkParams("view") || "grid"; // Default to grid if no view param
+  const getStatusDotColor = (status: ProjectStatusProps) => {
+    switch (status) {
+      case "active":
+        return "bg-green-500";
+      case "inactive":
+        return "bg-yellow-500";
+      case "cancelled":
+        return "bg-red-500";
+      default:
+        return "bg-gray-500";
+    }
+  };
+
+  // Force grid view on small screens (< 640px), otherwise use URL parameter
+  const urlView = checkParams("view") || "grid";
+  const view = viewportWidth < 640 ? "grid" : urlView;
   const isListView = view === "list";
+  const isSelected = projectsNames.includes(prop.id);
+
   const platformLogoData = filterPlatform(prop.project_platform);
   const getLogoSrc = () => {
     if (!platformLogoData) return "";
 
     if (typeof platformLogoData.logoSrc === "function") {
-      return platformLogoData.logoSrc(isDarkMode); // Pass theme state
+      return platformLogoData.logoSrc(isDarkMode);
     }
 
     return platformLogoData.logoSrc;
@@ -50,232 +72,196 @@ const AllProjectsCard = (prop: AllProjectsDisplayCardProps) => {
 
   return (
     <div
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       className={`
-        flex shadow-md hover:shadow-2xl transition-shadow duration-300 rounded-lg border border-[var(--accent)]/20
-        ${isListView ? "flex-row gap-x-4 items-center" : "flex-col gap-y-4"}
+        group relative cursor-pointer
+        border-2 transition-all duration-300 ease-in-out rounded-xl
+        ${isSelected 
+          ? "border-[var(--accent)] shadow-lg scale-[1.02] ring-2 ring-[var(--accent)]/20" 
+          : "border-[var(--accent)]/20 hover:border-[var(--accent)]/40"
+        }
+        ${isHovered ? "shadow-xl transform scale-[1.01]" : "shadow-md"}
+        flex overflow-hidden
+        ${isListView ? "flex-row gap-0 items-center min-h-[140px]" : "flex-col gap-0 min-h-[320px]"}
       `}
       style={{
         backgroundColor: "var(--background)",
         color: "var(--foreground)",
       }}
     >
+      {/* Selection indicator */}
+      {isSelected && (
+        <div 
+          className="absolute top-0 left-0 w-full h-1 z-10"
+          style={{ backgroundColor: "var(--accent)" }}
+        />
+      )}
+
       {/* Image Section */}
-      <div className={`relative ${isListView ? "flex-shrink-0 p-2" : ""}`}>
+      <div className={`relative overflow-hidden ${isListView ? "w- h-full flex-shrink-0" : "w-full h-48"}`}>
         <ImageCard
-          aspectRatio="1/1"
-          borderRadius="lg"
-          shadow="sm"
-          borderColor="none"
+          borderRadius={isListView ? "none" : "xl"}
+          shadow="none"
+          borderColor="transparent"
           image_url={prop.project_image_url}
           id={prop.id}
         />
 
-        {/* Status Badges */}
-        <div className="absolute top-2 left-2 p-4 flex gap-2">
+        {/* Overlay on hover */}
+        <div className={`
+          absolute inset-0 bg-black/20 transition-opacity duration-300
+          ${isHovered ? "opacity-100" : "opacity-0"}
+        `} />
+
+        {/* Status Badges - Improved positioning and styling */}
+        <div className="absolute top-3 left-3 flex flex-wrap gap-2 max-w-[calc(100%-24px)]">
           {prop.is_completed && (
-            <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
-              Completed
+            <span className="px-1 py-0.5 text-[10px] font-medium rounded-full bg-green-500/90 text-white backdrop-blur-sm">
+              ✓ Completed
             </span>
           )}
           {prop.is_concept && (
-            <span className="px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-800">
-              Concept
+            <span className="px-1 py-0.5 text-[10px] font-medium rounded-full bg-purple-500/90 text-white backdrop-blur-sm">
+              💡 Concept
             </span>
           )}
           {!prop.is_public && (
-            <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">
-              Private
+            <span className="px-1 py-0.5 text-[10px] font-medium rounded-full bg-gray-500/90 text-white backdrop-blur-sm">
+              🔒 Private
             </span>
           )}
+        </div>
+
+        {/* Platform indicator */}
+        <div className="absolute bottom-3 right-3">
+          <div
+            className="w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-sm border"
+            style={{
+              backgroundColor: `${theme.background}ee`,
+              borderColor: "var(--accent)",
+            }}
+          >
+            <Image
+              src={getImageSrc(getLogoSrc(), prop.project_platform)}
+              alt={platformLogoData?.logoAlt || ""}
+              className="w-4 h-4 object-contain"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.style.display = "none";
+                target.nextElementSibling?.classList.remove("hidden");
+              }}
+              width={16}
+              height={16}
+            />
+            <div
+              className="w-4 h-4 rounded flex items-center justify-center text-xs font-bold hidden"
+              style={{
+                backgroundColor: "var(--foreground)",
+                color: "var(--background)",
+              }}
+            >
+              {prop.project_platform.charAt(0).toUpperCase()}
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Content Section */}
-      <div
-        className={`flex flex-col p-4 gap-y-3 ${isListView ? "flex-1" : ""}`}
-      >
+      <div className={`flex flex-col p-6 gap-4 ${isListView ? "flex-1 justify-between" : ""}`}>
         {/* Header */}
-        <div>
-          <div className="flex items-start justify-between mb-2">
-            <h1
-              className={`font-semibold capitalize line-clamp-2 ${isListView ? "text-lg" : "text-xl"}`}
-            >
+        <div className="space-y-3">
+          <div className="flex items-start justify-between gap-3">
+            <h1 className={`font-bold capitalize leading-tight transition-colors duration-200 ${
+              isHovered ? "text-[var(--accent)]" : ""
+            } ${isListView ? "text-lg line-clamp-2" : "text-xl line-clamp-2"}`}>
               {replaceCharacters(["-", "_"], [" ", " "], prop.project_name)}
             </h1>
-            <span
-              className={`text-sm font-medium ${getStatusColor(prop.status)}`}
-            >
-              {prop.status}
-            </span>
+            
+            {/* Status with dot indicator */}
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <div className={`w-2 h-2 rounded-full ${getStatusDotColor(prop.status)}`} />
+              <span className={`text-xs font-medium px-2 py-1 rounded-full border ${getStatusColor(prop.status)}`}>
+                {prop.status}
+              </span>
+            </div>
           </div>
 
-          {/* Platform and Category */}
-          <div className="flex items-center gap-2 text-sm opacity-75 mb-2">
-            <div
-              className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
-              style={{
-                backgroundColor: getColorShade(theme.background, 10),
-              }}
-            >
-              <Image
-                src={getImageSrc(getLogoSrc(), prop.project_platform)}
-                alt={platformLogoData?.logoAlt || ""}
-                className="w-3 h-3 object-contain"
-                onError={(e) => {
-                  // Fallback to a generic icon if image fails to load
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = "none";
-                  target.nextElementSibling?.classList.remove("hidden");
-                }}
-                width={32}
-                height={32}
-              />
-              <div
-                className="w-3 h-3 rounded  items-center justify-center text-xs font-bold hidden"
-                style={{
-                  backgroundColor: theme.foreground,
-                  color: theme.background,
-                }}
-              >
-                {prop.project_platform.charAt(0).toUpperCase()}
-              </div>
-            </div>
-
-            <span className="text-sm">{prop.project_category}</span>
+          {/* Category - Simplified */}
+          <div className="flex items-center gap-2 text-sm opacity-75">
+            <span>{prop.project_category}</span>
+            {prop.client_name && (
+              <>
+                <span>•</span>
+                <span>{prop.client_name}</span>
+              </>
+            )}
           </div>
         </div>
 
         {/* Description */}
-        <div
-          className={`opacity-90 ${isListView ? "text-xs line-clamp-2" : "text-sm"}`}
-        >
+        <div className={`opacity-90 leading-relaxed ${isListView ? "text-sm line-clamp-2" : "text-sm line-clamp-3"}`}>
           <TextFormatter>{prop.project_description}</TextFormatter>
         </div>
 
-        {/* Tech Stack and Tags - Compact for list view */}
-        <div className={`flex flex-col gap-2 ${isListView ? "gap-1" : ""}`}>
-          {/* Tech Stack */}
-          {prop.stack && prop.stack.length > 0 && (
-            <div className="flex flex-wrap gap-1">
-              {prop.stack.slice(0, isListView ? 3 : 4).map((tech, index) => (
-                <span
-                  key={index}
-                  className="px-2 py-1 text-xs rounded border"
-                  style={{
-                    borderColor: "var(--accent)",
-                    color: "var(--accent)",
-                  }}
-                >
-                  {tech}
-                </span>
-              ))}
-              {prop.stack.length > (isListView ? 3 : 4) && (
-                <span
-                  className="px-2 py-1 text-xs rounded border opacity-60"
-                  style={{
-                    borderColor: "var(--accent)",
-                    color: "var(--accent)",
-                  }}
-                >
-                  +{prop.stack.length - (isListView ? 3 : 4)} more
-                </span>
-              )}
-            </div>
-          )}
-
-          {/* Tags */}
-          {prop.tags && prop.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1">
-              {prop.tags.slice(0, isListView ? 2 : 3).map((tag, index) => (
-                <span
-                  key={index}
-                  className="px-2 py-1 text-xs rounded-full opacity-75"
-                  style={{
-                    backgroundColor: "var(--background)",
-                    color: "var(--foreground)",
-                    border: "1px solid var(--accent)",
-                  }}
-                >
-                  #{tag}
-                </span>
-              ))}
-              {prop.tags.length > (isListView ? 2 : 3) && (
-                <span
-                  className="px-2 py-1 text-xs rounded-full opacity-60"
-                  style={{
-                    backgroundColor: "var(--background)",
-                    color: "var(--foreground)",
-                    border: "1px solid var(--accent)",
-                  }}
-                >
-                  +{prop.tags.length - (isListView ? 2 : 3)}
-                </span>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Project Details - Simplified for list view */}
-        {!isListView && (
-          <div className="text-xs opacity-75 space-y-1">
-            {/* Date Range */}
-            <div className="flex items-center justify-between">
-              <span>Duration:</span>
-              <span>
-                {formatDate(prop.start_date)} -{" "}
-                {prop.end_date ? formatDate(prop.end_date) : "Ongoing"}
+        {/* Tech Stack - Simplified */}
+        {prop.stack && prop.stack.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {prop.stack.slice(0, isListView ? 2 : 3).map((tech, index) => (
+              <span
+                key={index}
+                className="px-2 py-1 text-xs rounded-full border"
+                style={{
+                  borderColor: "var(--accent)",
+                  color: "var(--accent)",
+                  backgroundColor: `${theme.foreground}05`,
+                }}
+              >
+                {tech}
               </span>
+            ))}
+            {prop.stack.length > (isListView ? 2 : 3) && (
+              <span
+                className="px-2 py-1 text-xs rounded-full border opacity-60"
+                style={{
+                  borderColor: "var(--accent)",
+                  color: "var(--accent)",
+                  backgroundColor: `${theme.foreground}05`,
+                }}
+              >
+                +{prop.stack.length - (isListView ? 2 : 3)}
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Simple date for non-list view */}
+        {!isListView && (
+          <div className="text-xs opacity-60">
+            {formatDate(prop.start_date)} - {prop.end_date ? formatDate(prop.end_date) : "Ongoing"}
+          </div>
+        )}
+
+        {/* Footer - Simplified */}
+        <div className="text-xs opacity-50 flex items-center justify-between">
+          <span>{formatDate(prop.last_updated)}</span>
+          {isSelected && (
+            <div className={`transition-transform duration-200 ${isHovered ? "translate-x-1" : ""}`}>
+              →
             </div>
-
-            {/* Client */}
-            {prop.client_name && (
-              <div className="flex items-center justify-between">
-                <span>Client:</span>
-                <span className="font-medium">{prop.client_name}</span>
-              </div>
-            )}
-
-            {/* Budget */}
-            {prop.budget && (
-              <div className="flex items-center justify-between">
-                <span>Budget:</span>
-                <span className="font-medium">
-                  ${prop.budget.toLocaleString()}
-                </span>
-              </div>
-            )}
-
-            {/* Featured In */}
-            {prop.featured_in && prop.featured_in.length > 0 && (
-              <div className="flex items-center justify-between">
-                <span>Featured:</span>
-                <span>{prop.featured_in.slice(0, 2).join(", ")}</span>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* List view condensed details */}
-        {isListView && (
-          <div className="flex items-center justify-between text-xs opacity-75">
-            <span>
-              {formatDate(prop.start_date)} -{" "}
-              {prop.end_date ? formatDate(prop.end_date) : "Ongoing"}
-            </span>
-            {prop.client_name && (
-              <span className="font-medium">{prop.client_name}</span>
-            )}
-          </div>
-        )}
-
-        {/* Footer - Last Updated */}
-        <div
-          className={`text-xs opacity-50 border-t pt-2 ${isListView ? "mt-1" : ""}`}
-          style={{ borderColor: "var(--accent)" }}
-        >
-          Last updated: {formatDate(prop.last_updated)}
+          )}
         </div>
       </div>
+      <span
+      className="absolute top-2 right-0 "
+      >
+        <CheckBox
+        isChecked={projectsNames.includes(prop.id)}
+        setIsChecked={()=>{
+          toggleProjectName(prop.id)
+        }}
+        />
+      </span>
     </div>
   );
 };

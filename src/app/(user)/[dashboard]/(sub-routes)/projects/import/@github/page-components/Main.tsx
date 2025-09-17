@@ -1,12 +1,12 @@
 "use client";
 import React from "react";
-import { useGitHubProjectsStore } from "@/app/stores/project_stores/GitHubProjectsStore";
+import { useProjectsStore } from "@/app/stores/project_stores/ProjectsStore";
 import OAuthButton from "@/app/(auth)/user-auth/[platform]/platforms/OAuthButton";
 import ProjectsDisplay from "./ProjectsDisplay"; // Your existing GitHub ProjectsDisplay
 import PlatformIntegration from "../../PlatformIntegration";
 
 const Main = () => {
-  const { projectsNames, clearProjectsNames } = useGitHubProjectsStore();
+  const { projectsNames, clearProjectsNames } = useProjectsStore();
 
   const headerTexts = {
     default: "Your GitHub Projects",

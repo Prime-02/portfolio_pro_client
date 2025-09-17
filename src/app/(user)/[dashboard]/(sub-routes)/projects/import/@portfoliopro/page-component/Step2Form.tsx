@@ -18,6 +18,7 @@ interface Step2FormProps {
   onPrevious: () => void;
   onSubmit?: () => void;
   onReset?: () => void;
+  projectId?: string;
 }
 
 const Step2Form: React.FC<Step2FormProps> = ({
@@ -29,8 +30,14 @@ const Step2Form: React.FC<Step2FormProps> = ({
   onPrevious,
   onSubmit,
   onReset,
+  projectId,
 }) => {
-  const {loading} = useGlobalState()
+  const { loading, checkValidId } = useGlobalState();
+
+  // Check if we should ignore isValid (when projectId exists and is valid)
+  const shouldIgnoreIsValid = projectId && checkValidId(projectId);
+  const isFormValid = shouldIgnoreIsValid;
+
   const stateSetters = {
     skill_name: (value: string) => onStackAdd(value),
   };
@@ -56,6 +63,7 @@ const Step2Form: React.FC<Step2FormProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <span>
           <Textinput
+            loading={loading.includes("fetching_project_by_id")}
             value={projectData.contribution}
             onChange={(e) => onFieldChange("contribution", e)}
             labelBgHexIntensity={1}
@@ -66,6 +74,7 @@ const Step2Form: React.FC<Step2FormProps> = ({
 
         <span>
           <Textinput
+            loading={loading.includes("fetching_project_by_id")}
             value={projectData.client_name}
             onChange={(e) => onFieldChange("client_name", e)}
             labelBgHexIntensity={1}
@@ -82,11 +91,15 @@ const Step2Form: React.FC<Step2FormProps> = ({
           labelBgHexIntensity={1}
           label="Contribution Description"
           className="w-full"
+          desc={
+            "This field is relevant to automatcally append this project to your resume built here if approved."
+          }
         />
       </span>
 
       <span>
         <Textinput
+          loading={loading.includes("fetching_project_by_id")}
           value={projectData.project_url}
           onChange={(e) => onFieldChange("project_url", e)}
           labelBgHexIntensity={1}
@@ -141,6 +154,7 @@ const Step2Form: React.FC<Step2FormProps> = ({
       <div className="flex w-full gap-x-2 items-center">
         <span className="w-1/2">
           <Textinput
+            loading={loading.includes("fetching_project_by_id")}
             value={projectData.start_date}
             onChange={(e) => onFieldChange("start_date", e)}
             labelBgHexIntensity={1}
@@ -151,6 +165,7 @@ const Step2Form: React.FC<Step2FormProps> = ({
         </span>
         <span className="w-1/2">
           <Textinput
+            loading={loading.includes("fetching_project_by_id")}
             value={projectData.end_date}
             onChange={(e) => onFieldChange("end_date", e)}
             labelBgHexIntensity={1}
@@ -192,8 +207,15 @@ const Step2Form: React.FC<Step2FormProps> = ({
               text="Create Project"
               icon2={<Upload size={18} />}
               onClick={onSubmit}
-              loading={loading.includes("uploading_projects")}
-              disabled={loading.includes("uploading_projects")}
+              loading={
+                loading.includes("uploading_projects") ||
+                loading.includes("updating_project")
+              }
+              disabled={
+                loading.includes("uploading_projects") ||
+                loading.includes("updating_project") ||
+                !isFormValid
+              }
             />
           )}
         </div>

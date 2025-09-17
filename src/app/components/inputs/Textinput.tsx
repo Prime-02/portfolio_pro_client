@@ -323,7 +323,7 @@ export const TextArea: React.FC<TextAreaProps> = ({
           </>
         )}
       </div>
-      <p className="text-xs opacity-80">{desc as ReactNode}</p>
+        <p className="text-xs opacity-80">{desc as ReactNode}</p>
     </>
   );
 };

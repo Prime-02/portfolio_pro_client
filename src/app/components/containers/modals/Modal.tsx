@@ -16,6 +16,7 @@ interface ModalProps {
   showCloseButton?: boolean;
   showMinimizeButton?: boolean;
   closeOnBackdropClick?: boolean;
+  showBackdrop?: boolean;
   closeOnEscape?: boolean;
   className?: string;
   backdropClassName?: string;
@@ -41,6 +42,7 @@ const Modal: React.FC<ModalProps> = ({
   showCloseButton = true,
   showMinimizeButton = false,
   closeOnBackdropClick = true,
+  showBackdrop = true,
   closeOnEscape = true,
   className = "",
   backdropClassName = "",
@@ -332,107 +334,127 @@ const Modal: React.FC<ModalProps> = ({
     },
   };
 
+  // Determine if we should render the backdrop overlay
+  const shouldRenderBackdrop = showBackdrop || closeOnBackdropClick;
+
   const modalContent = (
     <>
       {/* Main Modal */}
       <AnimatePresence mode="wait">
         {isOpen && !isMinimized && (
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            variants={backdropVariants}
-            className={`fixed inset-0 flex ${
-              centered
-                ? "items-center justify-center"
-                : "items-end justify-center"
-            } px-4 py-4 bg-black/50 ${!showMinimizeButton && "backdrop-blur-sm"} ${backdropClassName}`}
-            style={{ zIndex }}
-            onClick={handleBackdropClick}
-          >
+          <>
+            {/* Backdrop - only render if needed */}
+            {shouldRenderBackdrop && (
+              <motion.div
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                variants={backdropVariants}
+                className={`fixed inset-0 ${showBackdrop ? "backdrop-blur-sm bg-black/50" : ""} ${backdropClassName}`}
+                style={{ zIndex }}
+                onClick={handleBackdropClick}
+              />
+            )}
+
+            {/* Modal Container */}
             <motion.div
-              ref={modalRef}
-              variants={centered ? centeredModalVariants : slideUpModalVariants}
+              className={`fixed inset-0 flex ${
+                centered
+                  ? "items-center justify-center"
+                  : "items-end justify-center"
+              } px-4 py-4 pointer-events-none`}
+              style={{ zIndex: shouldRenderBackdrop ? zIndex + 1 : zIndex }}
               initial="hidden"
               animate="visible"
               exit="exit"
-              style={{
-                backgroundColor: getColorShade(theme.background, 10),
-              }}
-              className={`
-                relative w-full ${sizeClasses[size]} 
-                shadow-2xl
-                ${centered ? "rounded-2xl" : "rounded-2xl"}
-                ${className}
-              `}
-              onClick={(e) => e.stopPropagation()}
+              variants={backdropVariants}
             >
-              {/* Header */}
-              {(title || showCloseButton || showMinimizeButton) && (
-                <motion.div
-                  className="flex items-center justify-between p-6 border-b border-gray-200"
-                  initial={{ opacity: 0, y: -20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1, duration: 0.3 }}
-                >
-                  {title && (
-                    <motion.div
-                      className={
-                        typeof title === "string"
-                          ? "text-xl font-semibold truncate pr-4"
-                          : undefined
-                      }
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.15, duration: 0.3 }}
-                    >
-                      {title as ReactNode}
-                    </motion.div>
-                  )}
-
-                  <div className="flex items-center gap-2">
-                    {showMinimizeButton && (
-                      <motion.button
-                        onClick={handleMinimize}
-                        className="flex-shrink-0 p-2 hover:text-[var(--accent)] hover:bg-[var(--background)] rounded-full transition-colors duration-150"
-                        aria-label="Minimize modal"
-                        variants={buttonVariants}
-                        initial="rest"
-                        whileHover="hover"
-                        whileTap="tap"
-                      >
-                        <Minus size={20} />
-                      </motion.button>
-                    )}
-
-                    {showCloseButton && (
-                      <motion.button
-                        onClick={onClose}
-                        className={`flex-shrink-0 p-2 ${loading ? "animate-spin" : ""} hover:text-[var(--accent)] hover:bg-[var(--background)] rounded-full transition-colors duration-150`}
-                        aria-label="Close modal"
-                        variants={closeButtonVariants}
-                        initial="rest"
-                        whileHover="hover"
-                        whileTap="tap"
-                      >
-                        <X size={20} />
-                      </motion.button>
-                    )}
-                  </div>
-                </motion.div>
-              )}
-
-              {/* Content */}
               <motion.div
-                className="p-6 max-h-[calc(100vh-8rem)] overflow-y-auto"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2, duration: 0.3 }}
+                ref={modalRef}
+                variants={
+                  centered ? centeredModalVariants : slideUpModalVariants
+                }
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                style={{
+                  backgroundColor: getColorShade(theme.background, 10),
+                }}
+                className={`
+                  relative w-full ${sizeClasses[size]} 
+                  shadow-2xl pointer-events-auto
+                  ${centered ? "rounded-2xl" : "rounded-2xl"}
+                  ${className}
+                `}
+                onClick={(e) => e.stopPropagation()}
               >
-                {children}
+                {/* Header */}
+                {(title || showCloseButton || showMinimizeButton) && (
+                  <motion.div
+                    className="flex items-center justify-between p-6 border-b border-[var(--foreground)]/20"
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1, duration: 0.3 }}
+                  >
+                    {title && (
+                      <motion.div
+                        className={
+                          typeof title === "string"
+                            ? "text-xl font-semibold truncate pr-4"
+                            : undefined
+                        }
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.15, duration: 0.3 }}
+                      >
+                        {title as ReactNode}
+                      </motion.div>
+                    )}
+
+                    <div className="flex items-center gap-2">
+                      {showMinimizeButton && (
+                        <motion.button
+                          onClick={handleMinimize}
+                          className="flex-shrink-0 p-2 hover:text-[var(--accent)] hover:bg-[var(--background)] rounded-full transition-colors duration-150"
+                          aria-label="Minimize modal"
+                          variants={buttonVariants}
+                          initial="rest"
+                          whileHover="hover"
+                          whileTap="tap"
+                        >
+                          <Minus size={20} />
+                        </motion.button>
+                      )}
+
+                      {showCloseButton && (
+                        <motion.button
+                          onClick={onClose}
+                          className={`flex-shrink-0 p-2 ${loading ? "animate-spin" : ""} hover:text-[var(--accent)] hover:bg-[var(--background)] rounded-full transition-colors duration-150`}
+                          aria-label="Close modal"
+                          variants={closeButtonVariants}
+                          initial="rest"
+                          whileHover="hover"
+                          whileTap="tap"
+                        >
+                          <X size={20} />
+                        </motion.button>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Content */}
+                <motion.div
+                  className="p-6 max-h-[calc(100vh-8rem)] overflow-y-auto"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2, duration: 0.3 }}
+                >
+                  {children}
+                </motion.div>
               </motion.div>
             </motion.div>
-          </motion.div>
+          </>
         )}
       </AnimatePresence>
 

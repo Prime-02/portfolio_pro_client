@@ -76,6 +76,7 @@ interface GlobalStateContextType {
   checkParams: (param: string) => string | null;
   viewportWidth: number;
   setViewportWidth: (value: number) => void;
+  isOnline: boolean;
 }
 
 // Context initialization
@@ -90,16 +91,38 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
   const [loading, _setLoading] = useState<string[]>([]);
   const [currentUser, setCurrentUser] = useState<string | undefined>("");
   const [viewportWidth, setViewportWidth] = useState(0);
+  const [isOnline, setIsOnline] = useState<boolean>(true);
   const searchParams = useSearchParams(); // current query params
   const router = useRouter();
   const currentPath = usePathname();
   const pathname = usePathname();
-  
+
   // Compute currentPathWithQuery
-  const currentPathWithQuery = searchParams.toString() 
+  const currentPathWithQuery = searchParams.toString()
     ? `${currentPath}?${searchParams.toString()}`
     : currentPath;
-  
+
+  // Effect to monitor online/offline status
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      // Set initial online status
+      setIsOnline(navigator.onLine);
+
+      // Add event listeners for online/offline events
+      const handleOnline = () => setIsOnline(true);
+      const handleOffline = () => setIsOnline(false);
+
+      window.addEventListener("online", handleOnline);
+      window.addEventListener("offline", handleOffline);
+
+      // Cleanup event listeners
+      return () => {
+        window.removeEventListener("online", handleOnline);
+        window.removeEventListener("offline", handleOffline);
+      };
+    }
+  }, []);
+
   const fetchUserData = async (access: string = accessToken): Promise<void> => {
     if (!access) {
       console.warn("No access token provided for fetchUserData");
@@ -354,6 +377,7 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
     checkParams,
     viewportWidth,
     setViewportWidth,
+    isOnline,
   };
 
   return (
@@ -391,4 +415,10 @@ export const useLoading = (): [string[], (value: string) => void] => {
 export const useUpdateUserData = (): (() => Promise<void>) => {
   const { updateUserData } = useGlobalState();
   return updateUserData;
+};
+
+// New utility hook for online status
+export const useIsOnline = (): boolean => {
+  const { isOnline } = useGlobalState();
+  return isOnline;
 };

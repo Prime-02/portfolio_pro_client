@@ -61,11 +61,11 @@ body {
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
- @apply bg-gray-100 rounded;
+ @apply rounded;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
- background-color: var(--accent);
+ background-color: var(--foreground);
   border-radius: 0.25rem;
 }
 

@@ -2,10 +2,12 @@ import ImageCard from "@/app/components/containers/cards/ImageCard";
 import TextFormatter from "@/app/components/containers/TextFormatters/TextFormatter";
 import CheckBox from "@/app/components/inputs/CheckBox";
 import { useTheme } from "@/app/components/theme/ThemeContext ";
-import { AllProjectsDisplayCardProps, ProjectStatusProps } from "@/app/components/types and interfaces/ProjectsAndPortfolios";
+import {
+  AllProjectsDisplayCardProps,
+  ProjectStatusProps,
+} from "@/app/components/types and interfaces/ProjectsAndPortfolios";
 import { filterPlatform } from "@/app/components/utilities/indices/projects-JSONs/projectCreate";
 import {
-  getColorShade,
   getImageSrc,
   replaceCharacters,
 } from "@/app/components/utilities/syncFunctions/syncs";
@@ -76,10 +78,11 @@ const AllProjectsCard = (prop: AllProjectsDisplayCardProps) => {
       onMouseLeave={() => setIsHovered(false)}
       className={`
         group relative cursor-pointer
-        border-2 transition-all duration-300 ease-in-out rounded-xl
-        ${isSelected 
-          ? "border-[var(--accent)] shadow-lg scale-[1.02] ring-2 ring-[var(--accent)]/20" 
-          : "border-[var(--accent)]/20 hover:border-[var(--accent)]/40"
+        border transition-all duration-300 ease-in-out rounded-xl
+        ${
+          isSelected
+            ? "border-[var(--accent)] shadow-lg scale-[1.02] ring-2 ring-[var(--accent)]/20"
+            : "border-[var(--accent)]/20 hover:border-[var(--accent)]/40"
         }
         ${isHovered ? "shadow-xl transform scale-[1.01]" : "shadow-md"}
         flex overflow-hidden
@@ -92,27 +95,32 @@ const AllProjectsCard = (prop: AllProjectsDisplayCardProps) => {
     >
       {/* Selection indicator */}
       {isSelected && (
-        <div 
+        <div
           className="absolute top-0 left-0 w-full h-1 z-10"
           style={{ backgroundColor: "var(--accent)" }}
         />
       )}
 
       {/* Image Section */}
-      <div className={`relative overflow-hidden ${isListView ? "w- h-full flex-shrink-0" : "w-full h-48"}`}>
+      <div
+        className={`relative overflow-hidden ${isListView ? "w- h-full flex-shrink-0" : "w-full h-48"}`}
+      >
         <ImageCard
           borderRadius={isListView ? "none" : "xl"}
           shadow="none"
           borderColor="transparent"
           image_url={prop.project_image_url}
           id={prop.id}
+          aspectRatio="1/1"
         />
 
         {/* Overlay on hover */}
-        <div className={`
+        <div
+          className={`
           absolute inset-0 bg-black/20 transition-opacity duration-300
           ${isHovered ? "opacity-100" : "opacity-0"}
-        `} />
+        `}
+        />
 
         {/* Status Badges - Improved positioning and styling */}
         <div className="absolute top-3 left-3 flex flex-wrap gap-2 max-w-[calc(100%-24px)]">
@@ -168,20 +176,28 @@ const AllProjectsCard = (prop: AllProjectsDisplayCardProps) => {
       </div>
 
       {/* Content Section */}
-      <div className={`flex flex-col p-6 gap-4 ${isListView ? "flex-1 justify-between" : ""}`}>
+      <div
+        className={`flex flex-col p-6 gap-4 ${isListView ? "flex-1 justify-between" : ""}`}
+      >
         {/* Header */}
         <div className="space-y-3">
           <div className="flex items-start justify-between gap-3">
-            <h1 className={`font-bold capitalize leading-tight transition-colors duration-200 ${
-              isHovered ? "text-[var(--accent)]" : ""
-            } ${isListView ? "text-lg line-clamp-2" : "text-xl line-clamp-2"}`}>
+            <h1
+              className={`font-bold capitalize leading-tight transition-colors duration-200 ${
+                isHovered ? "text-[var(--accent)]" : ""
+              } ${isListView ? "text-lg line-clamp-2" : "text-xl line-clamp-2"}`}
+            >
               {replaceCharacters(["-", "_"], [" ", " "], prop.project_name)}
             </h1>
-            
+
             {/* Status with dot indicator */}
             <div className="flex items-center gap-2 flex-shrink-0">
-              <div className={`w-2 h-2 rounded-full ${getStatusDotColor(prop.status)}`} />
-              <span className={`text-xs font-medium px-2 py-1 rounded-full border ${getStatusColor(prop.status)}`}>
+              <div
+                className={`w-2 h-2 rounded-full ${getStatusDotColor(prop.status)}`}
+              />
+              <span
+                className={`text-xs font-medium px-2 py-1 rounded-full border ${getStatusColor(prop.status)}`}
+              >
                 {prop.status}
               </span>
             </div>
@@ -200,7 +216,9 @@ const AllProjectsCard = (prop: AllProjectsDisplayCardProps) => {
         </div>
 
         {/* Description */}
-        <div className={`opacity-90 leading-relaxed ${isListView ? "text-sm line-clamp-2" : "text-sm line-clamp-3"}`}>
+        <div
+          className={`opacity-90 leading-relaxed ${isListView ? "text-sm line-clamp-2" : "text-sm line-clamp-3"}`}
+        >
           <TextFormatter>{prop.project_description}</TextFormatter>
         </div>
 
@@ -238,28 +256,44 @@ const AllProjectsCard = (prop: AllProjectsDisplayCardProps) => {
         {/* Simple date for non-list view */}
         {!isListView && (
           <div className="text-xs opacity-60">
-            {formatDate(prop.start_date)} - {prop.end_date ? formatDate(prop.end_date) : "Ongoing"}
+            {formatDate(prop.start_date)} -{" "}
+            {prop.end_date ? formatDate(prop.end_date) : "Ongoing"}
           </div>
         )}
 
         {/* Footer - Simplified */}
         <div className="text-xs opacity-50 flex items-center justify-between">
           <span>{formatDate(prop.last_updated)}</span>
-          {isSelected && (
-            <div className={`transition-transform duration-200 ${isHovered ? "translate-x-1" : ""}`}>
-              →
-            </div>
-          )}
+          <div
+            className={`transition-transform duration-200 ${isHovered ? "translate-x-1" : ""} flex`}
+            style={{ position: "relative" }}
+          >
+            {prop.user_associations.slice(0, 6).map((collab, i) => (
+              <Image
+                width={100}
+                height={100}
+                src={getImageSrc(
+                  collab.user?.profile_picture,
+                  collab.user?.username
+                )}
+                key={i}
+                className="w-10 h-10 rounded-full object-cover relative border"
+                style={{
+                  zIndex: prop.user_associations.length - i, // Higher z-index for earlier avatars
+                  marginLeft: i > 0 ? "-20px" : "0", // Overlap avatars (adjust as needed)
+                }}
+                alt={`Avatar ${i + 1}`}
+              />
+            ))}
+          </div>
         </div>
       </div>
-      <span
-      className="absolute top-2 right-0 "
-      >
+      <span className="absolute top-2 right-0 ">
         <CheckBox
-        isChecked={projectsNames.includes(prop.id)}
-        setIsChecked={()=>{
-          toggleProjectName(prop.id)
-        }}
+          isChecked={projectsNames.includes(prop.id)}
+          setIsChecked={() => {
+            toggleProjectName(prop.id);
+          }}
         />
       </span>
     </div>

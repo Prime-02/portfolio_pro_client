@@ -47,6 +47,7 @@ interface TextInputProps {
   pattern?: string;
   step?: number;
   icon?: ReactNode;
+  disabled?: boolean
 }
 
 export const Textinput: React.FC<TextInputProps> = ({
@@ -78,6 +79,7 @@ export const Textinput: React.FC<TextInputProps> = ({
   pattern,
   step,
   icon,
+  disabled
 }) => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const { theme } = useTheme();
@@ -116,7 +118,7 @@ export const Textinput: React.FC<TextInputProps> = ({
     if (loading) {
       return (
         <div
-          className={`${className} block px-2.5 pb-2.5 pt-4 h-10 w-full text-sm bg-gray-200 dark:bg-gray-700 animate-pulse border-1 border-gray-300 dark:border-gray-600 rounded-full`}
+          className={`${className} block px-2.5 pb-2.5 pt-4 h-10 w-full text-sm bg-gray-200 dark:bg-gray-700  border-1 border-gray-300 dark:border-gray-600 rounded-full`}
         />
       );
     }
@@ -164,6 +166,7 @@ export const Textinput: React.FC<TextInputProps> = ({
         inputMode={inputMode}
         onKeyDown={onKeyDown}
         onClick={onClick}
+        disabled={disabled}
         ref={ref}
         value={value || ""}
         type={

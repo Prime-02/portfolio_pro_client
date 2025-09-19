@@ -74,28 +74,30 @@ const UsersLayout = ({
   }
 
   return (
-    <>
-      <div className="flex">
+    <div className="flex h-screen overflow-hidden">
+      {/* Fixed Sidebar - doesn't scroll */}
+      <div className="flex-shrink-0">
         <ProfileSideBar />
+      </div>
+      
+      {/* Main Content Area - scrollable */}
+      <div className="flex-1 overflow-auto custom-scrollbar">
         <motion.div
-          className="flex items-start justify-center min-h-screen h-auto w-full mx-auto overflow-auto py-5 px-2"
-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
+          className="flex items-start justify-center min-h-full w-full mx-auto py-5 px-2"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{
-            duration: 0.6,
-            ease: "easeOut",
-            type: "spring",
-            stiffness: 100,
-            damping: 20,
+            duration: 0.4,
+            ease: [0.25, 0.1, 0.25, 1], // Custom cubic-bezier for smooth easing
           }}
         >
           <motion.div
-            className={`rounded-3xl min-h-screen h-auto w-full `}
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
+            className="rounded-3xl h-auto min-h-full w-full"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             transition={{
-              duration: 0.8,
-              delay: 0.2,
+              duration: 0.5,
+              delay: 0.1,
               ease: "easeOut",
             }}
           >
@@ -103,7 +105,7 @@ const UsersLayout = ({
           </motion.div>
         </motion.div>
       </div>
-    </>
+    </div>
   );
 };
 

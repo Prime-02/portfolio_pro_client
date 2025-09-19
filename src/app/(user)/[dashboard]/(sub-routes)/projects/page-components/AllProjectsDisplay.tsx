@@ -55,7 +55,8 @@ const AllProjectsDisplay = () => {
       return getAllProjects({
         accessToken,
         setLoading,
-        filter: filter || undefined,
+        filter:
+          filter === "portfoliopro" ? "portfolio-pro" : filter || undefined,
         query: query || undefined,
         sort: sort || undefined,
         sortDirection: sortDirection || undefined,

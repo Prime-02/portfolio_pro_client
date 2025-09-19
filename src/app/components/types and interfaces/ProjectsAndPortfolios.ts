@@ -69,8 +69,8 @@ export interface ProjectCreateFormData {
 }
 
 export interface ImageUrlsProps {
-  url: string;
-  public_id: string;
+  url?: string;
+  public_id?: string;
 }
 
 export interface OtherProjectsImageUrlsProps {
@@ -78,6 +78,7 @@ export interface OtherProjectsImageUrlsProps {
   media_1?: ImageUrlsProps;
   media_2?: ImageUrlsProps;
   media_3?: ImageUrlsProps;
+  [key: string]: unknown;
 }
 
 export interface BasicUserProps {
@@ -94,7 +95,7 @@ export interface UserAssocProps {
   contribution_description: string;
   can_edit: boolean;
   created_at: string;
-  user: BasicUserProps;
+  user?: BasicUserProps;
 }
 
 export interface AllProjectsDisplayCardProps {

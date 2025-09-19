@@ -10,16 +10,14 @@ interface BasicHeaderProps {
 
 const BasicHeader = ({
   heading,
-  headingClass,
+  headingClass = "md:text-3xl text-2xl font-semibold",
   subHeading,
   subHeadingClass,
   containerClass,
 }: BasicHeaderProps) => {
   return (
     <div className={`flex flex-col items-start ${containerClass} `}>
-      <h1 className={`md:text-3xl text-2xl font-semibold ${headingClass} `}>
-        {heading}
-      </h1>
+      <h1 className={`${headingClass} `}>{heading}</h1>
       <h3
         className={`md:text-base text-sm opacity-65 font-thin ${subHeadingClass} max-w-2xl`}
       >

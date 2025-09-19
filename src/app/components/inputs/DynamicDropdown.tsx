@@ -27,7 +27,9 @@ interface DropdownProps {
   value?: string;
   label?: string;
   disabled?: boolean;
-  labelBgHexIntensity?: number
+  labelBgHexIntensity?: number;
+  includeNoneOption?: boolean;
+  includeQueryAsOption?: boolean;
 }
 
 interface DropdownMenuProps {
@@ -45,7 +47,9 @@ interface DropdownMenuProps {
   placeholder: string;
   displayKey: string;
   searchInputRef: React.RefObject<HTMLInputElement | null>;
-  labelBgHexIntensity?: number
+  labelBgHexIntensity?: number;
+  includeNoneOption?: boolean;
+  includeQueryAsOption?: boolean;
 }
 
 const DropdownMenu: React.FC<DropdownMenuProps> = ({
@@ -63,7 +67,9 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
   displayKey,
   searchInputRef,
   placeholder,
-  labelBgHexIntensity = 10
+  labelBgHexIntensity = 10,
+  includeNoneOption = true,
+  includeQueryAsOption = true
 }) => {
   const [position, setPosition] = useState<"top" | "bottom">("bottom");
   const menuRef = useRef<HTMLDivElement>(null);
@@ -103,6 +109,15 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
       : { top: triggerRect.bottom + 4 }),
   };
 
+  // Check if query should be shown as an option
+  const shouldShowQueryAsOption = includeQueryAsOption && 
+    searchQuery.trim() !== "" && 
+    !filteredOptions.some(option => 
+      String(option[displayKey]).toLowerCase() === searchQuery.toLowerCase()
+    );
+
+  const hasOptions = filteredOptions.length > 0 || shouldShowQueryAsOption;
+
   return (
     <div
       ref={menuRef}
@@ -124,20 +139,38 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
         </div>
       )}
 
-      {filteredOptions.length > 0 ? (
+      {hasOptions ? (
         <div className="max-h-60 p-2 overflow-y-auto">
-          <div
-            key="none"
-            className="p-2 hover:bg-[var(--accent)] cursor-pointer rounded-lg"
-            onClick={() =>
-              handleSelect({
-                [valueKey]: "",
-                [displayKey]: `${placeholder}`,
-              } as DropdownOption)
-            }
-          >
-            None
-          </div>
+          {includeNoneOption && (
+            <div
+              key="none"
+              className="p-2 hover:bg-[var(--accent)] cursor-pointer rounded-lg"
+              onClick={() =>
+                handleSelect({
+                  [valueKey]: "",
+                  [displayKey]: `${placeholder}`,
+                } as DropdownOption)
+              }
+            >
+              None
+            </div>
+          )}
+          
+          {shouldShowQueryAsOption && (
+            <div
+              key="query-option"
+              className="p-2 hover:bg-[var(--accent)] cursor-pointer rounded-lg border-b border-gray-300 font-medium"
+              onClick={() =>
+                handleSelect({
+                  [valueKey]: searchQuery,
+                  [displayKey]: searchQuery,
+                } as DropdownOption)
+              }
+            >
+              "{searchQuery}" (Create new)
+            </div>
+          )}
+          
           {filteredOptions.map((option) => (
             <div
               key={String(option[valueKey])}
@@ -171,7 +204,9 @@ const Dropdown: React.FC<DropdownProps> = ({
   type,
   value,
   label,
-  labelBgHexIntensity = 10
+  labelBgHexIntensity = 10,
+  includeNoneOption = true,
+  includeQueryAsOption = true
   // disabled =false
 }) => {
   const { theme } = useTheme();
@@ -206,13 +241,17 @@ const Dropdown: React.FC<DropdownProps> = ({
         if (foundOption) {
           setSelectedOption(foundOption);
         } else {
-          setSelectedOption(null);
+          // If no option found but we have a value, create a custom option
+          setSelectedOption({
+            [valueKey]: value,
+            [displayKey]: value,
+          } as DropdownOption);
         }
       }
     } else {
       setSelectedOption(null);
     }
-  }, [value, options, valueKey]);
+  }, [value, options, valueKey, displayKey, placeholder]);
 
   useEffect(() => {
     if (!mounted) return;
@@ -340,6 +379,8 @@ const Dropdown: React.FC<DropdownProps> = ({
               displayKey={displayKey}
               searchInputRef={searchInputRef}
               labelBgHexIntensity={labelBgHexIntensity}
+              includeNoneOption={includeNoneOption}
+              includeQueryAsOption={includeQueryAsOption}
             />
           </div>,
           document.body

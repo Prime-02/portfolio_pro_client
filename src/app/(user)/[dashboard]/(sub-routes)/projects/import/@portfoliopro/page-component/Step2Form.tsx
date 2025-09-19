@@ -5,7 +5,14 @@ import DataList from "@/app/components/inputs/DataList";
 import { TextArea, Textinput } from "@/app/components/inputs/Textinput";
 import { ProjectCreateFormData } from "@/app/components/types and interfaces/ProjectsAndPortfolios";
 import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
-import { Upload, X, ArrowLeft } from "lucide-react";
+import {
+  Upload,
+  X,
+  ArrowLeft,
+  ArrowRight,
+  Save,
+  ListRestart,
+} from "lucide-react";
 import { useGlobalState } from "@/app/globalStateProvider";
 
 interface Step2FormProps {
@@ -16,9 +23,11 @@ interface Step2FormProps {
   onStackAdd: (skill: string) => void;
   onStackRemove: (index: number) => void;
   onPrevious: () => void;
+  onNext: () => void;
   onSubmit?: () => void;
   onReset?: () => void;
   projectId?: string;
+  // onRefresh: () => void;
 }
 
 const Step2Form: React.FC<Step2FormProps> = ({
@@ -31,6 +40,8 @@ const Step2Form: React.FC<Step2FormProps> = ({
   onSubmit,
   onReset,
   projectId,
+  onNext,
+  // onRefresh,
 }) => {
   const { loading, checkValidId } = useGlobalState();
 
@@ -94,6 +105,7 @@ const Step2Form: React.FC<Step2FormProps> = ({
           desc={
             "This field is relevant to automatcally append this project to your resume built here if approved."
           }
+          maxLength={1500}
         />
       </span>
 
@@ -132,6 +144,8 @@ const Step2Form: React.FC<Step2FormProps> = ({
           requestMethod="GET"
           queryParam="q"
           labelBgHexIntensity={1}
+          includeQueryAsOption
+          queryOptionSuffix="Add New"
         />
         <ul className="flex flex-wrap gap-2 mt-1">
           {projectData.stack.map((stack, i) => (
@@ -196,16 +210,19 @@ const Step2Form: React.FC<Step2FormProps> = ({
           onClick={onPrevious}
         />
         <div className="flex gap-2">
-          <Button
-            text="Reset"
-            variant="ghost"
-            customColor="red"
-            onClick={handleReset}
-          />
+          {!projectId && (
+            <Button
+              text="Reset"
+              variant="ghost"
+              customColor="red"
+              onClick={handleReset}
+              icon2={<ListRestart size={20} />}
+            />
+          )}
           {onSubmit && (
             <Button
-              text="Create Project"
-              icon2={<Upload size={18} />}
+              text={projectId ? "Save" : "Create Project"}
+              icon2={projectId ? <Save size={18} /> : <Upload size={18} />}
               onClick={onSubmit}
               loading={
                 loading.includes("uploading_projects") ||
@@ -216,6 +233,14 @@ const Step2Form: React.FC<Step2FormProps> = ({
                 loading.includes("updating_project") ||
                 !isFormValid
               }
+            />
+          )}
+          {projectId && (
+            <Button
+              text={"Next"}
+              icon2={<ArrowRight size={18} />}
+              onClick={onNext}
+              variant="outline"
             />
           )}
         </div>

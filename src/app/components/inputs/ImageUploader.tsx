@@ -697,20 +697,20 @@ export default function ImageCropper({
                 >
                   <Button variant="outline" text="Reset" />
                 </span>
-                {shouldShowFinishButton && (
-                  <span
-                    onClick={handleFinish}
-                    className="flex items-center justify-center space-x-1 card px-3 py-2 rounded text-sm hover: transition-colors"
-                    aria-label="Finish"
-                  >
-                    <Button
-                      variant="primary"
-                      text="Finish"
-                      loading={loading || isProcessing}
-                      disabled={loading}
-                    />
-                  </span>
-                )}
+                {/* {shouldShowFinishButton && ( */}
+                <span
+                  onClick={handleFinish}
+                  className="flex items-center justify-center space-x-1 card px-3 py-2 rounded text-sm hover: transition-colors"
+                  aria-label="Finish"
+                >
+                  <Button
+                    variant="primary"
+                    text="Finish"
+                    loading={loading || isProcessing}
+                    disabled={loading}
+                  />
+                </span>
+                {/* )}*/}
               </div>
             </div>
           )}

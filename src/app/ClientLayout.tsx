@@ -21,7 +21,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
   ].includes(pathname || "");
 
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen min-w-sm">
       {/* Only render Navbar and Footer if on allowed paths */}
       {!shouldShowNavbarAndFooter && <LandingPageNavbar />}
 

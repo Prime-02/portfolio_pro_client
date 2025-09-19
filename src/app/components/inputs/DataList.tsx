@@ -43,6 +43,11 @@ type DataListProps = {
   labelBgHexIntensity?: number;
   desc?: string;
   maxLength?: number;
+  // New props for enhanced features
+  includeNoneOption?: boolean; // Show "None" option
+  includeQueryAsOption?: boolean; // Show search query as selectable option
+  noneOptionText?: string; // Custom text for None option
+  queryOptionSuffix?: string; // Suffix for query option (default: "(Create new)")
 };
 
 interface DropdownContentProps {
@@ -63,7 +68,15 @@ interface DropdownContentProps {
   theme: Theme;
   accentColor: Accent;
   loading: string[];
-  onSelectItem?: (item: SearchItem) => void; // Add this line
+  onSelectItem?: (item: SearchItem) => void;
+  // New props for enhanced features
+  includeNoneOption?: boolean;
+  includeQueryAsOption?: boolean;
+  noneOptionText?: string;
+  queryOptionSuffix?: string;
+  displayKeys: string[];
+  valueKeys: string[];
+  separator: string;
 }
 
 // Dropdown component to be rendered in portal
@@ -84,6 +97,13 @@ const DropdownContent: React.FC<DropdownContentProps> = ({
   setShowDropdown,
   loading,
   onSelectItem,
+  includeNoneOption = false,
+  includeQueryAsOption = false,
+  noneOptionText = "None",
+  queryOptionSuffix = "(Create new)",
+  displayKeys,
+  valueKeys,
+  separator,
 }) => {
   const { theme, loader, accentColor } = useTheme();
   const LoaderComponent = getLoader(loader);
@@ -143,6 +163,43 @@ const DropdownContent: React.FC<DropdownContentProps> = ({
       : { top: triggerRect.bottom + 4 }),
   };
 
+  // Check if query should be shown as an option
+  const shouldShowQueryAsOption = includeQueryAsOption && 
+    query.trim() !== "" && 
+    !searchResult.some(item => 
+      formatDisplayText(item).toLowerCase() === query.toLowerCase()
+    );
+
+  // Calculate total items including special options
+  const getTotalItems = () => {
+    let total = searchResult.length;
+    if (includeNoneOption) total += 1;
+    if (shouldShowQueryAsOption) total += 1;
+    return total;
+  };
+
+  // Get item at specific index considering special options
+  const getItemAtIndex = (index: number): { type: 'none' | 'query' | 'result', item?: SearchItem, resultIndex?: number } => {
+    let currentIndex = 0;
+    
+    if (includeNoneOption) {
+      if (index === currentIndex) return { type: 'none' };
+      currentIndex++;
+    }
+    
+    if (shouldShowQueryAsOption) {
+      if (index === currentIndex) return { type: 'query' };
+      currentIndex++;
+    }
+    
+    const resultIndex = index - currentIndex;
+    if (resultIndex >= 0 && resultIndex < searchResult.length) {
+      return { type: 'result', item: searchResult[resultIndex], resultIndex };
+    }
+    
+    return { type: 'result' };
+  };
+
   // Custom skeleton loading component
   const SkeletonItem = ({ delay = 0 }: { delay?: number }) => {
     const [opacity, setOpacity] = useState(0.3);
@@ -172,6 +229,44 @@ const DropdownContent: React.FC<DropdownContentProps> = ({
     );
   };
 
+  // Handle item selection based on type
+  const handleSpecialItemSelect = (index: number) => {
+    const itemInfo = getItemAtIndex(index);
+    
+    switch (itemInfo.type) {
+      case 'none':
+        // Create none item
+        const noneItem: SearchItem = {
+          [displayKeys[0]]: "",
+          [valueKeys[0]]: "",
+          isNone: true,
+        };
+        handleItemSelect(noneItem, -2); // Special index for none
+        break;
+        
+      case 'query':
+        // Create query item
+        const queryItem: SearchItem = {};
+        displayKeys.forEach(key => {
+          queryItem[key] = query;
+        });
+        valueKeys.forEach(key => {
+          queryItem[key] = query;
+        });
+        queryItem.isManual = true;
+        handleItemSelect(queryItem, -1); // Special index for manual
+        break;
+        
+      case 'result':
+        if (itemInfo.item && itemInfo.resultIndex !== undefined) {
+          handleItemSelect(itemInfo.item, itemInfo.resultIndex);
+        }
+        break;
+    }
+  };
+
+  const hasResults = searchResult.length > 0 || shouldShowQueryAsOption || includeNoneOption;
+
   return (
     <div
       ref={dropdownRef}
@@ -194,33 +289,87 @@ const DropdownContent: React.FC<DropdownContentProps> = ({
               <SkeletonItem key={index} delay={index * 100} />
             ))}
           </div>
-        ) : searchResult.length > 0 ? (
-          // Search results
+        ) : hasResults ? (
+          // Search results with special options
           <div className="p-2">
-            {searchResult.map((item, index) => (
+            {/* None option */}
+            {includeNoneOption && (
               <div
-                key={index}
-                className={`px-4 py-3 cursor-pointer transition-colors duration-200  rounded-lg ${
-                  selectedIndex === index
+                className={`px-4 py-3 cursor-pointer transition-colors duration-200 rounded-lg ${
+                  selectedIndex === (includeNoneOption ? 0 : -1)
                     ? "bg-[var(--accent)]"
                     : "hover:bg-[var(--accent)]"
                 }`}
                 style={{
                   backgroundColor:
-                    selectedIndex === index ? `${accentColor}20` : undefined,
+                    selectedIndex === (includeNoneOption ? 0 : -1) ? `${accentColor}20` : undefined,
                 }}
-                onClick={() => handleItemSelect(item, index)}
-                onMouseEnter={() => setSelectedIndex(index)}
+                onClick={() => handleSpecialItemSelect(includeNoneOption ? 0 : -1)}
+                onMouseEnter={() => setSelectedIndex(includeNoneOption ? 0 : -1)}
+              >
+                <div
+                  className="font-medium text-sm truncate opacity-70"
+                  style={{ color: theme.foreground }}
+                  title={noneOptionText}
+                >
+                  {noneOptionText}
+                </div>
+              </div>
+            )}
+
+            {/* Query as option */}
+            {shouldShowQueryAsOption && (
+              <div
+                className={`px-4 py-3 cursor-pointer transition-colors duration-200 rounded-lg border-gray-300 ${
+                  selectedIndex === (includeNoneOption ? 1 : 0)
+                    ? "bg-[var(--accent)]"
+                    : "hover:bg-[var(--accent)]"
+                }`}
+                style={{
+                  backgroundColor:
+                    selectedIndex === (includeNoneOption ? 1 : 0) ? `${accentColor}20` : undefined,
+                }}
+                onClick={() => handleSpecialItemSelect(includeNoneOption ? 1 : 0)}
+                onMouseEnter={() => setSelectedIndex(includeNoneOption ? 1 : 0)}
               >
                 <div
                   className="font-medium text-sm truncate"
                   style={{ color: theme.foreground }}
-                  title={formatDisplayText(item)}
+                  title={`"${query}" ${queryOptionSuffix}`}
                 >
-                  {formatDisplayText(item)}
+                 {` "${query}" (${queryOptionSuffix})`}
                 </div>
               </div>
-            ))}
+            )}
+
+            {/* Regular search results */}
+            {searchResult.map((item, index) => {
+              const adjustedIndex = (includeNoneOption ? 1 : 0) + (shouldShowQueryAsOption ? 1 : 0) + index;
+              return (
+                <div
+                  key={index}
+                  className={`px-4 py-3 cursor-pointer transition-colors duration-200 rounded-lg ${
+                    selectedIndex === adjustedIndex
+                      ? "bg-[var(--accent)]"
+                      : "hover:bg-[var(--accent)]"
+                  }`}
+                  style={{
+                    backgroundColor:
+                      selectedIndex === adjustedIndex ? `${accentColor}20` : undefined,
+                  }}
+                  onClick={() => handleSpecialItemSelect(adjustedIndex)}
+                  onMouseEnter={() => setSelectedIndex(adjustedIndex)}
+                >
+                  <div
+                    className="font-medium text-sm truncate"
+                    style={{ color: theme.foreground }}
+                    title={formatDisplayText(item)}
+                  >
+                    {formatDisplayText(item)}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         ) : hasSearched ? (
           // No results
@@ -231,22 +380,25 @@ const DropdownContent: React.FC<DropdownContentProps> = ({
             >
               {noResultsText}
             </div>
-            <Button
-              variant="ghost"
-              text="Click to add manually"
-              className="mx-auto mt-2"
-              onClick={() => {
-                // Create a manual item object using the query
-                const manualItem: SearchItem = {
-                  name: query,
-                  title: query,
-                  label: query,
-                  value: query,
-                  isManual: true,
-                };
-                handleItemSelect(manualItem, -1);
-              }}
-            />
+            {!includeQueryAsOption && (
+              <Button
+                variant="ghost"
+                text="Click to add manually"
+                className="mx-auto mt-2"
+                onClick={() => {
+                  // Create a manual item object using the query
+                  const manualItem: SearchItem = {};
+                  displayKeys.forEach(key => {
+                    manualItem[key] = query;
+                  });
+                  valueKeys.forEach(key => {
+                    manualItem[key] = query;
+                  });
+                  manualItem.isManual = true;
+                  handleItemSelect(manualItem, -1);
+                }}
+              />
+            )}
           </div>
         ) : null}
 
@@ -299,6 +451,11 @@ const DataList = ({
   labelBgHexIntensity = 0,
   desc,
   maxLength,
+  // New enhanced feature props
+  includeNoneOption = false,
+  includeQueryAsOption = false,
+  noneOptionText = "None",
+  queryOptionSuffix = "(Create new)",
 }: DataListProps) => {
   const { theme, accentColor } = useTheme();
   const { loading, setLoading } = useGlobalState();
@@ -347,6 +504,17 @@ const DataList = ({
       };
     }
   }, [showDropdown]);
+
+  // Calculate total selectable items
+  const getTotalSelectableItems = () => {
+    let total = searchResult.length;
+    if (includeNoneOption) total += 1;
+    if (includeQueryAsOption && query.trim() !== "" && 
+        !searchResult.some(item => formatDisplayText(item).toLowerCase() === query.toLowerCase())) {
+      total += 1;
+    }
+    return total;
+  };
 
   // Debounced search function
   useEffect(() => {
@@ -571,25 +739,70 @@ const DataList = ({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!showDropdown || searchResult.length === 0) return;
+    const totalItems = getTotalSelectableItems();
+    
+    if (!showDropdown || totalItems === 0) return;
 
     switch (e.key) {
       case "ArrowDown":
         e.preventDefault();
-        setSelectedIndex((prev) =>
-          prev < searchResult.length - 1 ? prev + 1 : 0
-        );
+        setSelectedIndex((prev) => {
+          const maxIndex = totalItems - 1;
+          return prev < maxIndex ? prev + 1 : 0;
+        });
         break;
       case "ArrowUp":
         e.preventDefault();
-        setSelectedIndex((prev) =>
-          prev > 0 ? prev - 1 : searchResult.length - 1
-        );
+        setSelectedIndex((prev) => {
+          const maxIndex = totalItems - 1;
+          return prev > 0 ? prev - 1 : maxIndex;
+        });
         break;
       case "Enter":
         e.preventDefault();
         if (selectedIndex >= 0) {
-          handleItemSelect(searchResult[selectedIndex], selectedIndex);
+          // Get the item at the selected index and handle selection
+          let currentIndex = 0;
+          
+          if (includeNoneOption) {
+            if (selectedIndex === currentIndex) {
+              const noneItem: SearchItem = {
+                [displayKeys[0]]: "",
+                [effectiveValueKeys[0]]: "",
+                isNone: true,
+              };
+              handleItemSelect(noneItem, -2);
+              return;
+            }
+            currentIndex++;
+          }
+          
+          const shouldShowQuery = includeQueryAsOption && 
+            query.trim() !== "" && 
+            !searchResult.some(item => 
+              formatDisplayText(item).toLowerCase() === query.toLowerCase()
+            );
+            
+          if (shouldShowQuery) {
+            if (selectedIndex === currentIndex) {
+              const queryItem: SearchItem = {};
+              displayKeys.forEach(key => {
+                queryItem[key] = query;
+              });
+              effectiveValueKeys.forEach(key => {
+                queryItem[key] = query;
+              });
+              queryItem.isManual = true;
+              handleItemSelect(queryItem, -1);
+              return;
+            }
+            currentIndex++;
+          }
+          
+          const resultIndex = selectedIndex - currentIndex;
+          if (resultIndex >= 0 && resultIndex < searchResult.length) {
+            handleItemSelect(searchResult[resultIndex], resultIndex);
+          }
         }
         break;
       case "Escape":
@@ -640,7 +853,14 @@ const DataList = ({
             theme={theme}
             accentColor={accentColor}
             loading={loading}
-            onSelectItem={onSelectItem} // Add this line
+            onSelectItem={onSelectItem}
+            includeNoneOption={includeNoneOption}
+            includeQueryAsOption={includeQueryAsOption}
+            noneOptionText={noneOptionText}
+            queryOptionSuffix={queryOptionSuffix}
+            displayKeys={displayKeys}
+            valueKeys={effectiveValueKeys}
+            separator={separator}
           />,
           document.body
         )}

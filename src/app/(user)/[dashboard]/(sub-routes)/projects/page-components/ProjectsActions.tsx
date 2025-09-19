@@ -75,7 +75,7 @@ const ProjectsActions = () => {
       action: () => {
         router.push(
           PathUtil.buildUrlWithQuery(`${currentPath}/import`, {
-            mode: "edit",
+            mode: "update",
             projectId: projectsNames[0],
           })
         );

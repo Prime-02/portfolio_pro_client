@@ -1133,7 +1133,7 @@ export class PathUtil {
       string,
       string | number | boolean | string[] | null | undefined
     >,
-    overwrite: boolean = false
+    overwrite: boolean = true
   ): string {
     const [basePath, existingQuery] = currentUrl.split("?");
     const existingParams = existingQuery
@@ -1337,3 +1337,126 @@ export function replaceCharacters(
   
   return inputString.replace(regex, match => charMap[match] || match);
 }
+
+
+/**
+ * Converts various date string formats to a human-readable format
+ * @param dateString - The date string to convert
+ * @param options - Optional formatting options
+ * @returns Formatted date string or error message
+ */
+export const formatDateString = (
+  dateString: string,
+  options: {
+    includeTime?: boolean;
+    dateStyle?: 'full' | 'long' | 'medium' | 'short';
+    timeStyle?: 'full' | 'long' | 'medium' | 'short';
+    locale?: string;
+    useProximity?: boolean;
+  } = {}
+): string => {
+  const {
+    includeTime = false,
+    dateStyle = 'long',
+    timeStyle = 'short',
+    locale = 'en-US',
+    useProximity = false
+  } = options;
+
+  try {
+    // Handle empty or invalid input
+    if (!dateString || typeof dateString !== 'string') {
+      return 'Invalid date input';
+    }
+
+    // Clean the input string
+    const cleanedInput = dateString.trim();
+    
+    // Try to parse the date
+    let date: Date;
+    
+    // Handle Unix timestamps (seconds or milliseconds)
+    const numericValue = Number(cleanedInput);
+    if (!isNaN(numericValue) && cleanedInput.match(/^\d+$/)) {
+      // If it's likely a Unix timestamp in seconds (10 digits), convert to milliseconds
+      const timestamp = numericValue < 10000000000 ? numericValue * 1000 : numericValue;
+      date = new Date(timestamp);
+    } else {
+      // Try parsing as a regular date string
+      date = new Date(cleanedInput);
+    }
+
+    // Check if the date is valid
+    if (isNaN(date.getTime())) {
+      return 'Unable to parse date format';
+    }
+
+    // Handle proximity formatting if requested
+    if (useProximity) {
+      const now = new Date();
+      const diffInMs = date.getTime() - now.getTime();
+      const diffInDays = Math.round(diffInMs / (1000 * 60 * 60 * 24));
+      const diffInHours = Math.round(diffInMs / (1000 * 60 * 60));
+      
+      // Check if it's today
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const dateDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      const dayDiff = Math.round((dateDay.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      
+      // Handle same day scenarios
+      if (dayDiff === 0) {
+        if (includeTime) {
+          const timeStr = new Intl.DateTimeFormat(locale, { timeStyle: timeStyle }).format(date);
+          if (Math.abs(diffInHours) <= 3) {
+            if (diffInHours >= 0) return `in ${Math.round(diffInHours)} hour${Math.round(diffInHours) !== 1 ? 's' : ''}`;
+            return `${Math.abs(Math.round(diffInHours))} hour${Math.abs(Math.round(diffInHours)) !== 1 ? 's' : ''} ago`;
+          }
+          return `today at ${timeStr}`;
+        }
+        return 'today';
+      }
+      
+      // Handle yesterday and tomorrow
+      if (dayDiff === -1) {
+        if (includeTime) {
+          const timeStr = new Intl.DateTimeFormat(locale, { timeStyle: timeStyle }).format(date);
+          // Special case for "last night"
+          const hour = date.getHours();
+          if (hour >= 18 || hour <= 5) {
+            return `last night at ${timeStr}`;
+          }
+          return `yesterday at ${timeStr}`;
+        }
+        return 'yesterday';
+      }
+      
+      if (dayDiff === 1) {
+        if (includeTime) {
+          const timeStr = new Intl.DateTimeFormat(locale, { timeStyle: timeStyle }).format(date);
+          return `tomorrow at ${timeStr}`;
+        }
+        return 'tomorrow';
+      }
+      
+      // Handle other proximity cases (within a reasonable range)
+      if (Math.abs(dayDiff) <= 7) {
+        if (dayDiff < -1) {
+          return `${Math.abs(dayDiff)} days ago`;
+        } else if (dayDiff > 1) {
+          return `in ${dayDiff} days`;
+        }
+      }
+    }
+
+    // Format the date using Intl.DateTimeFormat for proper localization
+    const formatOptions: Intl.DateTimeFormatOptions = {
+      dateStyle: dateStyle,
+      ...(includeTime && { timeStyle: timeStyle })
+    };
+
+    return new Intl.DateTimeFormat(locale, formatOptions).format(date);
+
+  } catch (error) {
+    return `Error formatting date: ${error instanceof Error ? error.message : 'Unknown error'}`;
+  }
+};

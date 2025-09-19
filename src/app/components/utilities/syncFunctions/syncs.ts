@@ -1299,14 +1299,16 @@ export class DetailedError extends Error {
 export function generateQueryParams(
   params: Record<string, string | number | boolean | null | undefined> = {}
 ): string {
-  const validParams = Object.entries(params)
-    .filter(([value]) => value !== undefined && value !== null && value !== "")
-    .map(
-      ([key, value]) =>
-        `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`
-    );
-
-  return validParams.length > 0 ? `?${validParams.join("&")}` : "";
+  const searchParams = new URLSearchParams();
+  
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") {
+      searchParams.append(key, String(value));
+    }
+  });
+  
+  const queryString = searchParams.toString();
+  return queryString ? `?${queryString}` : "";
 }
 
 export function replaceCharacters(

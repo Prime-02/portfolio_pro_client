@@ -4,7 +4,7 @@ import SocialsDisplay from "./page-componet/SocialsDisplay";
 
 const Socials = () => {
   return (
-    <div className="max-w-xl h-auto">
+    <div className="-auto">
       <SocialsDisplay />
     </div>
   );

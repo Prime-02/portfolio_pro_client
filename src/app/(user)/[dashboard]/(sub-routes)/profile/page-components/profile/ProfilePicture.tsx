@@ -29,7 +29,7 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
     >
       {userData?.profile_picture ? (
         <Image
-          src={getImageSrc(userData.profile_picture)}
+          src={getImageSrc(userData.profile_picture, userData.username)}
           width={1000}
           height={1000}
           alt="Profile Picture"

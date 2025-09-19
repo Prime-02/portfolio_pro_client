@@ -9,7 +9,6 @@ export interface CertificateCardProps {
   certificate_internal_url?: File | string;
   certificate_internal_url_id?: string | null;
   is_public?: boolean;
-  key?: string;
   onRefresh?: () => void;
 }
 
@@ -53,7 +52,6 @@ const CertCard = (props: CertificateCardProps) => {
     is_public,
     issue_date,
     issuing_organization,
-    key,
     onRefresh,
   } = props;
 
@@ -153,7 +151,6 @@ const CertCard = (props: CertificateCardProps) => {
 
   return (
     <div
-      key={key}
       className="bg-[var(--background)] rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200"
     >
       {/* Header */}

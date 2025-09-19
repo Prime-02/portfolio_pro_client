@@ -7,7 +7,7 @@ const ProfileMain = () => {
   const { userData } = useGlobalState();
 
   return (
-    <div className=" flex flex-col max-w-xl mx-auto gap-y-5">
+    <div className=" flex flex-col w-full mx-auto gap-y-5">
       <div className=" w-full flex flex-col p h-auto p-2 relative">
         <ProfileTemplate
           showSettings={getCurrentUrl("pathSegment", 0) === userData.username}

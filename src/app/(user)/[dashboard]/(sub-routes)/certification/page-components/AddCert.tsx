@@ -121,7 +121,7 @@ const AddCert = ({ onRefresh }: { onRefresh: () => void }) => {
     } catch (error) {
       console.log("Failed to upload certificate: ", error);
     } finally {
-      setLoading("");
+      setLoading("uploading_certificate");
     }
   };
 
@@ -155,7 +155,7 @@ const AddCert = ({ onRefresh }: { onRefresh: () => void }) => {
     } catch (error) {
       console.log(`Error updating ${fieldName}: `, error);
     } finally {
-      setLoading("");
+      setLoading(`updating_${fieldName}`);
     }
   };
 
@@ -182,7 +182,7 @@ const AddCert = ({ onRefresh }: { onRefresh: () => void }) => {
     } catch (error) {
       console.log("Error updating public status: ", error);
     } finally {
-      setLoading("");
+      setLoading("updating_public_status");
     }
   };
 
@@ -210,7 +210,7 @@ const AddCert = ({ onRefresh }: { onRefresh: () => void }) => {
     } catch (error) {
       console.log("Failed to fetch certificate information: ", error);
     } finally {
-      setLoading("");
+      setLoading("get_cert_info");
     }
   };
 

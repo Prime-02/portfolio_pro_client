@@ -1,14 +1,9 @@
 "use client";
-import { toast } from "@/app/components/toastify/Toastify";
-import { GetAllData } from "@/app/components/utilities/asyncFunctions/lib/crud";
-import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
 import { useGlobalState } from "@/app/globalStateProvider";
 import {
-  ProjectStatisticsState,
   useLoadProjectStats,
   useProjectStatisticsStore,
 } from "@/app/stores/project_stores/ProjectStats";
-import { Icon } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import {
   FolderOpen,
@@ -17,7 +12,6 @@ import {
   CheckCircle,
   Zap,
   Lightbulb,
-  Link,
   MoreHorizontal,
   Grid3X3,
   PieChart,
@@ -38,7 +32,6 @@ import {
   Tooltip,
   LineChart,
   Line,
-  PieLabel,
 } from "recharts";
 import { PathUtil } from "@/app/components/utilities/syncFunctions/syncs";
 import Button from "@/app/components/buttons/Buttons";

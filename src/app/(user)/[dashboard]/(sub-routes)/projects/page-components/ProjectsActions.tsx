@@ -7,8 +7,20 @@ import { PathUtil } from "@/app/components/utilities/syncFunctions/syncs";
 import { useGlobalState } from "@/app/globalStateProvider";
 import { useProjectsStore } from "@/app/stores/project_stores/ProjectsStore";
 import { useLoadProjectStats } from "@/app/stores/project_stores/ProjectStats";
-import { Edit, FilePlus2, Trash, View } from "lucide-react";
-import React from "react";
+import { Edit, FilePlus2, Trash, View, LucideIcon } from "lucide-react";
+import React, { ReactNode } from "react";
+
+interface ActionItem {
+  name: string;
+  icon: LucideIcon;
+  action: () => void;
+  showWhen: boolean;
+  disabled: boolean;
+  description: string;
+  hasPopover?: boolean;
+  isDestructive?: boolean;
+  popoverContent?: ReactNode;
+}
 
 const ProjectsActions = () => {
   const { projectsNames, clearProjectsNames, getAllProjects } =
@@ -58,7 +70,7 @@ const ProjectsActions = () => {
     }
   };
 
-  const actions = [
+  const actions: ActionItem[] = [
     {
       name: "Open",
       icon: View,
@@ -139,7 +151,7 @@ const ProjectsActions = () => {
 
   const visibleActions = actions.filter((action) => action.showWhen);
 
-  const ActionButton = ({ action }: { action: any }) => {
+  const ActionButton = ({ action }: { action: ActionItem }) => {
     const IconComponent = action.icon;
 
     // Define button styles based on whether it's a destructive action

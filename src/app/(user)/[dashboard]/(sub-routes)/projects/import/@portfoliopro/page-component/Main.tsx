@@ -46,7 +46,7 @@ const Main = () => {
   const [projectData, setProjectData] = useState<ProjectCreateFormData>(
     initialProjectFormData
   );
-  const { projectsNames, clearProjectsNames } = useProjectsStore();
+  const { projectsNames } = useProjectsStore();
   const mode = checkParams("mode") || "create";
   const rawProjectId = checkParams("projectId") || "";
   const [collaboratorCount, setCollaboratorCount] = useState<number>(0);

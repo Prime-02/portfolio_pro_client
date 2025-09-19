@@ -69,7 +69,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
   placeholder,
   labelBgHexIntensity = 10,
   includeNoneOption = true,
-  includeQueryAsOption = true
+  includeQueryAsOption = true,
 }) => {
   const [position, setPosition] = useState<"top" | "bottom">("bottom");
   const menuRef = useRef<HTMLDivElement>(null);
@@ -110,10 +110,12 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
   };
 
   // Check if query should be shown as an option
-  const shouldShowQueryAsOption = includeQueryAsOption && 
-    searchQuery.trim() !== "" && 
-    !filteredOptions.some(option => 
-      String(option[displayKey]).toLowerCase() === searchQuery.toLowerCase()
+  const shouldShowQueryAsOption =
+    includeQueryAsOption &&
+    searchQuery.trim() !== "" &&
+    !filteredOptions.some(
+      (option) =>
+        String(option[displayKey]).toLowerCase() === searchQuery.toLowerCase()
     );
 
   const hasOptions = filteredOptions.length > 0 || shouldShowQueryAsOption;
@@ -155,7 +157,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
               None
             </div>
           )}
-          
+
           {shouldShowQueryAsOption && (
             <div
               key="query-option"
@@ -167,10 +169,10 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
                 } as DropdownOption)
               }
             >
-              "{searchQuery}" (Create new)
+              {`"{searchQuery}" (Create new)`}
             </div>
           )}
-          
+
           {filteredOptions.map((option) => (
             <div
               key={String(option[valueKey])}
@@ -206,7 +208,7 @@ const Dropdown: React.FC<DropdownProps> = ({
   label,
   labelBgHexIntensity = 10,
   includeNoneOption = true,
-  includeQueryAsOption = true
+  includeQueryAsOption = true,
   // disabled =false
 }) => {
   const { theme } = useTheme();

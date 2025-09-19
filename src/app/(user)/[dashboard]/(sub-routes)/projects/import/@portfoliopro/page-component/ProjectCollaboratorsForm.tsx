@@ -25,6 +25,7 @@ export interface ProjectCollaboratorsProps {
   collaborators: ProjectCollaboratorProps[];
   total: number;
 }
+
 export interface ProjectCollaboratorProps {
   username: string;
   role: string;
@@ -32,7 +33,7 @@ export interface ProjectCollaboratorProps {
   contribution_description: string;
   can_edit: boolean;
   created_at: string;
-  [key: string]: unknown;
+  [key: string]: string | boolean | number | null | undefined;
 }
 
 export interface ProjectCollaboratorsFormProps {
@@ -47,7 +48,7 @@ interface NewCollaboratorForm {
   contribution: string;
   contribution_description: string;
   can_edit: boolean;
-  [key: string]: unknown;
+  [key: string]: string | boolean | number | null | undefined;
 }
 
 const collaboratorRoles = [
@@ -317,8 +318,8 @@ const ProjectCollaboratorsForm = ({
 
   const updateCollaboratorField = (
     index: number,
-    field: string,
-    value: any
+    field: keyof ProjectCollaboratorProps,
+    value: string | boolean
   ) => {
     setProjectCollaborators((prev) => ({
       ...prev,
@@ -330,7 +331,7 @@ const ProjectCollaboratorsForm = ({
 
   const updateNewCollaboratorField = (
     field: keyof NewCollaboratorForm,
-    value: any
+    value: string | boolean
   ) => {
     setNewCollaborator((prev) => ({ ...prev, [field]: value }));
   };
@@ -371,10 +372,10 @@ const ProjectCollaboratorsForm = ({
     return false;
   };
 
-  if (loader.includes("fetching_collaborators")) {
+  if (loading.includes("fetching_collaborators")) {
     return (
       <div className="w-full items-center justify-center flex min-h-64">
-        Loading....
+        {LoaderComponent && <LoaderComponent color={accentColor.color} />}
       </div>
     );
   } else {

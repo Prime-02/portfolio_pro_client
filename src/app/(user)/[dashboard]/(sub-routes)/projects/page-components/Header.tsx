@@ -1,7 +1,7 @@
 "use client";
 import Button from "@/app/components/buttons/Buttons";
 import { useGlobalState } from "@/app/globalStateProvider";
-import { Plug, Plus } from "lucide-react";
+import { Plug } from "lucide-react";
 import React from "react";
 
 const Header = () => {

@@ -93,17 +93,14 @@ const DropdownContent: React.FC<DropdownContentProps> = ({
   noResultsText,
   searchingText,
   query,
-  onSetValue,
   setShowDropdown,
   loading,
-  onSelectItem,
   includeNoneOption = false,
   includeQueryAsOption = false,
   noneOptionText = "None",
   queryOptionSuffix = "(Create new)",
   displayKeys,
   valueKeys,
-  separator,
 }) => {
   const { theme, loader, accentColor } = useTheme();
   const LoaderComponent = getLoader(loader);
@@ -170,13 +167,6 @@ const DropdownContent: React.FC<DropdownContentProps> = ({
       formatDisplayText(item).toLowerCase() === query.toLowerCase()
     );
 
-  // Calculate total items including special options
-  const getTotalItems = () => {
-    let total = searchResult.length;
-    if (includeNoneOption) total += 1;
-    if (shouldShowQueryAsOption) total += 1;
-    return total;
-  };
 
   // Get item at specific index considering special options
   const getItemAtIndex = (index: number): { type: 'none' | 'query' | 'result', item?: SearchItem, resultIndex?: number } => {

@@ -65,6 +65,10 @@ export default function ImageCropper({
   const [isFinished, setIsFinished] = useState(false); // Track if finish has been clicked
   const imgRef = useRef<HTMLImageElement>(null);
 
+  if (7 < 1) {
+    console.log(isFinished);
+  }
+
   const currentImage = image;
 
   // Determine if component is in controlled mode
@@ -92,9 +96,6 @@ export default function ImageCropper({
     { label: "9:16", value: 9 / 16, icon: Smartphone },
     { label: "3:4", value: 3 / 4, icon: Smartphone },
   ];
-
-  // Determine if finish button should be shown (only in uncontrolled mode with onFinish and not finished)
-  const shouldShowFinishButton = !isControlled && !!onFinish && !isFinished;
 
   // Clean up object URLs when component unmounts
   useEffect(() => {

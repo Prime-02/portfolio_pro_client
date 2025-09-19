@@ -1290,19 +1290,17 @@ export class PathUtil {
 //   console.log("Cleared params:", clearedUrl); // "/search"
 // }
 
-
-
 export class DetailedError extends Error {
   constructor(public details: string) {
     super(details);
   }
 }
 
-export function generateQueryParams(params: Record<string, string | number | boolean | null | undefined> = {}): string {
+export function generateQueryParams(
+  params: Record<string, string | number | boolean | null | undefined> = {}
+): string {
   const validParams = Object.entries(params)
-    .filter(
-      ([_, value]) => value !== undefined && value !== null && value !== ""
-    )
+    .filter(([value]) => value !== undefined && value !== null && value !== "")
     .map(
       ([key, value]) =>
         `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`
@@ -1311,7 +1309,6 @@ export function generateQueryParams(params: Record<string, string | number | boo
   return validParams.length > 0 ? `?${validParams.join("&")}` : "";
 }
 
-
 export function replaceCharacters(
   findChars: string[],
   replaceChars: string[],
@@ -1319,25 +1316,31 @@ export function replaceCharacters(
 ): string {
   // Validate input arrays have the same length
   if (findChars.length !== replaceChars.length) {
-    throw new Error('findChars and replaceChars arrays must have the same length');
+    throw new Error(
+      "findChars and replaceChars arrays must have the same length"
+    );
   }
-  
+
   // Create a mapping object
   const charMap: Record<string, string> = {};
-  
+
   // Build the character mapping
   findChars.forEach((char, index) => {
     charMap[char] = replaceChars[index];
   });
-  
-  // Use regex for more efficient replacement (especially for longer strings)
-  const regex = new RegExp(`[${findChars.map(char => 
-    char.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') // Escape regex special characters
-  ).join('')}]`, 'g');
-  
-  return inputString.replace(regex, match => charMap[match] || match);
-}
 
+  // Use regex for more efficient replacement (especially for longer strings)
+  const regex = new RegExp(
+    `[${findChars
+      .map(
+        (char) => char.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") // Escape regex special characters
+      )
+      .join("")}]`,
+    "g"
+  );
+
+  return inputString.replace(regex, (match) => charMap[match] || match);
+}
 
 /**
  * Converts various date string formats to a human-readable format
@@ -1349,37 +1352,38 @@ export const formatDateString = (
   dateString: string,
   options: {
     includeTime?: boolean;
-    dateStyle?: 'full' | 'long' | 'medium' | 'short';
-    timeStyle?: 'full' | 'long' | 'medium' | 'short';
+    dateStyle?: "full" | "long" | "medium" | "short";
+    timeStyle?: "full" | "long" | "medium" | "short";
     locale?: string;
     useProximity?: boolean;
   } = {}
 ): string => {
   const {
     includeTime = false,
-    dateStyle = 'long',
-    timeStyle = 'short',
-    locale = 'en-US',
-    useProximity = false
+    dateStyle = "long",
+    timeStyle = "short",
+    locale = "en-US",
+    useProximity = false,
   } = options;
 
   try {
     // Handle empty or invalid input
-    if (!dateString || typeof dateString !== 'string') {
-      return 'Invalid date input';
+    if (!dateString || typeof dateString !== "string") {
+      return "Invalid date input";
     }
 
     // Clean the input string
     const cleanedInput = dateString.trim();
-    
+
     // Try to parse the date
     let date: Date;
-    
+
     // Handle Unix timestamps (seconds or milliseconds)
     const numericValue = Number(cleanedInput);
     if (!isNaN(numericValue) && cleanedInput.match(/^\d+$/)) {
       // If it's likely a Unix timestamp in seconds (10 digits), convert to milliseconds
-      const timestamp = numericValue < 10000000000 ? numericValue * 1000 : numericValue;
+      const timestamp =
+        numericValue < 10000000000 ? numericValue * 1000 : numericValue;
       date = new Date(timestamp);
     } else {
       // Try parsing as a regular date string
@@ -1388,38 +1392,49 @@ export const formatDateString = (
 
     // Check if the date is valid
     if (isNaN(date.getTime())) {
-      return 'Unable to parse date format';
+      return "Unable to parse date format";
     }
 
     // Handle proximity formatting if requested
     if (useProximity) {
       const now = new Date();
       const diffInMs = date.getTime() - now.getTime();
-      const diffInDays = Math.round(diffInMs / (1000 * 60 * 60 * 24));
+      // const diffInDays = Math.round(diffInMs / (1000 * 60 * 60 * 24));
       const diffInHours = Math.round(diffInMs / (1000 * 60 * 60));
-      
+
       // Check if it's today
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      const dateDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-      const dayDiff = Math.round((dateDay.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-      
+      const dateDay = new Date(
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate()
+      );
+      const dayDiff = Math.round(
+        (dateDay.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+      );
+
       // Handle same day scenarios
       if (dayDiff === 0) {
         if (includeTime) {
-          const timeStr = new Intl.DateTimeFormat(locale, { timeStyle: timeStyle }).format(date);
+          const timeStr = new Intl.DateTimeFormat(locale, {
+            timeStyle: timeStyle,
+          }).format(date);
           if (Math.abs(diffInHours) <= 3) {
-            if (diffInHours >= 0) return `in ${Math.round(diffInHours)} hour${Math.round(diffInHours) !== 1 ? 's' : ''}`;
-            return `${Math.abs(Math.round(diffInHours))} hour${Math.abs(Math.round(diffInHours)) !== 1 ? 's' : ''} ago`;
+            if (diffInHours >= 0)
+              return `in ${Math.round(diffInHours)} hour${Math.round(diffInHours) !== 1 ? "s" : ""}`;
+            return `${Math.abs(Math.round(diffInHours))} hour${Math.abs(Math.round(diffInHours)) !== 1 ? "s" : ""} ago`;
           }
           return `today at ${timeStr}`;
         }
-        return 'today';
+        return "today";
       }
-      
+
       // Handle yesterday and tomorrow
       if (dayDiff === -1) {
         if (includeTime) {
-          const timeStr = new Intl.DateTimeFormat(locale, { timeStyle: timeStyle }).format(date);
+          const timeStr = new Intl.DateTimeFormat(locale, {
+            timeStyle: timeStyle,
+          }).format(date);
           // Special case for "last night"
           const hour = date.getHours();
           if (hour >= 18 || hour <= 5) {
@@ -1427,17 +1442,19 @@ export const formatDateString = (
           }
           return `yesterday at ${timeStr}`;
         }
-        return 'yesterday';
+        return "yesterday";
       }
-      
+
       if (dayDiff === 1) {
         if (includeTime) {
-          const timeStr = new Intl.DateTimeFormat(locale, { timeStyle: timeStyle }).format(date);
+          const timeStr = new Intl.DateTimeFormat(locale, {
+            timeStyle: timeStyle,
+          }).format(date);
           return `tomorrow at ${timeStr}`;
         }
-        return 'tomorrow';
+        return "tomorrow";
       }
-      
+
       // Handle other proximity cases (within a reasonable range)
       if (Math.abs(dayDiff) <= 7) {
         if (dayDiff < -1) {
@@ -1451,12 +1468,11 @@ export const formatDateString = (
     // Format the date using Intl.DateTimeFormat for proper localization
     const formatOptions: Intl.DateTimeFormatOptions = {
       dateStyle: dateStyle,
-      ...(includeTime && { timeStyle: timeStyle })
+      ...(includeTime && { timeStyle: timeStyle }),
     };
 
     return new Intl.DateTimeFormat(locale, formatOptions).format(date);
-
   } catch (error) {
-    return `Error formatting date: ${error instanceof Error ? error.message : 'Unknown error'}`;
+    return `Error formatting date: ${error instanceof Error ? error.message : "Unknown error"}`;
   }
 };

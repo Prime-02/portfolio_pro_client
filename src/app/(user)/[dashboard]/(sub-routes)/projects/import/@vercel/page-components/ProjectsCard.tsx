@@ -1,5 +1,5 @@
 import React from "react";
-import { ExternalLink, Globe, Settings } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { ProjectsProps } from "./ProjectsDisplay";
 import ImageCard from "@/app/components/containers/cards/ImageCard";
 import { useProjectsStore } from "@/app/stores/project_stores/ProjectsStore";

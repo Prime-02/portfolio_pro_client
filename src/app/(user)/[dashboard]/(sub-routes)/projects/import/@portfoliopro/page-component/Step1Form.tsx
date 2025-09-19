@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { JSX, useState } from "react";
 import Button from "@/app/components/buttons/Buttons";
 import CheckBox from "@/app/components/inputs/CheckBox";
 import Dropdown from "@/app/components/inputs/DynamicDropdown";
@@ -10,7 +10,7 @@ import {
   ProjectCreateFormData,
 } from "@/app/components/types and interfaces/ProjectsAndPortfolios";
 import { projectCategory } from "@/app/components/utilities/indices/projects-JSONs/projectCreate";
-import { Upload, ArrowRight, Plus, Image } from "lucide-react";
+import { Upload, ArrowRight, Plus } from "lucide-react";
 import { useGlobalState } from "@/app/globalStateProvider";
 import { useTheme } from "@/app/components/theme/ThemeContext ";
 import { getLoader } from "@/app/components/loaders/Loader";
@@ -21,6 +21,31 @@ import { toast } from "@/app/components/toastify/Toastify";
 import { base64ToFile } from "@/app/components/utilities/syncFunctions/syncs";
 import { UpdateAllData } from "@/app/components/utilities/asyncFunctions/lib/crud";
 import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
+
+// Type definitions for better type safety
+export type MediaSlot = "hero_media" | "media_1" | "media_2" | "media_3";
+
+interface ProjectMediaState {
+  media_slots: string;
+  project_media: File | null;
+}
+
+interface ImageCropperData {
+  file: File | null;
+  croppedImage: string | null;
+}
+
+// Type for the update data payload
+interface ProjectUpdateData
+  extends Record<string, File | string | boolean | number | undefined> {
+  project_name?: string;
+  project_description?: string;
+  project_category?: string;
+  is_public?: boolean;
+  is_completed?: boolean;
+  is_concept?: boolean;
+  [key: string]: File | string | boolean | number | undefined;
+}
 
 interface Step1FormProps {
   projectData: ProjectCreateFormData;
@@ -47,10 +72,7 @@ const Step1Form: React.FC<Step1FormProps> = ({
   const { loading, checkValidId, setLoading, accessToken } = useGlobalState();
   const { accentColor, loader } = useTheme();
   const LoaderComponent = getLoader(loader) || null;
-  const [projectMedia, setProjectMedia] = useState<{
-    media_slots: string;
-    project_media: File | null;
-  }>({
+  const [projectMedia, setProjectMedia] = useState<ProjectMediaState>({
     project_media: null,
     media_slots: "",
   });
@@ -60,10 +82,15 @@ const Step1Form: React.FC<Step1FormProps> = ({
   const isFormValid = shouldIgnoreIsValid || isValid;
 
   // All possible media slots in order
-  const allMediaSlots = ["hero_media", "media_1", "media_2", "media_3"];
+  // const allMediaSlots: MediaSlot[] = [
+  //   "hero_media",
+  //   "media_1",
+  //   "media_2",
+  //   "media_3",
+  // ];
 
   // Get slot data with fallback for empty slots
-  const getSlotData = (slotName: string) => {
+  const getSlotData = (slotName: string): ImageUrlsProps | null => {
     const slotData: ImageUrlsProps = projectData.other_project_image_url?.[
       slotName
     ] || { url: "", public_id: "" };
@@ -71,7 +98,7 @@ const Step1Form: React.FC<Step1FormProps> = ({
   };
 
   // Get slot display name
-  const getSlotDisplayName = (slotName: string) => {
+  const getSlotDisplayName = (slotName: string): string => {
     switch (slotName) {
       case "hero_media":
         return "Hero Image";
@@ -86,10 +113,7 @@ const Step1Form: React.FC<Step1FormProps> = ({
     }
   };
 
-  const convertToPrjMedia = async (data: {
-    file: File | null;
-    croppedImage: string | null;
-  }) => {
+  const convertToPrjMedia = async (data: ImageCropperData): Promise<void> => {
     const { croppedImage } = data;
 
     // Validate input
@@ -109,7 +133,12 @@ const Step1Form: React.FC<Step1FormProps> = ({
     }
 
     // Validate media slot
-    const validSlots = ["hero_media", "media_1", "media_2", "media_3"];
+    const validSlots: string[] = [
+      "hero_media",
+      "media_1",
+      "media_2",
+      "media_3",
+    ];
     if (!validSlots.includes(projectMedia.media_slots)) {
       toast.error(`Invalid media slot: ${projectMedia.media_slots}`);
       return;
@@ -151,13 +180,13 @@ const Step1Form: React.FC<Step1FormProps> = ({
       }
 
       // Prepare update data - only include the media slot and essential fields
-      const updateData: Record<string, any> = {
+      const updateData: ProjectUpdateData = {
         [projectMedia.media_slots]: convertedImg,
       };
 
       // Optional: Add other project fields if they need to be preserved
       // Only add non-media, non-null fields that might be required
-      const fieldsToPreserve = [
+      const fieldsToPreserve: (keyof ProjectCreateFormData)[] = [
         "project_name",
         "project_description",
         "project_category",
@@ -167,15 +196,16 @@ const Step1Form: React.FC<Step1FormProps> = ({
       ];
 
       fieldsToPreserve.forEach((field) => {
-        const value = projectData[field as keyof ProjectCreateFormData];
+        const value: unknown = projectData[field];
         if (value !== null && value !== undefined && value !== "") {
           // Convert arrays to JSON strings for FormData
           if (Array.isArray(value)) {
             updateData[field] = JSON.stringify(value);
-          } else if (typeof value === "object") {
+          } else if (typeof value === "object" && value !== null) {
             updateData[field] = JSON.stringify(value);
           } else {
-            updateData[field] = value;
+            // Type assertion after we've verified the value is not an object or array
+            updateData[field] = value as string | boolean | number;
           }
         }
       });
@@ -233,7 +263,7 @@ const Step1Form: React.FC<Step1FormProps> = ({
   };
 
   // Render individual slot card
-  const renderSlotCard = (slotName: string) => {
+  const renderSlotCard = (slotName: string): JSX.Element => {
     const slotData = getSlotData(slotName);
     const displayName = getSlotDisplayName(slotName);
     const isHeroSlot = slotName === "hero_media";
@@ -319,8 +349,8 @@ const Step1Form: React.FC<Step1FormProps> = ({
                     Additional Media
                   </h4>
                   <div className="grid gap-2 grid-cols-2 sm:grid-cols-3">
-                    {["media_1", "media_2", "media_3"].map((slotName) =>
-                      renderSlotCard(slotName)
+                    {(["media_1", "media_2", "media_3"] as const).map(
+                      (slotName) => renderSlotCard(slotName)
                     )}
                   </div>
                 </div>

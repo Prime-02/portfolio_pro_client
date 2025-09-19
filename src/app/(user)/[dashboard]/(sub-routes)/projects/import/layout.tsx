@@ -1,6 +1,6 @@
 "use client";
 import { useGlobalState } from "@/app/globalStateProvider";
-import React, { ReactNode } from "react";
+import  { ReactNode } from "react";
 
 const RootImportLayout = ({
   portfoliopro,

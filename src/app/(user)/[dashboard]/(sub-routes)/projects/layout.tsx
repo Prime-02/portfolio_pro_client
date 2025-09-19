@@ -1,17 +1,16 @@
-'use client'; // If using hooks like useSelectedLayoutSegment
+'use client';
 
 export default function ConnectLayout({
   children,
   connect,
 }: {
   children: React.ReactNode;
-  connect: React.ReactNode;
+  connect?: React.ReactNode; // Make it optional
 }) {
-
   return (
     <div>
       {children}
-      {connect}
+      {connect || null} {/* Handle case where connect is undefined */}
     </div>
   );
 }

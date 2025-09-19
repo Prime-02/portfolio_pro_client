@@ -1,6 +1,5 @@
 import React from "react";
 import {
-  LucideCheck,
   LucideSettings,
   LucidePlus,
   Eye,
@@ -11,7 +10,6 @@ import { getColorShade } from "@/app/components/utilities/syncFunctions/syncs";
 import Button from "@/app/components/buttons/Buttons";
 import Image from "next/image";
 import Popover from "@/app/components/containers/divs/PopOver";
-import { FaSync } from "react-icons/fa";
 import { GiCancel } from "react-icons/gi";
 import { useTheme } from "@/app/components/theme/ThemeContext ";
 

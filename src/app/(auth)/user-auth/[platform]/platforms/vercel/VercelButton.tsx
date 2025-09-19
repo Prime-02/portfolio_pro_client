@@ -17,7 +17,6 @@ const VercelButton = () => {
     loading,
     checkParams,
     clearQuerryParam,
-    currentPath,
     router,
     currentPathWithQuery,
   } = useGlobalState();

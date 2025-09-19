@@ -7,7 +7,7 @@ import {
 import { toast } from "@/app/components/toastify/Toastify";
 
 // Define a more specific type for form data values
-type FormDataValue = string | number | boolean | File | Blob;
+export type FormDataValue = string | number | boolean | File | Blob;
 
 // Enhanced interface with better type constraints
 export interface PostAllDataParams<T = Record<string, unknown>> {
@@ -20,48 +20,48 @@ export interface PostAllDataParams<T = Record<string, unknown>> {
 }
 
 // Helper type to ensure data is serializable
-type SerializableData = Record<
-  string,
-  FormDataValue | FormDataValue[] | Record<string, unknown>
->;
+// type SerializableData = Record<
+//   string,
+//   FormDataValue | FormDataValue[] | Record<string, unknown>
+// >;
 
 // Enhanced type guard that handles nested objects and arrays
-function isSerializableData(data: unknown): data is SerializableData {
-  if (typeof data !== "object" || data === null) {
-    return false;
-  }
+// function isSerializableData(data: unknown): data is SerializableData {
+//   if (typeof data !== "object" || data === null) {
+//     return false;
+//   }
 
-  return Object.values(data).every((value) => {
-    if (Array.isArray(value)) {
-      return value.every(
-        (item) =>
-          typeof item === "string" ||
-          typeof item === "number" ||
-          typeof item === "boolean" ||
-          item instanceof File ||
-          item instanceof Blob
-      );
-    }
+//   return Object.values(data).every((value) => {
+//     if (Array.isArray(value)) {
+//       return value.every(
+//         (item) =>
+//           typeof item === "string" ||
+//           typeof item === "number" ||
+//           typeof item === "boolean" ||
+//           item instanceof File ||
+//           item instanceof Blob
+//       );
+//     }
 
-    // Allow nested objects (they'll be stringified)
-    if (
-      typeof value === "object" &&
-      value !== null &&
-      !(value instanceof File) &&
-      !(value instanceof Blob)
-    ) {
-      return true; // We'll stringify this
-    }
+//     // Allow nested objects (they'll be stringified)
+//     if (
+//       typeof value === "object" &&
+//       value !== null &&
+//       !(value instanceof File) &&
+//       !(value instanceof Blob)
+//     ) {
+//       return true; // We'll stringify this
+//     }
 
-    return (
-      typeof value === "string" ||
-      typeof value === "number" ||
-      typeof value === "boolean" ||
-      value instanceof File ||
-      value instanceof Blob
-    );
-  });
-}
+//     return (
+//       typeof value === "string" ||
+//       typeof value === "number" ||
+//       typeof value === "boolean" ||
+//       value instanceof File ||
+//       value instanceof Blob
+//     );
+//   });
+// }
 
 export const PostAllData = async <
   T extends Record<string, unknown>,

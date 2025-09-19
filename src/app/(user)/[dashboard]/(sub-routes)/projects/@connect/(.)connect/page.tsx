@@ -5,7 +5,7 @@ import { useGlobalState } from "@/app/globalStateProvider";
 import React from "react";
 import AvailablePlatforms from "../../(connect)/connection-components/AvailablePlatforms";
 
-const page = () => {
+const PlatformConnectionPersistentModalPage = () => {
   const { router, currentPath } = useGlobalState();
 
   return (
@@ -22,4 +22,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default PlatformConnectionPersistentModalPage;

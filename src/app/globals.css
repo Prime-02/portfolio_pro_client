@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=League+Spartan:wght@100..900&display=swap');
 @import "tailwindcss";
 /* src/styles.css */
 
@@ -11,6 +12,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-league: 'League Spartan', sans-serif; /* Add custom font family */
 }
 
 /* @media (prefers-color-scheme: dark) {
@@ -25,6 +27,28 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Apply League Spartan font to all heading tags */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-league);
+  font-weight: 600; /* Semi-bold as default for headings */
+}
+
+/* League Spartan utility classes */
+.font-league {
+  font-family: var(--font-league);
+}
+
+/* Weight-specific utility classes */
+.font-league-100 { font-family: var(--font-league); font-weight: 100; }
+.font-league-200 { font-family: var(--font-league); font-weight: 200; }
+.font-league-300 { font-family: var(--font-league); font-weight: 300; }
+.font-league-400 { font-family: var(--font-league); font-weight: 400; }
+.font-league-500 { font-family: var(--font-league); font-weight: 500; }
+.font-league-600 { font-family: var(--font-league); font-weight: 600; }
+.font-league-700 { font-family: var(--font-league); font-weight: 700; }
+.font-league-800 { font-family: var(--font-league); font-weight: 800; }
+.font-league-900 { font-family: var(--font-league); font-weight: 900; }
 
 .reverse-card {
   color: var(--background);
@@ -47,8 +71,6 @@ body {
   animation: gradientShift 5s ease infinite;
 }
 
-
-
 .custom-shadow {
   --tw-shadow-color: var(--accent);
   box-shadow: 0 4px 6px -1px var(--tw-shadow-color), 
@@ -57,25 +79,25 @@ body {
 
 /* Custom scrollbar styles */
 .custom-scrollbar::-webkit-scrollbar {
- width: 8px;
+  width: 8px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
- @apply rounded;
+  @apply rounded;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
- background-color: var(--foreground);
+  background-color: var(--foreground);
   border-radius: 0.25rem;
 }
 
 /* Hide scrollbar */
 .hide-scrollbar {
- /* Hide scrollbar for Chrome, Safari and Opera */
- -ms-overflow-style: none;  /* IE and Edge */
- scrollbar-width: none;  /* Firefox */
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
 }
 
 .hide-scrollbar::-webkit-scrollbar {
- display: none;
+  display: none;
 }

@@ -2,15 +2,20 @@ import Button from "@/app/components/buttons/Buttons";
 import PortfolioProLogo from "@/app/components/logo/PortfolioProTextLogo";
 import { useTheme } from "@/app/components/theme/ThemeContext ";
 import { toast } from "@/app/components/toastify/Toastify";
-import { GetAllData } from "@/app/components/utilities/asyncFunctions/lib/crud";
+import {
+  GetAllData,
+  PostAllData,
+} from "@/app/components/utilities/asyncFunctions/lib/crud";
 import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
 import { PathUtil } from "@/app/components/utilities/syncFunctions/syncs";
 import { useGlobalState } from "@/app/globalStateProvider";
 import Image from "next/image";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import OAuthButton from "./OAuthButton";
 import VercelButton from "./vercel/VercelButton";
+import Modal from "@/app/components/containers/modals/Modal";
+import { Textinput } from "@/app/components/inputs/Textinput";
 
 // Configuration for different OAuth providers
 const PROVIDER_CONFIG = {
@@ -40,7 +45,7 @@ const PROVIDER_CONFIG = {
     logoAlt: "Canva Logo",
     logoClass: "object-cover rounded-full w-10 h-10",
     unapprovedLogoClass: "object-cover rounded-full w-32 h-32",
-    params: ["code", "error", "state"],
+    params: ["code", "error", "state", "email"],
   },
   figma: {
     endpoint: "figma-auth/callback",
@@ -97,6 +102,9 @@ const OAuthComponent: React.FC<OAuthComponentProps> = ({
   } = useGlobalState();
   const { isDarkMode } = useTheme();
   const hasCalledApproveUser = useRef(false);
+  const [emailVerification, setEmailVerification] = useState(false);
+  const verifiedEmail = checkParams("email");
+  const [email, setEmail] = useState("");
 
   const config = PROVIDER_CONFIG[provider];
 
@@ -175,9 +183,47 @@ const OAuthComponent: React.FC<OAuthComponentProps> = ({
     }
   };
 
+  const requestEmailVerification = async () => {
+    setLoading("verify_email_in_progress");
+    try {
+      const verificationData = Object.assign(params, { email: email });
+      const verificationRes: { message: string } = await PostAllData({
+        url: `${V1_BASE_URL}/canva-auth/verify-email`,
+        data: verificationData,
+      });
+      if (verificationRes?.message) {
+        toast.success(verificationRes.message, {
+          title: "Verification Email Sent",
+        });
+        setEmailVerification(false);
+      } else {
+        toast.error("We were unable to verify your email. Please try again", {
+          title: "Email Verification Error",
+        });
+        console.log("Data gotten: ", verificationRes);
+      }
+    } catch (error) {
+      toast.error("We were unable to verify your email. Please try again", {
+        title: "Email Verification Error",
+      });
+      console.log("Something went wrong: ", error);
+    } finally {
+      setLoading("verify_email_in_progress");
+    }
+  };
+
   useEffect(() => {
     if (mode === "approved") {
-      approveUser();
+      if (provider === "canva") {
+        if (verifiedEmail) {
+          approveUser();
+          return;
+        } else {
+          setEmailVerification(true);
+        }
+      } else {
+        approveUser();
+      }
     }
   }, [mode]);
 
@@ -219,6 +265,33 @@ const OAuthComponent: React.FC<OAuthComponentProps> = ({
           </div>
         ) : (
           <div className="flex flex-col p-2 items-center min-w-sm h-full border border-[var(--accent)]/20 rounded-2xl w-auto">
+            <Modal
+              isOpen={emailVerification}
+              onClose={() => setEmailVerification(false)}
+              title="Email Verification Required"
+            >
+              <div className="flex flex-col gap-4">
+                <p className="text-sm">
+                  To continue with Canva, please provide your email for
+                  verification.
+                </p>
+                <Textinput
+                  value={email}
+                  onChange={(e) => setEmail(e)}
+                  label="Email Address"
+                  type="email"
+                />
+                <Button
+                  text="Send Verification Email"
+                  loading={loading.includes("verify_email_in_progress")}
+                  onClick={requestEmailVerification}
+                  className="w-full"
+                  disabled={
+                    loading.includes("verify_email_in_progress") || !email
+                  }
+                />
+              </div>
+            </Modal>
             <div className={getLogoClass()}>
               <Image
                 src={getLogoSrc()}
@@ -229,13 +302,22 @@ const OAuthComponent: React.FC<OAuthComponentProps> = ({
             </div>
             <div className="w-full flex flex-col gap-y-2">
               <div className="flex mt-4 justify-center gap-3">
-                <Link href={"/welcome"}>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    text="Click to continue if your browser did not redirect you"
-                  />
-                </Link>
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    if (verifiedEmail) {
+                      router.replace("/welcome");
+                    } else {
+                      setEmailVerification(true);
+                    }
+                  }}
+                  size="sm"
+                  text={
+                    verifiedEmail
+                      ? "Click to continue if your browser did not redirect you"
+                      : "Resend Verification Email"
+                  }
+                />
               </div>
             </div>
           </div>

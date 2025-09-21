@@ -327,7 +327,7 @@ const Stats = () => {
     <div className="hidden sm:block">
       {/* Header with View Selector */}
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold">Project Statistics</h2>
+        <h2 className="text-2xl">Project Statistics</h2>
         <Popover
           className="relative"
           clickerClassName=""

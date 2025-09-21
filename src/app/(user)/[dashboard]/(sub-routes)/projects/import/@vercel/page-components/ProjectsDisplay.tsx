@@ -7,14 +7,15 @@ import MasonryGrid from "@/app/components/containers/divs/MasonryGrid";
 import { getLoader } from "@/app/components/loaders/Loader";
 import { useTheme } from "@/app/components/theme/ThemeContext ";
 import ProjectsCard from "./ProjectsCard";
+import EmptyState from "@/app/components/containers/cards/EmptyState";
 
 interface VercelProjectReviewProps {
-  projects: ProjectsProps[];
+  projects: VercelProjectsProps[];
   total_returned: number;
   pagination: { has_more: boolean };
 }
 
-export interface ProjectsProps {
+export interface VercelProjectsProps {
   name: string;
   framework: string;
   production_url: string;
@@ -102,9 +103,12 @@ const ProjectsDisplay = () => {
   return (
     <div>
       {projects.total_returned < 1 && !isInitialLoading ? (
-        <div className="text-center py-8">
-          <p>No projects found.</p>
-        </div>
+        <EmptyState
+          title="No Projects Found"
+          description="No projects were found in your connected Vercel account. Please ensure that you have projects deployed on Vercel and try again."
+          actionText="Refresh"
+          onAction={() => getVercelProjectsPreview()}
+        />
       ) : isInitialLoading ? (
         <div className="h-[10rem] flex items-center justify-center mx-auto">
           {LoaderComponent ? (

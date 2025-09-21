@@ -1,10 +1,10 @@
 import React from "react";
 import { ExternalLink } from "lucide-react";
-import { ProjectsProps } from "./ProjectsDisplay";
+import { VercelProjectsProps } from "./ProjectsDisplay";
 import ImageCard from "@/app/components/containers/cards/ImageCard";
 import { useProjectsStore } from "@/app/stores/project_stores/ProjectsStore";
 
-const ProjectsCard: React.FC<ProjectsProps> = ({
+const ProjectsCard: React.FC<VercelProjectsProps> = ({
   name,
   framework,
   production_url,

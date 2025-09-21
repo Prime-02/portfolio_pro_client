@@ -620,6 +620,25 @@ export const ThemeProvider = ({
     } catch (error) {
       console.error("Error fetching user settings:", error);
       setSettings(defaultSettings);
+      setLightTheme(initialLightTheme);
+      setDarkTheme(initialDarkTheme);
+      setAccentColor(initialAccentColor);
+      setLanguage(initialLanguage);
+      setThemeVariant(defaultThemeVariant);
+      _setLoader(() => {
+        if (typeof initialLoader === "string") {
+          return initialLoader as Loader;
+        }
+        return initialLoader.style as Loader;
+      });
+      initialLoadComplete.current = true;
+      setLayoutLoaded(true);
+      setTimeout(() => {
+        updateSavedState();
+      }, 100);
+      setTimeout(() => {
+        saveChanges();
+      }, 200);
     } finally {
       setLoading("fething_user_settings");
     }

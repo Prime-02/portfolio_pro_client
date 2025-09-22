@@ -24,8 +24,8 @@ const UsersLayout = ({
       const token = localStorage.getItem("session_token");
       if (token) {
         setAccessToken(token);
+        setIsInitialized(true); // Mark as initialized regardless of token presence
       }
-      setIsInitialized(true); // Mark as initialized regardless of token presence
     }
   }, []); // Removed setAccessToken from dependencies
 

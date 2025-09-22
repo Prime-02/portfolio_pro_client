@@ -11,7 +11,6 @@ import { PathUtil } from "@/app/components/utilities/syncFunctions/syncs";
 import { useGlobalState } from "@/app/globalStateProvider";
 import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import OAuthButton from "./OAuthButton";
 import VercelButton from "./vercel/VercelButton";
 import Modal from "@/app/components/containers/modals/Modal";

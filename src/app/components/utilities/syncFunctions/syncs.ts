@@ -337,11 +337,11 @@ export type ImageSource = string | null | undefined;
 
 export function getImageSrc(
   profilePicture: ImageSource,
-  initials?: string
+  initials: string = "User"
 ): string {
   // Handle cases where profilePicture is null, undefined, or empty string
   if (!profilePicture) {
-    return `https://avatar.oxro.io/avatar.svg?name=${initials}`;
+    return `https://avatar.oxro.io/avatar.svg?name=${initials.toUpperCase()}`;
   }
 
   // Handle StaticImageData (imported images)
@@ -359,7 +359,7 @@ export function getImageSrc(
   }
 
   // Fallback to default image
-  return `https://avatar.oxro.io/avatar.svg?name=${initials}`;
+  return `https://avatar.oxro.io/avatar.svg?name=${initials?.toUpperCase()}`;
 }
 
 /**
@@ -1300,13 +1300,13 @@ export function generateQueryParams(
   params: Record<string, string | number | boolean | null | undefined> = {}
 ): string {
   const searchParams = new URLSearchParams();
-  
+
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== "") {
       searchParams.append(key, String(value));
     }
   });
-  
+
   const queryString = searchParams.toString();
   return queryString ? `?${queryString}` : "";
 }

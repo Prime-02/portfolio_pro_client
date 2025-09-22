@@ -20,13 +20,13 @@ const Main = () => {
     resync:
       "Resync to import new projects and designs or switch connected Canva accounts. Click 'Continue with Canva' to proceed.",
     disconnect:
-      "This will disconnect your Vercel account. All associated projects and design data will be removed. Click 'Continue' to proceed.",
+      "This will disconnect your Canva account. All associated projects and design data will be removed. Click 'Continue' to proceed.",
   };
 
   return (
     <PlatformIntegration
       platform="canva"
-      importEndpoint={`${V1_BASE_URL}/vercel/import`}
+      importEndpoint={`${V1_BASE_URL}/canva/import`}
       projectsNames={projectsNames}
       clearProjectsNames={clearProjectsNames}
       headerTexts={headerTexts}

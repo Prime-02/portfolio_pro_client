@@ -6,12 +6,16 @@ import {
   RefreshCcw,
   ImportIcon,
 } from "lucide-react";
-import { getColorShade } from "@/app/components/utilities/syncFunctions/syncs";
+import {
+  getColorShade,
+  PathUtil,
+} from "@/app/components/utilities/syncFunctions/syncs";
 import Button from "@/app/components/buttons/Buttons";
 import Image from "next/image";
 import Popover from "@/app/components/containers/divs/PopOver";
 import { GiCancel } from "react-icons/gi";
 import { useTheme } from "@/app/components/theme/ThemeContext ";
+import { useGlobalState } from "@/app/globalStateProvider";
 
 export interface ConnectionPlatformsCardIconProps {
   hasTheme: boolean;
@@ -137,6 +141,7 @@ const ManagePopUp = ({
 
 const PlatformCard = (props: ConnectionPlatformsCardProps) => {
   const { theme } = useTheme();
+  const { currentPath, router } = useGlobalState();
   const {
     platform,
     description,
@@ -232,8 +237,14 @@ const PlatformCard = (props: ConnectionPlatformsCardProps) => {
             text={`Connect ${platform}`}
             icon={<LucidePlus size={16} />}
             onClick={() => {
-              // Add connection logic here
-              console.log(`Connecting to ${platform}...`);
+              const baseUrl = PathUtil.removeLastSegment(currentPath);
+
+              router.push(
+                PathUtil.buildUrlWithQuery(`${baseUrl}/import`, {
+                  platform: platform.toLowerCase(),
+                  resync: true,
+                })
+              );
             }}
           />
         )}

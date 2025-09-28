@@ -30,8 +30,6 @@ const AvailablePlatforms = () => {
     loadProjectStats();
   }, [accessToken]);
 
-  
-
   // Helper function to check if a platform is connected
   const isPlatformConnected = (platformKey: string): boolean => {
     return platform_projects.hasOwnProperty(platformKey);
@@ -177,15 +175,7 @@ const AvailablePlatforms = () => {
         )}
       </div>
 
-      {/* Platform Cards */}
-      {/* Loading state */}
-      {loading.includes("loading_project_stats") ? (
-        LoaderComponent && (
-          <div className="w-full h-full items-center mt-6 justify-center flex">
-            <LoaderComponent color={accentColor.color} />
-          </div>
-        )
-      ) : filteredPlatforms.length > 0 ? (
+      {filteredPlatforms.length > 0 ? (
         <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredPlatforms.map((platform, index) => {
             const isConnected = isPlatformConnected(platform.platformKey);

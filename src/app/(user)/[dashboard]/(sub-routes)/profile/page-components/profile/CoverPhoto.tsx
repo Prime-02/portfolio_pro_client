@@ -24,15 +24,16 @@ const CoverPhoto: React.FC<CoverPhotoProps> = ({
       }}
       className={className}
     >
-      {userProfile.profile_picture && (
-        <Image
-          src={userProfile.profile_picture}
-          width={1000}
-          height={1000}
-          alt="Cover Photo"
-          className="w-full h-full object-cover object-center"
-        />
-      )}
+      <Image
+        src={
+          userProfile.profile_picture ||
+          "https://res.cloudinary.com/df1gkpvzj/image/upload/v1758226616/profolio-05_ioihfh.png"
+        }
+        width={1000}
+        height={1000}
+        alt="Cover Photo"
+        className="w-full h-full object-cover object-center"
+      />
     </div>
   );
 };

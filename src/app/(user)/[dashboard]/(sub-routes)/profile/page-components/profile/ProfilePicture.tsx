@@ -1,7 +1,6 @@
 // components/profile/ProfilePicture.tsx
 import Image from "next/image";
 import React from "react";
-import ProfileImageSkeleton from "@/app/components/containers/skeletons/ProfileImageSkeleton";
 import { User } from "@/app/components/types and interfaces/UserAndProfile";
 import { ModalType } from "@/app/components/types and interfaces/userprofile";
 import { useGlobalState } from "@/app/globalStateProvider";
@@ -27,22 +26,13 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
       }}
       className={className}
     >
-      {userData?.profile_picture ? (
-        <Image
-          src={getImageSrc(userData.profile_picture, userData.username)}
-          width={1000}
-          height={1000}
-          alt="Profile Picture"
-          className="w-full h-full  object-cover object-center"
-        />
-      ) : (
-        <ProfileImageSkeleton
-          size="full"
-          rounded="none"
-          className="w-full h-full"
-          showIcon={true}
-        />
-      )}
+      <Image
+        src={getImageSrc(userData.profile_picture, userData.username || "Üser")}
+        width={1000}
+        height={1000}
+        alt="Profile Picture"
+        className="w-full h-full  object-cover object-center"
+      />
     </span>
   );
 };

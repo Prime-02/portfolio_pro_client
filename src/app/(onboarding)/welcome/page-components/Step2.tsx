@@ -195,7 +195,7 @@ const Step2 = () => {
         </div>
 
         {/* Job Seeking Status and Open to Work */}
-        <div className="flex flex-col gap-y-3 md:justify-between md:flex-row gap-x-2">
+        <div className="flex flex-col gap-y-3 md:justify-between items-center md:flex-row gap-x-2">
           <span className="min-w-[70%]">
             <Textinput
               loading={loading.includes("fetching_pro_info")}

@@ -14,13 +14,13 @@ import {
 import { useGlobalState } from "@/app/globalStateProvider";
 import { useProjectsStore } from "@/app/stores/project_stores/ProjectsStore";
 import Image from "next/image";
-import React, { useState } from "react";
+import React from "react";
 
 const AllProjectsCard = (prop: AllProjectsDisplayCardProps) => {
-  const { checkParams, viewportWidth } = useGlobalState();
+  const { checkParams, viewportWidth, extendRoute, userData } =
+    useGlobalState();
   const { theme, isDarkMode } = useTheme();
   const { toggleProjectName, projectsNames } = useProjectsStore();
-  const [isHovered, setIsHovered] = useState(false);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -74,8 +74,9 @@ const AllProjectsCard = (prop: AllProjectsDisplayCardProps) => {
 
   return (
     <div
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      onClick={() => {
+        extendRoute(prop.id);
+      }}
       className={`
         group relative cursor-pointer
         border transition-all duration-300 ease-in-out rounded-xl
@@ -84,7 +85,7 @@ const AllProjectsCard = (prop: AllProjectsDisplayCardProps) => {
             ? "border-[var(--accent)] shadow-lg scale-[1.02] ring-2 ring-[var(--accent)]/20"
             : "border-[var(--accent)]/20 hover:border-[var(--accent)]/40"
         }
-        ${isHovered ? "shadow-xl transform scale-[1.01]" : "shadow-md"}
+        "hover:shadow-xl hover:transform hover:scale-[1.01] shadow-md
         flex overflow-hidden
         ${isListView ? "flex-row gap-0 items-center min-h-[140px]" : "flex-col gap-0 min-h-[320px]"}
       `}
@@ -118,7 +119,7 @@ const AllProjectsCard = (prop: AllProjectsDisplayCardProps) => {
         <div
           className={`
           absolute inset-0 bg-black/20 transition-opacity duration-300
-          ${isHovered ? "opacity-100" : "opacity-0"}
+          hover:opacity-100 opacity-0
         `}
         />
 
@@ -183,8 +184,7 @@ const AllProjectsCard = (prop: AllProjectsDisplayCardProps) => {
         <div className="space-y-3">
           <div className="flex items-start justify-between gap-3">
             <h1
-              className={`font-bold capitalize leading-tight transition-colors duration-200 ${
-                isHovered ? "text-[var(--accent)]" : ""
+              className={`font-bold capitalize leading-tight transition-colors duration-200 hover:text-[var(--accent)]
               } ${isListView ? "text-lg line-clamp-2" : "text-xl line-clamp-2"}`}
             >
               {replaceCharacters(["-", "_"], [" ", " "], prop.project_name)}
@@ -265,7 +265,7 @@ const AllProjectsCard = (prop: AllProjectsDisplayCardProps) => {
         <div className="text-xs opacity-50 flex items-center justify-between">
           <span>{formatDate(prop.last_updated)}</span>
           <div
-            className={`transition-transform duration-200 ${isHovered ? "translate-x-1" : ""} flex`}
+            className={`transition-transform duration-200 hover:translate-x-1 flex`}
             style={{ position: "relative" }}
           >
             {prop.user_associations.slice(0, 6).map((collab, i) => (

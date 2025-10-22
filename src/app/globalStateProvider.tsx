@@ -45,6 +45,12 @@ const defaultUserData: UserData = {
   updated_at: "",
 };
 
+// Token storage interface
+interface TokenData {
+  token: string;
+  timestamp: number;
+}
+
 // Define the type for the global state
 interface GlobalStateContextType {
   userData: UserData;
@@ -84,6 +90,54 @@ const GlobalStateContext = createContext<GlobalStateContextType | undefined>(
   undefined
 );
 
+// Constants
+const TOKEN_STORAGE_KEY = "session_token_data";
+const TOKEN_EXPIRY_DAYS = 7;
+const TOKEN_EXPIRY_MS = TOKEN_EXPIRY_DAYS * 24 * 60 * 60 * 1000;
+
+// Utility function to save token with timestamp
+const saveTokenWithTimestamp = (token: string): void => {
+  if (typeof window === "undefined") return;
+
+  const tokenData: TokenData = {
+    token,
+    timestamp: Date.now(),
+  };
+  localStorage.setItem(TOKEN_STORAGE_KEY, JSON.stringify(tokenData));
+};
+
+// Utility function to retrieve and validate token
+const getAndValidateToken = (): string | null => {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const storedData = localStorage.getItem(TOKEN_STORAGE_KEY);
+    if (!storedData) return null;
+
+    const tokenData: TokenData = JSON.parse(storedData);
+    const currentTime = Date.now();
+    const timeDifference = currentTime - tokenData.timestamp;
+
+    // Check if token has expired (over 7 days)
+    if (timeDifference > TOKEN_EXPIRY_MS) {
+      localStorage.removeItem(TOKEN_STORAGE_KEY);
+      return null;
+    }
+
+    return tokenData.token;
+  } catch (error) {
+    console.error("Error validating token:", error);
+    localStorage.removeItem(TOKEN_STORAGE_KEY);
+    return null;
+  }
+};
+
+// Utility function to clear token
+const clearToken = (): void => {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(TOKEN_STORAGE_KEY);
+};
+
 // Provider component
 export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
   const [userData, setUserData] = useState<UserData>(defaultUserData);
@@ -92,7 +146,7 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
   const [currentUser, setCurrentUser] = useState<string | undefined>("");
   const [viewportWidth, setViewportWidth] = useState(0);
   const [isOnline, setIsOnline] = useState<boolean>(true);
-  const searchParams = useSearchParams(); // current query params
+  const searchParams = useSearchParams();
   const router = useRouter();
   const currentPath = usePathname();
   const pathname = usePathname();
@@ -105,17 +159,14 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
   // Effect to monitor online/offline status
   useEffect(() => {
     if (typeof window !== "undefined") {
-      // Set initial online status
       setIsOnline(navigator.onLine);
 
-      // Add event listeners for online/offline events
       const handleOnline = () => setIsOnline(true);
       const handleOffline = () => setIsOnline(false);
 
       window.addEventListener("online", handleOnline);
       window.addEventListener("offline", handleOffline);
 
-      // Cleanup event listeners
       return () => {
         window.removeEventListener("online", handleOnline);
         window.removeEventListener("offline", handleOffline);
@@ -184,10 +235,16 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
   // Effect for initial load (mount)
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const token = localStorage.getItem("session_token");
-      if (token) {
-        setAccessToken(token);
-        updateUserData(token);
+      const validToken = getAndValidateToken();
+      
+      if (validToken) {
+        setAccessToken(validToken);
+        updateUserData(validToken);
+      } else {
+        // Token expired or not found, redirect to login
+        if (accessToken === "") {
+          router.push("/user-auth?auth_mode=login");
+        }
       }
     }
   }, []);
@@ -195,9 +252,9 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (typeof window !== "undefined") {
       if (accessToken) {
-        localStorage.setItem("session_token", accessToken);
+        saveTokenWithTimestamp(accessToken);
       } else {
-        localStorage.removeItem("session_token");
+        clearToken();
       }
     }
     console.log("Token: ", accessToken);
@@ -205,9 +262,8 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
 
   const mockLogOut = () => {
     setAccessToken("");
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("session_token");
-    }
+    clearToken();
+
     const newUserData: UserData = {
       id: "",
       username: "",
@@ -249,19 +305,17 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
   );
 
   const extendRoute = (segment: string) => {
-    const newPath = `${currentPath}/${segment}`; // Constructs '/desktop/home'
-    router.push(newPath, { scroll: false }); // Navigates to the new path
+    const newPath = `${currentPath}/${segment}`;
+    router.push(newPath, { scroll: false });
   };
 
   const extendRouteWithQuery = (newParams: Record<string, string>) => {
     const params = new URLSearchParams(searchParams.toString());
 
-    // Append new query params
     Object.entries(newParams).forEach(([key, value]) => {
       params.set(key, value);
     });
 
-    // Construct the new URL
     const newUrl = `${pathname}?${params.toString()}`;
     router.push(newUrl, { scroll: false });
   };
@@ -273,7 +327,7 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
   const unauthorizedWarning = () => {
     if (!accessToken) {
       toast.warning(
-        "You're not supposed to be here without permission, please proceed to logn or sign up "
+        "You're not supposed to be here without permission, please proceed to login or sign up"
       );
       return;
     }
@@ -306,7 +360,7 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
     const currentUserName = getCurrentUrl("pathSegment", 0);
     if (!currentUserName) {
       toast.error(
-        "Something went wrong... please as for the link to be resent "
+        "Something went wrong... please ask for the link to be resent"
       );
       setCurrentUser(undefined);
       return;

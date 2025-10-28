@@ -14,7 +14,7 @@ import EmptyState from "@/app/components/containers/cards/EmptyState";
 import { useLoadProjectStats } from "@/app/stores/project_stores/ProjectStats";
 
 const AllProjectsDisplay = () => {
-  const { checkParams, accessToken, loading, setLoading } = useGlobalState();
+  const { checkParams, accessToken, loading, setLoading, isOnline, isLoading } = useGlobalState();
   const { loader, accentColor } = useTheme();
   const LoaderComponent = getLoader(loader) || null;
   const loadProjectStats = useLoadProjectStats();
@@ -66,12 +66,10 @@ const AllProjectsDisplay = () => {
     },
     [
       accessToken,
-      setLoading,
       filter,
       query,
       sort,
       sortDirection,
-      getAllProjects,
     ]
   );
 
@@ -96,14 +94,14 @@ const AllProjectsDisplay = () => {
   ]);
 
   useEffect(() => {
-    if (accessToken) {
+    if (isOnline) {
       fetchProjects();
       loadProjectStats();
     }
-  }, [accessToken, fetchProjects]);
+  }, [isOnline]);
 
   // Check if initial loading
-  const isInitialLoading = loading.includes("fetching_projects") && page === 1;
+  const isInitialLoading = isLoading("fetching_projects") && page === 1;
 
   return (
     <div className="flex relative flex-col gap-y-3 ">

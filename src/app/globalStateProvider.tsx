@@ -83,6 +83,7 @@ interface GlobalStateContextType {
   viewportWidth: number;
   setViewportWidth: (value: number) => void;
   isOnline: boolean;
+  isLoading: (value: string) => boolean;
 }
 
 // Context initialization
@@ -99,11 +100,30 @@ const TOKEN_EXPIRY_MS = TOKEN_EXPIRY_DAYS * 24 * 60 * 60 * 1000;
 const saveTokenWithTimestamp = (token: string): void => {
   if (typeof window === "undefined") return;
 
-  const tokenData: TokenData = {
-    token,
-    timestamp: Date.now(),
-  };
-  localStorage.setItem(TOKEN_STORAGE_KEY, JSON.stringify(tokenData));
+  try {
+    // Check if token already exists in localStorage
+    const existingData = localStorage.getItem(TOKEN_STORAGE_KEY);
+
+    if (existingData) {
+      const existingTokenData: TokenData = JSON.parse(existingData);
+
+      // If the token is exactly the same, don't update anything (preserve timestamp)
+      if (existingTokenData.token === token) {
+        console.log("Token unchanged, preserving original timestamp");
+        return;
+      }
+    }
+
+    // New token detected, save with new timestamp
+    const tokenData: TokenData = {
+      token,
+      timestamp: Date.now(),
+    };
+    localStorage.setItem(TOKEN_STORAGE_KEY, JSON.stringify(tokenData));
+    console.log("New token saved with fresh timestamp");
+  } catch (error) {
+    console.error("Error saving token with timestamp:", error);
+  }
 };
 
 // Utility function to retrieve and validate token
@@ -236,7 +256,7 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (typeof window !== "undefined") {
       const validToken = getAndValidateToken();
-      
+
       if (validToken) {
         setAccessToken(validToken);
         updateUserData(validToken);
@@ -257,7 +277,34 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
         clearToken();
       }
     }
-    console.log("Token: ", accessToken);
+
+    // Log token with timestamp and days passed
+    const storedData =
+      typeof window !== "undefined"
+        ? localStorage.getItem(TOKEN_STORAGE_KEY)
+        : null;
+    if (storedData && accessToken) {
+      try {
+        const tokenData: TokenData = JSON.parse(storedData);
+        const daysPassed = (
+          (Date.now() - tokenData.timestamp) /
+          (24 * 60 * 60 * 1000)
+        ).toFixed(2);
+        const timestamp = new Date(tokenData.timestamp).toLocaleString();
+        console.log(
+          "Token: ",
+          accessToken,
+          "\nTimestamp:",
+          timestamp,
+          "\nDays Passed:",
+          daysPassed
+        );
+      } catch (error) {
+        console.log("Token: ", accessToken);
+      }
+    } else {
+      console.log("Token: ", accessToken);
+    }
   }, [accessToken]);
 
   const mockLogOut = () => {
@@ -289,20 +336,25 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
    * @param value the string you pass in to either add to the array or remove it
    * @param setArray the optional setter function (as the _setLoader is already present)
    */
-  const setLoading = useCallback(
-    (
-      value: string,
-      setArray: Dispatch<SetStateAction<string[]>> = _setLoading
-    ): void => {
-      setArray((prevArray) => {
-        if (prevArray.includes(value)) {
-          return prevArray.filter((item) => item !== value);
-        }
-        return [...prevArray, value];
-      });
-    },
-    []
-  );
+  const setLoading = (
+    value: string,
+    setArray: Dispatch<SetStateAction<string[]>> = _setLoading
+  ): void => {
+    setArray((prevArray) => {
+      if (prevArray.includes(value)) {
+        return prevArray.filter((item) => item !== value);
+      }
+      return [...prevArray, value];
+    });
+  };
+
+  const isLoading = (value: string) => {
+    return loading.includes(value);
+  };
+
+  useEffect(() => {
+    console.log("Current Loading State:", loading);
+  }, [loading]);
 
   const extendRoute = (segment: string) => {
     const newPath = `${currentPath}/${segment}`;
@@ -432,6 +484,7 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
     viewportWidth,
     setViewportWidth,
     isOnline,
+    isLoading,
   };
 
   return (

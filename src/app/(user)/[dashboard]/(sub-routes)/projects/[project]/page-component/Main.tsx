@@ -124,7 +124,6 @@ const Main = () => {
 
   return (
     <div>
-      {projectId}
       <Modal
         isOpen={projectsNames.length === 1}
         onClose={() => clearProjectsNames}

@@ -21,20 +21,20 @@ const authComponents: Record<AuthMode, React.ComponentType> = {
 };
 
 const UserAuth = () => {
-  const { extendRouteWithQuery, searchParams } = useGlobalState();
+  const { extendRouteWithQuery, checkParams, currentPathWithQuery } = useGlobalState();
   const [authMode, setAuthMode] = useState<AuthModeOptions>({ mode: "signup" });
   const [direction, setDirection] = useState(0);
 
   // Read initial auth mode from URL query parameter
   useEffect(() => {
-    const modeFromQuery = searchParams.get("auth_mode");
+    const modeFromQuery = checkParams("auth_mode");
     if (
       modeFromQuery &&
       ["signup", "login", "password-retrieval"].includes(modeFromQuery)
     ) {
       setAuthMode({ mode: modeFromQuery as AuthMode });
     }
-  }, [searchParams]);
+  }, [currentPathWithQuery]);
 
   // Animation variants for sliding
   const slideVariants = {

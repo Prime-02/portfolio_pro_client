@@ -1,6 +1,5 @@
 "use client"; // Required for hooks
 import OAuthButton from "../[platform]/platforms/OAuthButton";
-import VercelButton from "../[platform]/platforms/vercel/VercelButton";
 
 const OAuth = () => {
   return (

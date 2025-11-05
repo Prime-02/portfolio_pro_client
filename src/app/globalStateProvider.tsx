@@ -252,32 +252,35 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
     await fetchUserData(token);
   };
 
+  // Wrapper function to handle token updates with storage
+  const updateAccessToken = useCallback((token: string) => {
+    setAccessToken(token);
+    if (token) {
+      saveTokenWithTimestamp(token);
+    } else {
+      clearToken();
+    }
+  }, []);
+
   // Effect for initial load (mount)
   useEffect(() => {
     if (typeof window !== "undefined") {
       const validToken = getAndValidateToken();
 
       if (validToken) {
-        setAccessToken(validToken);
+        setAccessToken(validToken); // Don't save here - just load from storage
         updateUserData(validToken);
       } else {
         // Token expired or not found, redirect to login
-        if (accessToken === "") {
+        if (accessToken === "" && !checkParams("auth_mode")) {
           router.push("/user-auth?auth_mode=login");
         }
       }
     }
   }, []);
 
+  // Effect to log token info (no saving here)
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      if (accessToken) {
-        saveTokenWithTimestamp(accessToken);
-      } else {
-        clearToken();
-      }
-    }
-
     // Log token with timestamp and days passed
     const storedData =
       typeof window !== "undefined"
@@ -301,6 +304,7 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
         );
       } catch (error) {
         console.log("Token: ", accessToken);
+        console.log("Token Error: ", error);
       }
     } else {
       console.log("Token: ", accessToken);
@@ -460,7 +464,7 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
     userData,
     mockLogOut,
     setUserData,
-    setAccessToken,
+    setAccessToken: updateAccessToken, // Use wrapper function
     accessToken,
     loading,
     setLoading,

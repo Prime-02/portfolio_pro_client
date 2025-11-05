@@ -22,7 +22,7 @@ interface ActionItem {
   popoverContent?: ReactNode;
 }
 
-const ProjectsActions = () => {
+const ProjectsActions = ({ id }: { id?: string }) => {
   const { projectsNames, clearProjectsNames, getAllProjects } =
     useProjectsStore();
   const { loading, setLoading, accessToken, currentPath, router } =
@@ -56,6 +56,9 @@ const ProjectsActions = () => {
         getAllProjects({ accessToken, setLoading });
         loadProjectStats();
         clearProjectsNames();
+        if (id) {
+          router.back();
+        }
       }
     } catch (error) {
       toast.error(
@@ -77,7 +80,7 @@ const ProjectsActions = () => {
       action: () => {
         router.push(`${currentPath}/${projectsNames[0]}`);
       },
-      showWhen: !isMultiple,
+      showWhen: !isMultiple && id !== projectsNames[0],
       disabled: !hasSelection,
       description: "Open selected project",
     },
@@ -85,12 +88,24 @@ const ProjectsActions = () => {
       name: "Edit",
       icon: Edit,
       action: () => {
-        router.push(
-          PathUtil.buildUrlWithQuery(`${currentPath}/import`, {
-            mode: "update",
-            projectId: projectsNames[0],
-          })
-        );
+        if (id) {
+          router.push(
+            PathUtil.buildUrlWithQuery(
+              `${PathUtil.removeLastSegment(currentPath)}/import`,
+              {
+                mode: "update",
+                projectId: projectsNames[0],
+              }
+            )
+          );
+        } else {
+          router.push(
+            PathUtil.buildUrlWithQuery(`${currentPath}/import`, {
+              mode: "update",
+              projectId: projectsNames[0],
+            })
+          );
+        }
       },
       showWhen: !isMultiple,
       disabled: !hasSelection,

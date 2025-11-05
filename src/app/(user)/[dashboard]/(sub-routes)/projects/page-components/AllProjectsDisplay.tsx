@@ -14,7 +14,7 @@ import EmptyState from "@/app/components/containers/cards/EmptyState";
 import { useLoadProjectStats } from "@/app/stores/project_stores/ProjectStats";
 
 const AllProjectsDisplay = () => {
-  const { checkParams, accessToken, loading, setLoading, isOnline, isLoading } = useGlobalState();
+  const { checkParams, accessToken, setLoading, isOnline, isLoading } = useGlobalState();
   const { loader, accentColor } = useTheme();
   const LoaderComponent = getLoader(loader) || null;
   const loadProjectStats = useLoadProjectStats();
@@ -94,11 +94,11 @@ const AllProjectsDisplay = () => {
   ]);
 
   useEffect(() => {
-    if (isOnline) {
+    if (isOnline && accessToken) {
       fetchProjects();
       loadProjectStats();
     }
-  }, [isOnline]);
+  }, [isOnline, accessToken]);
 
   // Check if initial loading
   const isInitialLoading = isLoading("fetching_projects") && page === 1;

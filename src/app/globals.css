@@ -137,7 +137,7 @@ h6 {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: var(--foreground);
+  background-color: var(--accent);
   border-radius: 0.25rem;
   opacity: 0
 }

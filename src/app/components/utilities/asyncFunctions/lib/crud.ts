@@ -5,63 +5,42 @@ import {
   removeEmptyStringValues,
 } from "../../syncFunctions/syncs";
 import { toast } from "@/app/components/toastify/Toastify";
+import { V1_BASE_URL } from "../../indices/urls";
+
+// Helper function to construct full URL
+const constructFullUrl = (url: string): string => {
+  // Check if URL already contains /api/ or is a full URL (starts with http)
+  if (
+    url.includes("/api/") ||
+    url.startsWith("http://") ||
+    url.startsWith("https://")
+  ) {
+    return url;
+  }
+
+  // Remove leading slash if present to avoid double slashes
+  const cleanUrl = url.startsWith("/") ? url.slice(1) : url;
+
+  // Ensure V1_BASE_URL doesn't end with slash and cleanUrl doesn't start with one
+  const baseUrl = V1_BASE_URL.endsWith("/")
+    ? V1_BASE_URL.slice(0, -1)
+    : V1_BASE_URL;
+
+  return `${baseUrl}/${cleanUrl}`;
+};
 
 // Define a more specific type for form data values
 export type FormDataValue = string | number | boolean | File | Blob;
 
 // Enhanced interface with better type constraints
 export interface PostAllDataParams<T = Record<string, unknown>> {
-  access?: string;
+  access?: string; // Optional - pass from component when authentication is needed
   data?: T | null;
   url: string;
   useFormData?: boolean;
   message?: string;
   intToString?: boolean;
 }
-
-// Helper type to ensure data is serializable
-// type SerializableData = Record<
-//   string,
-//   FormDataValue | FormDataValue[] | Record<string, unknown>
-// >;
-
-// Enhanced type guard that handles nested objects and arrays
-// function isSerializableData(data: unknown): data is SerializableData {
-//   if (typeof data !== "object" || data === null) {
-//     return false;
-//   }
-
-//   return Object.values(data).every((value) => {
-//     if (Array.isArray(value)) {
-//       return value.every(
-//         (item) =>
-//           typeof item === "string" ||
-//           typeof item === "number" ||
-//           typeof item === "boolean" ||
-//           item instanceof File ||
-//           item instanceof Blob
-//       );
-//     }
-
-//     // Allow nested objects (they'll be stringified)
-//     if (
-//       typeof value === "object" &&
-//       value !== null &&
-//       !(value instanceof File) &&
-//       !(value instanceof Blob)
-//     ) {
-//       return true; // We'll stringify this
-//     }
-
-//     return (
-//       typeof value === "string" ||
-//       typeof value === "number" ||
-//       typeof value === "boolean" ||
-//       value instanceof File ||
-//       value instanceof Blob
-//     );
-//   });
-// }
 
 export const PostAllData = async <
   T extends Record<string, unknown>,
@@ -74,6 +53,12 @@ export const PostAllData = async <
   intToString = true,
 }: PostAllDataParams<T>): Promise<R> => {
   try {
+    // Use provided access token (optional)
+    const token = access;
+
+    // Construct full URL
+    const fullUrl = constructFullUrl(url);
+
     let requestData: T | FormData | undefined = data
       ? intToString
         ? (convertNumericStrings(removeEmptyStringValues(data)) as T)
@@ -81,11 +66,13 @@ export const PostAllData = async <
       : undefined;
 
     const headers: Record<string, string> = {
-      ...(access && {
-        Authorization: `Bearer ${access}`,
-        "ngrok-skip-browser-warning": "true",
-      }),
+      "ngrok-skip-browser-warning": "true",
     };
+
+    // Only add Authorization header if token is provided
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
 
     if (useFormData && data) {
       // Skip the type guard check - just build FormData directly
@@ -168,9 +155,10 @@ export const PostAllData = async <
       headers["Content-Type"] = "application/json";
     }
 
-    console.log("Making request with:", { url, headers: Object.keys(headers) });
+    console.log("Making request to:", fullUrl);
+    console.log("Request headers:", Object.keys(headers));
 
-    const response: AxiosResponse<R> = await axios.post(url, requestData, {
+    const response: AxiosResponse<R> = await axios.post(fullUrl, requestData, {
       headers,
     });
 
@@ -192,7 +180,7 @@ export const PostAllData = async <
 
 // Enhanced interface with better type constraints
 interface GetAllDataParams<T = Record<string, unknown>> {
-  access?: string;
+  access?: string; // Optional - pass from component when authentication is needed
   url: string;
   type?: string;
   data?: T;
@@ -205,6 +193,12 @@ export const GetAllData = async <T = Record<string, unknown>, R = unknown>({
   data = {} as T,
 }: GetAllDataParams<T>): Promise<R> => {
   try {
+    // Use provided access token (optional)
+    const token = access;
+
+    // Construct full URL
+    const fullUrl = constructFullUrl(url);
+
     let userTimezone = "UTC";
     try {
       userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -215,17 +209,26 @@ export const GetAllData = async <T = Record<string, unknown>, R = unknown>({
 
     const config: AxiosRequestConfig = {
       headers: {
-        Authorization: `Bearer ${access}`,
         "ngrok-skip-browser-warning": "true",
       },
     };
+
+    // Only add Authorization header if token is provided
+    if (token) {
+      config.headers = {
+        ...config.headers,
+        Authorization: `Bearer ${token}`,
+      };
+    }
 
     // Only add params if data is provided and not empty
     if (data && typeof data === "object" && Object.keys(data).length > 0) {
       config.params = data;
     }
 
-    const response: AxiosResponse<R> = await axios.get(url, config);
+    console.log("Making GET request to:", fullUrl);
+
+    const response: AxiosResponse<R> = await axios.get(fullUrl, config);
     return response.data;
   } catch (error) {
     console.log(`Error fetching ${type}:`, error);
@@ -245,7 +248,7 @@ export const GetAllData = async <T = Record<string, unknown>, R = unknown>({
 
 // Enhanced interface with better type constraints
 interface UpdateParams<T = Record<string, unknown>> {
-  access: string;
+  access?: string; // Optional - pass from component when authentication is needed
   field: T;
   url: string;
   method?: "patch" | "put";
@@ -267,6 +270,12 @@ export const UpdateAllData = async <
   message = "Updated successfully",
 }: UpdateParams<T>): Promise<R> => {
   try {
+    // Use provided access token (optional)
+    const token = access;
+
+    // Construct full URL
+    const fullUrl = constructFullUrl(url);
+
     // Determine the Axios method based on the `method` parameter
     const axiosMethod =
       method.toLowerCase() === "put" ? axios.put : axios.patch;
@@ -278,11 +287,13 @@ export const UpdateAllData = async <
       : undefined;
 
     const headers: Record<string, string> = {
-      ...(access && {
-        Authorization: `Bearer ${access}`,
-        "ngrok-skip-browser-warning": "true",
-      }),
+      "ngrok-skip-browser-warning": "true",
     };
+
+    // Only add Authorization header if token is provided
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
 
     if (useFormData && field) {
       // Skip the type guard check - just build FormData directly
@@ -365,10 +376,11 @@ export const UpdateAllData = async <
       headers["Content-Type"] = "application/json";
     }
 
-    console.log("Making request with:", { url, headers: Object.keys(headers) });
+    console.log("Making update request to:", fullUrl);
+    console.log("Request headers:", Object.keys(headers));
 
     // Make the request
-    const response: AxiosResponse<R> = await axiosMethod(url, requestData, {
+    const response: AxiosResponse<R> = await axiosMethod(fullUrl, requestData, {
       headers,
     });
 
@@ -398,7 +410,7 @@ export const UpdateAllData = async <
 // Enhanced interface with better type constraints
 interface DeleteParams<T = Record<string, unknown>> {
   url: string;
-  access: string;
+  access?: string; // Optional - pass from component when authentication is needed
   message?: string;
   data?: T;
 }
@@ -410,12 +422,26 @@ export const DeleteData = async <T = Record<string, unknown>, R = unknown>({
   data,
 }: DeleteParams<T>): Promise<R> => {
   try {
-    const response: AxiosResponse<R> = await axios.delete(url, {
+    // Use provided access token (optional)
+    const token = access;
+
+    // Construct full URL
+    const fullUrl = constructFullUrl(url);
+
+    console.log("Making DELETE request to:", fullUrl);
+
+    const headers: Record<string, string> = {
+      "ngrok-skip-browser-warning": "true",
+    };
+
+    // Only add Authorization header if token is provided
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const response: AxiosResponse<R> = await axios.delete(fullUrl, {
       data, // Request payload
-      headers: {
-        Authorization: `Bearer ${access}`,
-        "ngrok-skip-browser-warning": "true",
-      },
+      headers,
     });
 
     if (message !== "custom") {

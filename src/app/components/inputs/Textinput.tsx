@@ -47,7 +47,7 @@ interface TextInputProps {
   pattern?: string;
   step?: number;
   icon?: ReactNode;
-  disabled?: boolean
+  disabled?: boolean;
 }
 
 export const Textinput: React.FC<TextInputProps> = ({
@@ -79,7 +79,7 @@ export const Textinput: React.FC<TextInputProps> = ({
   pattern,
   step,
   icon,
-  disabled
+  disabled,
 }) => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const { theme } = useTheme();
@@ -257,6 +257,8 @@ interface TextAreaProps {
   desc?: string | Element;
   loading?: boolean;
   required?: boolean;
+  rows?: number;
+  disabled?: boolean;
 }
 
 export const TextArea: React.FC<TextAreaProps> = ({
@@ -273,6 +275,8 @@ export const TextArea: React.FC<TextAreaProps> = ({
   desc,
   loading = false,
   required = false,
+  rows = 3,
+  disabled = false,
 }) => {
   const { theme } = useTheme();
   return (
@@ -290,6 +294,8 @@ export const TextArea: React.FC<TextAreaProps> = ({
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                 onChange(e.target.value)
               }
+              disabled={disabled}
+              rows={rows}
               id={id}
               className={`${className} rounded-2xl block px-2.5 pb-2.5 pt-4 w-full text-sm bg-transparent border-1 border-gray-300 appearance-none dark:border-gray-600 dark:focus:border-[var(--accent)] focus:outline-none focus:ring-0 focus:border-[var(--accent)] peer`}
               placeholder=" "
@@ -326,7 +332,7 @@ export const TextArea: React.FC<TextAreaProps> = ({
           </>
         )}
       </div>
-        <p className="text-xs opacity-80">{desc as ReactNode}</p>
+      <p className="text-xs opacity-80">{desc as ReactNode}</p>
     </>
   );
 };

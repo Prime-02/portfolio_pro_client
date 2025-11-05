@@ -122,5 +122,43 @@ export interface AllProjectsDisplayCardProps {
   last_updated: string;
   created_at: string;
   user_associations: UserAssocProps[];
+  likes: ProjectLike[];
+  comments: ProjectComment[];
   [key: string]: unknown;
+}
+
+export interface ProjectStatistics {
+  project_id: string;
+  likes_count: number;
+  comments_count: number;
+  top_level_comments_count: number;
+  total_engagement: number;
+}
+
+export interface ProjectLike {
+  like_id: string;
+  user_id: string;
+  username: string;
+  profile_picture: string;
+  liked_at: string; // ISO 8601 date string
+}
+
+export interface ProjectComment {
+  comment_id: string;
+  user_id: string;
+  username: string;
+  profile_picture: string;
+  content: string;
+  parent_comment_id: string | null;
+  created_at: string; // ISO 8601 date string
+  replies_count: number;
+}
+
+export interface ProjectEngagementData {
+  statistics: ProjectStatistics;
+  recent_likes: ProjectLike[];
+  recent_comments: Comment[];
+  user_has_liked: boolean;
+  user_has_liked_count: number;
+  total_comments: number;
 }

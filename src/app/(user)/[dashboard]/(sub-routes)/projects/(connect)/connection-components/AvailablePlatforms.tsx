@@ -12,7 +12,6 @@ import React, { useEffect, useState } from "react";
 import { BsLightningCharge } from "react-icons/bs";
 import PlatformCard, { ConnectionPlatformsCardProps } from "./PlatformCard";
 import { useGlobalState } from "@/app/globalStateProvider";
-import { getLoader } from "@/app/components/loaders/Loader";
 import { toast } from "@/app/components/toastify/Toastify";
 import { ConnectionPlatforms } from "@/app/components/utilities/indices/projects-JSONs/projectCreate";
 
@@ -21,10 +20,9 @@ const AvailablePlatforms = () => {
     "overview"
   );
   const { platform_projects } = useProjectStatisticsStore();
-  const { theme, isDarkMode, accentColor, loader } = useTheme();
-  const { accessToken, currentPath, router, loading } = useGlobalState();
+  const { theme, isDarkMode } = useTheme();
+  const { accessToken, currentPath, router } = useGlobalState();
   const loadProjectStats = useLoadProjectStats();
-  const LoaderComponent = getLoader(loader) || null;
 
   useEffect(() => {
     loadProjectStats();

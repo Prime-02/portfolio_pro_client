@@ -1,59 +1,23 @@
 import ImageCard from "@/app/components/containers/cards/ImageCard";
-import TextFormatter from "@/app/components/containers/TextFormatters/TextFormatter";
 import CheckBox from "@/app/components/inputs/CheckBox";
 import { useTheme } from "@/app/components/theme/ThemeContext ";
-import {
-  AllProjectsDisplayCardProps,
-  ProjectStatusProps,
-} from "@/app/components/types and interfaces/ProjectsAndPortfolios";
+import { AllProjectsDisplayCardProps } from "@/app/components/types and interfaces/ProjectsAndPortfolios";
 import { filterPlatform } from "@/app/components/utilities/indices/projects-JSONs/projectCreate";
 import {
+  formatDateString,
   getImageSrc,
   replaceCharacters,
 } from "@/app/components/utilities/syncFunctions/syncs";
 import { useGlobalState } from "@/app/globalStateProvider";
 import { useProjectsStore } from "@/app/stores/project_stores/ProjectsStore";
+import { Heart, MessageSquare } from "lucide-react";
 import Image from "next/image";
 import React from "react";
 
 const AllProjectsCard = (prop: AllProjectsDisplayCardProps) => {
-  const { checkParams, viewportWidth, extendRoute, userData } =
-    useGlobalState();
+  const { checkParams, viewportWidth, extendRoute } = useGlobalState();
   const { theme, isDarkMode } = useTheme();
   const { toggleProjectName, projectsNames } = useProjectsStore();
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-    });
-  };
-
-  const getStatusColor = (status: ProjectStatusProps) => {
-    switch (status) {
-      case "active":
-        return "text-green-600 bg-green-50 border-green-200";
-      case "inactive":
-        return "text-yellow-600 bg-yellow-50 border-yellow-200";
-      case "cancelled":
-        return "text-red-600 bg-red-50 border-red-200";
-      default:
-        return "text-gray-600 bg-gray-50 border-gray-200";
-    }
-  };
-
-  const getStatusDotColor = (status: ProjectStatusProps) => {
-    switch (status) {
-      case "active":
-        return "bg-green-500";
-      case "inactive":
-        return "bg-yellow-500";
-      case "cancelled":
-        return "bg-red-500";
-      default:
-        return "bg-gray-500";
-    }
-  };
 
   // Force grid view on small screens (< 640px), otherwise use URL parameter
   const urlView = checkParams("view") || "grid";
@@ -87,20 +51,13 @@ const AllProjectsCard = (prop: AllProjectsDisplayCardProps) => {
         }
         "hover:shadow-xl hover:transform hover:scale-[1.01] shadow-md
         flex overflow-hidden
-        ${isListView ? "flex-row gap-0 items-center min-h-[140px]" : "flex-col gap-0 min-h-[320px]"}
-      `}
+        ${isListView ? "flex-row gap-0 items-center" : "flex-col gap-0 "}
+       h-auto`}
       style={{
         backgroundColor: "var(--background)",
         color: "var(--foreground)",
       }}
     >
-      {/* Selection indicator */}
-      {isSelected && (
-        <div
-          className="absolute top-0 left-0 w-full h-1 z-10"
-          style={{ backgroundColor: "var(--accent)" }}
-        />
-      )}
 
       {/* Image Section */}
       <div
@@ -125,19 +82,16 @@ const AllProjectsCard = (prop: AllProjectsDisplayCardProps) => {
 
         {/* Status Badges - Improved positioning and styling */}
         <div className="absolute top-3 left-3 flex flex-wrap gap-2 max-w-[calc(100%-24px)]">
-          {prop.is_completed && (
-            <span className="px-1 py-0.5 text-[10px] font-medium rounded-full bg-green-500/90 text-white backdrop-blur-sm">
-              ✓ Completed
+          {prop.likes.length > 0 && (
+            <span className="px-2 py-1 gap-x-1.5 flex items-center font-semibold rounded-full bg-red-500/90 text-white backdrop-blur-md shadow-lg border border-white/20 transition-transform hover:scale-105">
+              <Heart size={14} fill="currentColor" />
+              <span className="text-xs">{prop.likes.length}</span>
             </span>
           )}
-          {prop.is_concept && (
-            <span className="px-1 py-0.5 text-[10px] font-medium rounded-full bg-purple-500/90 text-white backdrop-blur-sm">
-              💡 Concept
-            </span>
-          )}
-          {!prop.is_public && (
-            <span className="px-1 py-0.5 text-[10px] font-medium rounded-full bg-gray-500/90 text-white backdrop-blur-sm">
-              🔒 Private
+          {prop.comments.length > 0 && (
+            <span className="px-2 py-1 gap-x-1.5 flex items-center font-semibold rounded-full bg-blue-500/90 text-white backdrop-blur-md shadow-lg border border-white/20 transition-transform hover:scale-105">
+              <MessageSquare size={14} />
+              <span className="text-xs">{prop.comments.length}</span>
             </span>
           )}
         </div>
@@ -147,7 +101,7 @@ const AllProjectsCard = (prop: AllProjectsDisplayCardProps) => {
           <div
             className="w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-sm border"
             style={{
-              backgroundColor: `${theme.background}ee`,
+              backgroundColor: `${theme.background}`,
               borderColor: "var(--accent)",
             }}
           >
@@ -178,49 +132,25 @@ const AllProjectsCard = (prop: AllProjectsDisplayCardProps) => {
 
       {/* Content Section */}
       <div
-        className={`flex flex-col p-6 gap-4 ${isListView ? "flex-1 justify-between" : ""}`}
+        className={`flex flex-col p-6 gap-2 ${isListView ? "flex-1 justify-between" : ""}`}
       >
         {/* Header */}
-        <div className="space-y-3">
-          <div className="flex items-start justify-between gap-3">
-            <h1
-              className={`font-bold capitalize leading-tight transition-colors duration-200 hover:text-[var(--accent)]
+        <h1
+          className={`font-bold capitalize transition-colors duration-200 hover:text-[var(--accent)]
               } ${isListView ? "text-lg line-clamp-2" : "text-xl line-clamp-2"}`}
-            >
-              {replaceCharacters(["-", "_"], [" ", " "], prop.project_name)}
-            </h1>
-
-            {/* Status with dot indicator */}
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <div
-                className={`w-2 h-2 rounded-full ${getStatusDotColor(prop.status)}`}
-              />
-              <span
-                className={`text-xs font-medium px-2 py-1 rounded-full border ${getStatusColor(prop.status)}`}
-              >
-                {prop.status}
-              </span>
-            </div>
-          </div>
-
-          {/* Category - Simplified */}
-          <div className="flex items-center gap-2 text-sm opacity-75">
-            <span>{prop.project_category}</span>
-            {prop.client_name && (
-              <>
-                <span>•</span>
-                <span>{prop.client_name}</span>
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Description */}
-        <div
-          className={`opacity-90 leading-relaxed ${isListView ? "text-sm line-clamp-2" : "text-sm line-clamp-3"}`}
         >
-          <TextFormatter>{prop.project_description}</TextFormatter>
-        </div>
+          {replaceCharacters(["-", "_"], [" ", " "], prop.project_name)}
+        </h1>
+
+        {prop.tags && prop.tags.length > 0 && (
+          <div className="flex items-center gap-x-1 flex-wrap">
+            {prop.tags.map((tag, i) => (
+              <p key={i} className="text-xs opacity-65">
+                #{tag}
+              </p>
+            ))}
+          </div>
+        )}
 
         {/* Tech Stack - Simplified */}
         {prop.stack && prop.stack.length > 0 && (
@@ -252,43 +182,45 @@ const AllProjectsCard = (prop: AllProjectsDisplayCardProps) => {
             )}
           </div>
         )}
-
-        {/* Simple date for non-list view */}
-        {!isListView && (
-          <div className="text-xs opacity-60">
-            {formatDate(prop.start_date)} -{" "}
-            {prop.end_date ? formatDate(prop.end_date) : "Ongoing"}
-          </div>
+        {prop.created_at && (
+          <span className="text-xs opacity-50">
+            {formatDateString(prop.created_at, {
+              includeTime: false,
+              dateStyle: "long",
+              locale: "en-US",
+              useProximity: false,
+              capitalizeFirst: true,
+            })}
+          </span>
         )}
 
         {/* Footer - Simplified */}
-        <div className="text-xs opacity-50 flex items-center justify-between">
-          <span>{formatDate(prop.last_updated)}</span>
-          <div
-            className={`transition-transform duration-200 hover:translate-x-1 flex`}
-            style={{ position: "relative" }}
-          >
-            {prop.user_associations.slice(0, 6).map((collab, i) => (
-              <Image
-                width={100}
-                height={100}
-                src={getImageSrc(
-                  collab.user?.profile_picture,
-                  collab.user?.username
-                )}
-                key={i}
-                className="w-10 h-10 rounded-full object-cover relative border"
-                style={{
-                  zIndex: prop.user_associations.length - i, // Higher z-index for earlier avatars
-                  marginLeft: i > 0 ? "-20px" : "0", // Overlap avatars (adjust as needed)
-                }}
-                alt={`Avatar ${i + 1}`}
-              />
-            ))}
-          </div>
+        <div
+          className={`transition-transform duration-200 hover:translate-x-1 absolute w-fit bottom-2 right-2 flex`}
+        >
+          {prop.user_associations.slice(0, 6).map((collab, i) => (
+            <Image
+              width={100}
+              height={100}
+              src={getImageSrc(
+                collab.user?.profile_picture,
+                collab.user?.username
+              )}
+              key={i}
+              className="w-10 h-10 rounded-full object-cover relative border"
+              style={{
+                zIndex: prop.user_associations.length - i, // Higher z-index for earlier avatars
+                marginLeft: i > 0 ? "-20px" : "0", // Overlap avatars (adjust as needed)
+              }}
+              alt={`Avatar ${i + 1}`}
+            />
+          ))}
         </div>
       </div>
-      <span className="absolute top-2 right-0 ">
+      <span
+        className="absolute top-2 right-0 z-40"
+        onClick={(e) => e.stopPropagation()}
+      >
         <CheckBox
           isChecked={projectsNames.includes(prop.id)}
           setIsChecked={() => {

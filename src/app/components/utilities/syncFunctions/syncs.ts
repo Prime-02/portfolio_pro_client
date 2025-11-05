@@ -1344,6 +1344,7 @@ export function replaceCharacters(
   return inputString.replace(regex, (match) => charMap[match] || match);
 }
 
+
 /**
  * Converts various date string formats to a human-readable format
  * @param dateString - The date string to convert
@@ -1358,6 +1359,7 @@ export const formatDateString = (
     timeStyle?: "full" | "long" | "medium" | "short";
     locale?: string;
     useProximity?: boolean;
+    capitalizeFirst?: boolean;
   } = {}
 ): string => {
   const {
@@ -1366,6 +1368,7 @@ export const formatDateString = (
     timeStyle = "short",
     locale = "en-US",
     useProximity = false,
+    capitalizeFirst = true,
   } = options;
 
   try {
@@ -1399,71 +1402,9 @@ export const formatDateString = (
 
     // Handle proximity formatting if requested
     if (useProximity) {
-      const now = new Date();
-      const diffInMs = date.getTime() - now.getTime();
-      // const diffInDays = Math.round(diffInMs / (1000 * 60 * 60 * 24));
-      const diffInHours = Math.round(diffInMs / (1000 * 60 * 60));
-
-      // Check if it's today
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      const dateDay = new Date(
-        date.getFullYear(),
-        date.getMonth(),
-        date.getDate()
-      );
-      const dayDiff = Math.round(
-        (dateDay.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
-      );
-
-      // Handle same day scenarios
-      if (dayDiff === 0) {
-        if (includeTime) {
-          const timeStr = new Intl.DateTimeFormat(locale, {
-            timeStyle: timeStyle,
-          }).format(date);
-          if (Math.abs(diffInHours) <= 3) {
-            if (diffInHours >= 0)
-              return `in ${Math.round(diffInHours)} hour${Math.round(diffInHours) !== 1 ? "s" : ""}`;
-            return `${Math.abs(Math.round(diffInHours))} hour${Math.abs(Math.round(diffInHours)) !== 1 ? "s" : ""} ago`;
-          }
-          return `today at ${timeStr}`;
-        }
-        return "today";
-      }
-
-      // Handle yesterday and tomorrow
-      if (dayDiff === -1) {
-        if (includeTime) {
-          const timeStr = new Intl.DateTimeFormat(locale, {
-            timeStyle: timeStyle,
-          }).format(date);
-          // Special case for "last night"
-          const hour = date.getHours();
-          if (hour >= 18 || hour <= 5) {
-            return `last night at ${timeStr}`;
-          }
-          return `yesterday at ${timeStr}`;
-        }
-        return "yesterday";
-      }
-
-      if (dayDiff === 1) {
-        if (includeTime) {
-          const timeStr = new Intl.DateTimeFormat(locale, {
-            timeStyle: timeStyle,
-          }).format(date);
-          return `tomorrow at ${timeStr}`;
-        }
-        return "tomorrow";
-      }
-
-      // Handle other proximity cases (within a reasonable range)
-      if (Math.abs(dayDiff) <= 7) {
-        if (dayDiff < -1) {
-          return `${Math.abs(dayDiff)} days ago`;
-        } else if (dayDiff > 1) {
-          return `in ${dayDiff} days`;
-        }
+      const result = formatProximityDate(date, locale, includeTime, timeStyle);
+      if (result) {
+        return capitalizeFirst ? capitalize(result) : result;
       }
     }
 
@@ -1473,8 +1414,181 @@ export const formatDateString = (
       ...(includeTime && { timeStyle: timeStyle }),
     };
 
-    return new Intl.DateTimeFormat(locale, formatOptions).format(date);
+    const formatted = new Intl.DateTimeFormat(locale, formatOptions).format(date);
+    return capitalizeFirst ? capitalize(formatted) : formatted;
   } catch (error) {
     return `Error formatting date: ${error instanceof Error ? error.message : "Unknown error"}`;
   }
 };
+
+/**
+ * Formats a date with proximity (just now, 5 minutes ago, etc.)
+ */
+function formatProximityDate(
+  date: Date,
+  locale: string,
+  includeTime: boolean,
+  timeStyle: "full" | "long" | "medium" | "short"
+): string | null {
+  const now = new Date();
+  const diffInMs = date.getTime() - now.getTime();
+  const isPast = diffInMs < 0;
+  const absDiffInMs = Math.abs(diffInMs);
+
+  // Calculate time units
+  const diffInSeconds = Math.floor(absDiffInMs / 1000);
+  const diffInMinutes = Math.floor(absDiffInMs / (1000 * 60));
+  const diffInHours = Math.floor(absDiffInMs / (1000 * 60 * 60));
+  // const diffInDays = Math.floor(absDiffInMs / (1000 * 60 * 60 * 24));
+
+  // Just now (less than 30 seconds)
+  if (diffInSeconds < 30) {
+    return "just now";
+  }
+
+  // Less than a minute (30-59 seconds)
+  if (diffInSeconds < 60) {
+    return isPast ? "less than a minute ago" : "in less than a minute";
+  }
+
+  // Minutes (1-59 minutes)
+  if (diffInMinutes < 60) {
+    const minutes = diffInMinutes;
+    if (minutes === 1) {
+      return isPast ? "a minute ago" : "in a minute";
+    }
+    return isPast ? `${minutes} minutes ago` : `in ${minutes} minutes`;
+  }
+
+  // Hours (1-23 hours)
+  if (diffInHours < 24) {
+    // Check if it's the same calendar day
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const dateDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const dayDiff = Math.round((dateDay.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
+    if (dayDiff === 0) {
+      // Same day
+      if (diffInHours === 1) {
+        return isPast ? "an hour ago" : "in an hour";
+      }
+      if (includeTime) {
+        const timeStr = new Intl.DateTimeFormat(locale, { timeStyle }).format(date);
+        return isPast ? `${diffInHours} hours ago (${timeStr})` : `in ${diffInHours} hours (${timeStr})`;
+      }
+      return isPast ? `${diffInHours} hours ago` : `in ${diffInHours} hours`;
+    }
+  }
+
+  // Days - get calendar day difference
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const dateDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const dayDiff = Math.round((dateDay.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
+  // Today (already handled above, but keeping for clarity)
+  if (dayDiff === 0) {
+    if (includeTime) {
+      const timeStr = new Intl.DateTimeFormat(locale, { timeStyle }).format(date);
+      return `today at ${timeStr}`;
+    }
+    return "today";
+  }
+
+  // Yesterday
+  if (dayDiff === -1) {
+    if (includeTime) {
+      const timeStr = new Intl.DateTimeFormat(locale, { timeStyle }).format(date);
+      const hour = date.getHours();
+      // "Last night" for evening/night times (6 PM to 5 AM)
+      if (hour >= 18 || hour <= 5) {
+        return `last night at ${timeStr}`;
+      }
+      return `yesterday at ${timeStr}`;
+    }
+    return "yesterday";
+  }
+
+  // Tomorrow
+  if (dayDiff === 1) {
+    if (includeTime) {
+      const timeStr = new Intl.DateTimeFormat(locale, { timeStyle }).format(date);
+      const hour = date.getHours();
+      // "Tomorrow night" for evening/night times
+      if (hour >= 18 || hour <= 5) {
+        return `tomorrow night at ${timeStr}`;
+      }
+      return `tomorrow at ${timeStr}`;
+    }
+    return "tomorrow";
+  }
+
+  // Within a week
+  if (Math.abs(dayDiff) <= 7) {
+    if (isPast) {
+      // Past dates within a week
+      if (dayDiff === -2) return includeTime ? `2 days ago at ${formatTime(date, locale, timeStyle)}` : "2 days ago";
+      return includeTime 
+        ? `${Math.abs(dayDiff)} days ago at ${formatTime(date, locale, timeStyle)}`
+        : `${Math.abs(dayDiff)} days ago`;
+    } else {
+      // Future dates within a week - show day of week
+      const dayOfWeek = new Intl.DateTimeFormat(locale, { weekday: "long" }).format(date);
+      if (includeTime) {
+        const timeStr = formatTime(date, locale, timeStyle);
+        return `${dayOfWeek} at ${timeStr}`;
+      }
+      return dayOfWeek;
+    }
+  }
+
+  // Within 30 days
+  if (Math.abs(dayDiff) <= 30) {
+    if (isPast) {
+      const weeks = Math.floor(Math.abs(dayDiff) / 7);
+      if (weeks === 1) return "last week";
+      if (weeks < 4) return `${weeks} weeks ago`;
+      return "last month";
+    } else {
+      const dayOfWeek = new Intl.DateTimeFormat(locale, { weekday: "long" }).format(date);
+      const monthDay = new Intl.DateTimeFormat(locale, { month: "short", day: "numeric" }).format(date);
+      if (includeTime) {
+        const timeStr = formatTime(date, locale, timeStyle);
+        return `${dayOfWeek}, ${monthDay} at ${timeStr}`;
+      }
+      return `${dayOfWeek}, ${monthDay}`;
+    }
+  }
+
+  // Within this year - show month and day
+  if (date.getFullYear() === now.getFullYear()) {
+    const monthDay = new Intl.DateTimeFormat(locale, { month: "long", day: "numeric" }).format(date);
+    if (includeTime) {
+      const timeStr = formatTime(date, locale, timeStyle);
+      return `${monthDay} at ${timeStr}`;
+    }
+    return monthDay;
+  }
+
+  // Different year - show full date
+  return null; // Fall back to standard formatting
+}
+
+/**
+ * Helper function to format time
+ */
+function formatTime(date: Date, locale: string, timeStyle: "full" | "long" | "medium" | "short"): string {
+  return new Intl.DateTimeFormat(locale, { timeStyle }).format(date);
+}
+
+/**
+ * Helper function to capitalize first letter
+ */
+function capitalize(str: string): string {
+  if (!str) return str;
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+// Example usage:
+// formatDateString("2024-01-15T14:30:00", { useProximity: true, includeTime: true })
+// formatDateString("1609459200", { useProximity: true }) // Unix timestamp
+// formatDateString(new Date().toISOString(), { useProximity: true }) // Current time -> "just now"

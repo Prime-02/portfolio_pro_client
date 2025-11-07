@@ -20,13 +20,6 @@ interface Route {
 }
 
 export const privateRoutes: Route[] = [
-  // {
-  //   slug: "profile",
-  //   link: "/profile/me",
-  //   name: "Profile",
-  //   icon: FaUser,
-  //   description: "View and manage your personal profile information",
-  // },
   {
     name: "Personal Profile",
     link: "/profile",

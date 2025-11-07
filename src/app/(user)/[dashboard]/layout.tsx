@@ -11,10 +11,10 @@ const UsersLayout = ({
   return (
     <div className="flex h-screen overflow-hidden">
       {/* Fixed Sidebar - doesn't scroll */}
-      <div className="flex-shrink-0">
+      {/* <div className="flex-shrink-0">
         <ProfileSideBar />
       </div>
-      
+       */}
       {/* Main Content Area - scrollable */}
       <div className="flex-1 overflow-auto custom-scrollbar">
         <motion.div

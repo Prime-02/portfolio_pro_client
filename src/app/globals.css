@@ -129,7 +129,7 @@ h6 {
 
 /* Custom scrollbar styles */
 .custom-scrollbar::-webkit-scrollbar {
-  width: 8px;
+  width: 2px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {

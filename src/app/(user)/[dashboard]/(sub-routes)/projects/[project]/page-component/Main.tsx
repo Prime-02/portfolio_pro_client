@@ -74,10 +74,10 @@ const Main = () => {
 
   // Use useEffect to fetch data when component mounts or projectId changes
   useEffect(() => {
-    if (projectId) {
+    if (projectId && accessToken) {
       getProjectData();
     }
-  }, [projectId]);
+  }, [projectId, accessToken]);
 
   if (isLoading("fetching_project_data")) {
     return (

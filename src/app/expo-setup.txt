@@ -1,0 +1,2 @@
+npm install --global eas-cli && npx create-expo-app chaptr-mobile-app-hfffk8zuk9j1uwm7wwpi- && cd chaptr-mobile-app-hfffk8zuk9j1uwm7wwpi- && eas init --id eb46e293-834d-4424-9ead-7c42aea6b5f4
+

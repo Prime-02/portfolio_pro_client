@@ -33,7 +33,7 @@ const SearchPopover = ({
   onQuery,
   placeholder = "Type at least 2 characters to search...",
   className = "",
-  labelBgHexIntensity = 10,
+  labelBgHexIntensity = 1,
 }: SearchComponentProps) => {
   const [searchRes, setSearchRes] = useState<SearchResultProp[]>([]);
   const [internalQuery, setInternalQuery] = useState(querry);

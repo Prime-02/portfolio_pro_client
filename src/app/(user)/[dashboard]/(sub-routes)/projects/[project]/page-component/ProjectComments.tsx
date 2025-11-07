@@ -1,3 +1,4 @@
+import Button from "@/app/components/buttons/Buttons";
 import EmptyState from "@/app/components/containers/cards/EmptyState";
 import { TextArea } from "@/app/components/inputs/Textinput";
 import { getLoader } from "@/app/components/loaders/Loader";
@@ -135,8 +136,6 @@ const ProjectComments = ({ projectId }: { projectId: string }) => {
     comment_id: string,
     parent_comment_id: string | null
   ) => {
-    if (!confirm("Are you sure you want to delete this comment?")) return;
-
     setLoading(`deleting_comment_${comment_id}`);
     try {
       const deleteRes = await DeleteData({
@@ -159,7 +158,7 @@ const ProjectComments = ({ projectId }: { projectId: string }) => {
   };
 
   const fetchThread = async (commentId: string) => {
-    setLoading("loading_replies");
+    setLoading(`loading_replies_${commentId}`);
     try {
       const threadRes: CommentWithReplies = await GetAllData({
         access: accessToken,
@@ -171,7 +170,7 @@ const ProjectComments = ({ projectId }: { projectId: string }) => {
     } catch (error) {
       console.log(error);
     } finally {
-      setLoading("loading_replies");
+      setLoading(`loading_replies_${commentId}`);
     }
   };
 
@@ -222,7 +221,11 @@ const ProjectComments = ({ projectId }: { projectId: string }) => {
       newExpandedComments.delete(commentId);
     } else {
       newExpandedComments.add(commentId);
-      if (!threadData.has(commentId)) {
+      // Only fetch thread for top-level comments that haven't been loaded yet
+      const isTopLevelComment = comments.some(
+        (c) => c.comment_id === commentId
+      );
+      if (isTopLevelComment && !threadData.has(commentId)) {
         await fetchThread(commentId);
       }
     }
@@ -261,19 +264,15 @@ const ProjectComments = ({ projectId }: { projectId: string }) => {
     );
   };
 
-  // Count total nested replies recursively
-  // const countReplies = (comment: CommentWithReplies): number => {
-  //   if (!comment.replies || comment.replies.length === 0) return 0;
-  //   return (
-  //     comment.replies.length +
-  //     comment.replies.reduce((sum, reply) => sum + countReplies(reply), 0)
-  //   );
-  // };
+  // Count direct replies only
+  const countDirectReplies = (comment: CommentWithReplies): number => {
+    return comment.replies ? comment.replies.length : 0;
+  };
 
   const renderComment = (comment: CommentWithReplies, depth = 0) => {
     const isTopLevel = depth === 0;
     const hasReplies = comment.replies && comment.replies.length > 0;
-    // const totalReplies = countReplies(comment);
+    const directRepliesCount = countDirectReplies(comment);
 
     return (
       <div
@@ -317,9 +316,10 @@ const ProjectComments = ({ projectId }: { projectId: string }) => {
                     isLoading("updating_reply") ||
                     isLoading(`updating_comment_${comment.comment_id}`)
                   }
+                  labelBgHexIntensity={1}
                 />
                 <div className="flex gap-2">
-                  <button
+                  <Button
                     onClick={() =>
                       updateCommentAndReply(
                         editContent,
@@ -327,21 +327,19 @@ const ProjectComments = ({ projectId }: { projectId: string }) => {
                         comment.comment_id
                       )
                     }
-                    disabled={isLoading(
+                    loading={isLoading(
                       `updating_comment_${comment.comment_id}`
                     )}
-                    className="px-3 py-1 bg-[var(--accent)] text-white text-xs rounded-lg hover:opacity-80 disabled:opacity-50"
-                  >
-                    {isLoading(`updating_comment_${comment.comment_id}`)
-                      ? "Saving..."
-                      : "Save"}
-                  </button>
-                  <button
+                    variant="primary"
+                    size="sm"
+                    text="Save"
+                  />
+                  <Button
                     onClick={handleCancelEdit}
-                    className="px-3 py-1 border text-xs rounded-lg hover:bg-gray-100"
-                  >
-                    Cancel
-                  </button>
+                    variant="ghost"
+                    size="sm"
+                    text="Cancel"
+                  />
                 </div>
               </div>
             ) : (
@@ -365,38 +363,60 @@ const ProjectComments = ({ projectId }: { projectId: string }) => {
                       >
                         Edit
                       </button>
-                      <button
+                      <Button
                         onClick={() =>
                           deleteCommentAndReply(
                             comment.comment_id,
                             comment.parent_comment_id || null
                           )
                         }
-                        disabled={isLoading(
+                        loading={isLoading(
                           `deleting_comment_${comment.comment_id}`
                         )}
-                        className="text-red-500 hover:text-red-700 font-medium disabled:opacity-50"
-                      >
-                        {isLoading(`deleting_comment_${comment.comment_id}`)
-                          ? "Deleting..."
-                          : "Delete"}
-                      </button>
+                        variant="ghost"
+                        size="sm"
+                        text="Delete"
+                        className="!text-red-500 hover:!text-red-700 !p-0 !h-auto"
+                      />
                     </>
                   )}
 
+                  {/* Show "View replies" for top-level comments */}
                   {isTopLevel && comment.replies_count > 0 && (
-                    <button
+                    <Button
                       onClick={() => toggleThread(comment.comment_id)}
-                      className="text-[var(--accent)] hover:opacity-70 font-medium ml-auto"
-                      disabled={isLoading("loading_replies")}
-                    >
-                      {isLoading("loading_replies") &&
-                      !threadData.has(comment.comment_id)
-                        ? "Loading..."
-                        : expandedComments.has(comment.comment_id)
+                      loading={
+                        isLoading(`loading_replies_${comment.comment_id}`) &&
+                        !threadData.has(comment.comment_id)
+                      }
+                      variant="ghost"
+                      size="sm"
+                      text={
+                        expandedComments.has(comment.comment_id)
                           ? "Hide replies"
-                          : `View ${comment.replies_count} ${comment.replies_count === 1 ? "reply" : "replies"}`}
-                    </button>
+                          : `View ${comment.replies_count} ${comment.replies_count === 1 ? "reply" : "replies"}`
+                      }
+                      className="!text-[var(--accent)] hover:!opacity-70 !p-0 !h-auto ml-auto"
+                    />
+                  )}
+
+                  {/* Show "View replies" for nested comments that have replies */}
+                  {!isTopLevel && directRepliesCount > 0 && (
+                    <Button
+                      onClick={() => toggleThread(comment.comment_id)}
+                      loading={
+                        isLoading(`loading_replies_${comment.comment_id}`) &&
+                        !threadData.has(comment.comment_id)
+                      }
+                      variant="ghost"
+                      size="sm"
+                      text={
+                        expandedComments.has(comment.comment_id)
+                          ? "Hide replies"
+                          : `View ${directRepliesCount} ${directRepliesCount === 1 ? "reply" : "replies"}`
+                      }
+                      className="!text-[var(--accent)] hover:!opacity-70 !p-0 !h-auto ml-auto"
+                    />
                   )}
                 </div>
               </>
@@ -405,37 +425,39 @@ const ProjectComments = ({ projectId }: { projectId: string }) => {
             {/* Reply input */}
             {replyingTo === comment.comment_id && (
               <div className="mt-3 space-y-2">
-                <textarea
+                <TextArea
                   value={replyContent}
-                  onChange={(e) => setReplyContent(e.target.value)}
-                  placeholder="Write a reply..."
-                  className="w-full p-2 border rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                  onChange={(e) => setReplyContent(e)}
+                  label="Write a reply..."
+                  className="my-1"
                   rows={2}
                   disabled={isLoading("making_reply")}
+                  labelBgHexIntensity={1}
                 />
                 <div className="flex gap-2">
-                  <button
+                  <Button
                     onClick={() =>
                       makeCommentAndReply(replyContent, comment.comment_id)
                     }
-                    disabled={isLoading("making_reply") || !replyContent.trim()}
-                    className="px-3 py-1 bg-[var(--accent)] text-white text-xs rounded-lg hover:opacity-80 disabled:opacity-50"
-                  >
-                    {isLoading("making_reply") ? "Replying..." : "Reply"}
-                  </button>
-                  <button
+                    loading={isLoading("making_reply")}
+                    disabled={!replyContent.trim()}
+                    variant="primary"
+                    size="sm"
+                    text="Reply"
+                  />
+                  <Button
                     onClick={handleCancelReply}
-                    className="px-3 py-1 border text-xs rounded-lg hover:bg-gray-100"
-                  >
-                    Cancel
-                  </button>
+                    variant="ghost"
+                    size="sm"
+                    text="Cancel"
+                  />
                 </div>
               </div>
             )}
           </div>
         </div>
 
-        {/* Render nested replies recursively */}
+        {/* Render nested replies recursively for top-level when expanded */}
         {isTopLevel &&
           expandedComments.has(comment.comment_id) &&
           threadData.has(comment.comment_id) && (
@@ -446,48 +468,49 @@ const ProjectComments = ({ projectId }: { projectId: string }) => {
             </div>
           )}
 
-        {/* Render nested replies for non-top-level comments */}
-        {!isTopLevel && hasReplies && (
-          <div className="mt-3">
-            {comment.replies?.map((reply) => renderComment(reply, depth + 1))}
-          </div>
-        )}
+        {/* Render nested replies for non-top-level comments when expanded */}
+        {!isTopLevel &&
+          hasReplies &&
+          expandedComments.has(comment.comment_id) && (
+            <div className="mt-3">
+              {comment.replies?.map((reply) => renderComment(reply, depth + 1))}
+            </div>
+          )}
       </div>
     );
   };
-
-  if (isLoading("fetching_project_comments")) {
-    return (
-      <div className="flex justify-center items-center py-8">
-        {LoaderComponent && <LoaderComponent color={accentColor.color} />}
-      </div>
-    );
-  }
 
   return (
     <div className="w-full mx-auto p-4">
       <h2 className="text-2xl font-bold mb-6">Comments</h2>
 
-      {/* New comment input */}
-      <div className="mb-6">
-        <textarea
+      {/* Sticky new comment input - always visible */}
+      <div className="mb-6 sticky top-0 bg-[var(--background)] z-10 pb-4 -mt-4 pt-4">
+        <TextArea
           value={newComment}
-          onChange={(e) => setNewComment(e.target.value)}
-          placeholder="Write a comment..."
-          className="w-full p-3 border rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+          onChange={(e) => setNewComment(e)}
+          label="Write a comment..."
+          className="mb-3"
           rows={3}
           disabled={isLoading("making_comment")}
+          labelBgHexIntensity={1}
         />
-        <button
+        <Button
           onClick={() => makeCommentAndReply(newComment, null)}
           disabled={isLoading("making_comment") || !newComment.trim()}
-          className="mt-2 px-4 py-2 bg-[var(--accent)] text-white text-sm rounded-lg hover:opacity-80 disabled:opacity-50 transition-opacity"
-        >
-          {isLoading("making_comment") ? "Posting..." : "Post Comment"}
-        </button>
+          loading={isLoading("making_comment")}
+          variant="primary"
+          size={"sm"}
+          text={"Post Comment"}
+        />
       </div>
 
-      {comments.length === 0 ? (
+      {/* Loading state for initial fetch */}
+      {isLoading("fetching_project_comments") ? (
+        <div className="flex justify-center items-center py-8">
+          {LoaderComponent && <LoaderComponent color={accentColor.color} />}
+        </div>
+      ) : comments.length === 0 ? (
         <EmptyState
           title="No comments yet"
           description="No comments has been made under this project yet. Be the first to say something!"

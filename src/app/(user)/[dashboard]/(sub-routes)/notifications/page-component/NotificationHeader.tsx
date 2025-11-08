@@ -60,6 +60,7 @@ const NotificationHeader = () => {
           unreadCount === 0 ? "Delete all notifications" : "Mark all as read"
         }
         onClick={notificationActions}
+        loading={isLoading("marking_all_notifications_as_read") || isLoading("deleting_all_notifications") }
       />
     </div>
   );

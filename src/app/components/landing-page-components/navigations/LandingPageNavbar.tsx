@@ -3,7 +3,7 @@ import { getImageSrc } from "../../utilities/syncFunctions/syncs";
 import { useGlobalState } from "@/app/globalStateProvider";
 import PortfolioProLogo from "../../logo/PortfolioProLogo";
 import Popover from "../../containers/divs/PopOver";
-import { Bell, ChevronDown, Search, User, X } from "lucide-react";
+import { ChevronDown, User } from "lucide-react";
 import { Menu as MenuIcon } from "lucide-react";
 import Link from "next/link";
 import Button from "../../buttons/Buttons";
@@ -11,6 +11,7 @@ import Menu from "../../containers/cards/landing-page-nav-cards/Menu";
 import Profile from "../../containers/cards/landing-page-nav-cards/Profile";
 import Image from "next/image";
 import CloseButton from "../../buttons/CloseButton";
+import NotificationsButton from "../../buttons/NotificationsButton";
 
 const LandingPageNavbar = () => {
   const { userData, accessToken, viewportWidth, setViewportWidth } =
@@ -130,10 +131,9 @@ const LandingPageNavbar = () => {
                       : "w-12 h-12 justify-center mx-auto"
                   }`}
                 >
-                  <Bell size={20} />
-                  {(isExpanded || mobileMenuOpen) && (
-                    <span className="text-sm font-medium">Notifications</span>
-                  )}
+                  <NotificationsButton
+                    expanded={isExpanded || mobileMenuOpen}
+                  />
                 </Link>
 
                 {/* Profile Popover */}

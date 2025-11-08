@@ -8,6 +8,7 @@ import ClientLayout from "./ClientLayout";
 import { Suspense } from "react";
 import PortfolioProLogo from "./components/logo/PortfolioProTextLogo";
 import DynamicTitle from "./DynamicTitle";
+import { WebSocketProvider } from "./WebSocketContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -123,97 +124,99 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-      <html lang="en">
-        <head>
-          {/* Additional SEO meta tags */}
-          <meta name="viewport" content="width=device-width, initial-scale=1" />
-          <meta name="format-detection" content="telephone=no" />
-          <meta name="msapplication-TileColor" content="#000000" />
-          <meta name="theme-color" content="#000000" />
+    <html lang="en">
+      <head>
+        {/* Additional SEO meta tags */}
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="msapplication-TileColor" content="#000000" />
+        <meta name="theme-color" content="#000000" />
 
-          {/* Favicon and app icons */}
-          <link rel="icon" href="/favicon.ico" />
-          <link
-            rel="apple-touch-icon"
-            sizes="180x180"
-            href="/apple-touch-icon.png"
-          />
-          <link
-            rel="icon"
-            type="image/png"
-            sizes="32x32"
-            href="/favicon-32x32.png"
-          />
-          <link
-            rel="icon"
-            type="image/png"
-            sizes="16x16"
-            href="/favicon-16x16.png"
-          />
-          <link rel="manifest" href="/site.webmanifest" />
+        {/* Favicon and app icons */}
+        <link rel="icon" href="/favicon.ico" />
+        <link
+          rel="apple-touch-icon"
+          sizes="180x180"
+          href="/apple-touch-icon.png"
+        />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="32x32"
+          href="/favicon-32x32.png"
+        />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="16x16"
+          href="/favicon-16x16.png"
+        />
+        <link rel="manifest" href="/site.webmanifest" />
 
-          {/* Preconnect to external domains for performance */}
-          <link rel="preconnect" href="https://fonts.googleapis.com" />
-          <link
-            rel="preconnect"
-            href="https://fonts.gstatic.com"
-            crossOrigin="anonymous"
-          />
+        {/* Preconnect to external domains for performance */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
 
-          {/* DNS prefetch for better performance */}
-          <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
-          <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+        {/* DNS prefetch for better performance */}
+        <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+        <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
 
-          {/* JSON-LD Structured Data */}
-          <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{
-              __html: JSON.stringify({
-                "@context": "https://schema.org",
-                "@type": "WebApplication",
+        {/* JSON-LD Structured Data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebApplication",
+              name: "Portfolio Pro",
+              description:
+                "Create stunning professional portfolios with Portfolio Pro. Build, customize, and showcase your work with our powerful portfolio builder platform.",
+              url: "https://portfoliopro.com",
+              applicationCategory: "BusinessApplication",
+              operatingSystem: "Any",
+              offers: {
+                "@type": "Offer",
+                price: "0",
+                priceCurrency: "USD",
+              },
+              creator: {
+                "@type": "Organization",
                 name: "Portfolio Pro",
-                description:
-                  "Create stunning professional portfolios with Portfolio Pro. Build, customize, and showcase your work with our powerful portfolio builder platform.",
                 url: "https://portfoliopro.com",
-                applicationCategory: "BusinessApplication",
-                operatingSystem: "Any",
-                offers: {
-                  "@type": "Offer",
-                  price: "0",
-                  priceCurrency: "USD",
-                },
-                creator: {
-                  "@type": "Organization",
-                  name: "Portfolio Pro",
-                  url: "https://portfoliopro.com",
-                },
-              }),
-            }}
-          />
-        </head>
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+              },
+            }),
+          }}
+        />
+      </head>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
+        <Suspense
+          fallback={
+            <PortfolioProLogo
+              tracking={0.2}
+              scale={0.75}
+              fontWeight={"extrabold"}
+              reanimateDelay={3000}
+            />
+          }
         >
-          <Suspense
-            fallback={
-              <PortfolioProLogo
-                tracking={0.2}
-                scale={0.75}
-                fontWeight={"extrabold"}
-                reanimateDelay={3000}
-              />
-            }
-          >
-            <GlobalStateProvider>
-            <DynamicTitle/>
-              <ToastProvider>
+          <GlobalStateProvider>
+            <DynamicTitle />
+            <ToastProvider>
+              <WebSocketProvider>
                 <ThemeProvider>
                   <ClientLayout>{children}</ClientLayout>
                 </ThemeProvider>
-              </ToastProvider>
-            </GlobalStateProvider>
-          </Suspense>
-        </body>
-      </html>
+              </WebSocketProvider>
+            </ToastProvider>
+          </GlobalStateProvider>
+        </Suspense>
+      </body>
+    </html>
   );
 }

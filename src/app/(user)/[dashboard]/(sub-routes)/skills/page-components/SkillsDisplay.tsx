@@ -10,6 +10,7 @@ import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
 import Modal from "@/app/components/containers/modals/Modal";
 import AddSkill from "./AddSkill";
 import EmptyState from "@/app/components/containers/cards/EmptyState";
+import BasicHeader from "@/app/components/containers/divs/header/BasicHeader";
 
 const SkillsDisplay = () => {
   const {
@@ -41,7 +42,6 @@ const SkillsDisplay = () => {
       });
       if (skillsRes && skillsRes.length > 0) {
         setSkills(skillsRes);
-        
       }
     } catch (error) {
       console.log("Error fetching skills: ", error);
@@ -70,14 +70,12 @@ const SkillsDisplay = () => {
         />
       </Modal>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4 mb-6">
-        <div>
-          <h2 className="text-2xl sm:text-3xl font-semibold">
-            {`Skills & Expertise`}
-          </h2>
-          <p className="opacity-70 mt-2">
-            {`Demonstrate your capabilities through proven results and measurable impact.`}
-          </p>
-        </div>
+        <BasicHeader
+          heading={`Skills & Expertise`}
+          headingClass="md:text-6xl text-4xl font-bold"
+          subHeading={`Demonstrate your capabilities through proven results and measurable impact.`}
+          subHeadingClass="md:text-3xl text-xl font-semibold"
+        />
         <Button
           icon={<Plus />}
           variant="ghost"
@@ -98,11 +96,11 @@ const SkillsDisplay = () => {
           )
         ) : skills.length < 1 ? (
           <EmptyState
-          title="No skills found"
-          description="You have either not added one or something went wrong"
-          onAction={()=>{
-            extendRouteWithQuery({create: "true"})
-          }}
+            title="No skills found"
+            description="You have either not added one or something went wrong"
+            onAction={() => {
+              extendRouteWithQuery({ create: "true" });
+            }}
           />
         ) : (
           <div className="space-y-4">

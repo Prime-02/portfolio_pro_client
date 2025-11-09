@@ -1,5 +1,6 @@
 "use client";
 import Button from "@/app/components/buttons/Buttons";
+import BasicHeader from "@/app/components/containers/divs/header/BasicHeader";
 import { useGlobalState } from "@/app/globalStateProvider";
 import { Plug } from "lucide-react";
 import React from "react";
@@ -8,12 +9,12 @@ const Header = () => {
   const { extendRoute } = useGlobalState();
   return (
     <header className="h-auto w-full  flex justify-between flex-wrap items-center gap-2 py-2">
-      <div className="flex flex-col gap-y-2 items-start ">
-        <h1 className="md:text-3xl text-2xl  ">Your Projects</h1>
-        <h3 className="md:text-base text-sm w-xs md:w-lg opacity-65 font-thin">
-          All your projects from different platforms in one place
-        </h3>
-      </div>
+      <BasicHeader
+        heading={`Your Projects`}
+        headingClass="md:text-6xl text-4xl font-bold"
+        subHeading={`All your projects from different platforms in one place`}
+        subHeadingClass="md:text-3xl text-xl font-semibold"
+      />
       <div className="flex items-center md:w-auto w-full justify-end md:justify-center gap-x-3">
         <Button
           text="Connect Platform"

@@ -15,6 +15,7 @@ import ImageCard from "@/app/components/containers/cards/ImageCard";
 import MasonryGrid from "@/app/components/containers/divs/MasonryGrid";
 import { createAlbumUniversalActions } from "../imageActions";
 import { AlbumData } from "../[gallery]/page-components/AlbumView";
+import BasicHeader from "@/app/components/containers/divs/header/BasicHeader";
 
 const GalleryView = () => {
   const {
@@ -123,16 +124,18 @@ const GalleryView = () => {
 
       <header className="p-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4 mb-6">
-          <div>
-            <h2 className={`text-2xl sm:text-3xl font-semibold`}>
-              {currentUser ? `${currentUser}'s Media Album` : `My Media Album`}
-            </h2>
-            <p className={`opacity-70 mt-2`}>
-              {currentUser
+          <BasicHeader
+            heading={
+              currentUser ? `${currentUser}'s Media Album` : `My Media Album`
+            }
+            headingClass="md:text-6xl text-4xl font-bold"
+            subHeading={
+              currentUser
                 ? `${currentUser}'s personal captures, creative experiments, and professional work-in-progress`
-                : `Personal captures, creative experiments, and professional work-in-progress`}
-            </p>
-          </div>
+                : `Personal captures, creative experiments, and professional work-in-progress`
+            }
+            subHeadingClass="md:text-3xl text-xl font-semibold"
+          />
           <Button
             icon={<Plus />}
             variant="ghost"

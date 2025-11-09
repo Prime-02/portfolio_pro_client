@@ -239,13 +239,17 @@ export function validateFields<T extends Record<string, unknown>>(
 
     // Check for empty strings, null, or undefined
     if (value === "" || value === null || value === undefined) {
-      toast.warning(`Please fill in the ${key} field.`);
+      toast.warning(
+        `Please fill in the "${replaceCharacters(["_"], [" "], key)}" field.`
+      );
       return false;
     }
 
     // Optional: Check for empty arrays/objects if needed
     if (isArray(value) && value.length === 0) {
-      toast.warning(`Please provide at least one item for ${key}.`);
+      toast.warning(
+        `Please provide at least one item for "${replaceCharacters(["_"], [" "], key)}".`
+      );
       return false;
     }
 
@@ -1344,7 +1348,6 @@ export function replaceCharacters(
   return inputString.replace(regex, (match) => charMap[match] || match);
 }
 
-
 /**
  * Converts various date string formats to a human-readable format
  * @param dateString - The date string to convert
@@ -1414,7 +1417,9 @@ export const formatDateString = (
       ...(includeTime && { timeStyle: timeStyle }),
     };
 
-    const formatted = new Intl.DateTimeFormat(locale, formatOptions).format(date);
+    const formatted = new Intl.DateTimeFormat(locale, formatOptions).format(
+      date
+    );
     return capitalizeFirst ? capitalize(formatted) : formatted;
   } catch (error) {
     return `Error formatting date: ${error instanceof Error ? error.message : "Unknown error"}`;
@@ -1464,8 +1469,14 @@ function formatProximityDate(
   if (diffInHours < 24) {
     // Check if it's the same calendar day
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const dateDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-    const dayDiff = Math.round((dateDay.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    const dateDay = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate()
+    );
+    const dayDiff = Math.round(
+      (dateDay.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+    );
 
     if (dayDiff === 0) {
       // Same day
@@ -1473,8 +1484,12 @@ function formatProximityDate(
         return isPast ? "an hour ago" : "in an hour";
       }
       if (includeTime) {
-        const timeStr = new Intl.DateTimeFormat(locale, { timeStyle }).format(date);
-        return isPast ? `${diffInHours} hours ago (${timeStr})` : `in ${diffInHours} hours (${timeStr})`;
+        const timeStr = new Intl.DateTimeFormat(locale, { timeStyle }).format(
+          date
+        );
+        return isPast
+          ? `${diffInHours} hours ago (${timeStr})`
+          : `in ${diffInHours} hours (${timeStr})`;
       }
       return isPast ? `${diffInHours} hours ago` : `in ${diffInHours} hours`;
     }
@@ -1483,12 +1498,16 @@ function formatProximityDate(
   // Days - get calendar day difference
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const dateDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  const dayDiff = Math.round((dateDay.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  const dayDiff = Math.round(
+    (dateDay.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+  );
 
   // Today (already handled above, but keeping for clarity)
   if (dayDiff === 0) {
     if (includeTime) {
-      const timeStr = new Intl.DateTimeFormat(locale, { timeStyle }).format(date);
+      const timeStr = new Intl.DateTimeFormat(locale, { timeStyle }).format(
+        date
+      );
       return `today at ${timeStr}`;
     }
     return "today";
@@ -1497,7 +1516,9 @@ function formatProximityDate(
   // Yesterday
   if (dayDiff === -1) {
     if (includeTime) {
-      const timeStr = new Intl.DateTimeFormat(locale, { timeStyle }).format(date);
+      const timeStr = new Intl.DateTimeFormat(locale, { timeStyle }).format(
+        date
+      );
       const hour = date.getHours();
       // "Last night" for evening/night times (6 PM to 5 AM)
       if (hour >= 18 || hour <= 5) {
@@ -1511,7 +1532,9 @@ function formatProximityDate(
   // Tomorrow
   if (dayDiff === 1) {
     if (includeTime) {
-      const timeStr = new Intl.DateTimeFormat(locale, { timeStyle }).format(date);
+      const timeStr = new Intl.DateTimeFormat(locale, { timeStyle }).format(
+        date
+      );
       const hour = date.getHours();
       // "Tomorrow night" for evening/night times
       if (hour >= 18 || hour <= 5) {
@@ -1526,13 +1549,18 @@ function formatProximityDate(
   if (Math.abs(dayDiff) <= 7) {
     if (isPast) {
       // Past dates within a week
-      if (dayDiff === -2) return includeTime ? `2 days ago at ${formatTime(date, locale, timeStyle)}` : "2 days ago";
-      return includeTime 
+      if (dayDiff === -2)
+        return includeTime
+          ? `2 days ago at ${formatTime(date, locale, timeStyle)}`
+          : "2 days ago";
+      return includeTime
         ? `${Math.abs(dayDiff)} days ago at ${formatTime(date, locale, timeStyle)}`
         : `${Math.abs(dayDiff)} days ago`;
     } else {
       // Future dates within a week - show day of week
-      const dayOfWeek = new Intl.DateTimeFormat(locale, { weekday: "long" }).format(date);
+      const dayOfWeek = new Intl.DateTimeFormat(locale, {
+        weekday: "long",
+      }).format(date);
       if (includeTime) {
         const timeStr = formatTime(date, locale, timeStyle);
         return `${dayOfWeek} at ${timeStr}`;
@@ -1549,8 +1577,13 @@ function formatProximityDate(
       if (weeks < 4) return `${weeks} weeks ago`;
       return "last month";
     } else {
-      const dayOfWeek = new Intl.DateTimeFormat(locale, { weekday: "long" }).format(date);
-      const monthDay = new Intl.DateTimeFormat(locale, { month: "short", day: "numeric" }).format(date);
+      const dayOfWeek = new Intl.DateTimeFormat(locale, {
+        weekday: "long",
+      }).format(date);
+      const monthDay = new Intl.DateTimeFormat(locale, {
+        month: "short",
+        day: "numeric",
+      }).format(date);
       if (includeTime) {
         const timeStr = formatTime(date, locale, timeStyle);
         return `${dayOfWeek}, ${monthDay} at ${timeStr}`;
@@ -1561,7 +1594,10 @@ function formatProximityDate(
 
   // Within this year - show month and day
   if (date.getFullYear() === now.getFullYear()) {
-    const monthDay = new Intl.DateTimeFormat(locale, { month: "long", day: "numeric" }).format(date);
+    const monthDay = new Intl.DateTimeFormat(locale, {
+      month: "long",
+      day: "numeric",
+    }).format(date);
     if (includeTime) {
       const timeStr = formatTime(date, locale, timeStyle);
       return `${monthDay} at ${timeStr}`;
@@ -1576,7 +1612,11 @@ function formatProximityDate(
 /**
  * Helper function to format time
  */
-function formatTime(date: Date, locale: string, timeStyle: "full" | "long" | "medium" | "short"): string {
+function formatTime(
+  date: Date,
+  locale: string,
+  timeStyle: "full" | "long" | "medium" | "short"
+): string {
   return new Intl.DateTimeFormat(locale, { timeStyle }).format(date);
 }
 

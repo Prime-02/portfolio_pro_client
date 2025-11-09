@@ -1,8 +1,12 @@
+"use client"
 import React from 'react'
+import EducationMain from './page-components/EducationMain'
 
 const Education = () => {
   return (
-    <div>Education</div>
+    <div>
+      <EducationMain/>
+    </div>
   )
 }
 

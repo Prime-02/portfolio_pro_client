@@ -21,9 +21,9 @@ const NotificationCard = (prop: ProcessedNotification) => {
 
   const notificationActions = async (action: string) => {
     if (action === "delete") {
-      setLoading("deleting_notifications");
+      setLoading(`deleting_notification_${id}`);
     } else {
-      setLoading("marking_all_notifications_as_read");
+      setLoading(`marking_notification_${id}_as_read`);
     }
     let actionRes;
     try {
@@ -46,9 +46,9 @@ const NotificationCard = (prop: ProcessedNotification) => {
       console.log(error);
     } finally {
       if (action === "delete") {
-        setLoading("deleting_all_notifications");
+        setLoading(`deleting_notification_${id}`);
       } else {
-        setLoading("marking_all_notifications_as_read");
+        setLoading(`marking_notification_${id}_as_read`);
       }
     }
   };
@@ -73,21 +73,27 @@ const NotificationCard = (prop: ProcessedNotification) => {
         <p className="text-sm md:text-base break-words">{message}</p>
       </div>
       <span className="flex items-center gap-x-2 flex-shrink-0 self-end md:self-center">
-        <Button
-          text="Mark as read"
-          variant="ghost"
-          onClick={() => {
-            notificationActions("read");
-          }}
-        />
-        <Button
+        {!isRead && (
+          <Button
+            text="Mark as read"
+            variant="ghost"
+            onClick={() => {
+              notificationActions("read");
+            }}
+            loading={isLoading(`marking_notification_${id}_as_read`)}
+            disabled={isLoading(`marking_notification_${id}_as_read`)}
+          />
+        )}
+        {/* <Button
           text="Delete"
           variant="ghost"
           customColor="red"
           onClick={() => {
-            notificationActions("read");
+            notificationActions("delete");
           }}
-        />
+          loading={isLoading(`deleting_notification_${id}`)}
+          disabled={isLoading(`deleting_notification_${id}`)}
+        /> */}
       </span>
     </div>
   );

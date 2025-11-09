@@ -10,6 +10,7 @@ import AddCert from "./AddCert";
 import Button from "@/app/components/buttons/Buttons";
 import { Plus } from "lucide-react";
 import EmptyState from "@/app/components/containers/cards/EmptyState";
+import BasicHeader from "@/app/components/containers/divs/header/BasicHeader";
 
 const CertDisplay = () => {
   const {
@@ -75,14 +76,12 @@ const CertDisplay = () => {
       <div className="pb-8">
         <header className="p-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4 mb-6">
-            <div>
-              <h2 className={`text-2xl sm:text-3xl font-semibold`}>
-                {`Certificates & Awards`}
-              </h2>
-              <p className={`opacity-70 mt-2`}>
-                {`Boost Your Credibility – Upload Verified Certificates & Awards`}
-              </p>
-            </div>
+            <BasicHeader
+              heading="Certificates & Awards"
+              headingClass="md:text-6xl text-4xl font-bold"
+              subHeading={`Boost Your Credibility – Upload Verified Certificates & Awards`}
+              subHeadingClass="md:text-3xl text-xl font-semibold"
+            />
             <Button
               icon={<Plus />}
               variant="ghost"

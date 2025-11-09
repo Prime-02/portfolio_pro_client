@@ -10,6 +10,7 @@ import { getLoader } from "@/app/components/loaders/Loader";
 import { useTheme } from "@/app/components/theme/ThemeContext ";
 import Button from "@/app/components/buttons/Buttons";
 import { Plus } from "lucide-react";
+import BasicHeader from "@/app/components/containers/divs/header/BasicHeader";
 
 function SocialsDisplay() {
   const {
@@ -19,7 +20,7 @@ function SocialsDisplay() {
     extendRouteWithQuery,
     searchParams,
     router,
-    pathname
+    pathname,
   } = useGlobalState();
   const { loader, accentColor } = useTheme();
   const LoaderComponent = getLoader(loader) || null;
@@ -76,14 +77,14 @@ function SocialsDisplay() {
       </Modal>
       <div className="p-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4 mb-6">
-          <div>
-            <h2 className="text-2xl sm:text-3xl font-semibold">
-              {`Social Links & Handles`}
-            </h2>
-            <p className="opacity-70 mt-2">
-              {`Add your social media links and handles to showcase your online presence.`}
-            </p>
-          </div>
+          <BasicHeader
+            heading="Socials"
+            headingClass="md:text-6xl text-4xl font-bold"
+            subHeading={
+              "Add your social media links and handles to showcase your online presence."
+            }
+            subHeadingClass="md:text-3xl text-xl font-semibold"
+          />
           <Button
             icon={<Plus />}
             variant="ghost"
@@ -96,8 +97,8 @@ function SocialsDisplay() {
         <div className="flex flex-col   gap-4 w-full ">
           {socials.length < 1 ? (
             <EmptyState
-            imageHeight={200}
-            imageWidth={200}
+              imageHeight={200}
+              imageWidth={200}
               description=""
               actionText="Add you first handle/social link"
               onAction={() => {

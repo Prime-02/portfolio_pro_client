@@ -3,10 +3,27 @@ import { useGlobalState } from "@/app/globalStateProvider";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { WS_V1_BASE_URL } from "../indices/urls";
 import { useToast } from "../../toastify/Toastify";
-import { NotificationData, ProcessedNotification, UseWebSocketReturn, WebSocketMessage } from "../../types and interfaces/NotificationsInterface";
+import {
+  NotificationData,
+  ProcessedNotification,
+  UseWebSocketReturn,
+  WebSocketMessage,
+} from "../../types and interfaces/NotificationsInterface";
+
+// Define types for outgoing WebSocket messages
+type MarkReadMessage = {
+  type: "mark_read";
+  notification_id: string;
+};
+
+type MarkAllReadMessage = {
+  type: "mark_all_read";
+};
+
+type OutgoingWebSocketMessage = MarkReadMessage | MarkAllReadMessage;
 
 export const useWebSocket = (): UseWebSocketReturn => {
-  const { accessToken } = useGlobalState();
+  const { accessToken, isOnline } = useGlobalState();
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [notifications, setNotifications] = useState<ProcessedNotification[]>(
     []
@@ -106,15 +123,15 @@ export const useWebSocket = (): UseWebSocketReturn => {
               if (message.data && !Array.isArray(message.data)) {
                 const newNotification = processNotificationData(message.data);
                 setNotifications((prev) => [newNotification, ...prev]);
-                (toast.toast(newNotification.message, {
+                toast.toast(newNotification.message, {
                   type: "default",
                   className:
                     "border-[var(--accent)] bg-purple-[var(--background)] text-[var(--accent)]",
                   sound: true,
                   animation: "bounce",
                   position: "bottom-center",
-                }),
-                  console.log("New notification received:", newNotification));
+                });
+                console.log("New notification received:", newNotification);
               }
               break;
 
@@ -162,7 +179,7 @@ export const useWebSocket = (): UseWebSocketReturn => {
     }, 2000); // Wait 2 seconds before reconnecting
   }, [connect, disconnect]);
 
-  const sendMessage = useCallback((message: any) => {
+  const sendMessage = useCallback((message: OutgoingWebSocketMessage) => {
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
       ws.current.send(JSON.stringify(message));
     }
@@ -207,7 +224,9 @@ export const useWebSocket = (): UseWebSocketReturn => {
   }, [sendMessage]);
 
   useEffect(() => {
-    connect();
+    if (accessToken && isOnline) {
+      connect();
+    }
 
     return () => {
       disconnect();

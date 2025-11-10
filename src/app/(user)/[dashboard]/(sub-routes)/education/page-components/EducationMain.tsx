@@ -6,7 +6,12 @@ import EducationActions from "./EducationActions";
 import EducationsDisplay from "./EducationsDisplay";
 
 const EducationMain = () => {
-  const { checkParams, clearQuerryParam, checkValidId } = useGlobalState();
+  const {
+    checkParams,
+    clearQuerryParam,
+    checkValidId,
+  } = useGlobalState();
+
   return (
     <>
       <div>

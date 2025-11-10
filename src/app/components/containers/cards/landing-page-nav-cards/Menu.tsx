@@ -1,4 +1,3 @@
-import { useTheme } from "@/app/components/theme/ThemeContext ";
 import { privateRoutes } from "@/app/components/utilities/indices/NavigationItems";
 import { useGlobalState } from "@/app/globalStateProvider";
 import Link from "next/link";
@@ -21,7 +20,6 @@ const routeCategories = {
 };
 
 const Menu = ({ isCollapsed }: { isCollapsed: boolean }) => {
-  const { theme, accentColor } = useTheme();
   const { userData } = useGlobalState();
   const pathname = usePathname();
 

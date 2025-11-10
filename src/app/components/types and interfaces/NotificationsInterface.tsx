@@ -1,4 +1,17 @@
 // Type definitions
+
+// Outgoing WebSocket message types
+export type MarkReadMessage = {
+  type: "mark_read";
+  notification_id: string;
+};
+
+export type MarkAllReadMessage = {
+  type: "mark_all_read";
+};
+
+export type OutgoingWebSocketMessage = MarkReadMessage | MarkAllReadMessage;
+
 export interface NotificationMetadata {
   timestamp?: string;
   ip_address?: string;
@@ -8,7 +21,7 @@ export interface NotificationMetadata {
   reset_link?: string;
   notification_header?: string;
   action_name?: string;
-  [key: string]: any;
+  [key: string]: string | undefined;
 }
 
 export interface NotificationData {
@@ -48,7 +61,7 @@ export interface UseWebSocketReturn {
   notifications: ProcessedNotification[];
   error: string | null;
   heartbeatCount: number;
-  sendMessage: (message: any) => void;
+  sendMessage: (message: OutgoingWebSocketMessage) => void;
   disconnect: () => void;
   connect: () => void;
   reconnect: () => void;

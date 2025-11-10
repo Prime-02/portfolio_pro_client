@@ -2,10 +2,12 @@ import Button from "@/app/components/buttons/Buttons";
 import CheckBox from "@/app/components/inputs/CheckBox";
 import DataList from "@/app/components/inputs/DataList";
 import { TextArea, Textinput } from "@/app/components/inputs/Textinput";
+import { EducationProps } from "@/app/components/types and interfaces/EducationsInterface";
 import { PostAllData } from "@/app/components/utilities/asyncFunctions/lib/crud";
 import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
 import { validateFields } from "@/app/components/utilities/syncFunctions/syncs";
 import { useGlobalState } from "@/app/globalStateProvider";
+import { useEducationStore } from "@/app/stores/education_stores/EducationStore";
 import React, { useState } from "react";
 
 const EducationActions = () => {
@@ -17,14 +19,19 @@ const EducationActions = () => {
     clearQuerryParam,
     checkParams,
   } = useGlobalState();
+  const { addEducation, currentEducation, updateEducation } =
+    useEducationStore();
+  const updateId = checkParams("update") || "";
+  const isUpdate = checkValidId(updateId);
   const [educationForm, setEducationForm] = useState({
-    institution: "",
-    degree: "",
-    field_of_study: "",
-    start_year: "",
-    end_year: "",
-    is_current: false,
-    description: "",
+    id: isUpdate ? currentEducation?.id || updateId : updateId,
+    institution: isUpdate ? currentEducation?.institution || "" : "",
+    degree: isUpdate ? currentEducation?.degree || "" : "",
+    field_of_study: isUpdate ? currentEducation?.field_of_study || "" : "",
+    start_year: isUpdate ? currentEducation?.start_year || "" : "",
+    end_year: isUpdate ? currentEducation?.end_year || "" : "",
+    is_current: isUpdate ? currentEducation?.is_current || false : false,
+    description: isUpdate ? currentEducation?.description || "" : "",
   });
   const handleEducationForm = (key: string, value: string | boolean) => {
     setEducationForm((prev) => ({
@@ -33,18 +40,19 @@ const EducationActions = () => {
     }));
   };
 
-  const educationAction = checkParams("create") || checkParams("update");
+  const educationAction = checkParams("create") || updateId;
 
   const addNewEducation = async () => {
     validateFields(educationForm, ["end_year", "is_current", "description"]);
     setLoading("creating_new_aducation");
     try {
-      const educationRes = await PostAllData({
+      const educationRes: EducationProps = await PostAllData({
         access: accessToken,
         url: "education",
         data: educationForm,
       });
       if (educationRes) {
+        addEducation(educationRes);
         clearQuerryParam();
       }
     } catch (error) {
@@ -142,13 +150,28 @@ const EducationActions = () => {
           }
           onClick={() => {
             if (checkValidId(educationAction || "")) {
+              updateEducation(
+                accessToken,
+                updateId,
+                setLoading,
+                educationForm as EducationProps,
+                () => {
+                  clearQuerryParam();
+                }
+              );
             } else {
               addNewEducation();
             }
           }}
           className={"w-full"}
-          loading={isLoading("creating_new_aducation")}
-          disabled={isLoading("creating_new_aducation")}
+          loading={
+            isLoading("creating_new_aducation") ||
+            isLoading(`updating_education_${updateId}`)
+          }
+          disabled={
+            isLoading("creating_new_aducation") ||
+            isLoading(`updating_education_${updateId}`)
+          }
         />
       </div>
     </div>

@@ -17,7 +17,7 @@ const EducationsDisplay = () => {
     if (accessToken && isOnline) {
       fetchEducations(accessToken, setLoading);
     }
-  }, [accessToken]);
+  }, [accessToken, isOnline]);
   return (
     <div className="flex items-center flex-col justify-center w-full">
       {isLoading("fetching_educations") ? (

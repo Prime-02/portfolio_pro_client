@@ -56,7 +56,7 @@ export const useEducationStore = create<EducationStore>((set) => ({
     try {
       const educationsRes: { educations: EducationProps[] } = await GetAllData({
         access: accessToken,
-        url: "education",
+        url: "education/me",
       });
       if (educationsRes) {
         set({ educations: educationsRes.educations });

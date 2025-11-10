@@ -1,7 +1,7 @@
 //WEBSOCKET
 export const wsLocal = "ws://localhost:8000";
 
-export const wsCloud = `ws://d22qn4oxzh4x4y.cloudfront.net`;
+export const wsCloud = `wss://d22qn4oxzh4x4y.cloudfront.net`;
 
 export const WS_BASE_URL = wsCloud;
 

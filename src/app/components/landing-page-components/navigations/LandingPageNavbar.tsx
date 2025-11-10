@@ -85,7 +85,7 @@ const LandingPageNavbar = () => {
       {/* Sidebar - Desktop or Mobile when open */}
       <div
         className={`
-          ${isMobile ? "fixed" : "relative"} top-0 h-screen bg-[var(--background)] border-r border-[var(--accent)]/20 flex flex-col transition-all duration-300 ease-in-out
+          ${isMobile ? "fixed" : "relative"} top-0 h-screen max-h-screen overflow-auto bg-[var(--background)] border-r border-[var(--accent)]/20 flex flex-col transition-all duration-300 ease-in-out
           ${isMobile ? `z-40 ${mobileMenuOpen ? "left-0" : "-left-full"}` : ""}
           ${isExpanded || mobileMenuOpen ? "w-64" : "w-16"}
           ${isMobile ? "pt-16" : ""}

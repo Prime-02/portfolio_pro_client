@@ -43,7 +43,7 @@ const EducationActions = () => {
   const educationAction = checkParams("create") || updateId;
 
   const addNewEducation = async () => {
-    validateFields(educationForm, ["end_year", "is_current", "description"]);
+    validateFields(educationForm, ["end_year", "is_current", "description", "id"]);
     setLoading("creating_new_aducation");
     try {
       const educationRes: EducationProps = await PostAllData({

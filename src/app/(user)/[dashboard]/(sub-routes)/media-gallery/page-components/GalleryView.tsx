@@ -108,7 +108,7 @@ const GalleryView = () => {
   const isInitialLoading = loading.includes("fetching_albums") && page === 1;
 
   return (
-    <div className="pb-8">
+    <div className="pb-8 ">
       <Modal
         isOpen={isValidId || create}
         onClose={clearQuerryParam}
@@ -122,30 +122,32 @@ const GalleryView = () => {
         />
       </Modal>
 
-      <header className="p-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4 mb-6">
-          <BasicHeader
-            heading={
-              currentUser ? `${currentUser}'s Media Album` : `My Media Album`
-            }
-            headingClass="md:text-6xl text-4xl font-bold"
-            subHeading={
-              currentUser
-                ? `${currentUser}'s personal captures, creative experiments, and professional work-in-progress`
-                : `Personal captures, creative experiments, and professional work-in-progress`
-            }
-            subHeadingClass="md:text-3xl text-xl font-semibold"
-          />
-          <Button
-            icon={<Plus />}
-            variant="ghost"
-            className="self-end sm:self-auto"
-            onClick={() => {
-              extendRouteWithQuery({ create: "true" });
-            }}
-          />
-        </div>
-      </header>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4 mb-6">
+        <BasicHeader
+          heading={
+            currentUser ? `${currentUser}'s Media Album` : `My Media Album`
+          }
+          headingClass="md:text-6xl text-4xl font-bold"
+          subHeading={
+            currentUser
+              ? `${currentUser}'s personal captures, creative experiments, and professional work-in-progress`
+              : `Personal captures, creative experiments, and professional work-in-progress`
+          }
+          subHeadingClass="md:text-3xl text-xl font-semibold"
+        />
+        <span
+        
+        >
+        <Button
+          icon={<Plus />}
+          variant="ghost"
+          className=""
+          onClick={() => {
+            extendRouteWithQuery({ create: "true" });
+          }}
+        />
+        </span>
+      </div>
 
       <div className="pb-8">
         {galleries.media?.length < 1 && !isInitialLoading ? (

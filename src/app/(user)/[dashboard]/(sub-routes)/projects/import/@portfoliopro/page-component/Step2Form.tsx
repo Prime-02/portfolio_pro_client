@@ -2,7 +2,8 @@ import React from "react";
 import Button from "@/app/components/buttons/Buttons";
 import CheckBox from "@/app/components/inputs/CheckBox";
 import DataList from "@/app/components/inputs/DataList";
-import { TextArea, Textinput } from "@/app/components/inputs/Textinput";
+import { Textinput } from "@/app/components/inputs/Textinput";
+import { TextArea } from "@/app/components/inputs/TextArea";
 import { ProjectCreateFormData } from "@/app/components/types and interfaces/ProjectsAndPortfolios";
 import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
 import {

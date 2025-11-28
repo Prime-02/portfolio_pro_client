@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Textinput, TextArea } from "./Textinput";
+import { Textinput } from "./Textinput";
+import { TextArea } from "./TextArea";
 
 const TextInputDemo = () => {
   const [text, setText] = useState("");

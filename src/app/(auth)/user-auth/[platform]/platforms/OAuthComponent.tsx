@@ -135,6 +135,8 @@ const OAuthComponent: React.FC<OAuthComponentProps> = ({
       const getVerification: {
         message: string;
         session_token: string;
+        refresh_token: string;
+        expires_at: string;
         is_new: boolean;
         user: {
           username: string;
@@ -153,8 +155,9 @@ const OAuthComponent: React.FC<OAuthComponentProps> = ({
 
         // Handle session token
         if (getVerification.session_token) {
+          const { session_token, refresh_token, expires_at } = getVerification;
           console.log("Data retrieved after verification", getVerification);
-          setAccessToken(getVerification.session_token);
+          setAccessToken(session_token, refresh_token, expires_at);
           localStorage.setItem("session_token", getVerification.session_token);
         }
 

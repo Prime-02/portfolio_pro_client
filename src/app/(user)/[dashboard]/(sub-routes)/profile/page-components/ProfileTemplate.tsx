@@ -1,6 +1,6 @@
 // ProfileTemplate.tsx
 import React, { useState, useEffect, useCallback } from "react";
-import { useGlobalState } from "@/app/globalStateProvider";
+import { defaultUserData, useGlobalState } from "@/app/globalStateProvider";
 import {
   Profile,
   User,
@@ -10,9 +10,7 @@ import {
   UpdateAllData,
 } from "@/app/components/utilities/asyncFunctions/lib/crud";
 import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
-import {
-  base64ToFile,
-} from "@/app/components/utilities/syncFunctions/syncs";
+import { base64ToFile } from "@/app/components/utilities/syncFunctions/syncs";
 import { toast } from "@/app/components/toastify/Toastify";
 import {
   ModalType,
@@ -36,6 +34,7 @@ import {
   ProfileSettings,
   useTheme,
 } from "@/app/components/theme/ThemeContext ";
+import { useUserProfileStore } from "@/app/stores/user/UserProfile";
 
 interface ProfileTemplateProps {
   showSettings?: boolean;
@@ -48,12 +47,12 @@ const ProfileTemplate: React.FC<ProfileTemplateProps> = ({
   children,
 }) => {
   const {
-    userData,
     accessToken,
     loading,
     setLoading,
-    fetchUserData,
     currentUser,
+    getCurrentUser,
+    isOnline,
   } = useGlobalState();
   const {
     settings,
@@ -61,7 +60,9 @@ const ProfileTemplate: React.FC<ProfileTemplateProps> = ({
     defaultSettings,
     layoutLoaded,
     setLayoutLoaded,
+    saveChanges,
   } = useTheme();
+  const { fetchUserProfile, userProfile } = useUserProfileStore();
   const [tempSettings, setTempSettings] =
     useState<ProfileSettings>(defaultSettings);
 
@@ -72,24 +73,10 @@ const ProfileTemplate: React.FC<ProfileTemplateProps> = ({
   const [profileImages, setProfileImages] = useState<ModalType>({ type: null });
   const [activeTab, setActiveTab] = useState<string>("");
   const [editPanel, setEditPanel] = useState(false);
+  const [userData, setUserData] = useState<User>(defaultUserData);
   const [validationErrors, setValidationErrors] = useState<
     Record<string, string>
   >({});
-
-  const [userProfile, setUserProfile] = useState<Profile>({
-    user_id: "",
-    github_username: "",
-    bio: "",
-    profession: "",
-    job_title: "",
-    years_of_experience: 0,
-    website_url: "",
-    location: "",
-    open_to_work: true,
-    availability: "",
-    profile_picture: null,
-    profile_picture_id: "",
-  });
 
   const [userInfo, setUserInfo] = useState<User>({
     email: userData.email || "",
@@ -140,6 +127,59 @@ const ProfileTemplate: React.FC<ProfileTemplateProps> = ({
   // Track field-specific update states
   const [fieldStates, setFieldStates] = useState<FieldUpdateState>({});
 
+  const fetchUserData = async (access: string = accessToken): Promise<void> => {
+    if (!access) {
+      console.warn("No access token provided for fetchUserData");
+      return;
+    }
+
+    setLoading("fetching_user_profile_data");
+    try {
+      const userDataUrl = currentUser
+        ? `${V1_BASE_URL}/settings/info/${currentUser}`
+        : `${V1_BASE_URL}/settings/info`;
+
+      const userDataRes = await GetAllData<undefined, User>({
+        access,
+        url: userDataUrl,
+        type: "User Data",
+      });
+
+      if (userDataRes) {
+        const newUserData: User = {
+          id: userDataRes.id ?? "",
+          username: userDataRes.username ?? "",
+          email: userDataRes.email ?? "",
+          is_superuser: userDataRes.is_superuser ?? false,
+          firstname: userDataRes.firstname ?? "",
+          middlename: userDataRes.middlename ?? "",
+          lastname: userDataRes.lastname ?? "",
+          profile_picture: userDataRes.profile_picture ?? null,
+          profile_picture_id: userDataRes.profile_picture_id ?? "",
+          phone_number: userDataRes.phone_number ?? "",
+          is_active: userDataRes.is_active ?? true,
+          role: userDataRes.role ?? "user",
+          created_at: userDataRes.created_at ?? "",
+          updated_at: userDataRes.updated_at ?? "",
+        };
+
+        setUserData(newUserData);
+      } else {
+        console.log("No User Info Recovered");
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    } finally {
+      setLoading("fetching_user_profile_data");
+    }
+  };
+
+  useEffect(() => {
+    if (accessToken && isOnline) {
+      getCurrentUser();
+    }
+  }, [accessToken, isOnline]);
+
   // Settings handlers
   const handleSettingsChange = (
     key: keyof ProfileSettings,
@@ -162,6 +202,7 @@ const ProfileTemplate: React.FC<ProfileTemplateProps> = ({
   const handleSaveSettings = async () => {
     try {
       setSettings(tempSettings);
+      saveChanges(tempSettings);
       setShowSettingsModal(false);
       console.log("Settings saved successfully!");
     } catch (error) {
@@ -242,33 +283,13 @@ const ProfileTemplate: React.FC<ProfileTemplateProps> = ({
     []
   );
 
-  // API Functions (keeping existing ones)
-  const fetchUserProfile = async () => {
-    setLoading("fetching_user_profile");
-    const url = currentUser
-      ? `${V1_BASE_URL}/settings/profile/${currentUser}`
-      : `${V1_BASE_URL}/settings/profile`;
-
-    try {
-      const profileRes: Profile = await GetAllData({
-        access: accessToken,
-        url: url,
-        type: "User Profile",
-      });
-      if (profileRes) {
-        setUserProfile(profileRes);
-      }
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setLoading("fetching_user_profile");
-    }
-  };
-
   const loadInitialData = async () => {
     if (!accessToken || !layoutLoaded) return;
     try {
-      await Promise.all([fetchUserData(), fetchUserProfile()]);
+      await Promise.all([
+        fetchUserData(),
+        fetchUserProfile(accessToken, currentUser, setLoading),
+      ]);
     } catch (error) {
       console.error("Error loading initial data:", error);
       setLayoutLoaded(false); // Only set false on error
@@ -324,7 +345,7 @@ const ProfileTemplate: React.FC<ProfileTemplateProps> = ({
         if (updateRes) {
           setProfileImages({ type: null });
           setActiveTab("");
-          fetchUserProfile();
+          fetchUserProfile(accessToken, currentUser, setLoading);
         }
       }
     } catch (error) {
@@ -378,7 +399,7 @@ const ProfileTemplate: React.FC<ProfileTemplateProps> = ({
         if (updateRes) {
           setProfileImages({ type: null });
           setActiveTab("");
-          fetchUserProfile();
+          fetchUserProfile(accessToken, currentUser, setLoading);
         }
       }
     } catch (error) {
@@ -406,7 +427,7 @@ const ProfileTemplate: React.FC<ProfileTemplateProps> = ({
         setProfileImages({ type: null });
         setActiveTab("");
         if (profileImages.type === "cover") {
-          fetchUserProfile();
+          fetchUserProfile(accessToken, currentUser, setLoading);
         } else {
           fetchUserData();
         }
@@ -493,7 +514,7 @@ const ProfileTemplate: React.FC<ProfileTemplateProps> = ({
       });
 
       if (updateRes) {
-        fetchUserProfile();
+        fetchUserProfile(accessToken, currentUser, setLoading);
         setOriginalUserProfileDetails((prev) => ({
           ...prev,
           [fieldName]: fieldValue,
@@ -1014,7 +1035,9 @@ const ProfileTemplate: React.FC<ProfileTemplateProps> = ({
             <Button
               text="Save Setting"
               loading={loading.includes("updating_layout")}
-              onClick={handleSaveSettings}
+              onClick={() => {
+                handleSaveSettings();
+              }}
             />
           </div>
         </div>
@@ -1026,7 +1049,7 @@ const ProfileTemplate: React.FC<ProfileTemplateProps> = ({
     <div className={`${getLayoutClasses()} ${className} relative`}>
       {" "}
       {/* Settings Button */}
-      { !currentUser && (
+      {!currentUser && (
         <span
           onClick={() => setShowSettingsModal(true)}
           className="absolute z-50 top-0 cursor-pointer left-0 p-2 bg-black/50 rounded-full backdrop-blur-sm"

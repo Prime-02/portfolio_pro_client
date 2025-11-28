@@ -48,7 +48,7 @@ const NotificationHeader = () => {
   };
 
   return (
-    <div className="flex items-center justify-between w-full mb-8 p-3 md:p-8 ">
+    <div className="flex items-start md:items-center flex-col md:flex-row justify-between w-full mb-8 p-3 md:p-8 ">
       <BasicHeader
         heading="Notifications"
         headingClass="md:text-6xl text-4xl font-bold"
@@ -60,16 +60,22 @@ const NotificationHeader = () => {
         subHeadingClass="md:text-3xl text-xl font-semibold"
       />
       {notifications.length > 0 && (
-        <Button
-          text={
-            unreadCount === 0 ? "Delete all notifications" : "Mark all as read"
-          }
-          onClick={notificationActions}
-          loading={
-            isLoading("marking_all_notifications_as_read") ||
-            isLoading("deleting_all_notifications")
-          }
-        />
+        <span
+        className="md:max-w-sm"
+        >
+          <Button
+            text={
+              unreadCount === 0
+                ? "Delete all notifications"
+                : "Mark all as read"
+            }
+            onClick={notificationActions}
+            loading={
+              isLoading("marking_all_notifications_as_read") ||
+              isLoading("deleting_all_notifications")
+            }
+          />
+        </span>
       )}
     </div>
   );

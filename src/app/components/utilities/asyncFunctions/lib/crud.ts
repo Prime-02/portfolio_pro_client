@@ -1,6 +1,7 @@
 import axios, { AxiosResponse, AxiosError, AxiosRequestConfig } from "axios";
 import {
   convertNumericStrings,
+  handleAxiosError,
   isNumericString,
   removeEmptyStringValues,
 } from "../../syncFunctions/syncs";
@@ -78,16 +79,10 @@ export const PostAllData = async <
       // Skip the type guard check - just build FormData directly
       const formData = new FormData();
       const cleanedData = removeEmptyStringValues(data);
-
-      console.log("Building FormData from:", cleanedData);
-
       Object.entries(cleanedData).forEach(([key, value]) => {
         if (value === null || value === undefined) {
           return; // Skip null/undefined values
         }
-
-        console.log(`Processing ${key}:`, typeof value, value);
-
         // Handle arrays
         if (Array.isArray(value)) {
           if (value.length === 0) {
@@ -102,7 +97,6 @@ export const PostAllData = async <
             });
           } else {
             // For other arrays (strings, numbers, etc.), stringify
-            console.log(`Stringifying array for ${key}:`, value);
             formData.append(key, JSON.stringify(value));
           }
           return;
@@ -114,7 +108,6 @@ export const PostAllData = async <
           !(value instanceof File) &&
           !(value instanceof Blob)
         ) {
-          console.log(`Stringifying object for ${key}:`, value);
           formData.append(key, JSON.stringify(value));
           return;
         }
@@ -141,39 +134,19 @@ export const PostAllData = async <
       });
 
       requestData = formData;
-
-      // Log FormData contents for debugging
-      console.log("FormData entries:");
-      for (const [key, value] of formData.entries()) {
-        console.log(
-          `  ${key}:`,
-          value instanceof File ? `File: ${value.name}` : value
-        );
-      }
     } else {
       // For non-FormData requests, set Content-Type
       headers["Content-Type"] = "application/json";
     }
-
-    console.log("Making request to:", fullUrl);
-    console.log("Request headers:", Object.keys(headers));
 
     const response: AxiosResponse<R> = await axios.post(fullUrl, requestData, {
       headers,
     });
 
     return response.data;
-  } catch (error) {
-    console.error("Upload failed:", error);
-
-    // Enhanced error handling
-    if (axios.isAxiosError(error)) {
-      const axiosError = error as AxiosError;
-      console.error("Response data:", axiosError.response?.data);
-      console.error("Response status:", axiosError.response?.status);
-      console.error("Response headers:", axiosError.response?.headers);
-    }
-
+  } catch (error: unknown) {
+    const errorMessage = handleAxiosError(error as AxiosError);
+    toast.error(errorMessage);
     throw error;
   }
 };
@@ -231,18 +204,9 @@ export const GetAllData = async <T = Record<string, unknown>, R = unknown>({
     const response: AxiosResponse<R> = await axios.get(fullUrl, config);
     return response.data;
   } catch (error) {
-    console.log(`Error fetching ${type}:`, error);
-
-    const axiosError = error as AxiosError;
-    if (axiosError.response?.status === 429) {
-      const banMessage =
-        "Your account was banned due to suspected malicious activity";
-      // toast.error(banMessage);
-      throw new Error(banMessage);
-    }
-
-    // Re-throw the error to allow further handling
-    throw axiosError;
+    const errorMessage = handleAxiosError(error as AxiosError);
+    toast.error(errorMessage);
+    throw error;
   }
 };
 
@@ -282,7 +246,7 @@ export const UpdateAllData = async <
 
     let requestData: T | FormData | undefined = field
       ? intToString
-        ? (convertNumericStrings(removeEmptyStringValues(field)) as T)
+        ? (removeEmptyStringValues(field) as T)
         : (removeEmptyStringValues(field) as T)
       : undefined;
 
@@ -391,16 +355,6 @@ export const UpdateAllData = async <
 
     return response.data;
   } catch (error) {
-    console.error("Update failed:", error);
-
-    // Enhanced error handling
-    if (axios.isAxiosError(error)) {
-      const axiosError = error as AxiosError;
-      console.error("Response data:", axiosError.response?.data);
-      console.error("Response status:", axiosError.response?.status);
-      console.error("Response headers:", axiosError.response?.headers);
-    }
-
     const errorMessage = handleAxiosError(error as AxiosError);
     toast.error(errorMessage);
     throw error;
@@ -430,9 +384,7 @@ export const DeleteData = async <T = Record<string, unknown>, R = unknown>({
 
     console.log("Making DELETE request to:", fullUrl);
 
-    const headers: Record<string, string> = {
-      "ngrok-skip-browser-warning": "true",
-    };
+    const headers: Record<string, string> = {};
 
     // Only add Authorization header if token is provided
     if (token) {
@@ -451,59 +403,9 @@ export const DeleteData = async <T = Record<string, unknown>, R = unknown>({
   } catch (error) {
     const errorMessage = handleAxiosError(error as AxiosError);
     toast.error(errorMessage);
-    console.error("Delete failed:", error);
     throw error;
   }
 };
-
-// Helper function to handle axios errors consistently
-function handleAxiosError(axiosError: AxiosError): string {
-  let errorMessage =
-    "An error occurred. Please contact our support if this problem persists.";
-
-  if (axiosError.response) {
-    const responseData = axiosError.response.data;
-
-    if (typeof responseData === "string") {
-      errorMessage = responseData;
-    } else if (Array.isArray(responseData)) {
-      // Handle array of strings or array of objects
-      errorMessage = responseData
-        .map((item) =>
-          typeof item === "object" && item !== null
-            ? Object.values(item).join(" ")
-            : String(item)
-        )
-        .join(", ");
-    } else if (typeof responseData === "object" && responseData !== null) {
-      // Flatten nested error objects
-      const messages: string[] = [];
-      const collectMessages = (obj: Record<string, unknown>) => {
-        Object.values(obj).forEach((value) => {
-          if (typeof value === "string") {
-            messages.push(value);
-          } else if (Array.isArray(value)) {
-            messages.push(
-              ...value.filter((i): i is string => typeof i === "string")
-            );
-          } else if (typeof value === "object" && value !== null) {
-            collectMessages(value as Record<string, unknown>);
-          }
-        });
-      };
-      collectMessages(responseData as Record<string, unknown>);
-      errorMessage = messages.length
-        ? messages.join(", ")
-        : JSON.stringify(responseData);
-    }
-  } else if (axiosError.request) {
-    errorMessage = "No response received from server";
-  } else {
-    errorMessage = axiosError.message || errorMessage;
-  }
-
-  return errorMessage;
-}
 
 // Type definitions for better API responses
 export interface ApiResponse<T = unknown> {

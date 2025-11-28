@@ -1,7 +1,8 @@
 import Button from "@/app/components/buttons/Buttons";
 import CheckBox from "@/app/components/inputs/CheckBox";
 import ImageCropper from "@/app/components/inputs/ImageUploader";
-import { TextArea, Textinput } from "@/app/components/inputs/Textinput";
+import { Textinput } from "@/app/components/inputs/Textinput";
+import { TextArea } from "@/app/components/inputs/TextArea";
 import { toast } from "@/app/components/toastify/Toastify";
 import {
   DeleteData,

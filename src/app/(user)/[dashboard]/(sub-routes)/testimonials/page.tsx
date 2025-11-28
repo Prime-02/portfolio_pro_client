@@ -1,9 +1,12 @@
-import React from 'react'
+import React from "react";
+import TestimonialsMain from "./page-components/TestimonialsMain";
 
 const Testimonials = () => {
   return (
-    <div>Testimonials</div>
-  )
-}
+    <div>
+      <TestimonialsMain />
+    </div>
+  );
+};
 
-export default Testimonials
+export default Testimonials;

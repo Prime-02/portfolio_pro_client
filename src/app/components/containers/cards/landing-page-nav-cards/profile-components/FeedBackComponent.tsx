@@ -1,6 +1,7 @@
 import Button from "@/app/components/buttons/Buttons";
 import Dropdown from "@/app/components/inputs/DynamicDropdown";
-import { TextArea, Textinput } from "@/app/components/inputs/Textinput";
+import { Textinput } from "@/app/components/inputs/Textinput";
+import { TextArea } from "@/app/components/inputs/TextArea";
 import { useTheme } from "@/app/components/theme/ThemeContext ";
 import { toast } from "@/app/components/toastify/Toastify";
 import { PostAllData } from "@/app/components/utilities/asyncFunctions/lib/crud";

@@ -17,7 +17,6 @@ interface SpoilerTextProps {
   content: string;
 }
 
-
 const TextFormatter: React.FC<TextFormatterProps> = ({
   children,
   className = "",
@@ -31,10 +30,11 @@ const TextFormatter: React.FC<TextFormatterProps> = ({
   }
 
   // Determine if we need to truncate
-  const shouldTruncate = showSeeMore && children.length > characterLimit && !isExpanded;
-  
+  const shouldTruncate =
+    showSeeMore && children.length > characterLimit && !isExpanded;
+
   // Get the text to display
-  const displayText = shouldTruncate 
+  const displayText = shouldTruncate
     ? children.substring(0, characterLimit)
     : children;
 
@@ -94,12 +94,13 @@ const TextFormatter: React.FC<TextFormatterProps> = ({
           </div>
         );
       } else if (trimmedLine === "") {
-        return <div key={`line-${lineIndex}`} className="h-4" />;
+        return <br key={`line-${lineIndex}`} />;
       } else {
         return (
-          <div key={`line-${lineIndex}`} className="my-1">
+          <React.Fragment key={`line-${lineIndex}`}>
             {formattedContent}
-          </div>
+            {lineIndex < lines.length - 1 && <br />}
+          </React.Fragment>
         );
       }
     });
@@ -361,7 +362,6 @@ const TextFormatter: React.FC<TextFormatterProps> = ({
         {formatText(displayText)}
         {shouldTruncate && (
           <>
-            {/* <span>...</span> */}
             <button
               onClick={() => setIsExpanded(!isExpanded)}
               className="text-[var(--accent)] hover:text-[var(--accent)] underline text-sm font-medium transition-colors duration-200 ml-1 inline"
@@ -452,40 +452,55 @@ export const TextFormatterDemo: React.FC = () => {
         <h2 className="text-xl font-semibold mb-4">New Props</h2>
         <div className="bg-gray-50 p-4 rounded-lg">
           <div className="text-sm space-y-2">
-            <div><strong>characterLimit:</strong> number (default: 200) - Sets the character limit before truncation</div>
-            <div><strong>showSeeMore:</strong> boolean (default: true) - Enables/disables the see more functionality</div>
+            <div>
+              <strong>characterLimit:</strong> number (default: 200) - Sets the
+              character limit before truncation
+            </div>
+            <div>
+              <strong>showSeeMore:</strong> boolean (default: true) -
+              Enables/disables the see more functionality
+            </div>
           </div>
         </div>
       </div>
 
       <div className="bg-white rounded-lg shadow-lg p-6">
-        <h2 className="text-xl font-semibold mb-4">Examples with Different Limits</h2>
+        <h2 className="text-xl font-semibold mb-4">
+          Examples with Different Limits
+        </h2>
         <div className="space-y-6">
           <div className="border-l-4 border-blue-200 pl-4">
             <h3 className="font-medium mb-2">Short limit (50 characters):</h3>
             <TextFormatter characterLimit={50}>
-              This is a longer text that will be truncated at 50 characters to demonstrate the see more functionality working with different limits.
+              This is a longer text that will be truncated at 50 characters to
+              demonstrate the see more functionality working with different
+              limits.
             </TextFormatter>
           </div>
 
           <div className="border-l-4 border-green-200 pl-4">
             <h3 className="font-medium mb-2">Medium limit (100 characters):</h3>
             <TextFormatter characterLimit={100}>
-              This is an even longer piece of text with **bold formatting**, *italic text*, and `code blocks` that will be truncated at 100 characters to show how the formatting is preserved even when truncated.
+              This is an even longer piece of text with **bold formatting**,
+              *italic text*, and `code blocks` that will be truncated at 100
+              characters to show how the formatting is preserved even when
+              truncated.
             </TextFormatter>
           </div>
 
           <div className="border-l-4 border-purple-200 pl-4">
-            <h3 className="font-medium mb-2">Default limit (200 characters):</h3>
-            <TextFormatter>
-              {examples[4]} 
-            </TextFormatter>
+            <h3 className="font-medium mb-2">
+              Default limit (200 characters):
+            </h3>
+            <TextFormatter>{examples[4]}</TextFormatter>
           </div>
 
           <div className="border-l-4 border-red-200 pl-4">
             <h3 className="font-medium mb-2">See more disabled:</h3>
             <TextFormatter showSeeMore={false}>
-              This text has the see more feature disabled, so it will display in full regardless of length. This is useful when you want to show all content without truncation functionality.
+              This text has the see more feature disabled, so it will display in
+              full regardless of length. This is useful when you want to show
+              all content without truncation functionality.
             </TextFormatter>
           </div>
         </div>
@@ -497,7 +512,10 @@ export const TextFormatterDemo: React.FC = () => {
           {examples.map((example, index) => (
             <div key={index} className="border-l-4 border-blue-200 pl-4">
               <div className="text-sm text-gray-500 font-mono mb-2 whitespace-pre-wrap">
-                Input: {example.length > 100 ? example.substring(0, 100) + "..." : example}
+                Input:{" "}
+                {example.length > 100
+                  ? example.substring(0, 100) + "..."
+                  : example}
               </div>
               <div className="text-base border-t pt-2">
                 <strong>Output:</strong>
@@ -520,7 +538,8 @@ export const TextFormatterDemo: React.FC = () => {
 
 // Interactive test area
 const TestArea = () => {
-  const [input, setInput] = useState<string>(`Try typing with bullets and formatting - this text is long enough to trigger the see more functionality:
+  const [input, setInput] =
+    useState<string>(`Try typing with bullets and formatting - this text is long enough to trigger the see more functionality:
 
 • **Bold** bullet point with additional content to make it longer
 - *Italic* bullet point with extensive descriptions and examples  
@@ -545,7 +564,9 @@ This component now intelligently handles long content by providing a smooth user
     <div className="space-y-4">
       <div className="flex gap-4 items-center mb-4">
         <div>
-          <label className="block text-sm font-medium mb-1">Character Limit:</label>
+          <label className="block text-sm font-medium mb-1">
+            Character Limit:
+          </label>
           <input
             type="number"
             value={characterLimit}
@@ -578,7 +599,7 @@ This component now intelligently handles long content by providing a smooth user
       <div className="p-4 bg-gray-50 rounded-lg border">
         <strong>Formatted Output:</strong>
         <div className="mt-2 bg-white p-3 rounded border">
-          <TextFormatter 
+          <TextFormatter
             characterLimit={characterLimit}
             showSeeMore={showSeeMore}
           >

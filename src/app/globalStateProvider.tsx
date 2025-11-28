@@ -9,9 +9,15 @@ import React, {
   SetStateAction,
   useCallback,
 } from "react";
-import { GetAllData } from "./components/utilities/asyncFunctions/lib/crud";
-import { BASE_URL, V1_BASE_URL } from "./components/utilities/indices/urls";
-import { User } from "./components/types and interfaces/UserAndProfile";
+import {
+  GetAllData,
+  PostAllData,
+} from "./components/utilities/asyncFunctions/lib/crud";
+import { V1_BASE_URL } from "./components/utilities/indices/urls";
+import {
+  TokenData,
+  User,
+} from "./components/types and interfaces/UserAndProfile";
 import {
   ReadonlyURLSearchParams,
   usePathname,
@@ -20,15 +26,10 @@ import {
 } from "next/navigation";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { toast } from "./components/toastify/Toastify";
-import { getCurrentUrl } from "./components/utilities/syncFunctions/syncs";
-
-// Define types for user data
-export interface UserData extends User {
-  auth_id?: string;
-}
+import { PathUtil } from "./components/utilities/syncFunctions/syncs";
 
 // Define the default user data
-const defaultUserData: UserData = {
+export const defaultUserData: User = {
   id: "",
   username: "",
   firstname: "",
@@ -45,26 +46,23 @@ const defaultUserData: UserData = {
   updated_at: "",
 };
 
-// Token storage interface
-interface TokenData {
-  token: string;
-  timestamp: number;
-}
-
 // Define the type for the global state
 interface GlobalStateContextType {
-  userData: UserData;
-  setUserData: (userData: UserData | ((prev: UserData) => UserData)) => void;
+  userData: User;
+  setUserData: (userData: User | ((prev: User) => User)) => void;
   accessToken: string;
-  mockLogOut: () => void;
-  setAccessToken: (token: string) => void;
+  logOut: () => void;
+  setAccessToken: (
+    session_token: string,
+    refresh_token: string,
+    expires_at: string
+  ) => void;
   loading: string[];
   setLoading: (
     value: string,
     setArray?: Dispatch<SetStateAction<string[]>>
   ) => void;
   fetchUserData: (access?: string) => Promise<void>;
-  updateUserData: () => Promise<void>;
   router: AppRouterInstance;
   currentPath: string;
   pathname: string;
@@ -93,41 +91,31 @@ const GlobalStateContext = createContext<GlobalStateContextType | undefined>(
 
 // Constants
 const TOKEN_STORAGE_KEY = "session_token_data";
-const TOKEN_EXPIRY_DAYS = 7;
-const TOKEN_EXPIRY_MS = TOKEN_EXPIRY_DAYS * 24 * 60 * 60 * 1000;
 
-// Utility function to save token with timestamp
-const saveTokenWithTimestamp = (token: string): void => {
+// Utility function to save token data
+const saveTokenData = (
+  session_token: string,
+  refresh_token: string,
+  expires_at: string
+): void => {
   if (typeof window === "undefined") return;
 
   try {
-    // Check if token already exists in localStorage
-    const existingData = localStorage.getItem(TOKEN_STORAGE_KEY);
-
-    if (existingData) {
-      const existingTokenData: TokenData = JSON.parse(existingData);
-
-      // If the token is exactly the same, don't update anything (preserve timestamp)
-      if (existingTokenData.token === token) {
-        console.log("Token unchanged, preserving original timestamp");
-        return;
-      }
-    }
-
-    // New token detected, save with new timestamp
     const tokenData: TokenData = {
-      token,
-      timestamp: Date.now(),
+      session_token,
+      refresh_token,
+      expires_at,
+      saved_at: Date.now(),
     };
     localStorage.setItem(TOKEN_STORAGE_KEY, JSON.stringify(tokenData));
-    console.log("New token saved with fresh timestamp");
+    console.log("Token data saved successfully");
   } catch (error) {
-    console.error("Error saving token with timestamp:", error);
+    console.error("Error saving token data:", error);
   }
 };
 
-// Utility function to retrieve and validate token
-const getAndValidateToken = (): string | null => {
+// Utility function to retrieve token data
+const getTokenData = (): TokenData | null => {
   if (typeof window === "undefined") return null;
 
   try {
@@ -135,20 +123,35 @@ const getAndValidateToken = (): string | null => {
     if (!storedData) return null;
 
     const tokenData: TokenData = JSON.parse(storedData);
-    const currentTime = Date.now();
-    const timeDifference = currentTime - tokenData.timestamp;
-
-    // Check if token has expired (over 7 days)
-    if (timeDifference > TOKEN_EXPIRY_MS) {
-      localStorage.removeItem(TOKEN_STORAGE_KEY);
-      return null;
-    }
-
-    return tokenData.token;
+    return tokenData;
   } catch (error) {
-    console.error("Error validating token:", error);
+    console.error("Error retrieving token data:", error);
     localStorage.removeItem(TOKEN_STORAGE_KEY);
     return null;
+  }
+};
+
+// Utility function to check if token is expired or expiring today
+const checkTokenExpiry = (
+  expires_at: string
+): { isExpired: boolean; isExpiringToday: boolean } => {
+  try {
+    const expiryDate = new Date(expires_at);
+    const now = new Date();
+
+    // Check if token has already expired
+    const isExpired = now >= expiryDate;
+
+    // Check if token expires today (within 24 hours)
+    const twentyFourHoursFromNow = new Date(
+      now.getTime() + 24 * 60 * 60 * 1000
+    );
+    const isExpiringToday = expiryDate <= twentyFourHoursFromNow && !isExpired;
+
+    return { isExpired, isExpiringToday };
+  } catch (error) {
+    console.error("Error checking token expiry:", error);
+    return { isExpired: true, isExpiringToday: false };
   }
 };
 
@@ -160,8 +163,9 @@ const clearToken = (): void => {
 
 // Provider component
 export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
-  const [userData, setUserData] = useState<UserData>(defaultUserData);
+  const [userData, setUserData] = useState<User>(defaultUserData);
   const [accessToken, setAccessToken] = useState<string>("");
+  const [refreshToken, setRefreshToken] = useState<string>("");
   const [loading, _setLoading] = useState<string[]>([]);
   const [currentUser, setCurrentUser] = useState<string | undefined>("");
   const [viewportWidth, setViewportWidth] = useState(0);
@@ -170,6 +174,7 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
   const currentPath = usePathname();
   const pathname = usePathname();
+  const currentUserName = PathUtil.getPathSegment(currentPath, 0);
 
   // Compute currentPathWithQuery
   const currentPathWithQuery = searchParams.toString()
@@ -202,18 +207,16 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
 
     setLoading("fetching_user_data");
     try {
-      const userDataUrl = currentUser
-        ? `${BASE_URL}/api/v1/settings/info/${currentUser}`
-        : `${BASE_URL}/api/v1/settings/info`;
+      const userDataUrl = `${V1_BASE_URL}/settings/info`;
 
-      const userDataRes = await GetAllData<undefined, UserData>({
+      const userDataRes = await GetAllData<undefined, User>({
         access,
         url: userDataUrl,
         type: "User Data",
       });
 
       if (userDataRes) {
-        const newUserData: UserData = {
+        const newUserData: User = {
           id: userDataRes.id ?? "",
           username: userDataRes.username ?? "",
           email: userDataRes.email ?? "",
@@ -231,7 +234,6 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
         };
 
         setUserData(newUserData);
-        console.log("Client User Data: ", userDataRes);
       } else {
         console.log("No User Info Recovered");
       }
@@ -242,97 +244,184 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Simple user data update function to be used by other components
-  const updateUserData = async (token = accessToken): Promise<void> => {
-    if (!token) {
-      console.warn("No access token available for updateUserData");
-      return;
-    }
+  // Refresh token function
+  const performTokenRefresh = async (
+    refresh_token: string
+  ): Promise<boolean> => {
+    setLoading("refreshing_token");
+    try {
+      const refreshRes: {
+        session_token: string;
+        refresh_token: string;
+        expires_at: string;
+      } = await PostAllData({
+        access: refresh_token,
+        url: `${V1_BASE_URL}/sessions/refresh`,
+        data: { refresh_token: refresh_token },
+      });
 
-    await fetchUserData(token);
+      if (refreshRes && refreshRes.session_token) {
+        // Save the new token data
+        saveTokenData(
+          refreshRes.session_token,
+          refreshRes.refresh_token,
+          refreshRes.expires_at
+        );
+        setAccessToken(refreshRes.session_token);
+        setRefreshToken(refreshRes.refresh_token);
+        console.log("Token refreshed successfully");
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("Error refreshing token:", error);
+      return false;
+    } finally {
+      setLoading("refreshing_token");
+    }
   };
 
-  // Wrapper function to handle token updates with storage
-  const updateAccessToken = useCallback((token: string) => {
-    setAccessToken(token);
-    if (token) {
-      saveTokenWithTimestamp(token);
-    } else {
-      clearToken();
-    }
-  }, []);
+  // Enhanced setAccessToken function
+  const updateAccessToken = useCallback(
+    (session_token: string, refresh_token: string, expires_at: string) => {
+      setAccessToken(session_token);
+      setRefreshToken(refresh_token);
 
-  // Effect for initial load (mount)
+      if (session_token && refresh_token && expires_at) {
+        saveTokenData(session_token, refresh_token, expires_at);
+      } else {
+        clearToken();
+      }
+    },
+    []
+  );
+
+  // Effect for initial load and token validation
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const validToken = getAndValidateToken();
+      const tokenData = getTokenData();
 
-      if (validToken) {
-        setAccessToken(validToken); // Don't save here - just load from storage
-        updateUserData(validToken);
+      if (tokenData) {
+        const { isExpired, isExpiringToday } = checkTokenExpiry(
+          tokenData.expires_at
+        );
+
+        if (isExpired) {
+          // Token expired, try to refresh
+          console.log("Token expired, attempting refresh...");
+          performTokenRefresh(tokenData.refresh_token).then((success) => {
+            if (!success) {
+              // Refresh failed, redirect to login
+              clearToken();
+              if (!checkParams("auth_mode")) {
+                router.push("/user-auth?auth_mode=login");
+              }
+            }
+          });
+        } else if (isExpiringToday) {
+          // Token expiring today, refresh proactively
+          console.log("Token expiring today, refreshing proactively...");
+          setAccessToken(tokenData.session_token);
+          setRefreshToken(tokenData.refresh_token);
+          performTokenRefresh(tokenData.refresh_token);
+        } else {
+          // Token is still valid
+          setAccessToken(tokenData.session_token);
+          setRefreshToken(tokenData.refresh_token);
+          if (isOnline) {
+            fetchUserData(tokenData.session_token);
+          }
+        }
       } else {
-        // Token expired or not found, redirect to login
-        if (accessToken === "" && !checkParams("auth_mode")) {
+        // No token found, redirect to login
+        if (!checkParams("auth_mode")) {
           router.push("/user-auth?auth_mode=login");
         }
       }
     }
-  }, []);
+  }, [isOnline]);
 
-  // Effect to log token info (no saving here)
+  // Effect to periodically check token expiry (every hour)
   useEffect(() => {
-    // Log token with timestamp and days passed
-    const storedData =
-      typeof window !== "undefined"
-        ? localStorage.getItem(TOKEN_STORAGE_KEY)
-        : null;
-    if (storedData && accessToken) {
+    if (!accessToken || !refreshToken) return;
+
+    const checkInterval = setInterval(
+      () => {
+        const tokenData = getTokenData();
+        if (tokenData) {
+          const { isExpired, isExpiringToday } = checkTokenExpiry(
+            tokenData.expires_at
+          );
+
+          if (isExpired || isExpiringToday) {
+            console.log("Token check: Refreshing token...");
+            performTokenRefresh(tokenData.refresh_token);
+          }
+        }
+      },
+      60 * 60 * 1000
+    ); // Check every hour
+
+    return () => clearInterval(checkInterval);
+  }, [accessToken, refreshToken]);
+
+  // Effect to log token info
+  useEffect(() => {
+    const tokenData = getTokenData();
+    if (tokenData && accessToken) {
       try {
-        const tokenData: TokenData = JSON.parse(storedData);
-        const daysPassed = (
-          (Date.now() - tokenData.timestamp) /
-          (24 * 60 * 60 * 1000)
-        ).toFixed(2);
-        const timestamp = new Date(tokenData.timestamp).toLocaleString();
-        console.log(
-          "Token: ",
-          accessToken,
-          "\nTimestamp:",
-          timestamp,
-          "\nDays Passed:",
-          daysPassed
-        );
+        const expiryDate = new Date(tokenData.expires_at);
+        const now = new Date();
+        const hoursUntilExpiry =
+          (expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60);
+
+        console.log("=== Token Info ===");
+        console.log("Session Token:", accessToken);
+        console.log("Expires At:", tokenData.expires_at);
+        console.log("Hours Until Expiry:", hoursUntilExpiry.toFixed(2));
       } catch (error) {
-        console.log("Token: ", accessToken);
-        console.log("Token Error: ", error);
+        console.error("Error logging token info:", error);
       }
-    } else {
-      console.log("Token: ", accessToken);
     }
   }, [accessToken]);
 
-  const mockLogOut = () => {
-    setAccessToken("");
-    clearToken();
+  const logOut = async () => {
+    setLoading("logging_out");
+    try {
+      const logOutRes: { message: string } = await PostAllData({
+        access: accessToken,
+        url: `${V1_BASE_URL}/sessions/revoke`,
+      });
+      if (logOutRes && logOutRes.message) {
+        router.push("/user-auth?auth_mode=login");
+        setAccessToken("");
+        setRefreshToken("");
+        clearToken();
 
-    const newUserData: UserData = {
-      id: "",
-      username: "",
-      email: "",
-      is_superuser: false,
-      firstname: "",
-      middlename: "",
-      lastname: "",
-      profile_picture: null,
-      profile_picture_id: "",
-      phone_number: "",
-      is_active: true,
-      role: "user",
-      created_at: "",
-      updated_at: "",
-    };
+        const newUserData: User = {
+          id: "",
+          username: "",
+          email: "",
+          is_superuser: false,
+          firstname: "",
+          middlename: "",
+          lastname: "",
+          profile_picture: null,
+          profile_picture_id: "",
+          phone_number: "",
+          is_active: true,
+          role: "user",
+          created_at: "",
+          updated_at: "",
+        };
 
-    setUserData(newUserData);
+        setUserData(newUserData);
+      }
+    } catch (error) {
+      console.error("Error during logout:", error);
+    } finally {
+      setLoading("logging_out");
+    }
   };
 
   /**
@@ -412,12 +501,7 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const getCurrentUser = async () => {
-    setLoading("finding_user");
-    const currentUserName = getCurrentUrl("pathSegment", 0);
-    if (!currentUserName) {
-      toast.error(
-        "Something went wrong... please ask for the link to be resent"
-      );
+    if (!currentUserName || !userData.username) {
       setCurrentUser(undefined);
       return;
     }
@@ -425,6 +509,7 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
       setCurrentUser(undefined);
       return;
     }
+    setLoading("finding_user");
     try {
       const currentUserRes: {
         available: boolean;
@@ -434,6 +519,12 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
         access: accessToken,
         url: `${V1_BASE_URL}/user-multistep-form/check-username?username=${currentUserName}`,
       });
+      if (currentUserRes) {
+        console.log(
+          `Current User: ${currentUserName} Check Result:`,
+          currentUserRes
+        );
+      }
       if (
         !currentUserRes.available &&
         currentUserRes.username &&
@@ -450,6 +541,12 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  useEffect(() => {
+    if (isOnline && accessToken && userData.username) {
+      getCurrentUser();
+    }
+  }, [currentPath, isOnline, accessToken, userData.username]);
+
   const checkValidId = (id: string) => {
     return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
       id
@@ -462,14 +559,13 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
 
   const contextValue: GlobalStateContextType = {
     userData,
-    mockLogOut,
+    logOut,
     setUserData,
-    setAccessToken: updateAccessToken, // Use wrapper function
+    setAccessToken: updateAccessToken,
     accessToken,
     loading,
     setLoading,
     fetchUserData,
-    updateUserData,
     router,
     currentPath,
     pathname,
@@ -493,6 +589,9 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <GlobalStateContext.Provider value={contextValue}>
+      {currentUser && (
+        <span className="absolute z-50 left-0 top-0">{currentUser}</span>
+      )}
       {children}
     </GlobalStateContext.Provider>
   );
@@ -508,7 +607,7 @@ export const useGlobalState = (): GlobalStateContextType => {
 };
 
 // Additional utility hooks for specific parts of the global state
-export const useUserData = (): UserData => {
+export const useUserData = (): User => {
   const { userData } = useGlobalState();
   return userData;
 };
@@ -523,9 +622,9 @@ export const useLoading = (): [string[], (value: string) => void] => {
   return [loading, setLoading];
 };
 
-export const useUpdateUserData = (): (() => Promise<void>) => {
-  const { updateUserData } = useGlobalState();
-  return updateUserData;
+export const useFetchUserData = (): (() => Promise<void>) => {
+  const { fetchUserData } = useGlobalState();
+  return fetchUserData;
 };
 
 // New utility hook for online status

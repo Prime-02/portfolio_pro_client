@@ -54,8 +54,9 @@ export type ThemeContextType = {
   // New properties for save/cancel functionality
   hasUnsavedChanges: boolean;
   showSaveButtons: boolean;
-  saveChanges: () => void;
+  saveChanges: (customSettings: ProfileSettings) => void;
   cancelChanges: () => void;
+  resetToDefaults: () => void;
 };
 
 // Settings interface
@@ -262,65 +263,68 @@ export const ThemeProvider = ({
   }, []);
 
   // Save changes function
-  const saveChanges = useCallback(async () => {
-    if (!accessToken || isUpdatingSettings.current) return;
+  const saveChanges = useCallback(
+    async (customSettings: ProfileSettings = settings) => {
+      if (!accessToken || isUpdatingSettings.current) return;
 
-    isUpdatingSettings.current = true;
-    setLoading("updating_user_settings");
-
-    try {
-      const updateRes: UserPreferences = await UpdateAllData({
-        access: accessToken,
-        field: {
-          language: language.code,
-          theme: themeVariant,
-          primary_theme: lightTheme.background,
-          secondary_theme: lightTheme.foreground,
-          accent: accentColor.color,
-          primary_theme_dark: darkTheme.background,
-          secondary_theme_dark: darkTheme.foreground,
-          loader: loader,
-          layout_style: settings,
-        },
-        url: `${V1_BASE_URL}/settings/`,
-      });
-
-      if (updateRes) {
-        // Update saved state to match current state
-        updateSavedState();
-
-        // Hide save buttons and clear unsaved changes
-        setShowSaveButtons(false);
-        setHasUnsavedChanges(false);
-
-        // Clear timeout
-        if (saveButtonsTimeoutRef.current) {
-          clearTimeout(saveButtonsTimeoutRef.current);
-        }
-
-        // Optional: Show success toast
-        // toast.toast("Settings saved successfully", { type: "success" });
-      }
-    } catch (error) {
-      console.error("Error saving user settings:", error);
-      // Optional: Show error toast
-      // toast.toast("Failed to save settings", { type: "error" });
-    } finally {
+      isUpdatingSettings.current = true;
       setLoading("updating_user_settings");
-      isUpdatingSettings.current = false;
-    }
-  }, [
-    accessToken,
-    language,
-    themeVariant,
-    lightTheme,
-    darkTheme,
-    accentColor,
-    loader,
-    settings,
-    setLoading,
-    updateSavedState,
-  ]);
+
+      try {
+        const updateRes: UserPreferences = await UpdateAllData({
+          access: accessToken,
+          field: {
+            language: language.code,
+            theme: themeVariant,
+            primary_theme: lightTheme.background,
+            secondary_theme: lightTheme.foreground,
+            accent: accentColor.color,
+            primary_theme_dark: darkTheme.background,
+            secondary_theme_dark: darkTheme.foreground,
+            loader: loader,
+            layout_style: customSettings,
+          },
+          url: `${V1_BASE_URL}/settings/`,
+        });
+
+        if (updateRes) {
+          // // Update saved state to match current state
+          // updateSavedState();
+
+          // Hide save buttons and clear unsaved changes
+          setShowSaveButtons(false);
+          setHasUnsavedChanges(false);
+
+          // Clear timeout
+          if (saveButtonsTimeoutRef.current) {
+            clearTimeout(saveButtonsTimeoutRef.current);
+          }
+
+          // Optional: Show success toast
+          // toast.toast("Settings saved successfully", { type: "success" });
+        }
+      } catch (error) {
+        console.error("Error saving user settings:", error);
+        // Optional: Show error toast
+        // toast.toast("Failed to save settings", { type: "error" });
+      } finally {
+        setLoading("updating_user_settings");
+        isUpdatingSettings.current = false;
+      }
+    },
+    [
+      accessToken,
+      language,
+      themeVariant,
+      lightTheme,
+      darkTheme,
+      accentColor,
+      loader,
+      settings,
+      setLoading,
+      updateSavedState,
+    ]
+  );
 
   // Cancel changes function
   const cancelChanges = useCallback(() => {
@@ -492,6 +496,7 @@ export const ThemeProvider = ({
 
       if (settingsRes) {
         let needsUpdate = false;
+        console.log("Fetched user settings:", settingsRes);
         const requiredSettings = [
           "language",
           "theme",
@@ -644,6 +649,45 @@ export const ThemeProvider = ({
     }
   };
 
+  const resetToDefaults = useCallback(() => {
+    // Reset all theme and settings to their initial default values
+    setLightTheme(initialLightTheme);
+    setDarkTheme(initialDarkTheme);
+    setAccentColor(initialAccentColor);
+    setLanguage(initialLanguage);
+    setThemeVariant(defaultThemeVariant);
+    _setLoader(() => {
+      if (typeof initialLoader === "string") {
+        return initialLoader as Loader;
+      }
+      return initialLoader.style as Loader;
+    });
+    setSettings(defaultSettings);
+
+    // Update saved state to match the reset values
+    setSavedLightTheme(initialLightTheme);
+    setSavedDarkTheme(initialDarkTheme);
+    setSavedAccentColor(initialAccentColor);
+    setSavedLanguage(initialLanguage);
+    setSavedThemeVariant(defaultThemeVariant);
+    setSavedLoader(() => {
+      if (typeof initialLoader === "string") {
+        return initialLoader as Loader;
+      }
+      return initialLoader.style as Loader;
+    });
+    setSavedSettings(defaultSettings);
+  }, [
+    initialLightTheme,
+    initialDarkTheme,
+    initialAccentColor,
+    initialLanguage,
+    defaultThemeVariant,
+    initialLoader,
+    accessToken,
+    saveChanges,
+  ]);
+
   // Load user settings on mount when accessToken is available
   useEffect(() => {
     if (accessToken && !initialLoadComplete.current) {
@@ -688,6 +732,7 @@ export const ThemeProvider = ({
         showSaveButtons,
         saveChanges,
         cancelChanges,
+        resetToDefaults,
       }}
     >
       {children}

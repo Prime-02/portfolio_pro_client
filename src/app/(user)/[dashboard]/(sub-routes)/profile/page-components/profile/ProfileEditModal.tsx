@@ -1,7 +1,8 @@
 // components/profile/ProfileEditModal.tsx
 import React, { useCallback, useEffect, useState } from "react";
 import Modal from "@/app/components/containers/modals/Modal";
-import { Textinput, TextArea } from "@/app/components/inputs/Textinput";
+import { Textinput } from "@/app/components/inputs/Textinput";
+import { TextArea } from "@/app/components/inputs/TextArea";
 import DataList from "@/app/components/inputs/DataList";
 import CheckBox from "@/app/components/inputs/CheckBox";
 import Link from "next/link";

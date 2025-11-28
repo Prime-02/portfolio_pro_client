@@ -8,7 +8,8 @@ import {
 } from "@/app/components/utilities/asyncFunctions/lib/crud";
 import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
 import DataList from "@/app/components/inputs/DataList";
-import { TextArea, Textinput } from "@/app/components/inputs/Textinput";
+import { Textinput } from "@/app/components/inputs/Textinput";
+import { TextArea } from "@/app/components/inputs/TextArea";
 import CheckBox from "@/app/components/inputs/CheckBox";
 import { proficiencyLevel } from "@/app/components/utilities/indices/DropDownItems";
 import Dropdown from "@/app/components/inputs/DynamicDropdown";

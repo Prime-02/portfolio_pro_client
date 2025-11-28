@@ -1,6 +1,6 @@
 import Button from "@/app/components/buttons/Buttons";
 import CheckBox from "@/app/components/inputs/CheckBox";
-import { TextArea, Textinput } from "@/app/components/inputs/Textinput";
+import { Textinput } from "@/app/components/inputs/Textinput";
 import { toast } from "@/app/components/toastify/Toastify";
 import { professionalInformation } from "@/app/components/utilities/indices/MultiStepWriteUp";
 import { useGlobalState } from "@/app/globalStateProvider";
@@ -13,6 +13,7 @@ import {
 import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
 import { removeEmptyStringValues } from "@/app/components/utilities/syncFunctions/syncs";
 import Image from "next/image";
+import { TextArea } from "@/app/components/inputs/TextArea";
 interface ProfessionalInformation {
   open_to_work: boolean;
   job_title: string | null;

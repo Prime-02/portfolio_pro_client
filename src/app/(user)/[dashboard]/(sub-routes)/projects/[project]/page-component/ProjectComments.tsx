@@ -1,6 +1,6 @@
 import Button from "@/app/components/buttons/Buttons";
 import EmptyState from "@/app/components/containers/cards/EmptyState";
-import { TextArea } from "@/app/components/inputs/Textinput";
+import { TextArea } from "@/app/components/inputs/TextArea";
 import { getLoader } from "@/app/components/loaders/Loader";
 import { useTheme } from "@/app/components/theme/ThemeContext ";
 import { ProjectComment } from "@/app/components/types and interfaces/ProjectsAndPortfolios";
@@ -310,7 +310,6 @@ const ProjectComments = ({ projectId }: { projectId: string }) => {
                   value={editContent}
                   onChange={(e) => setEditContent(e)}
                   className="w-full p-2 border rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
-                  rows={3}
                   disabled={
                     isLoading("updating_comment") ||
                     isLoading("updating_reply") ||
@@ -430,7 +429,6 @@ const ProjectComments = ({ projectId }: { projectId: string }) => {
                   onChange={(e) => setReplyContent(e)}
                   label="Write a reply..."
                   className="my-1"
-                  rows={2}
                   disabled={isLoading("making_reply")}
                   labelBgHexIntensity={1}
                 />
@@ -491,7 +489,6 @@ const ProjectComments = ({ projectId }: { projectId: string }) => {
           onChange={(e) => setNewComment(e)}
           label="Write a comment..."
           className="mb-3"
-          rows={3}
           disabled={isLoading("making_comment")}
           labelBgHexIntensity={1}
         />

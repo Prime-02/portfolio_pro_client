@@ -3,7 +3,8 @@ import { toast } from "@/app/components/toastify/Toastify";
 import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
 import { useGlobalState } from "@/app/globalStateProvider";
 import React, { useEffect, useState } from "react";
-import { TextArea, Textinput } from "@/app/components/inputs/Textinput";
+import {  Textinput } from "@/app/components/inputs/Textinput";
+import { TextArea } from "@/app/components/inputs/TextArea";
 import CheckBox from "@/app/components/inputs/CheckBox";
 import Button from "@/app/components/buttons/Buttons";
 import {

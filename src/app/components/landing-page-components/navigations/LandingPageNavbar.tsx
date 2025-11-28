@@ -25,10 +25,6 @@ const LandingPageNavbar = () => {
   };
   const fallbackLetter = userData?.username?.toUpperCase() || "User";
 
-  useEffect(() => {
-    console.log("User Data: ", userData);
-  }, [userData]);
-
   const isMobile = viewportWidth < 768; // md breakpoint
 
   useEffect(() => {

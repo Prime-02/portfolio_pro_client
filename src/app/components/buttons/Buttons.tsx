@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, {
   ReactNode,
   MouseEvent,
@@ -31,6 +31,7 @@ type ButtonProps = {
   size?: "sm" | "md" | "lg";
   customColor?: string;
   colorIntensity?: "light" | "medium" | "dark";
+  maxWidth?: string; // Optional max width for the button
 };
 
 // Enhanced color normalization with better error handling
@@ -156,6 +157,7 @@ const Button = ({
   size = "md",
   customColor,
   colorIntensity = "medium",
+  maxWidth,
 }: ButtonProps) => {
   const { accentColor, loader } = useTheme();
   const Loader = getLoader(loader) || SpinLoader;
@@ -211,7 +213,7 @@ const Button = ({
   const baseClasses = useMemo(
     () =>
       `
-    cursor-pointer min-w-fit flex items-center justify-center rounded-lg 
+    cursor-pointer w-full max-w-full flex items-center justify-center rounded-lg 
     focus:outline-none transition-all duration-200 font-medium border 
     disabled:cursor-not-allowed active:scale-95 transform
   `
@@ -239,9 +241,14 @@ const Button = ({
     if (variant === "danger") palette = variantColorPalettes.danger;
     if (variant === "success") palette = variantColorPalettes.success;
 
+    const baseStyles: React.CSSProperties = {
+      maxWidth: maxWidth || undefined,
+    };
+
     // Common disabled styles
     if (currentState === "disabled") {
       return {
+        ...baseStyles,
         backgroundColor:
           variant === "outline" || variant === "ghost"
             ? "transparent"
@@ -281,6 +288,7 @@ const Button = ({
     switch (variant) {
       case "primary":
         return {
+          ...baseStyles,
           backgroundColor: stateColor,
           borderColor: stateColor,
           color: "#ffffff",
@@ -292,6 +300,7 @@ const Button = ({
 
       case "secondary":
         return {
+          ...baseStyles,
           backgroundColor: isInteractive ? palette.veryLight : stateColor,
           borderColor: stateColor,
           color: "#ffffff",
@@ -303,6 +312,7 @@ const Button = ({
 
       case "outline":
         return {
+          ...baseStyles,
           backgroundColor: isInteractive ? stateColor : "transparent",
           borderColor: stateColor,
           color: isInteractive ? "#ffffff" : palette.base,
@@ -312,6 +322,7 @@ const Button = ({
 
       case "ghost":
         return {
+          ...baseStyles,
           backgroundColor: "transparent",
           borderColor: "transparent",
           color: palette.base,
@@ -322,6 +333,7 @@ const Button = ({
 
       case "danger":
         return {
+          ...baseStyles,
           backgroundColor: stateColor,
           borderColor: stateColor,
           color: "#ffffff",
@@ -333,6 +345,7 @@ const Button = ({
 
       case "success":
         return {
+          ...baseStyles,
           backgroundColor: stateColor,
           borderColor: stateColor,
           color: "#ffffff",
@@ -343,7 +356,7 @@ const Button = ({
         };
 
       default:
-        return {};
+        return baseStyles;
     }
   };
 
@@ -399,7 +412,7 @@ const Button = ({
   return (
     <button
       ref={buttonRef}
-      title={title}
+      title={title || (text && text.length > 30 ? text : undefined)}
       type={type}
       disabled={disabled || loading}
       className={`${baseClasses} ${sizeClasses[size]} ${className}`}
@@ -443,10 +456,11 @@ const Button = ({
           )}
           {text && (
             <span
-              className="flex-shrink-0 transition-transform duration-200"
+              className="truncate transition-transform duration-200"
               style={{
                 transform:
                   getCurrentState() === "active" ? "scale(0.9)" : "scale(1)",
+                minWidth: 0,
               }}
             >
               {text}

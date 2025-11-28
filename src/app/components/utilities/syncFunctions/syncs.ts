@@ -335,6 +335,7 @@ export function findMatch<T extends Record<string, unknown>>(
   );
 }
 
+import { AxiosError } from "axios";
 import { toast } from "../../toastify/Toastify";
 
 export type ImageSource = string | null | undefined;
@@ -1632,3 +1633,75 @@ function capitalize(str: string): string {
 // formatDateString("2024-01-15T14:30:00", { useProximity: true, includeTime: true })
 // formatDateString("1609459200", { useProximity: true }) // Unix timestamp
 // formatDateString(new Date().toISOString(), { useProximity: true }) // Current time -> "just now"
+
+export // Helper function to handle axios errors consistently
+function handleAxiosError(axiosError: AxiosError): string {
+  let errorMessage =
+    "An error occurred. Please contact our support if this problem persists.";
+
+  if (axiosError.response) {
+    const responseData = axiosError.response.data;
+
+    // First, check if there's a 'detail' property (most common for API errors)
+    if (
+      typeof responseData === "object" &&
+      responseData !== null &&
+      "detail" in responseData
+    ) {
+      const detail = (responseData as Record<string, unknown>).detail;
+
+      if (typeof detail === "string") {
+        return detail;
+      } else if (Array.isArray(detail)) {
+        return detail
+          .map((item) =>
+            typeof item === "object" && item !== null
+              ? Object.values(item).join(" ")
+              : String(item)
+          )
+          .join(", ");
+      } else if (typeof detail === "object" && detail !== null) {
+        return JSON.stringify(detail);
+      }
+    }
+
+    // Fallback to other error formats
+    if (typeof responseData === "string") {
+      errorMessage = responseData;
+    } else if (Array.isArray(responseData)) {
+      errorMessage = responseData
+        .map((item) =>
+          typeof item === "object" && item !== null
+            ? Object.values(item).join(" ")
+            : String(item)
+        )
+        .join(", ");
+    } else if (typeof responseData === "object" && responseData !== null) {
+      // Flatten nested error objects
+      const messages: string[] = [];
+      const collectMessages = (obj: Record<string, unknown>) => {
+        Object.values(obj).forEach((value) => {
+          if (typeof value === "string") {
+            messages.push(value);
+          } else if (Array.isArray(value)) {
+            messages.push(
+              ...value.filter((i): i is string => typeof i === "string")
+            );
+          } else if (typeof value === "object" && value !== null) {
+            collectMessages(value as Record<string, unknown>);
+          }
+        });
+      };
+      collectMessages(responseData as Record<string, unknown>);
+      errorMessage = messages.length
+        ? messages.join(", ")
+        : JSON.stringify(responseData);
+    }
+  } else if (axiosError.request) {
+    errorMessage = "No response received from server";
+  } else {
+    errorMessage = axiosError.message || errorMessage;
+  }
+
+  return errorMessage;
+}

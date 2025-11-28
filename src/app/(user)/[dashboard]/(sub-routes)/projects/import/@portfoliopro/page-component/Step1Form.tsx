@@ -3,7 +3,8 @@ import Button from "@/app/components/buttons/Buttons";
 import CheckBox from "@/app/components/inputs/CheckBox";
 import Dropdown from "@/app/components/inputs/DynamicDropdown";
 import MediaPicker from "@/app/components/inputs/MediaPicker";
-import { TextArea, Textinput } from "@/app/components/inputs/Textinput";
+import { Textinput } from "@/app/components/inputs/Textinput";
+import { TextArea } from "@/app/components/inputs/TextArea";
 import { MediaFile } from "@/app/components/types and interfaces/MediaInputElements";
 import {
   ImageUrlsProps,

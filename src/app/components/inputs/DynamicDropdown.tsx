@@ -169,7 +169,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
                 } as DropdownOption)
               }
             >
-              {`"{searchQuery}" (Create new)`}
+              {`"${searchQuery}" (Create new)`}
             </div>
           )}
 
@@ -333,7 +333,7 @@ const Dropdown: React.FC<DropdownProps> = ({
 
   return (
     <>
-      {type !== "datalist" && <span className=" text-xs">{label}</span>}
+      {<span className=" text-xs">{label}</span>}
       <div
         tabIndex={0}
         onFocus={onFocus}

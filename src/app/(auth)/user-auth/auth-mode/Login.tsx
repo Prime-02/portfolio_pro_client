@@ -6,11 +6,20 @@ import { toast } from "@/app/components/toastify/Toastify";
 import { useGlobalState } from "@/app/globalStateProvider";
 import { PostAllData } from "@/app/components/utilities/asyncFunctions/lib/crud";
 import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
-import { DetailedError } from "@/app/components/utilities/syncFunctions/syncs";
+import {
+  TokenData,
+  User,
+} from "@/app/components/types and interfaces/UserAndProfile";
 
 const Login = () => {
-  const { loading, setLoading, checkParams, setAccessToken, router } =
-    useGlobalState();
+  const {
+    loading,
+    setLoading,
+    checkParams,
+    setAccessToken,
+    router,
+    fetchUserData,
+  } = useGlobalState();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -72,25 +81,33 @@ const Login = () => {
     setLoading("login_in_progress");
 
     try {
-      const loginRes: { session_token: string; username: string } =
-        await PostAllData({
-          url: `${V1_BASE_URL}/auth/login`,
-          data: formData,
-          useFormData: true,
-        });
+      const loginRes: { user: User; session: TokenData } = await PostAllData({
+        url: `${V1_BASE_URL}/auth/login`,
+        data: formData,
+        useFormData: true,
+      });
 
-      if (loginRes?.session_token) {
-        setAccessToken(loginRes.session_token);
+      if (
+        loginRes?.session?.session_token &&
+        loginRes?.session?.refresh_token &&
+        loginRes?.session?.expires_at
+      ) {
+        setAccessToken(
+          loginRes.session.session_token,
+          loginRes.session.refresh_token,
+          loginRes.session.expires_at
+        );
 
         const isNewUser = checkParams("new_user") === "true";
 
         // Navigate based on user status
         if (isNewUser) {
           router.push("/welcome");
-        } else if (!loginRes.username) {
+        } else if (!loginRes.user.username || loginRes.user.username === "") {
           router.push("/welcome?step=1");
         } else {
-          router.push(`/${loginRes.username}`);
+          await fetchUserData(loginRes?.session?.session_token);
+          router.push(`/${loginRes.user.username}`);
         }
 
         toast.success("Login successful! Welcome back.", {
@@ -104,42 +121,6 @@ const Login = () => {
       }
     } catch (error) {
       console.error("Login error:", error);
-
-      // Then you can use instanceof
-      if (error instanceof DetailedError) {
-        const errorMessage = error.details.toLowerCase();
-
-        if (
-          errorMessage.includes("unauthorized") ||
-          errorMessage.includes("incorrect")
-        ) {
-          setErrors((prev) => ({
-            ...prev,
-            general: "Invalid email/username or password. Please try again.",
-          }));
-        } else if (
-          errorMessage.includes("network") ||
-          errorMessage.includes("fetch")
-        ) {
-          setErrors((prev) => ({
-            ...prev,
-            general:
-              "Network error. Please check your connection and try again.",
-          }));
-        } else {
-          setErrors((prev) => ({
-            ...prev,
-            general:
-              "An unexpected error occurred. Please try again and if this persists, contact our support team.",
-          }));
-        }
-      } else {
-        setErrors((prev) => ({
-          ...prev,
-          general:
-            "An unexpected error occurred. Please try again and if this persists, contact our support team.",
-        }));
-      }
     } finally {
       setLoading("login_in_progress"); // Clear loading state
     }

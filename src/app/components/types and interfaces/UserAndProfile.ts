@@ -52,3 +52,12 @@ export type AuthTokenResponse = {
   expires_in: number;
   user_id: string;
 };
+
+
+// Enhanced token storage interface
+export interface TokenData {
+  session_token: string;
+  refresh_token: string;
+  expires_at: string;
+  saved_at: number;
+}

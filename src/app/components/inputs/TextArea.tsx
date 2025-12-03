@@ -1,4 +1,4 @@
-import { ReactNode, useRef } from "react";
+import { ReactNode, RefObject, useRef } from "react";
 import { getColorShade } from "../utilities/syncFunctions/syncs";
 import { useTheme } from "../theme/ThemeContext ";
 import {
@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 
 interface TextAreaProps {
+  ref?: RefObject<HTMLTextAreaElement | null>;
   label?: string;
   value?: string;
   onChange: (value: string) => void;
@@ -37,6 +38,7 @@ interface TextAreaProps {
 }
 
 export const TextArea: React.FC<TextAreaProps> = ({
+  ref,
   label,
   value,
   onChange,
@@ -238,7 +240,7 @@ export const TextArea: React.FC<TextAreaProps> = ({
         ) : (
           <>
             <textarea
-              ref={textareaRef}
+              ref={ref || textareaRef}
               maxLength={maxLength}
               value={value}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>

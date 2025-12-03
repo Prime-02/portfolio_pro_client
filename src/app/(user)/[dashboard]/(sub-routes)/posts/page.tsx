@@ -1,8 +1,11 @@
 import React from 'react'
+import PostsMain from './page-components/PostsMain'
 
 const Contents = () => {
   return (
-    <div>Contents</div>
+    <div>
+      <PostsMain/>
+    </div>
   )
 }
 

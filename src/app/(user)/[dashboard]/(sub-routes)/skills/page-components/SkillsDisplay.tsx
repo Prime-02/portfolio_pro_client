@@ -76,14 +76,16 @@ const SkillsDisplay = () => {
           subHeading={`Demonstrate your capabilities through proven results and measurable impact.`}
           subHeadingClass="md:text-3xl text-xl font-semibold"
         />
-        <Button
-          icon={<Plus />}
-          variant="ghost"
-          className="self-end sm:self-auto"
-          onClick={() => {
-            extendRouteWithQuery({ create: "true" });
-          }}
-        />
+        <div>
+          <Button
+            icon={<Plus />}
+            variant="ghost"
+            className="self-end sm:self-auto"
+            onClick={() => {
+              extendRouteWithQuery({ create: "true" });
+            }}
+          />
+        </div>
       </div>
       <div>
         {loading.includes("fetching_skills") ? (

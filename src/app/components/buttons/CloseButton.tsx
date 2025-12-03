@@ -2,7 +2,15 @@ import { X } from "lucide-react";
 import React from "react";
 import { motion, Variants } from "framer-motion";
 
-const CloseButton = ({ onClick }: { onClick: () => void }) => {
+const CloseButton = ({
+  onClick,
+  size = 20,
+  className = `flex-shrink-0 p-2 hover:text-[var(--accent)] hover:bg-[var(--background)] rounded-full transition-colors duration-150`,
+}: {
+  onClick: () => void;
+  size?: number;
+  className?: string;
+}) => {
   const closeButtonVariants: Variants = {
     rest: {
       scale: 1,
@@ -25,14 +33,14 @@ const CloseButton = ({ onClick }: { onClick: () => void }) => {
   return (
     <motion.button
       onClick={onClick}
-      className={`flex-shrink-0 p-2 hover:text-[var(--accent)] hover:bg-[var(--background)] rounded-full transition-colors duration-150`}
+      className={className}
       aria-label="Close modal"
       variants={closeButtonVariants}
       initial="rest"
       whileHover="hover"
       whileTap="tap"
     >
-      <X />
+      <X size={size} />
     </motion.button>
   );
 };

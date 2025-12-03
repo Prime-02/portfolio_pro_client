@@ -15,7 +15,7 @@ const routeCategories = {
     "education",
     "skills",
   ],
-  CONTENT: ["media-gallery", "testimonials", "content-block"],
+  CONTENT: ["media-gallery", "testimonials", "posts"],
   SETTINGS: ["preference"],
 };
 

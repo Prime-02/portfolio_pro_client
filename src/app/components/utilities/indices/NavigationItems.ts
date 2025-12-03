@@ -91,9 +91,9 @@ export const privateRoutes: Route[] = [
     description: "Manage client and colleague testimonials and reviews",
   },
   {
-    slug: "content-block",
-    link: "/content-block",
-    name: "Content Block",
+    slug: "posts",
+    link: "/posts",
+    name: "Posts & Articles",
     icon: FiGrid,
     description: "Create and organize custom content sections for your profile",
   },

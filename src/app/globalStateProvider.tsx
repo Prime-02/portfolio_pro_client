@@ -70,7 +70,7 @@ interface GlobalStateContextType {
   extendRoute: (segment: string) => void;
   searchParams: ReadonlyURLSearchParams;
   extendRouteWithQuery: (newParams: Record<string, string>) => void;
-  clearQuerryParam: () => void;
+  clearQuerryParam: (keysToRemove?: string[]) => void;
   unauthorizedWarning: () => void;
   checkUsernameAvailability: (username: string) => Promise<boolean | undefined>;
   currentUser: string | undefined;
@@ -465,10 +465,27 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
     router.push(newUrl, { scroll: false });
   };
 
-  const clearQuerryParam = () => {
-    router.replace(pathname, { scroll: false });
-  };
+  const clearQuerryParam = (keysToRemove?: string[]) => {
+    if (!keysToRemove) {
+      // Clear all query params
+      router.replace(pathname, { scroll: false });
+    } else {
+      // Get current search params
+      const queryString = currentPathWithQuery.split("?")[1] || "";
+      const searchParams = new URLSearchParams(queryString);
 
+      // Remove specified keys
+      keysToRemove.forEach((key) => {
+        searchParams.delete(key);
+      });
+
+      // Build new URL with remaining params
+      const newQuery = searchParams.toString();
+      const newUrl = newQuery ? `${pathname}?${newQuery}` : pathname;
+
+      router.replace(newUrl, { scroll: false });
+    }
+  };
   const unauthorizedWarning = () => {
     if (!accessToken) {
       toast.warning(

@@ -445,7 +445,7 @@ const Modal: React.FC<ModalProps> = ({
 
                 {/* Content */}
                 <motion.div
-                  className="p-6 max-h-[calc(100vh-8rem)] overflow-y-auto"
+                  className="p-2 max-h-[calc(100vh-8rem)] overflow-y-auto"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2, duration: 0.3 }}

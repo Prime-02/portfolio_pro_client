@@ -7,7 +7,7 @@ import { ArrowRight } from "lucide-react";
 import { useGlobalState } from "./globalStateProvider";
 
 export default function Home() {
-  const { userData, accessToken } = useGlobalState();
+  const { userData, accessToken, isLoading } = useGlobalState();
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8 md:p-12 font-[family-name:var(--font-geist-sans)]">
       <main className="w-full max-w-4xl flex flex-col items-center text-center gap-8 sm:gap-12">
@@ -60,6 +60,8 @@ export default function Home() {
               colorIntensity="light"
               text={`${userData.username ? "Proceed To Dashboard" : "Get Started"}`}
               icon2={<ArrowRight />}
+              disabled={isLoading("fetching_user_data")}
+              title={isLoading("fetching_user_data") ? "Please wait..." : ""}
             />
           </Link>
         )}

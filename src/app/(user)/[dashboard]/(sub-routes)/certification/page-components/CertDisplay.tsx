@@ -82,14 +82,16 @@ const CertDisplay = () => {
               subHeading={`Boost Your Credibility – Upload Verified Certificates & Awards`}
               subHeadingClass="md:text-3xl text-xl font-semibold"
             />
-            <Button
-              icon={<Plus />}
-              variant="ghost"
-              className="self-end sm:self-auto"
-              onClick={() => {
-                extendRouteWithQuery({ create: "true" });
-              }}
-            />
+            <div>
+              <Button
+                icon={<Plus />}
+                variant="ghost"
+                className="self-end sm:self-auto"
+                onClick={() => {
+                  extendRouteWithQuery({ create: "true" });
+                }}
+              />
+            </div>
           </div>
         </header>
 

@@ -21,6 +21,7 @@ import { Textinput } from "./Textinput";
 
 interface ImageCropperProps {
   onFinish?: (data: { file: File | null; croppedImage: string | null }) => void;
+  onFinishText?: string;
   onResetImageChange?: () => void;
   loading?: boolean;
   croppedImage?: string | null; // Optional controlled state for final image
@@ -35,6 +36,7 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 export default function ImageCropper({
   onFinish,
+  onFinishText = "Finish",
   loading = false,
   croppedImage: controlledCroppedImage, // Controlled cropped image state
   onCroppedImageChange, // Callback for when cropped image changes
@@ -440,23 +442,6 @@ export default function ImageCropper({
 
   return (
     <div className="card rounded-lg shadow-sm p-4 max-w-md mx-auto">
-      <div className="flex items-center justify-end mb-4">
-        {currentImage && (
-          <span
-            onClick={() => setShowSettings(!showSettings)}
-            className={`p-2 rounded-lg  transition-colors ${
-              showSettings
-                ? "bg-[var(--accent)] text-[var(--foreground)]"
-                : "cursor-pointer"
-            }`}
-            aria-label={showSettings ? "Hide settings" : "Show settings"}
-            // aria-expanded={showSettings}
-          >
-            <Settings size={16} />
-          </span>
-        )}
-      </div>
-
       {error && (
         <div className="mb-4 p-2 bg-red-100 text-red-700 rounded text-sm">
           {error}
@@ -505,6 +490,20 @@ export default function ImageCropper({
               {fileName || "Image"}
             </span>
             <div className="flex items-center space-x-1">
+              {currentImage && (
+                <span
+                  onClick={() => setShowSettings(!showSettings)}
+                  className={`p-2 rounded-lg  transition-colors ${
+                    showSettings
+                      ? "bg-[var(--accent)] text-[var(--foreground)]"
+                      : "cursor-pointer"
+                  }`}
+                  aria-label={showSettings ? "Hide settings" : "Show settings"}
+                  // aria-expanded={showSettings}
+                >
+                  <Settings size={16} />
+                </span>
+              )}
               <button
                 onClick={quickRotate}
                 className="p-1 hover: rounded"
@@ -702,11 +701,11 @@ export default function ImageCropper({
                 <span
                   onClick={handleFinish}
                   className="flex items-center justify-center space-x-1 card px-3 py-2 rounded text-sm hover: transition-colors"
-                  aria-label="Finish"
+                  aria-label={onFinishText}
                 >
                   <Button
                     variant="primary"
-                    text="Finish"
+                    text={onFinishText}
                     loading={loading || isProcessing}
                     disabled={loading}
                   />

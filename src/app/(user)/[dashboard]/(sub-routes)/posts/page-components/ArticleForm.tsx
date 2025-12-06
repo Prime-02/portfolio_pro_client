@@ -4,7 +4,8 @@ import { Textinput } from "@/app/components/inputs/Textinput";
 import { ContentCreate } from "@/app/components/types and interfaces/Posts";
 import { useGlobalState } from "@/app/globalStateProvider";
 import { useContentStore } from "@/app/stores/posts_store/PostsHandler";
-import React, { useEffect } from "react";
+import React from "react";
+import PostsBodyRenderer from "./PostsBodyRenderer";
 
 const ArticleForm = ({
   content,
@@ -71,6 +72,7 @@ const ArticleForm = ({
           />
         )}
       </div>
+      <PostsBodyRenderer body={content.body} />
     </div>
   );
 };

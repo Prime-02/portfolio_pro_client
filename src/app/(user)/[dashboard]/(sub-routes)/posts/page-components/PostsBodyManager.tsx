@@ -1,8 +1,11 @@
 import CloseButton from "@/app/components/buttons/CloseButton";
-import { CaseUpper, Minus, Quote, Text, Image } from "lucide-react";
+import { CaseUpper, Minus, Quote, Text, Image, Save } from "lucide-react";
 import React, { useState, useRef, useEffect } from "react";
 import PostsBodyParser from "./PostsBodyParser";
 import { useContentStore } from "@/app/stores/posts_store/PostsHandler";
+import { useTheme } from "@/app/components/theme/ThemeContext ";
+import { getLoader } from "@/app/components/loaders/Loader";
+import { useGlobalState } from "@/app/globalStateProvider";
 
 const PostsBodyManager = ({
   body,
@@ -11,16 +14,19 @@ const PostsBodyManager = ({
 }: {
   body: Record<string, string>[] | undefined;
   setBody: (body: Record<string, string>[]) => void;
-  save: (data: {
+  save: (data?: {
     file: File | null;
     croppedImage: string | null;
   }) => Promise<void>;
 }) => {
   const { currentContent } = useContentStore();
+  const { isLoading } = useGlobalState();
+  const { loader, accentColor } = useTheme();
   const [expand, setExpand] = useState(true);
   const [parserOpen, setParserOpen] = useState(false);
   const [currentAction, setCurrentAction] = useState("");
   const [currentIndex, setCurrentIndex] = useState(-1);
+  const LoaderComponent = getLoader(loader) || null;
 
   const countersRef = useRef({
     header: 0,
@@ -173,8 +179,8 @@ const PostsBodyManager = ({
 
   return (
     <>
-      <div className="sticky left-1/2 top-0 z-30 p-1">
-        <div className="relative w-fit transition duration-300 p-1">
+      <div className="sticky w-full top-0 z-30 p-1">
+        <div className="relative w-full transition mx-auto duration-300 p-1">
           <div
             className={`bg-[var(--background)] absolute left-1.5 top-1.5 rounded-full flex items-center justify-center w-auto h-auto transition-transform duration-300 ${
               !expand ? "rotate-45" : "rotate-0"
@@ -188,25 +194,28 @@ const PostsBodyManager = ({
             />
           </div>
           <div
-            className={`flex items-center transition-all duration-300 p-1 overflow-hidden ${
+            className={`flex items-center justify-evenly transition-all duration-300 p-1 overflow-hidden ${
               expand
-                ? "w-auto gap-x-5 pl-12 bg-[var(--background)] rounded-full border border-[var(--accent)]"
+                ? "w-auto gap-x-5 bg-[var(--background)] rounded-full border border-[var(--accent)]"
                 : "w-0 gap-x-0 pl-0"
             }`}
           >
             <span
               className="flex-shrink-0 cursor-pointer hover:text-[var(--accent)] transition-colors"
               onClick={() => addBodyElement("header")}
+              title="New Heading"
             >
               <CaseUpper />
             </span>
             <span
+              title="New Paragraph"
               className="flex-shrink-0 cursor-pointer hover:text-[var(--accent)] transition-colors"
               onClick={() => addBodyElement("text")}
             >
               <Text />
             </span>
             <span
+              title="New Quote"
               className="flex-shrink-0 cursor-pointer hover:text-[var(--accent)] transition-colors"
               onClick={() => addBodyElement("quote")}
             >
@@ -215,15 +224,32 @@ const PostsBodyManager = ({
             <span
               className="flex-shrink-0 cursor-pointer hover:text-[var(--accent)] transition-colors"
               onClick={() => addBodyElement("media")}
+              title="New Media"
             >
               <Image />
             </span>
             <span
               className="flex-shrink-0 cursor-pointer hover:text-[var(--accent)] transition-colors"
               onClick={() => addBodyElement("divider")}
+              title="Add Divider"
             >
               <Minus />
             </span>
+            {isLoading(`updating_content_${currentContent?.id}`) ? (
+              LoaderComponent && (
+                <span className="flex-shrink-0" title="Saving...">
+                  <LoaderComponent size={16} color={accentColor.color} />
+                </span>
+              )
+            ) : (
+              <span
+                className="flex-shrink-0 cursor-pointer hover:text-[var(--accent)] transition-colors"
+                onClick={() => save()}
+                title="Save Post"
+              >
+                <Save />
+              </span>
+            )}
           </div>
         </div>
       </div>

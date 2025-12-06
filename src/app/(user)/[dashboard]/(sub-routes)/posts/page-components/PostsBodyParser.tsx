@@ -1,11 +1,9 @@
 import React, { useEffect, useRef } from "react";
-import { X } from "lucide-react";
 import { Textinput } from "@/app/components/inputs/Textinput";
 import { TextArea } from "@/app/components/inputs/TextArea";
 import ImageCropper from "@/app/components/inputs/ImageUploader";
 import { useGlobalState } from "@/app/globalStateProvider";
 import { useContentStore } from "@/app/stores/posts_store/PostsHandler";
-import CloseButton from "@/app/components/buttons/CloseButton";
 import Button from "@/app/components/buttons/Buttons";
 
 const PostsBodyParser = ({
@@ -90,6 +88,7 @@ const PostsBodyParser = ({
           value={value}
           onChange={(e) => onChange(e)}
           label={getPlaceholder()}
+          showFormatPanel
         />
       )}
       <div className="mt-2 w-32">

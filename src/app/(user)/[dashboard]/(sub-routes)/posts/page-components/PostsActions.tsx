@@ -140,18 +140,17 @@ const PostsActions = () => {
     }
   };
 
-  const updateContent = async (data: {
+  const updateContent = async (data?: {
     file: File | null;
     croppedImage: string | null;
   }) => {
-    if (!data.croppedImage) {
-      return;
+    let convertedImg;
+    if (data && data.croppedImage) {
+      convertedImg = await base64ToFile(
+        data.croppedImage,
+        content.title || "cover"
+      );
     }
-
-    const convertedImg = await base64ToFile(
-      data.croppedImage,
-      content.title || "cover"
-    );
 
     try {
       await updateContentHandler(
@@ -160,9 +159,10 @@ const PostsActions = () => {
         setLoading,
         content,
         null,
-        [convertedImg],
+        convertedImg ? [convertedImg] : null,
         (updatedContent) => {
           toast.success(`${content.title} updated.`);
+          console.log("Updated content:", updatedContent);
           // The useEffect will handle syncing when currentContent updates
         }
       );

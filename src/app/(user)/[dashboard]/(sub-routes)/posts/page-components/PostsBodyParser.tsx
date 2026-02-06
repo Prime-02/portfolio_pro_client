@@ -89,6 +89,8 @@ const PostsBodyParser = ({
           onChange={(e) => onChange(e)}
           label={getPlaceholder()}
           showFormatPanel
+          showLimit={false}
+          maxLength={999999999999999}
         />
       )}
       <div className="mt-2 w-32">

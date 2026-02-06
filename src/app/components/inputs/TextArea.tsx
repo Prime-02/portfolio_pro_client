@@ -135,6 +135,50 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
         const end = textarea.selectionEnd;
         const text = value || "";
 
+        // Find the current line
+        const beforeCursor = text.substring(0, start);
+        const currentLineStart = beforeCursor.lastIndexOf("\n") + 1;
+        const currentLine = text.substring(currentLineStart, start);
+
+        // Check for numbered list pattern (e.g., "1. ", "12. ")
+        const numberedMatch = currentLine.match(/^(\d+)\.\s/);
+        if (numberedMatch) {
+          const currentNum = parseInt(numberedMatch[1]);
+          const nextNum = currentNum + 1;
+          const insertion = `\n${nextNum}. `;
+          const newText =
+            text.substring(0, start) + insertion + text.substring(end);
+          onChange(newText);
+
+          setTimeout(() => {
+            textarea.setSelectionRange(
+              start + insertion.length,
+              start + insertion.length
+            );
+            textarea.focus();
+          }, 0);
+          return;
+        }
+
+        // Check for bullet point pattern (e.g., "• ")
+        const bulletMatch = currentLine.match(/^•\s/);
+        if (bulletMatch) {
+          const insertion = "\n• ";
+          const newText =
+            text.substring(0, start) + insertion + text.substring(end);
+          onChange(newText);
+
+          setTimeout(() => {
+            textarea.setSelectionRange(
+              start + insertion.length,
+              start + insertion.length
+            );
+            textarea.focus();
+          }, 0);
+          return;
+        }
+
+        // Default: just insert newline
         const newText = text.substring(0, start) + "\n" + text.substring(end);
         onChange(newText);
 

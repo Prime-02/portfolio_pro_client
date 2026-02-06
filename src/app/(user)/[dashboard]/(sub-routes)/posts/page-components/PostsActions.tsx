@@ -219,6 +219,7 @@ const PostsActions = () => {
         ) : (
           <ArticleForm
             content={content}
+            contentId={updateId || currentContent?.id || ""}
             handleFieldChange={handleFieldChange}
             draft={saveContent}
             setPendingCoverFile={setPendingCoverFile}

@@ -36,6 +36,7 @@ const PostsBodyRenderer = ({
           <TextFormatter
             key={key}
             className="text-base leading-relaxed mb-4 text-[var(--foreground)] whitespace-pre-wrap"
+            showSeeMore={false}
           >
             {value || "Empty text block"}
           </TextFormatter>

@@ -18,9 +18,29 @@ import {
 } from "@/app/components/types and interfaces/Posts";
 import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
 import { toast } from "@/app/components/toastify/Toastify";
+import { findObjectByKey } from "@/app/components/utilities/syncFunctions/syncs";
 // Enable Map/Set support for Immer
 enableMapSet(); // Add this call before creating the store
 // ==================== Store State ====================
+// Response schema for cloudinary uploads
+interface UploadResponse {
+  public_id: string;
+  url: string;
+  secure_url: string;
+  width?: number | null;
+  height?: number | null;
+  format: string;
+  resource_type: string;
+  bytes: number;
+  created_at: string;
+  version: number;
+  version_id?: string | null;
+  signature: string;
+  etag?: string | null;
+  folder?: string | null;
+  tags?: string[] | null;
+}
+
 interface ContentStoreState {
   // Content data
   contents: Map<string, ContentWithAuthor>;
@@ -49,25 +69,25 @@ interface ContentStoreActions {
     contentData: ContentCreate,
     coverImage?: File | null,
     mediaFiles?: File[] | null,
-    successActions?: (newContent: ContentWithAuthor) => void
+    successActions?: (newContent: ContentWithAuthor) => void,
   ) => Promise<void>;
 
   getContentById: (
     accessToken: string,
     contentId: string,
-    setLoading: (key: string) => void
+    setLoading: (key: string) => void,
   ) => Promise<void>;
 
   getContentBySlug: (
     accessToken: string,
     slug: string,
-    setLoading: (key: string) => void
+    setLoading: (key: string) => void,
   ) => Promise<void>;
 
   listContent: (
     accessToken: string,
     setLoading: (key: string) => void,
-    filters?: ContentFilterParams
+    filters?: ContentFilterParams,
   ) => Promise<void>;
 
   updateContent: (
@@ -77,7 +97,7 @@ interface ContentStoreActions {
     contentData: ContentUpdate,
     coverImage?: File | null,
     mediaFiles?: File[] | null,
-    successActions?: (updatedContent: ContentWithAuthor) => void
+    successActions?: (updatedContent: ContentWithAuthor) => void,
   ) => Promise<void>;
 
   deleteContent: (
@@ -85,32 +105,49 @@ interface ContentStoreActions {
     contentId: string,
     setLoading: (key: string) => void,
     hardDelete?: boolean,
-    successActions?: () => void
+    successActions?: () => void,
   ) => Promise<void>;
 
   publishContent: (
     accessToken: string,
     contentId: string,
     setLoading: (key: string) => void,
-    successActions?: () => void
+    successActions?: () => void,
   ) => Promise<void>;
 
   bulkUpdateContent: (
     accessToken: string,
     setLoading: (key: string) => void,
     bulkData: BulkContentUpdate,
-    successActions?: () => void
+    successActions?: () => void,
   ) => Promise<void>;
 
   getUserContent: (
     accessToken: string,
     username: string,
     setLoading: (key: string) => void,
-    filters?: Partial<ContentFilterParams>
+    filters?: Partial<ContentFilterParams>,
+  ) => Promise<void>;
+
+  deleteMediaFromContent: (
+    accessToken: string,
+    contentId: string,
+    mediaPublicId: string,
+    setLoading: (key: string) => void,
+    successActions?: () => void,
+  ) => Promise<void>;
+
+  replaceMediaInContent: (
+    accessToken: string,
+    contentId: string,
+    oldMediaPublicId: string,
+    newMediaFile: File,
+    setLoading: (key: string) => void,
+    successActions?: (updatedContent: ContentWithAuthor) => void,
   ) => Promise<void>;
 
   // Local state management
-  setCurrentContent: (content: ContentWithAuthor | null) => void;
+  setCurrentContent: (content: ContentWithAuthor) => void;
   setFilters: (filters: Partial<ContentFilterParams>) => void;
   resetFilters: () => void;
   setPage: (page: number) => void;
@@ -130,7 +167,29 @@ type ContentStore = ContentStoreState & ContentStoreActions;
 const initialState: ContentStoreState = {
   contents: new Map(),
   contentList: [],
-  currentContent: null,
+  currentContent: {
+    title: "",
+    status: ContentStatus.DRAFT,
+    content_type: ContentType.POST,
+    id: "",
+    user_id: "",
+    body: [],
+    is_featured: false,
+    is_pinned: false,
+    is_public: true,
+    allow_comments: true,
+    allow_likes: true,
+    allow_reshare: true,
+    views_count: 0,
+    likes_count: 0,
+    shares_count: 0,
+    created_at: "",
+    updated_at: "",
+    published_at: "",
+    is_liked: false,
+    is_shared: false,
+    comments_count: 0,
+  },
   currentPage: 1,
   pageSize: 20,
   totalContent: 0,
@@ -152,7 +211,7 @@ export const useContentStore = create<ContentStore>()(
       contentData,
       coverImage,
       mediaFiles,
-      successActions
+      successActions,
     ) => {
       if (
         !contentData.title &&
@@ -198,7 +257,7 @@ export const useContentStore = create<ContentStore>()(
         if (contentData.scheduled_publish_at) {
           formData.append(
             "scheduled_publish_at",
-            contentData.scheduled_publish_at
+            contentData.scheduled_publish_at,
           );
         }
 
@@ -265,7 +324,7 @@ export const useContentStore = create<ContentStore>()(
       } catch (error) {
         console.error(error);
         toast.error(
-          error instanceof Error ? error.message : "Failed to create content"
+          error instanceof Error ? error.message : "Failed to create content",
         );
       } finally {
         setLoading("creating_content");
@@ -361,7 +420,12 @@ export const useContentStore = create<ContentStore>()(
         if (data) {
           // Update store
           set((state) => {
-            state.contentList = data.items;
+            // For page 1, replace items; for subsequent pages, append
+            if (data.page === 1) {
+              state.contentList = data.items;
+            } else {
+              state.contentList = [...state.contentList, ...data.items];
+            }
             state.totalContent = data.total;
             state.currentPage = data.page;
             state.pageSize = data.page_size;
@@ -394,7 +458,7 @@ export const useContentStore = create<ContentStore>()(
       contentData,
       coverImage,
       mediaFiles,
-      successActions
+      successActions,
     ) => {
       setLoading(`updating_content_${contentId}`);
       set({ error: null });
@@ -451,7 +515,7 @@ export const useContentStore = create<ContentStore>()(
               Authorization: `Bearer ${accessToken}`,
             },
             body: formData,
-          }
+          },
         );
 
         if (!response.ok) {
@@ -467,7 +531,7 @@ export const useContentStore = create<ContentStore>()(
           set((state) => {
             state.contents.set(contentId, updatedContent);
             const index = state.contentList.findIndex(
-              (c) => c.id === contentId
+              (c) => c.id === contentId,
             );
             if (index !== -1) {
               state.contentList[index] = updatedContent;
@@ -487,7 +551,7 @@ export const useContentStore = create<ContentStore>()(
           set((state) => {
             state.contents.set(contentId, previousContent);
             const index = state.contentList.findIndex(
-              (c) => c.id === contentId
+              (c) => c.id === contentId,
             );
             if (index !== -1) {
               state.contentList[index] = previousContent;
@@ -514,7 +578,7 @@ export const useContentStore = create<ContentStore>()(
       contentId,
       setLoading,
       hardDelete = true,
-      successActions
+      successActions,
     ) => {
       setLoading(`deleting_content_${contentId}`);
       set({ error: null });
@@ -566,7 +630,7 @@ export const useContentStore = create<ContentStore>()(
       accessToken,
       contentId,
       setLoading,
-      successActions
+      successActions,
     ) => {
       setLoading(`publishing_content_${contentId}`);
       set({ error: null });
@@ -600,7 +664,7 @@ export const useContentStore = create<ContentStore>()(
               Authorization: `Bearer ${accessToken}`,
             },
             body: JSON.stringify({}),
-          }
+          },
         );
 
         if (!response.ok) {
@@ -614,7 +678,7 @@ export const useContentStore = create<ContentStore>()(
           set((state) => {
             state.contents.set(contentId, publishedContent);
             const index = state.contentList.findIndex(
-              (c) => c.id === contentId
+              (c) => c.id === contentId,
             );
             if (index !== -1) {
               state.contentList[index] = publishedContent;
@@ -631,7 +695,7 @@ export const useContentStore = create<ContentStore>()(
           set((state) => {
             state.contents.set(contentId, previousContent);
             const index = state.contentList.findIndex(
-              (c) => c.id === contentId
+              (c) => c.id === contentId,
             );
             if (index !== -1) {
               state.contentList[index] = previousContent;
@@ -656,7 +720,7 @@ export const useContentStore = create<ContentStore>()(
       accessToken,
       setLoading,
       bulkData,
-      successActions
+      successActions,
     ) => {
       setLoading("bulk_updating_content");
       set({ error: null });
@@ -672,7 +736,7 @@ export const useContentStore = create<ContentStore>()(
               Authorization: `Bearer ${accessToken}`,
             },
             body: JSON.stringify(bulkData),
-          }
+          },
         );
 
         if (!response.ok) {
@@ -747,7 +811,12 @@ export const useContentStore = create<ContentStore>()(
 
         if (data) {
           set((state) => {
-            state.contentList = data.items;
+            // For page 1, replace items; for subsequent pages, append
+            if (data.page === 1) {
+              state.contentList = data.items;
+            } else {
+              state.contentList = [...state.contentList, ...data.items];
+            }
             state.totalContent = data.total;
             state.currentPage = data.page;
             state.pageSize = data.page_size;
@@ -864,6 +933,232 @@ export const useContentStore = create<ContentStore>()(
       });
     },
 
+    // ==================== REPLACE MEDIA IN CONTENT ====================
+    replaceMediaInContent: async (
+      accessToken,
+      contentId,
+      oldMediaPublicId,
+      newMediaFile,
+      setLoading,
+      successActions,
+    ) => {
+      setLoading(`replacing_media_${oldMediaPublicId}`);
+      set({ error: null });
+
+      // Store previous state for rollback
+      const previousContent = get().contents.get(contentId);
+
+      // Optimistic update - show loading state for the specific media
+      if (previousContent) {
+        set((state) => {
+          const updatedMediaUrls = previousContent.media_urls?.map((media) =>
+            media.public_id === oldMediaPublicId
+              ? { ...media, isReplacing: true }
+              : media,
+          );
+
+          const updated = {
+            ...previousContent,
+            media_urls: updatedMediaUrls,
+          };
+
+          state.contents.set(contentId, updated);
+
+          const index = state.contentList.findIndex((c) => c.id === contentId);
+          if (index !== -1) {
+            state.contentList[index] = updated;
+          }
+
+          if (state.currentContent?.id === contentId) {
+            state.currentContent = updated;
+          }
+        });
+      }
+
+      try {
+        const formData = new FormData();
+        formData.append("new_media", newMediaFile);
+        const encodedPublicId = encodeURIComponent(oldMediaPublicId);
+        const url = `${V1_BASE_URL}/${get().apiBaseUrl}/media?old_media_public_id=${encodedPublicId}&content_id=${contentId}`;
+
+        const response = await fetch(url, {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.detail || "Failed to replace media");
+        }
+
+        const updatedContent: ContentWithAuthor = await response.json();
+
+        // Update with server response
+        if (updatedContent) {
+          set((state) => {
+            state.contents.set(contentId, updatedContent);
+
+            const index = state.contentList.findIndex(
+              (c) => c.id === contentId,
+            );
+            if (index !== -1) {
+              state.contentList[index] = updatedContent;
+            }
+
+            if (state.currentContent?.id === contentId) {
+              state.currentContent = updatedContent;
+            }
+          });
+
+          if (successActions) {
+            successActions(updatedContent);
+          }
+
+          toast.success("Media replaced successfully");
+        }
+      } catch (error) {
+        // Revert optimistic update on error
+        if (previousContent) {
+          set((state) => {
+            state.contents.set(contentId, previousContent);
+
+            const index = state.contentList.findIndex(
+              (c) => c.id === contentId,
+            );
+            if (index !== -1) {
+              state.contentList[index] = previousContent;
+            }
+
+            if (state.currentContent?.id === contentId) {
+              state.currentContent = previousContent;
+            }
+          });
+        }
+
+        const errorMessage =
+          error instanceof Error ? error.message : "Failed to replace media";
+        set({ error: errorMessage });
+        toast.error(errorMessage);
+        console.error(error);
+      } finally {
+        setLoading(`replacing_media_${oldMediaPublicId}`);
+      }
+    },
+
+    // ==================== DELETE MEDIA FROM CONTENT ====================
+    deleteMediaFromContent: async (
+      accessToken,
+      contentId,
+      mediaPublicId,
+      setLoading,
+      successActions,
+    ) => {
+      setLoading(`deleting_media_${mediaPublicId}`);
+      set({ error: null });
+
+      // Store previous state for rollback
+      const previousContent = get().contents.get(contentId);
+      const previousMediaUrls = previousContent?.media_urls || [];
+
+      // Optimistic update - remove media from UI immediately
+      if (previousContent) {
+        set((state) => {
+          const updatedMediaUrls = previousMediaUrls.filter(
+            (media) => media.public_id !== mediaPublicId,
+          );
+
+          const updated = {
+            ...previousContent,
+            media_urls: updatedMediaUrls,
+            updated_at: new Date().toISOString(),
+          };
+
+          state.contents.set(contentId, updated);
+
+          const index = state.contentList.findIndex((c) => c.id === contentId);
+          if (index !== -1) {
+            state.contentList[index] = updated;
+          }
+
+          if (state.currentContent?.id === contentId) {
+            state.currentContent = updated;
+          }
+        });
+      }
+
+      try {
+        const response = await fetch(
+          `${V1_BASE_URL}/${get().apiBaseUrl}/media?content_id=${contentId}&media_public_id=${mediaPublicId}`,
+          {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          },
+        );
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.detail || "Failed to delete media");
+        }
+
+        const updatedContent: ContentWithAuthor = await response.json();
+
+        // Update with server response
+        if (updatedContent) {
+          set((state) => {
+            state.contents.set(contentId, updatedContent);
+
+            const index = state.contentList.findIndex(
+              (c) => c.id === contentId,
+            );
+            if (index !== -1) {
+              state.contentList[index] = updatedContent;
+            }
+
+            if (state.currentContent?.id === contentId) {
+              state.currentContent = updatedContent;
+            }
+          });
+
+          if (successActions) {
+            successActions();
+          }
+
+          toast.success("Media deleted successfully");
+        }
+      } catch (error) {
+        // Revert optimistic update on error
+        if (previousContent) {
+          set((state) => {
+            state.contents.set(contentId, previousContent);
+
+            const index = state.contentList.findIndex(
+              (c) => c.id === contentId,
+            );
+            if (index !== -1) {
+              state.contentList[index] = previousContent;
+            }
+
+            if (state.currentContent?.id === contentId) {
+              state.currentContent = previousContent;
+            }
+          });
+        }
+
+        const errorMessage =
+          error instanceof Error ? error.message : "Failed to delete media";
+        set({ error: errorMessage });
+        toast.error(errorMessage);
+        console.error(error);
+      } finally {
+        setLoading(`deleting_media_${mediaPublicId}`);
+      }
+    },
+
     // ==================== UTILITY ====================
     clearError: () => {
       set({ error: null });
@@ -876,7 +1171,7 @@ export const useContentStore = create<ContentStore>()(
     reset: () => {
       set(initialState);
     },
-  }))
+  })),
 );
 
 // ==================== Selectors ====================

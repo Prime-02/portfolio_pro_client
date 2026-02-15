@@ -29,6 +29,7 @@ export enum ReactionType {
 // ==================== Interfaces ====================
 export interface MediaUrl {
   url: string;
+  secure_url: string;
   type: string;
   public_id: string;
   content_type: string;

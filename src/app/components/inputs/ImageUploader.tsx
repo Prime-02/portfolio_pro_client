@@ -27,6 +27,7 @@ interface ImageCropperProps {
   croppedImage?: string | null; // Optional controlled state for final image
   onCroppedImageChange?: (croppedImage: string | null) => void; // Callback for controlled mode
   title?: string;
+  className?: string;
   description?: string;
 }
 
@@ -43,6 +44,7 @@ export default function ImageCropper({
   title = "Upload Image",
   description = "All formats supported, up to 5mb",
   onResetImageChange,
+  className,
 }: ImageCropperProps) {
   const { theme } = useTheme();
   const [image, setImage] = useState<string | null>(null);
@@ -183,7 +185,7 @@ export default function ImageCropper({
         reader.readAsDataURL(file);
       }
     },
-    []
+    [],
   );
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -197,7 +199,7 @@ export default function ImageCropper({
 
   const applyFilters = (
     canvas: HTMLCanvasElement,
-    ctx: CanvasRenderingContext2D
+    ctx: CanvasRenderingContext2D,
   ) => {
     if (brightness !== 100 || contrast !== 100 || saturation !== 100) {
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -208,25 +210,25 @@ export default function ImageCropper({
         data[i] = Math.min(255, Math.max(0, data[i] * (brightness / 100)));
         data[i + 1] = Math.min(
           255,
-          Math.max(0, data[i + 1] * (brightness / 100))
+          Math.max(0, data[i + 1] * (brightness / 100)),
         );
         data[i + 2] = Math.min(
           255,
-          Math.max(0, data[i + 2] * (brightness / 100))
+          Math.max(0, data[i + 2] * (brightness / 100)),
         );
 
         // Contrast
         data[i] = Math.min(
           255,
-          Math.max(0, (data[i] - 128) * (contrast / 100) + 128)
+          Math.max(0, (data[i] - 128) * (contrast / 100) + 128),
         );
         data[i + 1] = Math.min(
           255,
-          Math.max(0, (data[i + 1] - 128) * (contrast / 100) + 128)
+          Math.max(0, (data[i + 1] - 128) * (contrast / 100) + 128),
         );
         data[i + 2] = Math.min(
           255,
-          Math.max(0, (data[i + 2] - 128) * (contrast / 100) + 128)
+          Math.max(0, (data[i + 2] - 128) * (contrast / 100) + 128),
         );
 
         // Saturation
@@ -235,15 +237,15 @@ export default function ImageCropper({
             data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
           data[i] = Math.min(
             255,
-            Math.max(0, gray + (data[i] - gray) * (saturation / 100))
+            Math.max(0, gray + (data[i] - gray) * (saturation / 100)),
           );
           data[i + 1] = Math.min(
             255,
-            Math.max(0, gray + (data[i + 1] - gray) * (saturation / 100))
+            Math.max(0, gray + (data[i + 1] - gray) * (saturation / 100)),
           );
           data[i + 2] = Math.min(
             255,
-            Math.max(0, gray + (data[i + 2] - gray) * (saturation / 100))
+            Math.max(0, gray + (data[i + 2] - gray) * (saturation / 100)),
           );
         }
       }
@@ -273,7 +275,7 @@ export default function ImageCropper({
         if (cropWidth > MAX_DIMENSION || cropHeight > MAX_DIMENSION) {
           const scale = Math.min(
             MAX_DIMENSION / cropWidth,
-            MAX_DIMENSION / cropHeight
+            MAX_DIMENSION / cropHeight,
           );
           canvas.width = Math.floor(cropWidth * scale);
           canvas.height = Math.floor(cropHeight * scale);
@@ -305,7 +307,7 @@ export default function ImageCropper({
             -canvas.width / 2,
             -canvas.height / 2,
             canvas.width,
-            canvas.height
+            canvas.height,
           );
 
           ctx.restore();
@@ -321,7 +323,7 @@ export default function ImageCropper({
 
           const croppedImageUrl = canvas.toDataURL(
             `image/${format}`,
-            finalQuality
+            finalQuality,
           );
           updateCroppedImage(croppedImageUrl);
         }
@@ -353,7 +355,7 @@ export default function ImageCropper({
       // Generate cropped image when crop is complete
       generateCroppedImage();
     },
-    [generateCroppedImage, currentImage]
+    [generateCroppedImage, currentImage],
   );
 
   // Regenerate cropped image when filters change
@@ -441,7 +443,9 @@ export default function ImageCropper({
   };
 
   return (
-    <div className="card rounded-lg shadow-sm p-4 max-w-md mx-auto">
+    <div
+      className={`card ${className || ""} rounded-lg shadow-sm p-4 max-w-md mx-auto`}
+    >
       {error && (
         <div className="mb-4 p-2 bg-red-100 text-red-700 rounded text-sm">
           {error}

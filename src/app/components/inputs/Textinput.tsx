@@ -189,7 +189,7 @@ export const Textinput: React.FC<TextInputProps> = ({
         onFocus={() => desc && setShowDesc(true)}
         id={id || label}
         className={`${className} block px-2.5 pb-2.5 pt-4 w-full  bg-transparent border-1 border-gray-300 appearance-none dark:border-gray-600 dark:focus:border-[var(--accent)] focus:outline-none focus:ring-0 focus:border-[var(--accent)] peer rounded-full text-center`}
-        placeholder=" "
+        placeholder={label ? " " : placeholder || ""}
         step={step}
       />
     );
@@ -210,7 +210,7 @@ export const Textinput: React.FC<TextInputProps> = ({
                 (labelBgHex || theme.background) && labelBgHexIntensity
                   ? getColorShade(
                       labelBgHex || theme.background,
-                      labelBgHexIntensity
+                      labelBgHexIntensity,
                     )
                   : "none",
             }}

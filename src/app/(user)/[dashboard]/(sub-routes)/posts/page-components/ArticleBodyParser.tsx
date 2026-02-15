@@ -4,9 +4,9 @@ import { TextArea } from "@/app/components/inputs/TextArea";
 import ImageCropper from "@/app/components/inputs/ImageUploader";
 import { useGlobalState } from "@/app/globalStateProvider";
 import { useContentStore } from "@/app/stores/posts_store/PostsHandler";
-import Button from "@/app/components/buttons/Buttons";
+import { X } from "lucide-react";
 
-const PostsBodyParser = ({
+const ArticleBodyParser = ({
   action,
   value,
   onChange,
@@ -54,17 +54,14 @@ const PostsBodyParser = ({
   const isMedia = action.startsWith("media");
   return (
     <div className="absolute top-full left-0 w-full  z-40">
-      {/* <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-medium capitalize">
-          {action.replace(/[0-9]/g, "")}
-        </span>
-        <button
+      <div className="flex items-center justify-end mb-2">
+        <span
           onClick={onClose}
           className="p-0.5 hover:text-[var(--accent)] transition-colors rounded"
         >
           <X size={16} />
-        </button>
-      </div> */}
+        </span>
+      </div>
 
       {isHeader ? (
         <Textinput
@@ -93,11 +90,8 @@ const PostsBodyParser = ({
           maxLength={999999999999999}
         />
       )}
-      <div className="mt-2 w-32">
-        <Button text="Cancel" variant="outline" onClick={onClose} />
-      </div>
     </div>
   );
 };
 
-export default PostsBodyParser;
+export default ArticleBodyParser;

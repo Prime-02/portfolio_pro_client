@@ -5,10 +5,8 @@ import { ContentCreate } from "@/app/components/types and interfaces/Posts";
 import { useGlobalState } from "@/app/globalStateProvider";
 import { useContentStore } from "@/app/stores/posts_store/PostsHandler";
 import React, { useState } from "react";
-import PostsBodyRenderer from "./PostsBodyRenderer";
+import ArticleBodyRenderer from "./ArticleBodyRenderer";
 import { Edit, X } from "lucide-react";
-import axios from "axios";
-import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
 import { base64ToFile } from "@/app/components/utilities/syncFunctions/syncs";
 import { toast } from "@/app/components/toastify/Toastify";
 
@@ -59,12 +57,12 @@ const ArticleForm = ({
         {},
         await base64ToFile(
           data.croppedImage,
-          `cover_image_${userData?.id || "user"}_${Date.now()}.png`
+          `cover_image_${userData?.id || "user"}_${Date.now()}.png`,
         ),
         null,
         () => {
           toast.success("Cover image updated successfully");
-        }
+        },
       );
       setEditImage(false);
     } catch (error) {
@@ -82,8 +80,8 @@ const ArticleForm = ({
             handleFieldChange("title", value);
           }}
           value={content.title}
-          label="Title"
-          className="border-none text-5xl font-extrabold text-start "
+          placeholder="Title of Article"
+          className="border-none text-5xl font-extrabold rounded-none text-start "
         />
       </div>
       <div>
@@ -136,7 +134,7 @@ const ArticleForm = ({
           />
         )}
       </div>
-      <PostsBodyRenderer body={content.body} />
+      <ArticleBodyRenderer body={content.body} />
     </div>
   );
 };

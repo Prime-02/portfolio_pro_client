@@ -18,7 +18,7 @@ export interface MasonryGridProps {
   totalItems?: number;
   loadedItems?: number;
   page: number;
-  setPage: React.Dispatch<React.SetStateAction<number>>;
+  setPage: (page: number) => void;
   onLoadMore?: () => Promise<void> | void;
   loadingIndicator?: ReactNode;
   threshold?: number;
@@ -96,75 +96,84 @@ const MasonryGrid = ({
   }, [totalItems, loadedItems]);
 
   // Enhanced column calculation with real-time width tracking
-  const getColumnCount = useCallback((width?: number) => {
-    if (!isHydrated) return 1;
+  const getColumnCount = useCallback(
+    (width?: number) => {
+      if (!isHydrated) return 1;
 
-    try {
-      const currentWidth = width || containerWidth || (containerRef.current?.offsetWidth) || 0;
+      try {
+        const currentWidth =
+          width || containerWidth || containerRef.current?.offsetWidth || 0;
 
-      // Ensure we have valid dimensions
-      if (!currentWidth || currentWidth < 100) {
-        return lastValidColumnCountRef.current || 1;
-      }
-
-      const availableWidth = currentWidth - gap * 1;
-      let calculatedColumns = 1;
-
-      // Use minColumnWidth if provided, otherwise use breakpoint strategy
-      if (minColumnWidth > 0) {
-        calculatedColumns = Math.max(
-          1,
-          Math.floor(availableWidth / minColumnWidth)
-        );
-      } else {
-        // Mobile-first breakpoint strategy with more precise calculations
-        if (currentWidth < 480) {
-          calculatedColumns = layout.stage1;
-        } else if (currentWidth < 640) {
-          calculatedColumns = layout.stage2;
-        } else if (currentWidth < 768) {
-          calculatedColumns = layout.stage3;
-        } else if (currentWidth < 1024) {
-          calculatedColumns = layout.stage4;
-        } else if (currentWidth < 1280) {
-          calculatedColumns = layout.stage5;
-        } else if (currentWidth < 1536) {
-          calculatedColumns = layout.stage6;
-        } else {
-          calculatedColumns = layout.stage7;
+        // Ensure we have valid dimensions
+        if (!currentWidth || currentWidth < 100) {
+          return lastValidColumnCountRef.current || 1;
         }
+
+        const availableWidth = currentWidth - gap * 1;
+        let calculatedColumns = 1;
+
+        // Use minColumnWidth if provided, otherwise use breakpoint strategy
+        if (minColumnWidth > 0) {
+          calculatedColumns = Math.max(
+            1,
+            Math.floor(availableWidth / minColumnWidth),
+          );
+        } else {
+          // Mobile-first breakpoint strategy with more precise calculations
+          if (currentWidth < 480) {
+            calculatedColumns = layout.stage1;
+          } else if (currentWidth < 640) {
+            calculatedColumns = layout.stage2;
+          } else if (currentWidth < 768) {
+            calculatedColumns = layout.stage3;
+          } else if (currentWidth < 1024) {
+            calculatedColumns = layout.stage4;
+          } else if (currentWidth < 1280) {
+            calculatedColumns = layout.stage5;
+          } else if (currentWidth < 1536) {
+            calculatedColumns = layout.stage6;
+          } else {
+            calculatedColumns = layout.stage7;
+          }
+        }
+
+        // Ensure reasonable bounds
+        calculatedColumns = Math.min(Math.max(calculatedColumns, 1), 8);
+
+        // Store last valid calculation
+        if (calculatedColumns > 0) {
+          lastValidColumnCountRef.current = calculatedColumns;
+        }
+
+        return calculatedColumns;
+      } catch (error) {
+        console.warn("Error calculating column count:", error);
+        return lastValidColumnCountRef.current || 2;
       }
-
-      // Ensure reasonable bounds
-      calculatedColumns = Math.min(Math.max(calculatedColumns, 1), 8);
-
-      // Store last valid calculation
-      if (calculatedColumns > 0) {
-        lastValidColumnCountRef.current = calculatedColumns;
-      }
-
-      return calculatedColumns;
-    } catch (error) {
-      console.warn("Error calculating column count:", error);
-      return lastValidColumnCountRef.current || 2;
-    }
-  }, [isHydrated, minColumnWidth, gap, layout, containerWidth]);
+    },
+    [isHydrated, minColumnWidth, gap, layout, containerWidth],
+  );
 
   // Real-time column count updater
-  const updateColumnCount = useCallback((newWidth?: number) => {
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current);
-    }
-
-    animationFrameRef.current = requestAnimationFrame(() => {
-      const newCount = getColumnCount(newWidth);
-      if (newCount !== columnCount && newCount > 0) {
-        console.log(`[Dynamic] Updating column count: ${columnCount} → ${newCount}`);
-        setColumnCount(newCount);
-        setGridStabilized(false);
+  const updateColumnCount = useCallback(
+    (newWidth?: number) => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
       }
-    });
-  }, [getColumnCount, columnCount]);
+
+      animationFrameRef.current = requestAnimationFrame(() => {
+        const newCount = getColumnCount(newWidth);
+        if (newCount !== columnCount && newCount > 0) {
+          console.log(
+            `[Dynamic] Updating column count: ${columnCount} → ${newCount}`,
+          );
+          setColumnCount(newCount);
+          setGridStabilized(false);
+        }
+      });
+    },
+    [getColumnCount, columnCount],
+  );
 
   // Detect device capabilities and preferences
   useEffect(() => {
@@ -173,13 +182,13 @@ const MasonryGrid = ({
     const updateDeviceInfo = () => {
       const isMobile =
         /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-          navigator.userAgent
+          navigator.userAgent,
         ) || window.innerWidth <= 768;
 
       const hasTouch = "ontouchstart" in window || navigator.maxTouchPoints > 0;
       const pixelRatio = window.devicePixelRatio || 1;
       const preferReducedMotion = window.matchMedia(
-        "(prefers-reduced-motion: reduce)"
+        "(prefers-reduced-motion: reduce)",
       ).matches;
 
       setDeviceInfo({ isMobile, hasTouch, pixelRatio, preferReducedMotion });
@@ -205,7 +214,7 @@ const MasonryGrid = ({
     if (!containerRef.current || !isHydrated) return;
 
     // Modern ResizeObserver for real-time width changes
-    if (typeof ResizeObserver !== 'undefined') {
+    if (typeof ResizeObserver !== "undefined") {
       resizeObserverRef.current = new ResizeObserver((entries) => {
         for (const entry of entries) {
           const newWidth = entry.contentRect.width;
@@ -231,7 +240,7 @@ const MasonryGrid = ({
     };
 
     if (!resizeObserverRef.current) {
-      window.addEventListener('resize', handleResize);
+      window.addEventListener("resize", handleResize);
       // Initial measurement
       handleResize();
     }
@@ -241,7 +250,7 @@ const MasonryGrid = ({
         resizeObserverRef.current.disconnect();
         resizeObserverRef.current = null;
       }
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener("resize", handleResize);
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
@@ -277,7 +286,7 @@ const MasonryGrid = ({
 
       if (hasValidContainer && hasValidCalculation && isValidColumnCount) {
         console.log(
-          `[Failsafe] Correcting column count: ${columnCount} → ${expectedColumnCount}`
+          `[Failsafe] Correcting column count: ${columnCount} → ${expectedColumnCount}`,
         );
         setColumnCount(expectedColumnCount);
         consecutiveValidChecks = 0;
@@ -300,13 +309,13 @@ const MasonryGrid = ({
       // Additional check for stuck states
       if (currentWidth > 1200 && columnCount === 1) {
         console.log(
-          "[Failsafe] Detected stuck single-column on wide screen, forcing recalculation"
+          "[Failsafe] Detected stuck single-column on wide screen, forcing recalculation",
         );
         setColumnCount(getColumnCount(currentWidth));
         setGridStabilized(false);
       } else if (currentWidth < 500 && columnCount > 2) {
         console.log(
-          "[Failsafe] Detected too many columns on narrow screen, forcing recalculation"
+          "[Failsafe] Detected too many columns on narrow screen, forcing recalculation",
         );
         setColumnCount(getColumnCount(currentWidth));
         setGridStabilized(false);
@@ -454,7 +463,7 @@ const MasonryGrid = ({
     window.addEventListener("orientationchange", handleOrientationChange);
     document.addEventListener(
       "fonts" in document ? "fontsready" : "DOMContentLoaded",
-      handleFontLoad
+      handleFontLoad,
     );
 
     return () => {
@@ -462,11 +471,17 @@ const MasonryGrid = ({
       window.removeEventListener("orientationchange", handleOrientationChange);
       document.removeEventListener(
         "fonts" in document ? "fontsready" : "DOMContentLoaded",
-        handleFontLoad
+        handleFontLoad,
       );
       clearTimeout(timeoutId);
     };
-  }, [getColumnCount, isHydrated, deviceInfo.preferReducedMotion, containerWidth, updateColumnCount]);
+  }, [
+    getColumnCount,
+    isHydrated,
+    deviceInfo.preferReducedMotion,
+    containerWidth,
+    updateColumnCount,
+  ]);
 
   // Enhanced load more with mobile network considerations
   const handleLoadMore = useCallback(async () => {
@@ -487,6 +502,7 @@ const MasonryGrid = ({
       await onLoadMore();
 
       if (pendingPageRef.current === targetPage - 1) {
+        console.log(`[LoadMore] Successfully loaded page ${targetPage}`);
         setPage(targetPage);
         pendingPageRef.current = targetPage;
       }
@@ -506,7 +522,7 @@ const MasonryGrid = ({
       if (!enablePullToRefresh || !onRefresh || window.scrollY > 0) return;
       touchStartYRef.current = e.touches[0].clientY;
     },
-    [enablePullToRefresh, onRefresh]
+    [enablePullToRefresh, onRefresh],
   );
 
   const handleTouchMove = useCallback(
@@ -531,7 +547,7 @@ const MasonryGrid = ({
         }
       }
     },
-    [enablePullToRefresh, onRefresh, isRefreshing]
+    [enablePullToRefresh, onRefresh, isRefreshing],
   );
 
   const handleTouchEnd = useCallback(async () => {
@@ -668,7 +684,7 @@ const MasonryGrid = ({
 
     const columns = Array.from(
       { length: columnCount },
-      () => [] as ReactNode[]
+      () => [] as ReactNode[],
     );
 
     // Round-robin distribution for balanced layout

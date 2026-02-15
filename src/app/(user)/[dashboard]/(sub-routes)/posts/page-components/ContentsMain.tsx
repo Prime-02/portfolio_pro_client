@@ -1,14 +1,14 @@
 "use client";
 import React, { useEffect } from "react";
-import PostsHeader from "./PostsHeader";
+import ContentsHeader from "./ContentsHeader";
 import { useGlobalState } from "@/app/globalStateProvider";
 import Modal from "@/app/components/containers/modals/Modal";
-import PostsActions from "./PostsActions";
 import { useContentStore } from "@/app/stores/posts_store/PostsHandler";
 import { ContentStatus } from "@/app/components/types and interfaces/Posts";
-import { access } from "fs";
+import PostsGrid from "./ContentsGrid";
+import ContentsActions from "./ContentsActions";
 
-const PostsMain = () => {
+const ContentsMain = () => {
   const {
     checkParams,
     checkValidId,
@@ -29,7 +29,8 @@ const PostsMain = () => {
   }, [accessToken, varifiesdId, isOnline]);
   return (
     <div>
-      <PostsHeader />
+      <ContentsHeader />
+      <PostsGrid/>
       <Modal
         closeOnBackdropClick={false}
         showMinimizeButton={true}
@@ -45,10 +46,10 @@ const PostsMain = () => {
           checkParams("new") === "true" ? "Create New " : "Edit this "
         } ${checkParams("type")?.slice(0, 1)}${checkParams("type")?.slice(1).toLowerCase() || "post"} `}
       >
-        <PostsActions />
+        <ContentsActions />
       </Modal>
     </div>
   );
 };
 
-export default PostsMain;
+export default ContentsMain;

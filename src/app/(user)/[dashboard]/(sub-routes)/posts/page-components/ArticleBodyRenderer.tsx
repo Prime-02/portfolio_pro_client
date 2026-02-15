@@ -2,7 +2,7 @@ import ImageCard from "@/app/components/containers/cards/ImageCard";
 import TextFormatter from "@/app/components/containers/TextFormatters/TextFormatter";
 import React from "react";
 
-const PostsBodyRenderer = ({
+const ArticleBodyRenderer = ({
   body,
 }: {
   body: Record<string, string>[] | undefined;
@@ -94,4 +94,4 @@ const PostsBodyRenderer = ({
   );
 };
 
-export default PostsBodyRenderer;
+export default ArticleBodyRenderer;

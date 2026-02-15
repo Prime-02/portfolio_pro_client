@@ -20,6 +20,7 @@ import {
 
 interface TextAreaProps {
   label?: string;
+  placeholder?: string;
   value?: string;
   onChange: (value: string) => void;
   className?: string;
@@ -34,12 +35,14 @@ interface TextAreaProps {
   required?: boolean;
   disabled?: boolean;
   showFormatPanel?: boolean;
+  style?: React.CSSProperties;
 }
 
 export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
   (
     {
       label,
+      placeholder,
       value,
       onChange,
       className,
@@ -54,8 +57,9 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
       required = false,
       disabled = false,
       showFormatPanel = false,
+      style,
     },
-    forwardedRef
+    forwardedRef,
   ) => {
     const { theme } = useTheme();
     const internalRef = useRef<HTMLTextAreaElement>(null);
@@ -66,7 +70,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
     const insertFormatting = (
       before: string,
       after: string = before,
-      placeholder: string = "text"
+      placeholder: string = "text",
     ) => {
       const textarea = internalRef.current;
       if (!textarea) return;
@@ -89,12 +93,12 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
         if (selectedText) {
           textarea.setSelectionRange(
             start + before.length,
-            end + before.length
+            end + before.length,
           );
         } else {
           textarea.setSelectionRange(
             start + before.length,
-            start + before.length + placeholder.length
+            start + before.length + placeholder.length,
           );
         }
         textarea.focus();
@@ -121,7 +125,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
       setTimeout(() => {
         textarea.setSelectionRange(
           start + textToInsert.length,
-          start + textToInsert.length
+          start + textToInsert.length,
         );
         textarea.focus();
       }, 0);
@@ -153,7 +157,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
           setTimeout(() => {
             textarea.setSelectionRange(
               start + insertion.length,
-              start + insertion.length
+              start + insertion.length,
             );
             textarea.focus();
           }, 0);
@@ -171,7 +175,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
           setTimeout(() => {
             textarea.setSelectionRange(
               start + insertion.length,
-              start + insertion.length
+              start + insertion.length,
             );
             textarea.focus();
           }, 0);
@@ -306,9 +310,10 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
                     : 1
                 }
                 id={id}
-                className={`${className} rounded-2xl block px-2.5 pb-2.5 pt-4 w-full text-sm bg-transparent border-1 border-gray-300 appearance-none dark:border-gray-600 dark:focus:border-[var(--accent)] focus:outline-none focus:ring-0 focus:border-[var(--accent)] peer`}
-                placeholder=" "
+                className={`${className?.startsWith("modText") ? `rounded-2xl block px-2.5 pb-2.5 pt-4 w-full ${className} bg-transparent border-1 border-gray-300 appearance-none dark:border-gray-600 dark:focus:border-[var(--accent)] focus:outline-none focus:ring-0 focus:border-[var(--accent)] peer` : ` ${className} rounded-2xl block px-2.5 pb-2.5 pt-4 w-full text-sm bg-transparent border-1 border-gray-300 appearance-none dark:border-gray-600 dark:focus:border-[var(--accent)] focus:outline-none focus:ring-0 focus:border-[var(--accent)] peer`} `}
+                placeholder={label ? " " : placeholder || ""}
                 required={required}
+                style={style}
               ></textarea>
               <label
                 htmlFor={id}
@@ -320,7 +325,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
                     (labelBgHex || theme.background) && labelBgHexIntensity
                       ? getColorShade(
                           labelBgHex || theme.background,
-                          labelBgHexIntensity
+                          labelBgHexIntensity,
                         )
                       : "none",
                 }}
@@ -395,5 +400,5 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
         )}
       </>
     );
-  }
+  },
 );

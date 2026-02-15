@@ -1,5 +1,5 @@
 import React from 'react'
-import PostsMain from './page-components/PostsMain'
+import PostsMain from './page-components/ContentsMain'
 
 const Contents = () => {
   return (

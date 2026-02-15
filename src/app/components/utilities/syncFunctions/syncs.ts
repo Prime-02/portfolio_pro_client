@@ -1705,3 +1705,31 @@ function handleAxiosError(axiosError: AxiosError): string {
 
   return errorMessage;
 }
+
+
+/**
+ * Finds an object in an array by a specific key-value pair and returns its index.
+ *
+ * @param arr - The array to search through
+ * @param value - The value to search for
+ * @param key - The key to check in each object (defaults to 'id')
+ * @returns The index of the found object or -1 if not found
+ */
+export const findObjectByKey = <
+  T extends Record<string, any>,
+  K extends keyof T = 'id'
+>(
+  arr: T[] | null | undefined, 
+  value: T[K] | string | number,
+  key: K = 'id' as K
+): number => {
+  const index = arr?.findIndex((obj) => obj[key] === value) ?? -1;
+
+  if (index !== -1) {
+    console.log(`Object found at index ${index} with ${String(key)}:`, value);
+  } else {
+    console.log(`Object not found with ${String(key)}:`, value);
+  }
+
+  return index;
+};

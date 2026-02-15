@@ -79,7 +79,7 @@ const ArticleForm = ({
           onChange={(value: string) => {
             handleFieldChange("title", value);
           }}
-          value={content.title}
+          value={content?.title || ""}
           placeholder="Title of Article"
           className="border-none text-5xl font-extrabold rounded-none text-start "
         />
@@ -134,7 +134,7 @@ const ArticleForm = ({
           />
         )}
       </div>
-      <ArticleBodyRenderer body={content.body} />
+      <ArticleBodyRenderer body={content?.body || []} />
     </div>
   );
 };

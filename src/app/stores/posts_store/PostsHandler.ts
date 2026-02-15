@@ -215,15 +215,9 @@ export const useContentStore = create<ContentStore>()(
     ) => {
       if (
         !contentData.title &&
-        contentData.content_type !== ContentType.ARTICLE
+        contentData.content_type === ContentType.ARTICLE
       ) {
         toast.warning("Title is required");
-        return;
-      } else if (
-        !contentData.title &&
-        contentData.content_type !== ContentType.POST
-      ) {
-        toast.warning("Headline is required");
         return;
       }
       setLoading("creating_content");
@@ -991,6 +985,10 @@ export const useContentStore = create<ContentStore>()(
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
+          console.error("=== FULL ERROR RESPONSE ===");
+          console.error("Status:", response.status);
+          console.error("Error Data:", JSON.stringify(errorData, null, 2));
+          console.error("========================");
           throw new Error(errorData.detail || "Failed to replace media");
         }
 

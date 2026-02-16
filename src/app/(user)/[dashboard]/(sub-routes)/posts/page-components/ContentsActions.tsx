@@ -35,6 +35,40 @@ const ContentsActions = () => {
   const [isBodySynced, setIsBodySynced] = useState(false);
   const hasSyncedRef = useRef(false);
 
+  const titleHandler = () => {
+    // For POST content type, set title from first text element or generate random ID
+    if (contentType === ContentType.POST) {
+      let postTitle = currentContent?.title || "";
+
+      // Find first text element in body
+      const firstTextElement = currentContent?.body?.find((item) => {
+        const key = Object.keys(item)[0];
+        return key.startsWith("text");
+      });
+
+      if (firstTextElement) {
+        const textValue = Object.values(firstTextElement)[0];
+        // Use text value if it's not empty and not just a hex color
+        const isTextHex = /^#[0-9A-Fa-f]{6}$/.test(textValue);
+        if (textValue && !isTextHex) {
+          // Truncate to reasonable length for title (e.g., first 50 chars)
+          postTitle = textValue.slice(0, 50).trim();
+        }
+      }
+
+      // If still no title, generate random ID
+      if (!postTitle) {
+        postTitle = `post_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+      }
+
+      // Update currentContent with the title
+      setCurrentContent({
+        ...currentContent,
+        title: postTitle,
+      } as ContentWithAuthor);
+    }
+  };
+
   // Reset sync flag when content ID changes
   useEffect(() => {
     hasSyncedRef.current = false;
@@ -125,6 +159,7 @@ const ContentsActions = () => {
     }
     try {
       // For POST content, pass media as mediaFiles; for ARTICLE, as coverImage
+      titleHandler(); // Ensure title is set before saving
       const isArticle = contentType === ContentType.ARTICLE;
       await createContent(
         accessToken,
@@ -193,6 +228,7 @@ const ContentsActions = () => {
     }
 
     try {
+      titleHandler(); // Ensure title is set before updating
       await updateContentHandler(
         accessToken,
         updateId || currentContent?.id || "",
@@ -257,38 +293,6 @@ const ContentsActions = () => {
     croppedImage: string | null;
   }) => {
     try {
-      // For POST content type, set title from first text element or generate random ID
-      if (contentType === ContentType.POST) {
-        let postTitle = currentContent?.title || "";
-
-        // Find first text element in body
-        const firstTextElement = currentContent?.body?.find((item) => {
-          const key = Object.keys(item)[0];
-          return key.startsWith("text");
-        });
-
-        if (firstTextElement) {
-          const textValue = Object.values(firstTextElement)[0];
-          // Use text value if it's not empty and not just a hex color
-          const isTextHex = /^#[0-9A-Fa-f]{6}$/.test(textValue);
-          if (textValue && !isTextHex) {
-            // Truncate to reasonable length for title (e.g., first 50 chars)
-            postTitle = textValue.slice(0, 50).trim();
-          }
-        }
-
-        // If still no title, generate random ID
-        if (!postTitle) {
-          postTitle = `post_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-        }
-
-        // Update currentContent with the title
-        setCurrentContent({
-          ...currentContent,
-          title: postTitle,
-        } as ContentWithAuthor);
-      }
-
       if (updateId || currentContent?.id) {
         updateContent(data);
       } else {
@@ -339,7 +343,7 @@ const ContentsActions = () => {
       <div>
         {contentType === ContentType.ARTICLE && (
           <ArticleForm
-            content={currentContent  as ContentCreate}
+            content={currentContent as ContentCreate}
             contentId={updateId || currentContent?.id || ""}
             handleFieldChange={handleFieldChange}
             draft={saveContent}

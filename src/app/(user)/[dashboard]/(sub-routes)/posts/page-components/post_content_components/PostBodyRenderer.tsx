@@ -22,7 +22,7 @@ const PostBodyRenderer = ({
   setActiveAction: (index: number) => void;
   activeTab: React.ReactNode;
   onClose: () => void;
-  save: (data: {
+  save: (data?: {
     file: File | null;
     croppedImage: string | null;
   }) => Promise<void>;

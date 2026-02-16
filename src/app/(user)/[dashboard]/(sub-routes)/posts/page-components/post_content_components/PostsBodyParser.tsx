@@ -25,7 +25,7 @@ const PostsBodyParser = ({
   onChange: (value: string) => void;
   isOpen: boolean;
   onClose: () => void;
-  save: (data: {
+  save: (data?: {
     file: File | null;
     croppedImage: string | null;
   }) => Promise<void>;
@@ -76,11 +76,24 @@ const PostsBodyParser = ({
     onChange(`${localText}${newColor}`);
   };
 
+  const handleSave = async (data?: {
+    file: File | null;
+    croppedImage: string | null;
+  }) => {
+    try {
+      await save(data);
+      setLocalText("");
+      onClose();
+    } catch (error) {
+      console.log("Error saving content:", error);
+    }
+  };
+
   return (
     <div className="relative h-auto ">
       <PostBodyRenderer
         setBody={setBody}
-        save={save}
+        save={handleSave}
         onClose={onClose}
         setActiveAction={setActiveAction}
         body={body}
@@ -114,7 +127,7 @@ const PostsBodyParser = ({
                   <CloseButton onClick={onClose} />
                 </div>
                 <ImageCropper
-                  onFinish={save}
+                  onFinish={handleSave}
                   loading={isLoading(`updating_content_${currentContent?.id}`)}
                   onFinishText="Upload and continue"
                   className="w-full h-full"

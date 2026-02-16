@@ -7,6 +7,7 @@ import { useContentStore } from "@/app/stores/posts_store/PostsHandler";
 import { ContentStatus } from "@/app/components/types and interfaces/Posts";
 import PostsGrid from "./ContentsGrid";
 import ContentsActions from "./ContentsActions";
+import { defaultContent } from "@/app/components/utilities/indices/contents-JSONs/defaultContent";
 
 const ContentsMain = () => {
   const {
@@ -30,14 +31,14 @@ const ContentsMain = () => {
   return (
     <div>
       <ContentsHeader />
-      <PostsGrid/>
+      <PostsGrid />
       <Modal
         closeOnBackdropClick={false}
         showMinimizeButton={true}
         size="xl"
         onClose={() => {
           clearQuerryParam();
-          setCurrentContent(null);
+          setCurrentContent(defaultContent);
         }}
         isOpen={
           checkParams("new") === "true" || checkParams("edit") ? true : false

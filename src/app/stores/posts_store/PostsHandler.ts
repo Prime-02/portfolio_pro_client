@@ -18,34 +18,16 @@ import {
 } from "@/app/components/types and interfaces/Posts";
 import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
 import { toast } from "@/app/components/toastify/Toastify";
-import { findObjectByKey } from "@/app/components/utilities/syncFunctions/syncs";
+import { defaultContent } from "@/app/components/utilities/indices/contents-JSONs/defaultContent";
 // Enable Map/Set support for Immer
 enableMapSet(); // Add this call before creating the store
 // ==================== Store State ====================
-// Response schema for cloudinary uploads
-interface UploadResponse {
-  public_id: string;
-  url: string;
-  secure_url: string;
-  width?: number | null;
-  height?: number | null;
-  format: string;
-  resource_type: string;
-  bytes: number;
-  created_at: string;
-  version: number;
-  version_id?: string | null;
-  signature: string;
-  etag?: string | null;
-  folder?: string | null;
-  tags?: string[] | null;
-}
 
 interface ContentStoreState {
   // Content data
   contents: Map<string, ContentWithAuthor>;
   contentList: ContentWithAuthor[];
-  currentContent: ContentWithAuthor | null;
+  currentContent: ContentWithAuthor;
 
   // Pagination & filters
   currentPage: number;
@@ -585,7 +567,7 @@ export const useContentStore = create<ContentStore>()(
         state.contents.delete(contentId);
         state.contentList = state.contentList.filter((c) => c.id !== contentId);
         if (state.currentContent?.id === contentId) {
-          state.currentContent = null;
+          state.currentContent = defaultContent;
         }
         state.totalContent = Math.max(0, state.totalContent - 1);
       });

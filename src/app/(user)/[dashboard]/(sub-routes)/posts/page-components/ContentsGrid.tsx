@@ -88,8 +88,9 @@ const ContentsGrid = () => {
       }
       gap={5}
     >
-      {contentList.map((content) => (
-        <ImageCard
+      {contentList.map((content, i) => (
+        <div
+        key={i}
           onClick={() => {
             setCurrentContent(content);
             extendRouteWithQuery({
@@ -97,13 +98,16 @@ const ContentsGrid = () => {
               type: content.content_type,
             });
           }}
-          key={content.id}
-          id={content.id}
-          image_url={content.cover_image_url || ""}
-          isLoading={false}
-          title={content.title}
-          titleSize="lg"
-        />
+        >
+          <ImageCard
+            key={content.id}
+            id={content.id}
+            image_url={content.cover_image_url || ""}
+            isLoading={false}
+            title={content.title}
+            titleSize="lg"
+          />
+        </div>
       ))}
     </MasonryGrid>
   );

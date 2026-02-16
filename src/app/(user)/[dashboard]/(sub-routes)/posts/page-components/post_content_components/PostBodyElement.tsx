@@ -152,7 +152,7 @@ const PostBodyElement = ({
         );
       }
 
-      if(!convertedImg) {
+      if (!convertedImg) {
         toast.error("Failed to process the cropped image. Please try again.");
         console.log("ERROR: Converted image is null");
         return;
@@ -168,6 +168,7 @@ const PostBodyElement = ({
         () => {},
       );
       console.log("Media replaced successfully");
+      onClose();
     } catch (error) {
       console.error("Error uploading media:", error);
       toast.error("Failed to upload media. Please try again.");

@@ -35,40 +35,6 @@ const ContentsActions = () => {
   const [isBodySynced, setIsBodySynced] = useState(false);
   const hasSyncedRef = useRef(false);
 
-  const titleHandler = () => {
-    // For POST content type, set title from first text element or generate random ID
-    if (contentType === ContentType.POST) {
-      let postTitle = currentContent?.title || "";
-
-      // Find first text element in body
-      const firstTextElement = currentContent?.body?.find((item) => {
-        const key = Object.keys(item)[0];
-        return key.startsWith("text");
-      });
-
-      if (firstTextElement) {
-        const textValue = Object.values(firstTextElement)[0];
-        // Use text value if it's not empty and not just a hex color
-        const isTextHex = /^#[0-9A-Fa-f]{6}$/.test(textValue);
-        if (textValue && !isTextHex) {
-          // Truncate to reasonable length for title (e.g., first 50 chars)
-          postTitle = textValue.slice(0, 50).trim();
-        }
-      }
-
-      // If still no title, generate random ID
-      if (!postTitle) {
-        postTitle = `post_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-      }
-
-      // Update currentContent with the title
-      setCurrentContent({
-        ...currentContent,
-        title: postTitle,
-      } as ContentWithAuthor);
-    }
-  };
-
   // Reset sync flag when content ID changes
   useEffect(() => {
     hasSyncedRef.current = false;
@@ -150,23 +116,46 @@ const ContentsActions = () => {
       toast.error("Please crop an image first");
       return;
     }
+
     let convertedImg = null;
     if (data && data.croppedImage) {
       convertedImg = await base64ToFile(
-        (data && data.croppedImage) || "",
+        data.croppedImage,
         currentContent?.title || "cover",
       );
     }
+
     try {
-      // For POST content, pass media as mediaFiles; for ARTICLE, as coverImage
-      titleHandler(); // Ensure title is set before saving
+      // Prepare content with title
+      let contentToSave = { ...currentContent } as ContentCreate;
+
+      // Generate title for POST if needed
+      if (contentType === ContentType.POST && !contentToSave.title) {
+        const firstTextElement = contentToSave.body?.find((item) => {
+          const key = Object.keys(item)[0];
+          return key.startsWith("text");
+        });
+
+        if (firstTextElement) {
+          const textValue = Object.values(firstTextElement)[0];
+          const isTextHex = /^#[0-9A-Fa-f]{6}$/.test(textValue);
+          if (textValue && !isTextHex) {
+            contentToSave.title = textValue.slice(0, 50).trim();
+          }
+        }
+
+        if (!contentToSave.title) {
+          contentToSave.title = `post_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+        }
+      }
+
       const isArticle = contentType === ContentType.ARTICLE;
       await createContent(
         accessToken,
         setLoading,
-        currentContent as ContentCreate,
-        isArticle ? convertedImg : null, // coverImage for articles only
-        isArticle ? null : convertedImg ? [convertedImg] : null, // mediaFiles for posts
+        contentToSave,
+        isArticle ? convertedImg : null,
+        isArticle ? null : convertedImg ? [convertedImg] : null,
         (newContent) => {
           // Sync media URLs to body immediately if media was uploaded
           if (newContent.media_urls && newContent.media_urls.length > 0) {
@@ -228,7 +217,6 @@ const ContentsActions = () => {
     }
 
     try {
-      titleHandler(); // Ensure title is set before updating
       await updateContentHandler(
         accessToken,
         updateId || currentContent?.id || "",

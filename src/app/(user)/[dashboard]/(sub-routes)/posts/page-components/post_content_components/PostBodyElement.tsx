@@ -39,11 +39,21 @@ const PostBodyElement = ({
   const [localMediaValue, setLocalMediaValue] = useState<string>(""); // Store full media value
   const [showEditor, setShowEditor] = useState(false);
 
+  // Get the current value directly from store - this is the source of truth
+  const storeBodyValue = currentContent?.body?.[index]?.[action];
+
   // Parse initial value to extract text/color or media url
   // Constantly recover value from store
   useEffect(() => {
-    const storeValue = currentContent?.body?.[index]?.[action];
-    const currentValue = storeValue || value;
+    // Always prioritize store value over prop
+    const currentValue = storeBodyValue || value;
+
+    console.log(`[PostBodyElement ${index}] Value update:`, {
+      storeBodyValue,
+      propValue: value,
+      currentValue,
+      updated_at: currentContent?.updated_at,
+    });
 
     if (currentValue && key.startsWith("text")) {
       // Match exactly 6 hex characters at the end of the string
@@ -65,8 +75,9 @@ const PostBodyElement = ({
       // Also extract just the URL for display
       const mediaUrl = currentValue.split(" | ")[0];
       setLocalMediaUrl(mediaUrl);
+      console.log(`[PostBodyElement ${index}] Media URL updated to:`, mediaUrl);
     }
-  }, [value, key, currentContent?.body, index, action]);
+  }, [storeBodyValue, value, key, currentContent?.updated_at, index, action]); // Watch store value directly
 
   // Save media changes back to parent/store
   const saveMediaChanges = useCallback(() => {
@@ -81,7 +92,7 @@ const PostBodyElement = ({
         onUpdate(updatedValue);
       }
     }
-  }, [key, localMediaUrl, value]);
+  }, [key, localMediaUrl, value, onUpdate]);
 
   const handleTextChange = (newText: string) => {
     setLocalText(newText);
@@ -110,7 +121,7 @@ const PostBodyElement = ({
       // 2. Store value
       // 3. Local state (preserves value even after re-renders)
       let currentValue =
-        value || currentContent?.body?.[index]?.[action] || localMediaValue;
+        value || currentContent?.body?.[index][action] || localMediaValue;
 
       // Split the pipe-separated string
       // Format: "URL | type | public_id | mime_type"
@@ -165,7 +176,10 @@ const PostBodyElement = ({
         publicId,
         convertedImg as File,
         setLoading,
-        () => {},
+        () => {
+          // Close editor after successful replacement
+          setShowEditor(false);
+        },
       );
       console.log("Media replaced successfully");
       onClose();
@@ -173,7 +187,6 @@ const PostBodyElement = ({
       console.error("Error uploading media:", error);
       toast.error("Failed to upload media. Please try again.");
     } finally {
-      setShowEditor(false);
       setLoading(`uploading_media_${index}`);
     }
   };
@@ -214,19 +227,27 @@ const PostBodyElement = ({
 
   // Media Element
   if (key.startsWith("media")) {
-    // Use localMediaUrl if available (for immediate updates after upload),
-    // otherwise use store value, then fall back to prop value
+    // ALWAYS use store value first, then local state, then prop value
+    // This ensures we display the latest value after replacement
+    const storeMediaValue = currentContent?.body?.[index]?.[action];
     const displayMediaUrl =
-      localMediaUrl ||
-      currentContent?.body?.[index]?.[action]?.split(" | ")[0] ||
-      value?.split(" | ")[0] ||
+      storeMediaValue?.split(" | ")[0] || // Store value (highest priority)
+      localMediaUrl || // Local state
+      value?.split(" | ")[0] || // Prop value (fallback)
       "";
+
+    console.log(`[PostBodyElement ${index}] Rendering media:`, {
+      storeMediaValue,
+      displayMediaUrl,
+      localMediaUrl,
+      propValue: value,
+    });
 
     return (
       <div
         onClick={() => {
-          setActiveAction(index);
-          setShowEditor(true);
+          // setActiveAction(index);
+          // setShowEditor(true);
         }}
         className="w-full flex-shrink-0 h-auto flex items-center justify-center cursor-pointer group transition-opacity hover:opacity-80 bg-[var(--background)] snap-center relative"
       >
@@ -235,9 +256,10 @@ const PostBodyElement = ({
             <div className="w-full h-full flex items-center justify-center p-4">
               <ImageCard
                 image_url={displayMediaUrl}
-                id={key}
+                id={`${key}-${displayMediaUrl}`} // Add URL to key to force re-render
                 alt="Post media"
                 className="w-full h-full object-cover rounded-lg"
+                title={displayMediaUrl}
               />
             </div>
           ) : (

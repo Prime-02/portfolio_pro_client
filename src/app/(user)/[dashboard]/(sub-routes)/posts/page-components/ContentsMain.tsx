@@ -20,14 +20,14 @@ const ContentsMain = () => {
   } = useGlobalState();
   const { setCurrentContent, getContentById } = useContentStore();
   const updateId = checkParams("edit") || checkParams(ContentStatus.DRAFT);
-  const varifiesdId = checkValidId(updateId || "") ? updateId || "" : "";
+  const varifiedId = checkValidId(updateId || "") ? updateId || "" : "";
 
   useEffect(() => {
-    if (!varifiesdId) return;
+    if (!varifiedId) return;
     if (isOnline && accessToken) {
-      getContentById(accessToken, varifiesdId, setLoading);
+      getContentById(accessToken, varifiedId, setLoading);
     }
-  }, [accessToken, varifiesdId, isOnline]);
+  }, []);
   return (
     <div>
       <ContentsHeader />
@@ -38,7 +38,6 @@ const ContentsMain = () => {
         size="xl"
         onClose={() => {
           clearQuerryParam();
-          setCurrentContent(defaultContent);
         }}
         isOpen={
           checkParams("new") === "true" || checkParams("edit") ? true : false

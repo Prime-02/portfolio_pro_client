@@ -21,6 +21,46 @@ import { toast } from "@/app/components/toastify/Toastify";
 import { defaultContent } from "@/app/components/utilities/indices/contents-JSONs/defaultContent";
 // Enable Map/Set support for Immer
 enableMapSet(); // Add this call before creating the store
+
+// ==================== Helpers ====================
+
+/**
+ * Merges a content's media_urls array back into its body array.
+ *
+ * The server always returns media as a structured `media_urls` list, but the
+ * body elements that drive the UI store media as a pipe-separated string:
+ *   "URL | type | public_id | mime_type"
+ *
+ * This helper keeps both in sync so the UI reflects the latest server state
+ * without needing an external useEffect.
+ */
+function syncMediaUrlsToBody(content: ContentWithAuthor): ContentWithAuthor {
+  if (!content.media_urls || content.media_urls.length === 0) return content;
+
+  const syncedBody = [...(content.body || [])];
+
+  content.media_urls.forEach((mediaUrl) => {
+    // public_id format: "…/media_0", "…/media_1", etc.
+    const match = mediaUrl.public_id.match(/media_(\d+)$/);
+    if (!match) return;
+
+    const mediaIndex = parseInt(match[1], 10);
+    const bodyKey = `media${mediaIndex + 1}`; // media_0 → media1
+    const mediaValue = `${mediaUrl.url} | ${mediaUrl.type} | ${mediaUrl.public_id} | ${mediaUrl.content_type}`;
+
+    const existingIndex = syncedBody.findIndex(
+      (item) => Object.keys(item)[0] === bodyKey,
+    );
+
+    if (existingIndex !== -1) {
+      syncedBody[existingIndex] = { [bodyKey]: mediaValue };
+    } else {
+      syncedBody.push({ [bodyKey]: mediaValue });
+    }
+  });
+
+  return { ...content, body: syncedBody };
+}
 // ==================== Store State ====================
 
 interface ContentStoreState {
@@ -974,7 +1014,11 @@ export const useContentStore = create<ContentStore>()(
           throw new Error(errorData.detail || "Failed to replace media");
         }
 
-        const updatedContent: ContentWithAuthor = await response.json();
+        const rawUpdatedContent: ContentWithAuthor = await response.json();
+
+        // Sync media_urls back into body so PostBodyElement sees the new URL
+        // immediately without requiring an external useEffect to re-run.
+        const updatedContent = syncMediaUrlsToBody(rawUpdatedContent);
 
         // Update with server response
         if (updatedContent) {

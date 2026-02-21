@@ -5,13 +5,9 @@ const PostBodyRenderer = ({
   setBody,
   body,
   action,
-  value,
-  onChange,
-  isOpen,
   setActiveAction,
   activeTab,
   onClose,
-  save,
 }: {
   setBody: (body: Record<string, string>[]) => void;
   body: Record<string, string>[] | undefined;
@@ -22,10 +18,6 @@ const PostBodyRenderer = ({
   setActiveAction: (index: number) => void;
   activeTab: React.ReactNode;
   onClose: () => void;
-  save: (data?: {
-    file: File | null;
-    croppedImage: string | null;
-  }) => Promise<void>;
 }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const elementRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -162,7 +154,6 @@ const PostBodyRenderer = ({
               className="w-full flex-shrink-0 snap-center"
             >
               <PostBodyElement
-              save={save}
                 onClose={onClose}
                 action={action}
                 item={item}

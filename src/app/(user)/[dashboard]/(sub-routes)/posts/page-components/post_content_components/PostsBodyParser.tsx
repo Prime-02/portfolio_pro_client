@@ -93,7 +93,6 @@ const PostsBodyParser = ({
     <div className="relative h-auto ">
       <PostBodyRenderer
         setBody={setBody}
-        save={handleSave}
         onClose={onClose}
         setActiveAction={setActiveAction}
         body={body}
@@ -123,9 +122,6 @@ const PostsBodyParser = ({
             )}
             {action.startsWith("media") && (
               <div>
-                <div className="mt-2 absolute top-0  z-50 right-0 flex gap-3 items-center ">
-                  <CloseButton onClick={onClose} />
-                </div>
                 <ImageCropper
                   onFinish={handleSave}
                   loading={isLoading(`updating_content_${currentContent?.id}`)}

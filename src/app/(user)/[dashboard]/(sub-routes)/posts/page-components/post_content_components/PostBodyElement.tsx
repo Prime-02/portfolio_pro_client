@@ -15,7 +15,6 @@ const PostBodyElement = ({
   onClose,
   onUpdate,
   action,
-  save,
 }: {
   item: Record<string, string>;
   action: string;
@@ -24,10 +23,6 @@ const PostBodyElement = ({
   setActiveAction: (index: number) => void;
   onClose: () => void;
   onUpdate?: (updatedValue: string) => void;
-  save: (data?: {
-    file: File | null;
-    croppedImage: string | null;
-  }) => Promise<void>;
 }) => {
   const key = Object.keys(item)[0];
   const value = item[key];
@@ -236,18 +231,11 @@ const PostBodyElement = ({
       value?.split(" | ")[0] || // Prop value (fallback)
       "";
 
-    console.log(`[PostBodyElement ${index}] Rendering media:`, {
-      storeMediaValue,
-      displayMediaUrl,
-      localMediaUrl,
-      propValue: value,
-    });
-
     return (
       <div
         onClick={() => {
-          // setActiveAction(index);
-          // setShowEditor(true);
+          setActiveAction(index);
+          setShowEditor(true);
         }}
         className="w-full flex-shrink-0 h-auto flex items-center justify-center cursor-pointer group transition-opacity hover:opacity-80 bg-[var(--background)] snap-center relative"
       >

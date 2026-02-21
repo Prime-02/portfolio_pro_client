@@ -39,9 +39,7 @@ const ContentsMain = () => {
         onClose={() => {
           clearQuerryParam();
         }}
-        isOpen={
-          checkParams("new") === "true" || checkParams("edit") ? true : false
-        }
+        isOpen={checkParams("new") === "true" || varifiedId !== ""}
         title={`${
           checkParams("new") === "true" ? "Create New " : "Edit this "
         } ${checkParams("type")?.slice(0, 1)}${checkParams("type")?.slice(1).toLowerCase() || "post"} `}

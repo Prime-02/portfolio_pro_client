@@ -1129,7 +1129,12 @@ export const useContentStore = create<ContentStore>()(
           throw new Error(errorData.detail || "Failed to delete media");
         }
 
-        const updatedContent: ContentWithAuthor = await response.json();
+        const rawUpdatedContent: ContentWithAuthor = await response.json();
+
+        // Sync media_urls back into body — same reason as replaceMediaInContent:
+        // the server response carries the updated media_urls array but not a
+        // pre-serialised body, so without this the deleted slot stays stale in the UI.
+        const updatedContent = syncMediaUrlsToBody(rawUpdatedContent);
 
         // Update with server response
         if (updatedContent) {

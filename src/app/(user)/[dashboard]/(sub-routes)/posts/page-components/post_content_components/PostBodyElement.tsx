@@ -186,90 +186,76 @@ const PostBodyElement = ({
     }
   };
 
-  // Text Element
-  if (key.startsWith("text")) {
-    return (
-      <div
-        onClick={() => {
-          setActiveAction(index);
-          setShowEditor(true);
-          onClose();
-        }}
-        className="w-full flex-shrink-0 h-full flex items-center justify-center cursor-pointer group transition-opacity hover:opacity-80 snap-center"
-        style={{ backgroundColor: color }}
-      >
-        {!isActive || !showEditor ? (
-          <div className="px-6 py-4 text-center max-w-2xl">
-            <p className="md:text-5xl text-3xl font-bold text-white break-words">
-              {localText || "Empty text block"}
-            </p>
-          </div>
-        ) : (
-          <div className="w-full h-full flex flex-col relative">
-            <TextArea
-              value={localText}
-              className={`modText md:text-5xl text-3xl h-full text-white font-bold text-center w-full`}
-              placeholder="What's on your mind?"
-              onChange={handleTextChange}
-              maxLength={500}
-              style={{ backgroundColor: color }}
-            />
-          </div>
-        )}
-      </div>
-    );
-  }
 
-  // Media Element
-  if (key.startsWith("media")) {
-    // ALWAYS use store value first, then local state, then prop value
-    // This ensures we display the latest value after replacement
-    const storeMediaValue = currentContent?.body?.[index]?.[action];
-    const displayMediaUrl =
-      storeMediaValue?.split(" | ")[0] || // Store value (highest priority)
-      localMediaUrl || // Local state
-      value?.split(" | ")[0] || // Prop value (fallback)
-      "";
+  const storeMediaValue = currentContent?.body?.[index]?.[action];
+  const displayMediaUrl =
+    storeMediaValue?.split(" | ")[0] || // Store value (highest priority)
+    localMediaUrl || // Local state
+    value?.split(" | ")[0] || // Prop value (fallback)
+    "";
 
-    return (
-      <div
-        onClick={() => {
-          setActiveAction(index);
-          setShowEditor(true);
-        }}
-        className="w-full flex-shrink-0 h-auto flex items-center justify-center cursor-pointer group transition-opacity hover:opacity-80 bg-[var(--background)] snap-center relative"
-      >
-        {!isActive || !showEditor ? (
-          displayMediaUrl ? (
-            <div className="w-full h-full flex items-center justify-center p-4">
-              <ImageCard
-                image_url={displayMediaUrl}
-                id={`${key}-${displayMediaUrl}`} // Add URL to key to force re-render
-                alt="Post media"
-                className="w-full h-full object-cover rounded-lg"
-                title={displayMediaUrl}
-              />
+  return (
+    <div>
+      {key.startsWith("text") ? (
+        <div
+          onClick={() => {
+            setActiveAction(index);
+            setShowEditor(true);
+          }}
+          className="w-full flex-shrink-0 h-full flex items-center justify-center cursor-pointer group transition-opacity hover:opacity-80 snap-center"
+          style={{ backgroundColor: color }}
+        >
+          {!isActive || !showEditor ? (
+            <div className="px-6 py-4 text-center max-w-2xl">
+              <p className="md:text-5xl text-3xl font-bold text-white break-words">
+                {localText || "Empty text block"}
+              </p>
             </div>
           ) : (
-            <div className="text-center text-gray-400">
-              <p className="text-lg">No media added</p>
+            <div className="w-full h-full flex flex-col relative">
+              <TextArea
+                value={localText}
+                className={`modText md:text-5xl text-3xl h-full text-white font-bold text-center w-full`}
+                placeholder="What's on your mind?"
+                onChange={handleTextChange}
+                maxLength={500}
+                style={{ backgroundColor: color }}
+              />
             </div>
-          )
-        ) : (
-          <div className="w-full h-full relative">
-            <ImageCropper
-              onFinish={handleMediaUpload}
-              loading={isLoading(`uploading_media_${index}`)}
-              onFinishText="Upload new image"
-              className="w-full h-full object-cover rounded-lg"
-            />
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  return null;
+          )}
+        </div>
+      ) : key.startsWith("media") && (
+        <div className="w-full flex-shrink-0 h-auto flex items-center justify-center cursor-pointer group transition-opacity hover:opacity-80 bg-[var(--background)] snap-center relative">
+          {!isActive || !showEditor ? (
+            displayMediaUrl ? (
+              <div className="w-full h-full flex items-center justify-center p-4">
+                <ImageCard
+                  image_url={displayMediaUrl}
+                  id={`${key}-${displayMediaUrl}`} // Add URL to key to force re-render
+                  alt="Post media"
+                  className="w-full h-full object-cover rounded-lg"
+                  title={displayMediaUrl}
+                />
+              </div>
+            ) : (
+              <div className="text-center text-gray-400">
+                <p className="text-lg">No media added</p>
+              </div>
+            )
+          ) : (
+            <div className="w-full h-full relative">
+              <ImageCropper
+                onFinish={handleMediaUpload}
+                loading={isLoading(`uploading_media_${index}`)}
+                onFinishText="Upload new image"
+                className="w-full h-full object-cover rounded-lg"
+              />
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default PostBodyElement;

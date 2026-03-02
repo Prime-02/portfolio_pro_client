@@ -54,7 +54,7 @@ export type ThemeContextType = {
   // New properties for save/cancel functionality
   hasUnsavedChanges: boolean;
   showSaveButtons: boolean;
-  saveChanges: (customSettings: ProfileSettings) => void;
+  saveChanges: (customSettings?: ProfileSettings) => void;
   cancelChanges: () => void;
   resetToDefaults: () => void;
 };
@@ -264,7 +264,7 @@ export const ThemeProvider = ({
 
   // Save changes function
   const saveChanges = useCallback(
-    async (customSettings: ProfileSettings = settings) => {
+    async (customSettings = settings) => {
       if (!accessToken || isUpdatingSettings.current) return;
 
       isUpdatingSettings.current = true;

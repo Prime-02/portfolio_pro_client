@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import ImageCard from "@/app/components/containers/cards/ImageCard";
 import { TextArea } from "@/app/components/inputs/TextArea";
 import ImageCropper from "@/app/components/inputs/ImageUploader";
@@ -81,13 +81,6 @@ const PostBodyElement = ({
     }
   };
 
-  const handleColorChange = (newColor: string) => {
-    setColor(newColor);
-    if (key.startsWith("text") && onUpdate) {
-      onUpdate(`${localText}${newColor}`);
-    }
-  };
-
   const handleMediaUpload = async (data: {
     file: File | null;
     croppedImage: string | null;
@@ -100,7 +93,7 @@ const PostBodyElement = ({
       // 1. Original value prop (most reliable)
       // 2. Store value
       // 3. Local state (preserves value even after re-renders)
-      let currentValue =
+      const currentValue =
         value || currentContent?.body?.[index][action] || localMediaValue;
 
       // Split the pipe-separated string

@@ -13,7 +13,6 @@ const ContentsGrid = () => {
     totalContent,
     hasNext,
     setPage,
-    filters,
   } = useContentStore();
   const {
     accessToken,

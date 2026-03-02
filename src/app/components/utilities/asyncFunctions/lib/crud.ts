@@ -162,7 +162,6 @@ interface GetAllDataParams<T = Record<string, unknown>> {
 export const GetAllData = async <T = Record<string, unknown>, R = unknown>({
   access,
   url,
-  type,
   data = {} as T,
 }: GetAllDataParams<T>): Promise<R> => {
   try {

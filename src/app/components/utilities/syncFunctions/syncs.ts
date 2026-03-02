@@ -1,3 +1,6 @@
+export type Primitive = string | number | boolean | symbol | null | undefined;
+
+
 /**
  * Generates a shade of a given hex color based on a percentage (1-100).
  * @param hex - The base color in hex format (e.g., "#05df72").
@@ -1715,8 +1718,9 @@ function handleAxiosError(axiosError: AxiosError): string {
  * @param key - The key to check in each object (defaults to 'id')
  * @returns The index of the found object or -1 if not found
  */
+
 export const findObjectByKey = <
-  T extends Record<string, any>,
+  T extends Record<PropertyKey, Primitive>,
   K extends keyof T = 'id'
 >(
   arr: T[] | null | undefined, 

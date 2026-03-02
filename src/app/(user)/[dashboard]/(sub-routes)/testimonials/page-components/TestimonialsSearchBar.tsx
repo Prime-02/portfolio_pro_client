@@ -17,7 +17,6 @@ export interface TestimonialQueryParams {
 
 const TestimonialsSearchBar = () => {
   const {
-    currentUser,
     checkParams,
     currentPath,
     router,

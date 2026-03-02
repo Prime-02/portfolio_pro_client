@@ -19,7 +19,7 @@ const ArticleForm = ({
 }: {
   content: ContentCreate;
   contentId: string;
-  handleFieldChange: (field: keyof ContentCreate, value: any) => void;
+  handleFieldChange: (field: keyof ContentCreate, value: string) => void;
   draft: (data: {
     file: File | null;
     croppedImage: string | null;
@@ -38,6 +38,9 @@ const ArticleForm = ({
   }) => {
     if (data.croppedImage) {
       setPendingCoverFile(data.croppedImage);
+      if(contentId){
+
+      }
     }
     await draft(data);
   };

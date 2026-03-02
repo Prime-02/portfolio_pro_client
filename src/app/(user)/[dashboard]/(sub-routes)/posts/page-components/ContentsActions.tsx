@@ -19,8 +19,6 @@ const ContentsActions = () => {
     setLoading,
     extendRouteWithQuery,
     accessToken,
-    isLoading,
-    userData,
   } = useGlobalState();
   const {
     createContent,
@@ -46,11 +44,11 @@ const ContentsActions = () => {
     if (!currentContent || hasSyncedRef.current) {
       return;
     }
-
+    console.log(pendingCoverFile)
     console.log("CurrentContent changed, syncing media URLs to body...");
 
     // Start with the current content's body
-    let syncedBody = [...(currentContent.body || [])];
+    const syncedBody = [...(currentContent.body || [])];
     let hasChanges = false;
 
     // If there are media_urls, sync them into the body
@@ -127,7 +125,7 @@ const ContentsActions = () => {
 
     try {
       // Prepare content with title
-      let contentToSave = { ...currentContent } as ContentCreate;
+      const contentToSave = { ...currentContent } as ContentCreate;
 
       // Generate title for POST if needed
       if (contentType === ContentType.POST && !contentToSave.title) {
@@ -159,7 +157,7 @@ const ContentsActions = () => {
         (newContent) => {
           // Sync media URLs to body immediately if media was uploaded
           if (newContent.media_urls && newContent.media_urls.length > 0) {
-            let syncedBody = [...(newContent.body || [])];
+            const syncedBody = [...(newContent.body || [])];
 
             newContent.media_urls.forEach((mediaUrl) => {
               // Extract the index from public_id (e.g., "media_0" -> 0)
@@ -230,7 +228,7 @@ const ContentsActions = () => {
             updatedContent.media_urls &&
             updatedContent.media_urls.length > 0
           ) {
-            let syncedBody = [...(updatedContent.body || [])];
+            const syncedBody = [...(updatedContent.body || [])];
 
             updatedContent.media_urls.forEach((mediaUrl) => {
               // Extract the index from public_id (e.g., "media_0" -> 0)

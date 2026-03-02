@@ -74,21 +74,6 @@ const PostBodyElement = ({
     }
   }, [storeBodyValue, value, key, currentContent?.updated_at, index, action]); // Watch store value directly
 
-  // Save media changes back to parent/store
-  const saveMediaChanges = useCallback(() => {
-    if (key.startsWith("media") && localMediaUrl && value) {
-      // Reconstruct the full value maintaining the exact original format
-      const parts = value.split(" | ");
-      // Replace only the URL (position 0) and keep other parts intact
-      parts[0] = localMediaUrl;
-      const updatedValue = parts.join(" | ");
-      // Notify parent of the updated media value
-      if (onUpdate) {
-        onUpdate(updatedValue);
-      }
-    }
-  }, [key, localMediaUrl, value, onUpdate]);
-
   const handleTextChange = (newText: string) => {
     setLocalText(newText);
     if (key.startsWith("text") && onUpdate) {

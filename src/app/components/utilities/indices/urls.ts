@@ -17,7 +17,7 @@ export const local = "http://localhost:8000";
 
 export const cloud = `https://portfolio-pro-server.onrender.com`;
 
-export const BASE_URL = local;
+export const BASE_URL = cloud;
 
 export const V1_BASE_URL = `${BASE_URL}/api/v1`;
 

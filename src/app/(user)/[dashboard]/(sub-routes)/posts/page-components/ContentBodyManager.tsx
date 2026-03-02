@@ -92,32 +92,6 @@ const ContentBodyManager = ({
   }, [body]);
 
   // Auto-append a text block for POST content types when needed
-  const appendTextIfPost = () => {
-    if (contentType !== ContentType.POST) return;
-
-    const hasBody = body && body.length > 0;
-    if (hasBody) {
-      const lastElement = body![body!.length - 1];
-      // treat empty string and text elements that are only 6-digit hex colors as "empty"
-      const lastKey = Object.keys(lastElement)[0];
-      const lastValue = Object.values(lastElement)[0];
-      const isTextHex =
-        lastKey.startsWith("text") && /^#[0-9A-Fa-f]{6}$/.test(lastValue);
-      if (lastValue === "" || isTextHex) return;
-    }
-
-    initializeCounters(body);
-    countersRef.current.text += 1;
-    const actionKey = `text${countersRef.current.text}`;
-    const newElement: Record<string, string> = { [actionKey]: "" };
-    const newBody = [...(body || []), newElement];
-    setBody(newBody);
-
-    // ADD THESE LINES to open the parser:
-    setCurrentAction(actionKey);
-    setCurrentIndex(newBody.length - 1);
-    setParserOpen(true);
-  };
 
   const addBodyElement = (type: string) => {
     // RE-INITIALIZE counters right before adding to be absolutely safe

@@ -7,7 +7,6 @@ import { useContentStore } from "@/app/stores/posts_store/PostsHandler";
 import { ContentStatus } from "@/app/components/types and interfaces/Posts";
 import PostsGrid from "./ContentsGrid";
 import ContentsActions from "./ContentsActions";
-import { defaultContent } from "@/app/components/utilities/indices/contents-JSONs/defaultContent";
 
 const ContentsMain = () => {
   const {
@@ -18,7 +17,7 @@ const ContentsMain = () => {
     setLoading,
     isOnline,
   } = useGlobalState();
-  const { setCurrentContent, getContentById } = useContentStore();
+  const { getContentById } = useContentStore();
   const updateId = checkParams("edit") || checkParams(ContentStatus.DRAFT);
   const varifiedId = checkValidId(updateId || "") ? updateId || "" : "";
 

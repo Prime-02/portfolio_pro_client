@@ -18,7 +18,6 @@ const TestimonialsCard = (testimonial: TestimonialsProps) => {
     accessToken,
     setLoading,
     isLoading,
-    checkParams,
     viewportWidth,
   } = useGlobalState();
   const { setCurrentTestimonial, deleteTestimonial } = useTestimonialsStore();

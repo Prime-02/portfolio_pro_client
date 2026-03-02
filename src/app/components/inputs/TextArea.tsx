@@ -402,3 +402,5 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
     );
   },
 );
+
+TextArea.displayName = "TextArea";

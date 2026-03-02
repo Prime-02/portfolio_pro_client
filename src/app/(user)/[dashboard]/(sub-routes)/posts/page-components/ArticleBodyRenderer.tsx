@@ -19,6 +19,9 @@ const ArticleBodyRenderer = ({
     const key = Object.keys(item)[0];
     const value = item[key];
     const type = key.match(/^(header|text|quote|divider|media)/)?.[1];
+    if(index){
+
+    }
 
     switch (type) {
       case "header":

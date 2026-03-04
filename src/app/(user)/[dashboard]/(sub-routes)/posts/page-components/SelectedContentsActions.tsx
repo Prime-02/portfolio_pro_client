@@ -30,12 +30,12 @@ const statusActions: {
       icon: <Archive />,
       targetStatus: ContentStatus.ARCHIVED,
     },
-    // {
-    //   visibleWhen: [ContentStatus.PUBLISHED, ContentStatus.DRAFT, ContentStatus.ARCHIVED],
-    //   label: "Move to bin",
-    //   icon: <ArchiveRestore />,
-    //   targetStatus: ContentStatus.DELETED,
-    // },
+    {
+      visibleWhen: [ContentStatus.PUBLISHED, ContentStatus.DRAFT, ContentStatus.ARCHIVED],
+      label: "Move to bin",
+      icon: <ArchiveRestore />,
+      targetStatus: ContentStatus.DELETED,
+    },
   ]
 
 const SelectedContentsActions = () => {

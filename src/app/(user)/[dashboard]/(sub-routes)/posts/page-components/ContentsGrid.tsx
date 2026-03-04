@@ -87,7 +87,7 @@ const ContentsGrid = () => {
             isLoading={false}
             title={content.title}
             titleSize="lg"
-            borderWidth={selectedContentIds.includes(content.id) ? 2 : 1}
+            borderWidth={selectedContentIds.includes(content.id) ? 1 : 0}
           />
         </div>
       ))}

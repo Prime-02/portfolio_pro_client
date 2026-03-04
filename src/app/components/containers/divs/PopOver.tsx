@@ -22,6 +22,7 @@ interface PopoverProps {
   clickerContainerClassName?: string; // Optional className for styling
   clickerClassName?: string; // Optional className for styling
   closeOnOutsideClick?: boolean; // Whether to close when clicking outside
+  closeOnInsideClick?: boolean; // Whether to close when clicking inside the popover
   mobileBreakpoint?: number; // Screen width threshold for mobile behavior (default: 768px)
 }
 
@@ -33,6 +34,7 @@ const Popover: React.FC<PopoverProps> = ({
   clickerContainerClassName = "w-full flex items-center justify-center",
   clickerClassName = "w-12 h-12 cursor-pointer rounded-full flex items-center justify-center bg-[var(--background)]",
   closeOnOutsideClick = true,
+  closeOnInsideClick = false,
   mobileBreakpoint = 670,
 }) => {
   const { accentColor } = useTheme();
@@ -42,9 +44,11 @@ const Popover: React.FC<PopoverProps> = ({
   const [clickerRect, setClickerRect] = useState<DOMRect | null>(null);
   const [popoverRect, setPopoverRect] = useState<DOMRect | null>(null);
   const [mounted, setMounted] = useState(false);
-  const [isPositioned, setIsPositioned] = useState(false); // New state to track positioning
+  const [isPositioned, setIsPositioned] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
   const clickerRef = useRef<HTMLDivElement>(null);
+  const isOpenRef = useRef(false);
+  useEffect(() => { isOpenRef.current = isOpen; }, [isOpen]);
 
   // Handle mounting for SSR
   useEffect(() => {
@@ -127,12 +131,12 @@ const Popover: React.FC<PopoverProps> = ({
     setIsOpen(false);
   }, [pathname]);
 
-  // Handle clicks outside the popover
+  // Handle clicks outside the popover — registered once, reads live state via ref
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
         closeOnOutsideClick &&
-        isOpen &&
+        isOpenRef.current &&
         popoverRef.current &&
         !popoverRef.current.contains(event.target as Node) &&
         clickerRef.current &&
@@ -143,24 +147,19 @@ const Popover: React.FC<PopoverProps> = ({
     };
 
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isOpen, closeOnOutsideClick]);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [closeOnOutsideClick]);
 
-  // Handle escape key press
+  // closeOnInsideClick is handled via onClickCapture on the popover div (see renderPopoverContent)
+
+  // Handle escape key — registered once, reads live state via ref
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && isOpen) {
-        setIsOpen(false);
-      }
+      if (event.key === "Escape" && isOpenRef.current) setIsOpen(false);
     };
-
     document.addEventListener("keydown", handleEscape);
-    return () => {
-      document.removeEventListener("keydown", handleEscape);
-    };
-  }, [isOpen]);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, []);
 
   const togglePopover = () => {
     setIsOpen(!isOpen);
@@ -369,13 +368,21 @@ const Popover: React.FC<PopoverProps> = ({
   const renderPopoverContent = () => {
     if (!mounted || !isOpen || !children) return null;
 
+    // Deferred close: setTimeout(0) lets the child's own click handler fire first
+    // before the popover unmounts. onClickCapture fires in capture phase so it
+    // works even if a child calls stopPropagation on the bubble phase.
+    const handleInsideClick = () => {
+      if (closeOnInsideClick) setTimeout(() => setIsOpen(false), 0);
+    };
+
     const content = (
       <>
         {isMobile ? (
-          // Mobile: Full screen overlay
           <div style={getMobileStyles()}>
             <div
               ref={popoverRef}
+              onMouseDown={(e) => e.stopPropagation()}
+              onClickCapture={handleInsideClick}
               className={`w-full max-w-md relative max-h-[80vh] overflow-y-auto ${className}`}
             >
               <div
@@ -387,10 +394,11 @@ const Popover: React.FC<PopoverProps> = ({
             </div>
           </div>
         ) : (
-          // Desktop: Positioned popover with viewport constraints
           <div
             ref={popoverRef}
             style={getPopoverStyles()}
+            onMouseDown={(e) => e.stopPropagation()}
+            onClickCapture={handleInsideClick}
             className={`${className}`}
           >
             <div
@@ -404,7 +412,6 @@ const Popover: React.FC<PopoverProps> = ({
       </>
     );
 
-    // Use portal to render at document body level
     return createPortal(content, document.body);
   };
 
@@ -417,10 +424,10 @@ const Popover: React.FC<PopoverProps> = ({
         style={
           isOpen
             ? {
-                borderColor: accentColor.color,
-                color: accentColor.color,
-                backgroundColor: getColorShade(accentColor.color, 85),
-              }
+              borderColor: accentColor.color,
+              color: accentColor.color,
+              backgroundColor: getColorShade(accentColor.color, 85),
+            }
             : {}
         }
       >

@@ -154,7 +154,7 @@ const ContentsFilter = () => {
         <div className='mb-3 pb-3 flex md:flex-row flex-col gap-y-3 w-full border-b border-[var(--foreground)]/30 md:justify-around justify-center items-center'>
             <div
                 ref={containerRef}
-                className='w-full md:w-[70%] flex items-center justify-between relative'
+                className='w-full md:w-[70%] flex items-center justify-between md:justify-between relative'
             >
                 {allowedTabs.map((tab, i) => (
                     <span
@@ -166,7 +166,8 @@ const ContentsFilter = () => {
                             {getTabLabel(tab)}
                         </p>
                         <Popover
-                            clicker={<ChevronDown onClick={() => tabAndFiltersHandler(tab)} size={16} />}
+                            closeOnInsideClick={true}
+                            clicker={activeTab !== tab ? <ChevronDown onClick={() => tabAndFiltersHandler(tab)} size={16} /> : <ChevronDown size={16} />}
                             className=""
                             clickerContainerClassName=""
                             clickerClassName=""

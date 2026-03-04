@@ -31,7 +31,7 @@ const ContentsHeader = () => {
     );
   };
   return (
-    <header className="flex w-full p-8">
+    <header className="flex w-full p-2">
       <div className="flex w-full flex-wrap justify-between items-center">
         <BasicHeader
           heading="Posts And Articles"
@@ -41,8 +41,9 @@ const ContentsHeader = () => {
         />
         <div>
           <Popover
-          clickerClassName="w-auto"
-          clicker={<Button text="What's on your mind?" />}>
+            closeOnInsideClick={true}
+            clickerClassName="w-auto"
+            clicker={<Button text="What's on your mind?" />}>
             <NewPostPopOver />
           </Popover>
         </div>

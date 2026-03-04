@@ -32,7 +32,7 @@ const ContentsHeader = () => {
   };
   return (
     <header className="flex w-full p-8">
-      <div className="flex w-full justify-between items-center">
+      <div className="flex w-full flex-wrap justify-between items-center">
         <BasicHeader
           heading="Posts And Articles"
           subHeading="Manage, edit and create all your posts, blogs and articles on Profolio"

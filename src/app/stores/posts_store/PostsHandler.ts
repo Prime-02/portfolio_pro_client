@@ -68,6 +68,7 @@ interface ContentStoreState {
   contents: Map<string, ContentWithAuthor>;
   contentList: ContentWithAuthor[];
   currentContent: ContentWithAuthor;
+  selectedContentIds: string[];
 
   // Pagination & filters
   currentPage: number;
@@ -130,6 +131,13 @@ interface ContentStoreActions {
     successActions?: () => void,
   ) => Promise<void>;
 
+  bulkDeleteContent: (
+  accessToken: string,
+  setLoading: (key: string) => void,
+  hardDelete?: boolean,
+  successActions?: () => void,
+) => Promise<void>;
+
   publishContent: (
     accessToken: string,
     contentId: string,
@@ -158,6 +166,7 @@ interface ContentStoreActions {
     setLoading: (key: string) => void,
     successActions?: () => void,
   ) => Promise<void>;
+  
 
   replaceMediaInContent: (
     accessToken: string,
@@ -167,6 +176,7 @@ interface ContentStoreActions {
     setLoading: (key: string) => void,
     successActions?: (updatedContent: ContentWithAuthor) => void,
   ) => Promise<void>;
+  
 
   // Local state management
   setCurrentContent: (content: ContentWithAuthor) => void;
@@ -181,6 +191,9 @@ interface ContentStoreActions {
   clearError: () => void;
   setApiBaseUrl: (url: string) => void;
   reset: () => void;
+  toggleContentSelection: (contentId: string) => void;
+selectAllContent: (contentIds: string[]) => void;
+clearContentSelection: () => void;
 }
 
 type ContentStore = ContentStoreState & ContentStoreActions;
@@ -189,6 +202,7 @@ type ContentStore = ContentStoreState & ContentStoreActions;
 const initialState: ContentStoreState = {
   contents: new Map(),
   contentList: [],
+  selectedContentIds: [],
   currentContent: {
     title: "",
     status: ContentStatus.DRAFT,
@@ -216,7 +230,9 @@ const initialState: ContentStoreState = {
   pageSize: 20,
   totalContent: 0,
   hasNext: false,
-  filters: {},
+  filters: {
+    sort_order: "asc",
+  },
   error: null,
   apiBaseUrl: "content/core",
 };
@@ -1187,6 +1203,100 @@ export const useContentStore = create<ContentStore>()(
         setLoading(`deleting_media_${mediaPublicId}`);
       }
     },
+
+    // ==================== SELECTION ====================
+toggleContentSelection: (contentId) => {
+  set((state) => {
+    const index = state.selectedContentIds.indexOf(contentId);
+    if (index === -1) {
+      state.selectedContentIds.push(contentId);
+    } else {
+      state.selectedContentIds.splice(index, 1);
+    }
+  });
+},
+
+selectAllContent: (contentIds) => {
+  set({ selectedContentIds: contentIds });
+},
+
+clearContentSelection: () => {
+  set({ selectedContentIds: [] });
+},
+
+// ==================== BULK DELETE ====================
+bulkDeleteContent: async (accessToken, setLoading, hardDelete = true, successActions) => {
+  const { selectedContentIds } = get();
+
+  if (selectedContentIds.length === 0) {
+    toast.warning("No content selected");
+    return;
+  }
+
+  setLoading("bulk_deleting_content");
+  set({ error: null });
+
+  // Optimistic update
+  const previousContents = selectedContentIds
+    .map((id) => get().contents.get(id))
+    .filter(Boolean) as ContentWithAuthor[];
+
+  set((state) => {
+    selectedContentIds.forEach((id) => state.contents.delete(id));
+    state.contentList = state.contentList.filter(
+      (c) => !selectedContentIds.includes(c.id),
+    );
+    state.totalContent = Math.max(0, state.totalContent - selectedContentIds.length);
+    state.selectedContentIds = [];
+  });
+
+  try {
+    const response = await fetch(`${V1_BASE_URL}/${get().apiBaseUrl}/bulk-delete`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({
+        content_ids: selectedContentIds,
+        hard_delete: hardDelete,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.detail || "Failed to bulk delete content");
+    }
+
+    toast.success(
+      hardDelete
+        ? "Content permanently deleted"
+        : "Contents has now been moved to bin and will be parmanently deleted after 30 days",
+    );
+
+    if (successActions) {
+      successActions();
+    }
+  } catch (error) {
+    // Revert optimistic update
+    set((state) => {
+      previousContents.forEach((content) => {
+        state.contents.set(content.id, content);
+      });
+      state.contentList = [...state.contentList, ...previousContents];
+      state.totalContent += previousContents.length;
+      state.selectedContentIds = selectedContentIds;
+    });
+
+    const errorMessage =
+      error instanceof Error ? error.message : "Failed to bulk delete content";
+    set({ error: errorMessage });
+    toast.error(errorMessage);
+    console.error(error);
+  } finally {
+    setLoading("bulk_deleting_content");
+  }
+},
 
     // ==================== UTILITY ====================
     clearError: () => {

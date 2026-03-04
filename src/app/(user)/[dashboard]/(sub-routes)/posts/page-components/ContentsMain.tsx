@@ -7,6 +7,8 @@ import { useContentStore } from "@/app/stores/posts_store/PostsHandler";
 import { ContentStatus } from "@/app/components/types and interfaces/Posts";
 import PostsGrid from "./ContentsGrid";
 import ContentsActions from "./ContentsActions";
+import SelectedContentsActions from "./SelectedContentsActions";
+import ContentsFilter from "./ContentsFilter";
 
 const ContentsMain = () => {
   const {
@@ -17,7 +19,7 @@ const ContentsMain = () => {
     setLoading,
     isOnline,
   } = useGlobalState();
-  const { getContentById } = useContentStore();
+  const { getContentById, selectedContentIds, clearContentSelection, } = useContentStore();
   const updateId = checkParams("edit") || checkParams(ContentStatus.DRAFT);
   const varifiedId = checkValidId(updateId || "") ? updateId || "" : "";
 
@@ -30,6 +32,7 @@ const ContentsMain = () => {
   return (
     <div>
       <ContentsHeader />
+      <ContentsFilter />
       <PostsGrid />
       <Modal
         closeOnBackdropClick={false}
@@ -39,11 +42,22 @@ const ContentsMain = () => {
           clearQuerryParam();
         }}
         isOpen={checkParams("new") === "true" || varifiedId !== ""}
-        title={`${
-          checkParams("new") === "true" ? "Create New " : "Edit this "
-        } ${checkParams("type")?.slice(0, 1)}${checkParams("type")?.slice(1).toLowerCase() || "post"} `}
+        title={`${checkParams("new") === "true" ? "Create New " : "Edit this "
+          } ${checkParams("type")?.slice(0, 1)}${checkParams("type")?.slice(1).toLowerCase() || "post"} `}
       >
         <ContentsActions />
+      </Modal>
+      <Modal
+        isOpen={selectedContentIds.length > 0}
+        onClose={() => { clearContentSelection() }}
+        title={`${selectedContentIds.length} Content${selectedContentIds.length > 1 ? "s" : ""} selected`}
+        size="md"
+        showBackdrop={false}
+        closeOnBackdropClick={false}
+        showMinimizeButton={true}
+      >
+        <SelectedContentsActions
+        />
       </Modal>
     </div>
   );

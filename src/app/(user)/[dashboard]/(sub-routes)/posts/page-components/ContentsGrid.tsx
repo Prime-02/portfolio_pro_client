@@ -7,12 +7,14 @@ import React, { useEffect, useCallback, useRef } from "react";
 const ContentsGrid = () => {
   const {
     listContent,
-    getUserContent,
     contentList,
     currentPage,
     totalContent,
     hasNext,
     setPage,
+    toggleContentSelection,
+    selectedContentIds,
+    filters,
   } = useContentStore();
   const {
     accessToken,
@@ -20,23 +22,21 @@ const ContentsGrid = () => {
     isOnline,
     isLoading,
     currentUser,
-    extendRouteWithQuery,
   } = useGlobalState();
-  const { setCurrentContent } = useContentStore();
   const isLoadingRef = useRef(false);
 
   // Initial load on mount
   useEffect(() => {
-    if (isOnline && accessToken && currentUser) {
-      //load specific user content
-      getUserContent(accessToken, currentUser, setLoading, {
+    if (isOnline && accessToken) {
+      listContent(accessToken, setLoading, {
         page: 1,
+        username: currentUser || undefined,
+        ...filters
       });
-    } else if (isOnline && accessToken && !currentUser) {
-      //list current user content
-      listContent(accessToken, setLoading, { page: 1 });
     }
-  }, [isOnline, accessToken, currentUser]);
+  }, [isOnline, accessToken, currentUser, filters]);
+
+
 
   // Load more callback for infinite scroll
   const handleLoadMore = useCallback(async () => {
@@ -46,27 +46,15 @@ const ContentsGrid = () => {
     const nextPage = currentPage + 1;
 
     try {
-      if (currentUser) {
-        await getUserContent(accessToken, currentUser, setLoading, {
-          page: nextPage,
-        });
-      } else {
-        await listContent(accessToken, setLoading, {
-          page: nextPage,
-        });
-      }
+      await listContent(accessToken, setLoading, {
+        page: nextPage,
+        username: currentUser || undefined,
+        ...filters,
+      });
     } finally {
       isLoadingRef.current = false;
     }
-  }, [
-    accessToken,
-    currentUser,
-    currentPage,
-    hasNext,
-    getUserContent,
-    listContent,
-    setLoading,
-  ]);
+  }, [accessToken, currentUser, currentPage, hasNext, listContent, setLoading, filters]);
 
   useEffect(() => {
     if (contentList.length > 0 && isOnline && accessToken) {
@@ -81,21 +69,15 @@ const ContentsGrid = () => {
       onLoadMore={handleLoadMore}
       totalItems={totalContent}
       loadedItems={contentList.length}
-      isLoading={
-        isLoading("fetching_content_list") ||
-        isLoading(`fetching_user_content_${currentUser}`)
-      }
+      isLoading={isLoading("fetching_content_list")}
       gap={5}
     >
       {contentList.map((content, i) => (
         <div
-        key={i}
+          key={i}
           onClick={() => {
-            setCurrentContent(content);
-            extendRouteWithQuery({
-              edit: content.id,
-              type: content.content_type,
-            });
+            if (!filters.username) return
+            toggleContentSelection(content.id)
           }}
         >
           <ImageCard
@@ -105,6 +87,7 @@ const ContentsGrid = () => {
             isLoading={false}
             title={content.title}
             titleSize="lg"
+            borderWidth={selectedContentIds.includes(content.id) ? 2 : 1}
           />
         </div>
       ))}

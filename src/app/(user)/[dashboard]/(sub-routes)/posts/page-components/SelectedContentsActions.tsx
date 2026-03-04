@@ -60,7 +60,7 @@ const DeletePopOver = () => {
             Delete {count > 1 ? `${count} items` : '1 item'}?
           </p>
           <p className="text-xs text-[var(--muted-foreground)] mt-0.5 leading-snug">
-            Choose how you'd like to remove the selected content.
+            {"Choose how you'd like to remove the selected content."}
           </p>
         </div>
       </div>

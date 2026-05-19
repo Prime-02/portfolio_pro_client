@@ -329,7 +329,6 @@ export const ThemeProvider = ({
   const saveChanges = useCallback(
     async (customUpdates?: Partial<UserPreferences>) => {
       if (!isAuthenticated() || isUpdatingSettings.current) return;
-
       isUpdatingSettings.current = true;
       setLoading("updating_user_settings", true);
 
@@ -455,6 +454,7 @@ export const ThemeProvider = ({
   }, [usernameInUrl, checkUsernameAvailability, store, router]);
 
   useEffect(() => {
+    if (userInfo && userInfo.username === usernameInUrl) return
     const initializeApp = async () => {
       try {
         // Skip if on unprotected route

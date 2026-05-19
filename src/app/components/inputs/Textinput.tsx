@@ -178,11 +178,11 @@ export const Textinput: React.FC<TextInputProps> = ({
               ${isFocused || hasValue
                 ? `text-xs -translate-y-2.5 px-1
                      bg-[var(--background)] text-[var(--accent)]`
-                : 'text-sm top-2.5 text-[var(--foreground)] opacity-60'
+                : 'text-sm top-2.5 text-[var(--foreground)]'
               }
               ${error ? 'text-red-500' : ''}
               ${isFocused && error ? 'text-red-500' : ''}
-              ${hasValue && !isFocused && !error ? 'text-[var(--foreground)] opacity-80' : ''}
+              ${hasValue && !isFocused && !error ? 'text-[var(--foreground)] ' : ''}
             `}
           >
             {label}

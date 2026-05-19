@@ -70,19 +70,19 @@ const OAuthButton: React.FC<OAuthButtonProps> = ({
 }) => {
   const { isDarkMode } = useTheme();
   const { isLoading, startLoading, stopLoading } = useUIStore();
-  const {router} = useRouting()
+  const { router } = useRouting()
 
   const config = OAUTH_BUTTON_CONFIG[provider];
 
   const continueWithProvider = async () => {
     startLoading(config.loadingKey);
     try {
-      const response: { url: string } = await api.get(`/${config.endpoint}`);
+      const { data } = await api.get(`/${config.endpoint}`);
 
-      if (response && response.url) {
+      if (data && data.url) {
         toast.success("Kindly continue the verification process");
-        router.push(response.url);
-        window.location.replace(response.url);
+        router.push(data.url);
+        window.location.replace(data.url);
       } else {
         toast.error("Something went wrong, please try again");
       }

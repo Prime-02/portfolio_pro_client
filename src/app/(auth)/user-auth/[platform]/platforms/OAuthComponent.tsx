@@ -174,9 +174,9 @@ const OAuthComponent: React.FC<OAuthComponentProps> = ({
     startLoading("verify_email_in_progress");
     try {
       const verificationData = Object.assign(params, { email: email });
-      const verificationRes: { message: string } = await api.post("`/canva-auth/verify-email", verificationData);
-      if (verificationRes?.message) {
-        toast.success(verificationRes.message, {
+      const { data } = await api.post("`/canva-auth/verify-email", verificationData);
+      if (data?.message) {
+        toast.success(data.message, {
           title: "Verification Email Sent",
         });
         setEmailVerification(false);
@@ -184,7 +184,7 @@ const OAuthComponent: React.FC<OAuthComponentProps> = ({
         toast.error("We were unable to verify your email. Please try again", {
           title: "Email Verification Error",
         });
-        console.log("Data gotten: ", verificationRes);
+        console.log("Data gotten: ", data);
       }
     } catch (error) {
       toast.error("We were unable to verify your email. Please try again", {

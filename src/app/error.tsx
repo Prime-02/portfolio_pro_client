@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AlertCircle, RefreshCw, Home } from "lucide-react";
+import Link from "next/link";
 
 interface ErrorProps {
   error: Error & { digest?: string };
@@ -166,7 +167,7 @@ export default function Error({ error, reset }: ErrorProps) {
           </button>
 
           {/* Go Home Button */}
-          <a
+          <Link
             href="/"
             className="inline-flex items-center gap-2 px-8 py-3.5 rounded-lg font-league text-base transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
             style={{
@@ -180,7 +181,7 @@ export default function Error({ error, reset }: ErrorProps) {
           >
             <Home size={18} strokeWidth={2} />
             Go Home
-          </a>
+          </Link>
         </div>
       </div>
 

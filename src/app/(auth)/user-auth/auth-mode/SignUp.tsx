@@ -1,22 +1,21 @@
 "use client";
-import Button from "@/app/components/buttons/Buttons";
-import { Textinput } from "@/app/components/inputs/Textinput";
-import { toast } from "@/app/components/toastify/Toastify";
-import { PostAllData } from "@/app/components/utilities/asyncFunctions/lib/crud";
-import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
-import { PathUtil } from "@/app/components/utilities/syncFunctions/syncs";
-import { useGlobalState } from "@/app/globalStateProvider";
+
+import { useRouting } from "@/lib/hooks/routing/useRouting";
+import { useUIStore } from "@/lib/stores/ui/useUIStore";
+import { useAuthStore } from "@/lib/stores/user/useAuthStore";
+import { PathUtil } from "@/lib/utilities/syncFunctions/syncs";
+import Button from "@/src/app/components/buttons/Buttons";
+import { Textinput } from "@/src/app/components/inputs/Textinput";
+import { toast } from "@/src/app/components/toastify/Toastify";
 import { useState } from "react";
 
 const SignUp = () => {
-  const {
-    loading,
-    setLoading,
-    extendRouteWithQuery,
-    clearQuerryParam,
-    currentPath,
-    checkParams,
-  } = useGlobalState();
+
+
+  const { startLoading, stopLoading, isLoading } = useUIStore()
+  const { extendRouteWithQuery, clearQueryParam, currentPath, checkParams } = useRouting()
+  const { verifyEmail, signup } = useAuthStore()
+
 
   const [verificationEmail, setVerificationEmail] = useState("");
   const [formData, setFormData] = useState({
@@ -102,26 +101,17 @@ const SignUp = () => {
 
     if (!validateEmail()) return;
 
-    const constructedParameter = PathUtil.buildUrlWithQuery(
-      `${V1_BASE_URL}/auth/verify-email`,
-      {
-        email: verificationEmail,
-      }
-    ).slice(1);
-
-    setLoading("verifying_email");
+    startLoading("verifying_email");
 
     try {
-      const verificationRes: { message: string; email: string } =
-        await PostAllData({
-          url: constructedParameter,
-        });
+      const verificationRes: { message: string } =
+        await verifyEmail(verificationEmail);
 
       if (verificationRes?.message) {
         toast.success(verificationRes.message);
 
         // Navigate to signup form with verification code
-        if (verificationRes.email) {
+        if (verificationRes.message) {
           extendRouteWithQuery({ verify_email: "true" });
         }
       } else {
@@ -141,7 +131,7 @@ const SignUp = () => {
         }
       );
     } finally {
-      setLoading("verifying_email"); // Clear loading state
+      stopLoading("verifying_email"); // Clear loading state
     }
   };
 
@@ -158,7 +148,7 @@ const SignUp = () => {
 
     if (!validateForm()) return;
 
-    setLoading("signup_in_progress");
+    startLoading("signup_in_progress");
 
     try {
       const signUpCode = checkParams("code");
@@ -171,12 +161,9 @@ const SignUp = () => {
         return;
       }
 
-      const signUpRes = await PostAllData({
-        url: `${V1_BASE_URL}/auth/signup`,
-        data: {
-          code: signUpCode,
-          password: formData.password,
-        },
+      const signUpRes = await signup({
+        code: signUpCode,
+        password: formData.password,
       });
 
       if (signUpRes) {
@@ -192,7 +179,7 @@ const SignUp = () => {
           new_user: "true",
           auth_mode: "login",
         });
-        clearQuerryParam();
+        clearQueryParam();
         window.location.href = newUrl;
       }
     } catch (error) {
@@ -203,7 +190,7 @@ const SignUp = () => {
           "An error occurred during signup. Please try again and if this persists, reach out to our support team.",
       }));
     } finally {
-      setLoading("signup_in_progress"); // Clear loading state
+      stopLoading("signup_in_progress"); // Clear loading state
     }
   };
 
@@ -224,7 +211,6 @@ const SignUp = () => {
               value={verificationEmail}
               onChange={handleEmailChange}
               className="w-full p-2 border rounded"
-              labelBgHexIntensity={1}
               error={errors.email}
               required
             />
@@ -232,8 +218,8 @@ const SignUp = () => {
 
           <Button
             type="submit"
-            loading={loading.includes("verifying_email")}
-            disabled={loading.includes("verifying_email")}
+            loading={isLoading("verifying_email")}
+            disabled={isLoading("verifying_email")}
             className="w-full"
             size="sm"
             text="Send Verification Email"
@@ -267,7 +253,6 @@ const SignUp = () => {
               onChange={handleChange("password")}
               className="w-full p-2 border rounded"
               minLength={8}
-              labelBgHexIntensity={1}
               error={errors.password}
               required
             />
@@ -282,7 +267,6 @@ const SignUp = () => {
               onChange={handleChange("confirmPassword")}
               className="w-full p-2 border rounded"
               minLength={8}
-              labelBgHexIntensity={1}
               error={errors.confirmPassword}
               required
             />
@@ -290,8 +274,8 @@ const SignUp = () => {
 
           <Button
             type="submit"
-            loading={loading.includes("signup_in_progress")}
-            disabled={loading.includes("signup_in_progress")}
+            loading={isLoading("signup_in_progress")}
+            disabled={isLoading("signup_in_progress")}
             className="w-full"
             size="sm"
             text="Create Account"

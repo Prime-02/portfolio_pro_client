@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { getImageSrc } from "../../utilities/syncFunctions/syncs";
-import { useGlobalState } from "@/app/globalStateProvider";
 import PortfolioProLogo from "../../logo/PortfolioProLogo";
 import Popover from "../../containers/divs/PopOver";
 import { ChevronDown, User } from "lucide-react";
@@ -12,10 +10,13 @@ import Profile from "../../containers/cards/landing-page-nav-cards/Profile";
 import Image from "next/image";
 import CloseButton from "../../buttons/CloseButton";
 import NotificationsButton from "../../buttons/NotificationsButton";
+import { useUIStore } from "@/lib/stores/ui/useUIStore";
+import { getImageSrc } from "@/lib/utilities/syncFunctions/syncs";
+import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 
 const LandingPageNavbar = () => {
-  const { userData, accessToken, viewportWidth, setViewportWidth } =
-    useGlobalState();
+  const { userInfo } = useUserSettings()
+  const { viewportWidth, setViewportWidth } = useUIStore()
   const [imageError, setImageError] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -23,7 +24,7 @@ const LandingPageNavbar = () => {
   const handleImageError = () => {
     setImageError(true);
   };
-  const fallbackLetter = userData?.username?.toUpperCase() || "User";
+  const fallbackLetter = userInfo?.username?.toUpperCase() || "User";
 
   const isMobile = viewportWidth < 768; // md breakpoint
 
@@ -108,7 +109,7 @@ const LandingPageNavbar = () => {
 
         {/* Bottom section - Auth/User controls */}
         <div className="flex-1 flex flex-col overflow-y-auto">
-          {accessToken ? (
+          {userInfo?.id ? (
             <div className="flex flex-col h-full">
               {/* Menu takes majority of space */}
               <div className="flex-1 overflow-y-auto custom-scrollbar py-2">
@@ -120,12 +121,11 @@ const LandingPageNavbar = () => {
                 {/* Notification Link */}
                 <Link
                   title="Notification"
-                  href={`/${userData?.username}/notifications`}
-                  className={`cursor-pointer rounded-full flex items-center transition-all duration-300 hover:bg-[var(--accent)]/10 ${
-                    isExpanded || mobileMenuOpen
-                      ? "w-full px-4 py-3 justify-start gap-3"
-                      : "w-12 h-12 justify-center mx-auto"
-                  }`}
+                  href={`/${userInfo?.username}/notifications`}
+                  className={`cursor-pointer rounded-full flex items-center transition-all duration-300 hover:bg-[var(--accent)]/10 ${isExpanded || mobileMenuOpen
+                    ? "w-full px-4 py-3 justify-start gap-3"
+                    : "w-12 h-12 justify-center mx-auto"
+                    }`}
                 >
                   <NotificationsButton
                     expanded={isExpanded || mobileMenuOpen}
@@ -140,11 +140,10 @@ const LandingPageNavbar = () => {
                   position="top-left"
                   clicker={
                     <div
-                      className={`relative flex items-center cursor-pointer rounded-full transition-all duration-300 hover:bg-[var(--accent)]/10 ${
-                        isExpanded || mobileMenuOpen
-                          ? "w-full px-4 py-3 justify-start gap-3"
-                          : "w-12 h-12 justify-center mx-auto"
-                      }`}
+                      className={`relative flex items-center cursor-pointer rounded-full transition-all duration-300 hover:bg-[var(--accent)]/10 ${isExpanded || mobileMenuOpen
+                        ? "w-full px-4 py-3 justify-start gap-3"
+                        : "w-12 h-12 justify-center mx-auto"
+                        }`}
                       title="Profile"
                       aria-label="User Profile"
                     >
@@ -152,7 +151,7 @@ const LandingPageNavbar = () => {
                         {imageError ? (
                           <Image
                             src={`https://avatar.oxro.io/avatar.svg?name=${fallbackLetter}`}
-                            alt={`${userData?.username || "User"}'s Profile Picture`}
+                            alt={`${userInfo?.username || "User"}'s Profile Picture`}
                             width={100}
                             height={100}
                             className="h-full w-full"
@@ -162,10 +161,10 @@ const LandingPageNavbar = () => {
                         ) : (
                           <Image
                             src={getImageSrc(
-                              userData?.profile_picture,
-                              userData?.username
+                              userInfo?.profile_picture,
+                              userInfo?.username ?? ""
                             )}
-                            alt={`${userData?.username || "User"}'s Profile Picture`}
+                            alt={`${userInfo?.username || "User"}'s Profile Picture`}
                             width={100}
                             height={100}
                             className="h-full w-full"
@@ -176,16 +175,15 @@ const LandingPageNavbar = () => {
                       </span>
                       {(isExpanded || mobileMenuOpen) && (
                         <span className="flex flex-col items-start ">
-                          <p className="font-semibold">{userData.username}</p>
+                          <p className="font-semibold">{userInfo?.username}</p>
                           <p className="text-xs opacity-65">free</p>
                         </span>
                       )}
                       <ChevronDown
-                        className={`rounded-full bg-[var(--background)] p-0.5 shadow-sm ${
-                          isExpanded || mobileMenuOpen
-                            ? "absolute bottom-6 right-5"
-                            : "absolute -bottom-0.5 -right-1"
-                        }`}
+                        className={`rounded-full bg-[var(--background)] p-0.5 shadow-sm ${isExpanded || mobileMenuOpen
+                          ? "absolute bottom-6 right-5"
+                          : "absolute -bottom-0.5 -right-1"
+                          }`}
                         size={16}
                         aria-hidden="true"
                       />

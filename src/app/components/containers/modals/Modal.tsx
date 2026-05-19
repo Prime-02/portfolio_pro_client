@@ -4,14 +4,14 @@ import React, { ReactNode, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { useTheme } from "../../theme/ThemeContext ";
-import { getColorShade } from "../../utilities/syncFunctions/syncs";
 import { X, Minus, Maximize2 } from "lucide-react";
+import { getColorShade } from "@/lib/utilities/syncFunctions/syncs";
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   children: React.ReactNode;
-  title?: string | Element;
+  title?: string | Element | React.ReactNode;
   size?: "sm" | "md" | "lg" | "xl" | "full" | "auto";
   showCloseButton?: boolean;
   showMinimizeButton?: boolean;
@@ -358,11 +358,10 @@ const Modal: React.FC<ModalProps> = ({
 
             {/* Modal Container */}
             <motion.div
-              className={`fixed inset-0 flex ${
-                centered
-                  ? "items-center justify-center"
-                  : "items-end justify-center"
-              } px-4 py-4 pointer-events-none`}
+              className={`fixed inset-0 flex ${centered
+                ? "items-center justify-center"
+                : "items-end justify-center"
+                } px-4 py-4 pointer-events-none`}
               style={{ zIndex: shouldRenderBackdrop ? zIndex + 1 : zIndex }}
               initial="hidden"
               animate="visible"
@@ -378,7 +377,7 @@ const Modal: React.FC<ModalProps> = ({
                 animate="visible"
                 exit="exit"
                 style={{
-                  backgroundColor: getColorShade(theme.background, 10),
+                  backgroundColor: getColorShade(theme.background, 1),
                 }}
                 className={`
                   relative w-full ${sizeClasses[size]} 
@@ -445,7 +444,7 @@ const Modal: React.FC<ModalProps> = ({
 
                 {/* Content */}
                 <motion.div
-                  className="p-2 max-h-[calc(100vh-8rem)] overflow-y-auto"
+                  className="p-2 max-h-[calc(100vh-8rem)] custom-scrollbar overflow-y-auto"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2, duration: 0.3 }}
@@ -475,7 +474,7 @@ const Modal: React.FC<ModalProps> = ({
             <motion.div
               className="w-14 h-14 rounded-full shadow-lg flex items-center justify-center"
               style={{
-                backgroundColor: getColorShade(theme.background, 10),
+                backgroundColor: getColorShade(theme.background, 1),
               }}
             >
               <Maximize2 size={20} className="text-[var(--accent)]" />

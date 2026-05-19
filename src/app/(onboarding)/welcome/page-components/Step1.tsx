@@ -1,163 +1,89 @@
-import Button from "@/app/components/buttons/Buttons";
-import CheckBox from "@/app/components/inputs/CheckBox";
-import { Textinput } from "@/app/components/inputs/Textinput";
-import { toast } from "@/app/components/toastify/Toastify";
-import { AccountBasics } from "@/app/components/types and interfaces/UserForm";
-import {
-  GetAllData,
-  UpdateAllData,
-} from "@/app/components/utilities/asyncFunctions/lib/crud";
-import { accountBasics } from "@/app/components/utilities/indices/MultiStepWriteUp";
-import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
-import {
-  removeEmptyStringValues,
-  validateUsername,
-} from "@/app/components/utilities/syncFunctions/syncs";
-import { useGlobalState } from "@/app/globalStateProvider";
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import TemplateStructure, { ComponentArrangement } from "./TemplateStructure";
 import Image from "next/image";
+import { useRouting } from "@/lib/hooks/routing/useRouting";
+import { isAuthenticated } from "@/lib/client/api";
+import { removeEmptyStringValues } from "@/lib/utilities/syncFunctions/syncs";
+import { accountBasics } from "@/lib/utilities/indices/MultiStepWriteUp";
+import { toast } from "@/src/app/components/toastify/Toastify";
+import { Textinput } from "@/src/app/components/inputs/Textinput";
+import CheckBox from "@/src/app/components/inputs/CheckBox";
+import Button from "@/src/app/components/buttons/Buttons";
+import { useUserOnboarding } from "@/lib/stores/user/useUserOnboarding";
+import { UsernameField } from "@/src/app/components/profile/edit-components/UsernameField";
+import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 
 const Step1 = () => {
   const {
-    accessToken,
-    extendRouteWithQuery,
-    loading,
-    setLoading,
-    userData,
-    router,
-    fetchUserData,
-    checkUsernameAvailability,
-  } = useGlobalState();
+    step1,
+    isLoading: storeLoading,
+    isSaving,
+    error: storeError,
+    fetchStep1,
+    updateStep1,
+  } = useUserOnboarding();
 
+  const { extendRouteWithQuery, router } = useRouting();
+  const { userInfo, fetchUserInfo } = useUserSettings()
   const [formData, setFormData] = useState({
     username: "",
     firstname: "",
     lastname: "",
     phone_number: "",
     data_processing_consent: false,
-    terms_accepted_at: new Date().toISOString(),
+    terms_accepted_at: "",
   });
 
-  const [usernameAvailable, setUsernameAvailable] = useState<string>("");
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [currentArrangement, setCurrentArrangement] =
     useState<ComponentArrangement>("A-D-B-C");
+  const [usernameAvailable, setUsernameAvailable] = useState<string>("");
 
   // Fetch existing data on component mount
   useEffect(() => {
-    if (!accessToken) return;
-    fetchStepOneData();
-  }, [accessToken]);
+    if (!isAuthenticated()) return;
+    fetchStep1();
+  }, []);
+
+  // Populate form data when store data changes
+  useEffect(() => {
+    if (step1) {
+      const initialData = {
+        username: step1.username || "",
+        firstname: step1.firstname || "",
+        lastname: step1.lastname || "",
+        phone_number: step1.phone_number || "",
+        data_processing_consent: step1.data_processing_consent || false,
+        terms_accepted_at: step1.terms_accepted_at || new Date().toISOString(),
+      };
+      setFormData(initialData);
+      setHasUnsavedChanges(false);
+    }
+  }, [step1]);
 
   // Track form changes for unsaved changes detection
   useEffect(() => {
     setHasUnsavedChanges(true);
   }, [formData]);
 
-  const fetchStepOneData = async () => {
-    setLoading("fetching_step1_data");
-    try {
-      const step1DataRes: AccountBasics = await GetAllData({
-        access: accessToken,
-        url: `${V1_BASE_URL}/user-multistep-form/step1`,
-        type: "Step 1 Data",
-      });
-
-      if (step1DataRes) {
-        const initialData = {
-          username: step1DataRes.username || "",
-          firstname: step1DataRes.firstname || "",
-          lastname: step1DataRes.lastname || "",
-          phone_number: step1DataRes.phone_number || "",
-          data_processing_consent:
-            step1DataRes.data_processing_consent || false,
-          terms_accepted_at:
-            step1DataRes.terms_accepted_at || new Date().toISOString(),
-        };
-        setFormData(initialData);
-        setHasUnsavedChanges(false);
-      }
-    } catch (error) {
-      console.error("Error fetching step 1 data: ", error);
-    } finally {
-      setLoading("fetching_step1_data");
-    }
-  };
-
-  const checkUsername = useCallback(
-    async (username: string) => {
-      if (!username || username.length < 3) {
-        setUsernameAvailable("");
-        return;
-      }
-      // First validate the username format
-      const validationResult = validateUsername(username);
-      if (!validationResult.valid) {
-        setUsernameAvailable(
-          validationResult.message || "Invalid username format"
-        );
-        return;
-      }
-      try {
-        const isAvailable = await checkUsernameAvailability(username);
-        if (!isAvailable && formData.username !== userData.username) {
-          setUsernameAvailable("This username is already taken");
-          setFormErrors((prev) => ({
-            ...prev,
-            username: "This username is already taken",
-          }));
-        } else {
-          setUsernameAvailable("");
-          setFormErrors((prev) => ({
-            ...prev,
-            username: "",
-          }));
-        }
-      } catch (error) {
-        console.error("Error checking username:", error);
-        setUsernameAvailable("Error checking username availability");
-        setFormErrors((prev) => ({
-          ...prev,
-          username: "Error checking username availability",
-        }));
-      }
-    },
-    [formData.username]
-  );
-
-  // Debounce username checking
+  // Handle store error
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (formData.username && formData.username.length >= 3) {
-        checkUsername(formData.username);
-      } else {
-        setUsernameAvailable("");
-        setFormErrors((prev) => {
-          const { username, ...rest } = prev;
-          if (username) {
-          }
-          return rest;
-        });
-      }
-    }, 500); // 500ms debounce
-
-    return () => clearTimeout(timeoutId);
-  }, [formData.username]);
+    if (storeError) {
+      toast.error(storeError, {
+        title: "Error",
+      });
+    }
+  }, [storeError]);
 
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
 
-    // Username validation
+    // Username validation - basic check only, detailed validation handled by UsernameField
     if (!formData.username.trim()) {
       errors.username = "Username is required";
-    } else if (
-      formData.username.length <
-      (accountBasics.fields[0]?.constraints?.min_length || 3)
-    ) {
-      errors.username = `Username must be at least ${accountBasics.fields[0]?.constraints?.min_length || 3} characters`;
     } else if (usernameAvailable) {
+      // This gets set by UsernameField's onValidationChange callback
       errors.username = usernameAvailable;
     }
 
@@ -180,45 +106,29 @@ const Step1 = () => {
       return;
     }
 
-    setLoading("updating_step1_data");
     const data = removeEmptyStringValues(formData);
     try {
-      const step1UpdateRes: AccountBasics = await UpdateAllData({
-        access: accessToken,
-        url: `${V1_BASE_URL}/user-multistep-form/step1`,
-        field: data,
-      });
+      await updateStep1({ ...data, onboarding_step: 1 });
 
-      if (step1UpdateRes) {
-        await fetchUserData();
-        setFormData({
-          username: step1UpdateRes.username || "",
-          firstname: step1UpdateRes.firstname || "",
-          lastname: step1UpdateRes.lastname || "",
-          phone_number: step1UpdateRes.phone_number || "",
-          data_processing_consent:
-            step1UpdateRes.data_processing_consent || false,
-          terms_accepted_at:
-            step1UpdateRes.terms_accepted_at || new Date().toISOString(),
-        });
-        setHasUnsavedChanges(false);
+      // Update user store after successful step 1 update
+      await fetchUserInfo();
 
-        toast.success(
-          "Your basic account information has been updated. Proceeding...",
-          {
-            title: "Success",
-          }
-        );
+      setHasUnsavedChanges(false);
 
-        extendRouteWithQuery({ step: "2" });
-      }
+      toast.success(
+        "Your basic account information has been updated. Proceeding...",
+        {
+          title: "Success",
+        }
+      );
+
+      extendRouteWithQuery({ step: "2" });
     } catch (error) {
+      // Error handling is already done in the store
       console.error("Error updating Step 1 data: ", error);
       toast.error("Failed to save account basics. Please try again.", {
         title: "Error",
       });
-    } finally {
-      setLoading("updating_step1_data");
     }
   };
 
@@ -233,8 +143,8 @@ const Step1 = () => {
   };
 
   const handleSkip = () => {
-    if (userData.username) {
-      router.push(`/${userData.username}`);
+    if (userInfo?.username) {
+      router.push(`/${userInfo?.username}`);
     } else {
       toast.warning("A username is required to proceed", {
         title: "Warning",
@@ -260,13 +170,13 @@ const Step1 = () => {
     <TemplateStructure
       onArrangementChange={(newArrangement) => {
         console.log(newArrangement);
-        setCurrentArrangement(newArrangement); // Update the state
+        setCurrentArrangement(newArrangement);
       }}
       arrangement={currentArrangement}
       step={String(accountBasics.step)}
       title={accountBasics.title}
       headerDescription={accountBasics.description}
-      headerAlignment="left" // Align header to the left as per original Step1
+      headerAlignment="left"
       greeting={accountBasics.greeting}
       pageWriteup={accountBasics.page_writeup}
       additionalContent={
@@ -282,11 +192,9 @@ const Step1 = () => {
       onBack={handleBack}
       onSkip={handleSkip}
     >
-      <div className="w-full  flex flex-col gap-y-4 ">
+      <div className="w-full flex flex-col gap-y-4">
         <div className="w-full">
-          <Textinput
-            loading={loading.includes("fetching_step1_data")}
-            labelBgHexIntensity={1}
+          <UsernameField
             value={formData.username}
             onChange={(e: string) => {
               setFormData((prev) => ({
@@ -294,25 +202,23 @@ const Step1 = () => {
                 username: e,
               }));
             }}
-            label={
-              loading.includes("checking_username")
-                ? "Checking username..."
-                : "Username*"
-            }
-            minLength={accountBasics.fields[0]?.constraints?.min_length}
-            maxLength={accountBasics.fields[0]?.constraints?.max_length}
-            desc={accountBasics.fields[0]?.description}
-            error={formErrors.username}
+            label="Username*"
+            loading={storeLoading}
+            currentUsername={userInfo?.username ?? ""}
+            onValidationChange={(isValid) => {
+              if (!isValid) {
+                setUsernameAvailable("Invalid or taken username");
+              } else {
+                setUsernameAvailable("");
+              }
+            }}
           />
         </div>
-
-        {/* {String(formData.username === userData.username)} */}
 
         <div className="flex flex-col gap-y-4 md:gap-x-1 md:flex-row justify-between w-full">
           <span className="min-w-1/2">
             <Textinput
-              loading={loading.includes("fetching_step1_data")}
-              labelBgHexIntensity={1}
+              loading={storeLoading}
               value={formData.firstname}
               onChange={(e: string) => {
                 setFormData((prev) => ({
@@ -329,8 +235,7 @@ const Step1 = () => {
           </span>
           <span className="min-w-1/2">
             <Textinput
-              loading={loading.includes("fetching_step1_data")}
-              labelBgHexIntensity={1}
+              loading={storeLoading}
               value={formData.lastname}
               onChange={(e: string) => {
                 setFormData((prev) => ({
@@ -349,8 +254,7 @@ const Step1 = () => {
 
         <div className="w-full">
           <Textinput
-            loading={loading.includes("fetching_step1_data")}
-            labelBgHexIntensity={1}
+            loading={storeLoading}
             value={formData.phone_number}
             onChange={(e: string) => {
               setFormData((prev) => ({
@@ -397,8 +301,8 @@ const Step1 = () => {
             size="md"
             text="Submit & Continue"
             className="w-full"
-            disabled={!isFormValid() || loading.includes("updating_step1_data")}
-            loading={loading.includes("updating_step1_data")}
+            disabled={!isFormValid() || isSaving}
+            loading={isSaving}
             onClick={updateStepOneData}
           />
         </div>

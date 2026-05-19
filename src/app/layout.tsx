@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { GlobalStateProvider } from "./globalStateProvider";
 import { ThemeProvider } from "./components/theme/ThemeContext ";
 import { ToastProvider } from "./components/toastify/Toastify";
 import ClientLayout from "./ClientLayout";
@@ -205,16 +204,14 @@ export default function RootLayout({
             />
           }
         >
-          <GlobalStateProvider>
-            <DynamicTitle />
-            <ToastProvider>
-              <WebSocketProvider>
-                <ThemeProvider>
-                  <ClientLayout>{children}</ClientLayout>
-                </ThemeProvider>
-              </WebSocketProvider>
-            </ToastProvider>
-          </GlobalStateProvider>
+          <DynamicTitle />
+          <ToastProvider>
+            <WebSocketProvider>
+              <ThemeProvider>
+                <ClientLayout>{children}</ClientLayout>
+              </ThemeProvider>
+            </WebSocketProvider>
+          </ToastProvider>
         </Suspense>
       </body>
     </html>

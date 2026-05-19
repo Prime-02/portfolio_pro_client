@@ -1,26 +1,16 @@
 "use client";
 import { useState } from "react";
-import Button from "@/app/components/buttons/Buttons";
-import { Textinput } from "@/app/components/inputs/Textinput";
-import { toast } from "@/app/components/toastify/Toastify";
-import { useGlobalState } from "@/app/globalStateProvider";
-import { PostAllData } from "@/app/components/utilities/asyncFunctions/lib/crud";
-import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
-import {
-  TokenData,
-  User,
-} from "@/app/components/types and interfaces/UserAndProfile";
+import { useUIStore } from "@/lib/stores/ui/useUIStore";
+import { useRouting } from "@/lib/hooks/routing/useRouting";
+import { toast } from "@/src/app/components/toastify/Toastify";
+import { Textinput } from "@/src/app/components/inputs/Textinput";
+import Button from "@/src/app/components/buttons/Buttons";
+import { useAuthStore } from "@/lib/stores/user/useAuthStore";
 
 const Login = () => {
-  const {
-    loading,
-    setLoading,
-    checkParams,
-    setAccessToken,
-    router,
-    fetchUserData,
-  } = useGlobalState();
-
+  const { startLoading, stopLoading, isLoading } = useUIStore();
+  const { checkParams, router } = useRouting();
+  const { login } = useAuthStore()
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -78,53 +68,39 @@ const Login = () => {
 
     if (!validateForm()) return;
 
-    setLoading("login_in_progress");
+    startLoading("login_in_progress");
 
     try {
-      const loginRes: { user: User; session: TokenData } = await PostAllData({
-        url: `${V1_BASE_URL}/auth/login`,
-        data: formData,
-        useFormData: true,
-      });
+      const loginRes = await login(formData.email, formData.password);
 
-      if (
-        loginRes?.session?.session_token &&
-        loginRes?.session?.refresh_token &&
-        loginRes?.session?.expires_at
-      ) {
-        setAccessToken(
-          loginRes.session.session_token,
-          loginRes.session.refresh_token,
-          loginRes.session.expires_at
-        );
+      const isNewUser = checkParams("new_user") === "true";
 
-        const isNewUser = checkParams("new_user") === "true";
-
-        // Navigate based on user status
-        if (isNewUser) {
-          router.push("/welcome");
-        } else if (!loginRes.user.username || loginRes.user.username === "") {
-          router.push("/welcome?step=1");
-        } else {
-          await fetchUserData(loginRes?.session?.session_token);
-          router.push(`/${loginRes.user.username}`);
-        }
-
-        toast.success("Login successful! Welcome back.", {
-          title: "Login Success",
-        });
+      // Navigate based on user status
+      if (isNewUser) {
+        router.push("/welcome");
+      } else if (!loginRes.user.username || loginRes.user.username === "") {
+        router.push("/welcome?step=1");
       } else {
-        setErrors((prev) => ({
-          ...prev,
-          general: "Login failed. Please check your credentials and try again.",
-        }));
+        router.push(`/${loginRes.user.username}`);
       }
+
+      toast.success("Login successful! Welcome back.", {
+        title: "Login Success",
+      });
     } catch (error) {
       console.error("Login error:", error);
+      setErrors((prev) => ({
+        ...prev,
+        general: error instanceof Error
+          ? error.message
+          : "Login failed. Please check your credentials and try again.",
+      }));
     } finally {
-      setLoading("login_in_progress"); // Clear loading state
+      stopLoading("login_in_progress");
     }
   };
+
+  const isLoginLoading = isLoading("login_in_progress");
 
   return (
     <div className="max-w-md mx-auto p-6 rounded-lg shadow-sm">
@@ -144,7 +120,6 @@ const Login = () => {
             onChange={handleChange("email")}
             className="w-full p-2 border rounded"
             label="Email"
-            labelBgHexIntensity={1}
             error={errors.email}
             required
             autoComplete="username"
@@ -158,7 +133,6 @@ const Login = () => {
             value={formData.password}
             onChange={handleChange("password")}
             className="w-full p-2 border rounded"
-            labelBgHexIntensity={1}
             error={errors.password}
             required
             autoComplete="current-password"
@@ -167,8 +141,8 @@ const Login = () => {
 
         <Button
           type="submit"
-          loading={loading.includes("login_in_progress")}
-          disabled={loading.includes("login_in_progress")}
+          loading={isLoginLoading}
+          disabled={isLoginLoading}
           className="w-full"
           text="Login"
           size="sm"

@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { Bell } from "lucide-react";
-import { useWebSocketContext } from "@/app/WebSocketContext";
+import { useWebSocketContext } from "../../WebSocketContext";
 
 const NotificationsButton = ({ expanded }: { expanded: boolean }) => {
   const { unreadCount } = useWebSocketContext();

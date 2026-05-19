@@ -1,37 +1,29 @@
-import Button from "@/app/components/buttons/Buttons";
-import BasicHeader from "@/app/components/containers/divs/header/BasicHeader";
-import {
-  DeleteData,
-  PostAllData,
-} from "@/app/components/utilities/asyncFunctions/lib/crud";
-import { useGlobalState } from "@/app/globalStateProvider";
-import { useWebSocketContext } from "@/app/WebSocketContext";
+
+import { api } from "@/lib/client/api";
+import { useUIStore } from "@/lib/stores/ui/useUIStore";
+import Button from "@/src/app/components/buttons/Buttons";
+import BasicHeader from "@/src/app/components/containers/divs/header/BasicHeader";
+import { useWebSocketContext } from "@/src/app/WebSocketContext";
 import React from "react";
 
 const NotificationHeader = () => {
-  const { setLoading, isLoading, accessToken } = useGlobalState();
+  const { setLoading, isLoading } = useUIStore();
   const { unreadCount, reconnect, notifications } = useWebSocketContext();
 
   const notificationActions = async () => {
     const url = `/notifications/${unreadCount === 0 ? "delete/delete-read" : "mark-all-as-read"}`;
     const isDeleteAll = unreadCount === 0;
     if (isDeleteAll) {
-      setLoading("deleting_all_notifications");
+      setLoading("deleting_all_notifications", true);
     } else {
-      setLoading("marking_all_notifications_as_read");
+      setLoading("marking_all_notifications_as_read", true);
     }
     let actionRes;
     try {
       if (isDeleteAll) {
-        actionRes = await DeleteData({
-          access: accessToken,
-          url: url,
-        });
+        actionRes = await api.delete(url);
       } else {
-        actionRes = await PostAllData({
-          access: accessToken,
-          url: url,
-        });
+        actionRes = await api.post(url);
       }
       if (actionRes) {
         reconnect();
@@ -40,9 +32,9 @@ const NotificationHeader = () => {
       console.log(error);
     } finally {
       if (isDeleteAll) {
-        setLoading("deleting_all_notifications");
+        setLoading("deleting_all_notifications", false);
       } else {
-        setLoading("marking_all_notifications_as_read");
+        setLoading("marking_all_notifications_as_read", false);
       }
     }
   };

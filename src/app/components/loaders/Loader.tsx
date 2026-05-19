@@ -1,9 +1,8 @@
 import React from "react";
-import {
-  LoaderProps,
-  LoaderOptions,
-} from "@/app/components/types and interfaces/loaderTypes";
 import PorfolioProLoader from "./PortfolioPro";
+import { LoaderOptions, LoaderProps } from "../types and interfaces/loaderTypes";
+import { useUserSettings } from "@/lib/stores/user/useUserSettings";
+import { useTheme } from "../theme/ThemeContext ";
 // Type definitions
 
 interface LoaderContainerProps {
@@ -813,3 +812,25 @@ export const getLoader = (slug: string): React.FC<LoaderProps> | null => {
 
 // List of available loader slugs
 export const availableLoaders = Object.keys(loaderRegistry) as LoaderOptions[];
+
+
+interface LoaderUiProps {
+  size?: number;
+  color?: string;
+  // Add other common props
+}
+
+export const LoaderComponent: React.FC<LoaderUiProps> = ({ size, color }) => {
+  const { settings } = useUserSettings();
+  const { accentColor } = useTheme()
+  const LoaderComponent = getLoader(settings?.loader ?? "");
+  const selectedColor = color ? color : accentColor.color
+
+  if (!LoaderComponent) {
+    return <SpinLoader size={size} color={selectedColor} />;
+  }
+
+  return <LoaderComponent size={size} color={selectedColor} />;
+};
+
+

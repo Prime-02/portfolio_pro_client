@@ -1,12 +1,12 @@
 "use client";
-import PortfolioProLogo from "@/app/components/logo/PortfolioProLogo";
 import React, { useState, useEffect } from "react";
 import Login from "./Login";
 import SignUp from "./SignUp";
 import PasswordRetrieval from "./PasswordRetrieval";
 import { motion, AnimatePresence } from "framer-motion";
 import OAuth from "./OAuth";
-import { useGlobalState } from "@/app/globalStateProvider";
+import PortfolioProLogo from "@/src/app/components/logo/PortfolioProLogo";
+import { useRouting } from "@/lib/hooks/routing/useRouting";
 
 type AuthMode = "signup" | "login" | "password-retrieval";
 
@@ -21,7 +21,7 @@ const authComponents: Record<AuthMode, React.ComponentType> = {
 };
 
 const UserAuth = () => {
-  const { extendRouteWithQuery, checkParams, currentPathWithQuery } = useGlobalState();
+  const { extendRouteWithQuery, checkParams, currentPathWithQuery } = useRouting();
   const [authMode, setAuthMode] = useState<AuthModeOptions>({ mode: "signup" });
   const [direction, setDirection] = useState(0);
 

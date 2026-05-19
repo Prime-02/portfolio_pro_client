@@ -7,7 +7,6 @@ import React, {
   useMemo,
   useLayoutEffect,
 } from "react";
-import ImageCard from "@/app/components/containers/cards/ImageCard";
 import { MdWarning } from "react-icons/md";
 import { ArrowDown } from "lucide-react";
 
@@ -660,11 +659,7 @@ const MasonryGrid = ({
   // Create skeleton loading cards
   const createSkeletonCards = useCallback(() => {
     return Array.from({ length: columnCount }).map((_, i) => (
-      <ImageCard
-        key={`loading-${i}`}
-        id={`loading-${i}`}
-        image_url=""
-        isLoading={true}
+      <div key={i}
       />
     ));
   }, [columnCount]);

@@ -7,7 +7,10 @@ import {
   ReactNode,
   useCallback,
   useRef,
+  useMemo,
 } from "react";
+import { UserPreferences } from "../types and interfaces/UserAndProfile";
+import PortfolioProLogo from "../logo/PortfolioProTextLogo";
 import {
   LoaderInput,
   Loader,
@@ -15,19 +18,16 @@ import {
   Accent,
   ThemeVariant,
   LanguageProps,
-} from "@/app/components/types and interfaces/loaderTypes";
-import { useGlobalState } from "@/app/globalStateProvider";
-import {
-  GetAllData,
-  UpdateAllData,
-} from "../utilities/asyncFunctions/lib/crud";
-import { V1_BASE_URL } from "../utilities/indices/urls";
-import {
-  findMatch,
-  isValidHexColorStrict,
-} from "../utilities/syncFunctions/syncs";
-import { UserPreferences } from "../types and interfaces/UserAndProfile";
-import { systemLanguages } from "../utilities/indices/DropDownItems";
+} from "../types and interfaces/loaderTypes";
+import { isAuthenticated } from "@/lib/client/api";
+import { useUIStore } from "@/lib/stores/ui/useUIStore";
+import { useValidation } from "@/lib/hooks/validation/useValidation";
+import { UserSettingsBase, useUserSettings } from "@/lib/stores/user/useUserSettings";
+import { toast } from "../toastify/Toastify";
+import { usePathname, useRouter } from "next/navigation";
+import { unprotectedRoutes } from "@/lib/utilities/indices/NavigationItems";
+
+// ── Types ───────────────────────────────────────────────────────────────────
 
 export type ThemeContextType = {
   theme: Theme;
@@ -50,27 +50,25 @@ export type ThemeContextType = {
   defaultSettings: ProfileSettings;
   layoutLoaded: boolean;
   setLayoutLoaded: (layoutLoaded: boolean) => void;
-  getUserSettings: (url: string | undefined) => void;
-  // New properties for save/cancel functionality
+  getUserSettings: (url?: string) => void;
   hasUnsavedChanges: boolean;
   showSaveButtons: boolean;
-  saveChanges: (customSettings?: ProfileSettings) => void;
+  saveChanges: (customSettings?: Partial<UserPreferences>) => void;
   cancelChanges: () => void;
   resetToDefaults: () => void;
 };
 
-// Settings interface
 export interface ProfileSettings {
   layout: "default" | "compact" | "card" | "minimal" | "showcase";
   showCover: boolean;
   showActions: boolean;
   coverHeight: "h-48" | "h-56" | "h-64" | "h-72" | "h-80";
   profilePictureSize:
-    | "w-24 h-24"
-    | "w-28 h-28"
-    | "w-32 h-32"
-    | "w-36 h-36"
-    | "w-40 h-40";
+  | "w-24 h-24"
+  | "w-28 h-28"
+  | "w-32 h-32"
+  | "w-36 h-36"
+  | "w-40 h-40";
   profilePicturePosition: "left" | "center" | "right";
   infoAlignment: "left" | "center" | "right";
   spacing: "compact" | "normal" | "relaxed";
@@ -85,8 +83,7 @@ export interface ProfileSettings {
   profileInfoStyle: "default" | "card" | "minimal";
 }
 
-// Default settings
-const defaultSettings: ProfileSettings = {
+export const defaultSettings: ProfileSettings = {
   layout: "default",
   showCover: true,
   showActions: true,
@@ -106,7 +103,19 @@ const defaultSettings: ProfileSettings = {
   profileInfoStyle: "default",
 };
 
+// ── Context ─────────────────────────────────────────────────────────────────
+
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+
+// ── Defaults used for reset ─────────────────────────────────────────────────
+
+const defaultLightTheme: Theme = { background: "#ffffff", foreground: "#171717" };
+const defaultDarkTheme: Theme = { background: "#0a0a0a", foreground: "#ededed" };
+const defaultAccent: Accent = { color: "#05df72" };
+const defaultLanguage: LanguageProps = { name: "English", code: "en" };
+const defaultLoader: Loader = "spin-loader";
+
+// ── Provider Props ──────────────────────────────────────────────────────────
 
 type ThemeProviderProps = {
   children: ReactNode;
@@ -118,627 +127,436 @@ type ThemeProviderProps = {
   defaultLanguage?: LanguageProps;
 };
 
+// ── Provider ────────────────────────────────────────────────────────────────
+
 export const ThemeProvider = ({
   children,
   defaultThemeVariant = "system",
-  defaultLightTheme: initialLightTheme = {
-    background: "#ffffff",
-    foreground: "#171717",
-  },
-  defaultDarkTheme: initialDarkTheme = {
-    background: "#0a0a0a",
-    foreground: "#ededed",
-  },
-  defaultAccentColor: initialAccentColor = {
-    color: "#05df72",
-  },
-  defaultLoader: initialLoader = {
-    style: "spin-loader",
-  },
-  defaultLanguage: initialLanguage = {
-    name: "English",
-    code: "en",
-  },
+  defaultLightTheme: initialLightTheme = defaultLightTheme,
+  defaultDarkTheme: initialDarkTheme = defaultDarkTheme,
+  defaultAccentColor: initialAccentColor = defaultAccent,
+  defaultLoader: initialLoader = { style: "spin-loader" },
+  defaultLanguage: initialLanguage = defaultLanguage,
 }: ThemeProviderProps) => {
-  // State for theme configurations
-  const [lightTheme, setLightTheme] = useState<Theme>(initialLightTheme);
-  const [darkTheme, setDarkTheme] = useState<Theme>(initialDarkTheme);
-  const [accentColor, setAccentColor] = useState<Accent>(initialAccentColor);
-  const [language, setLanguage] = useState<LanguageProps>(initialLanguage);
+  // ── Store (single source of truth) ──────────────────────────────────────
+  const store = useUserSettings();
+
+  const router = useRouter()
+
+  const pathname = usePathname(); // from next/navigation
+
+  // ── UI State (not in store) ─────────────────────────────────────────────
+  const [theme, setTheme] = useState<Theme>(initialLightTheme);
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const [layoutLoaded, setLayoutLoaded] = useState(false);
-
-  // Saved state for cancel functionality
-  const [savedLightTheme, setSavedLightTheme] =
-    useState<Theme>(initialLightTheme);
-  const [savedDarkTheme, setSavedDarkTheme] = useState<Theme>(initialDarkTheme);
-  const [savedAccentColor, setSavedAccentColor] =
-    useState<Accent>(initialAccentColor);
-  const [savedLanguage, setSavedLanguage] =
-    useState<LanguageProps>(initialLanguage);
-  const [savedSettings, setSavedSettings] =
-    useState<ProfileSettings>(defaultSettings);
-  const [savedThemeVariant, setSavedThemeVariant] =
-    useState<ThemeVariant>(defaultThemeVariant);
-
-  const [loader, _setLoader] = useState<Loader>(() => {
-    if (typeof initialLoader === "string") {
-      return initialLoader as Loader;
-    }
-    return initialLoader.style as Loader;
-  });
-  const [savedLoader, setSavedLoader] = useState<Loader>(() => {
-    if (typeof initialLoader === "string") {
-      return initialLoader as Loader;
-    }
-    return initialLoader.style as Loader;
-  });
-
-  const [settings, setSettings] = useState<ProfileSettings>(defaultSettings);
-
-  // New state for save/cancel functionality
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showSaveButtons, setShowSaveButtons] = useState(false);
 
-  const { accessToken, setLoading, currentUser } = useGlobalState();
 
-  // State for the theme variant (light/dark/system)
-  const [themeVariant, setThemeVariant] =
-    useState<ThemeVariant>(defaultThemeVariant);
-
-  // State for the actual theme values
-  const [theme, setTheme] = useState<Theme>(lightTheme);
-  const [isDarkMode, setIsDarkMode] = useState(false);
-
-  // Track if initial load is complete to prevent unnecessary API calls
-  const initialLoadComplete = useRef(false);
+  // ── Refs ────────────────────────────────────────────────────────────────
   const isUpdatingSettings = useRef(false);
   const saveButtonsTimeoutRef = useRef<NodeJS.Timeout>(null);
 
-  const setLoader = useCallback((input: LoaderInput) => {
-    const newLoader = typeof input === "string" ? input : input.style;
-    _setLoader(newLoader as Loader);
-  }, []);
+  const { setLoading } = useUIStore();
+  const { checkIfOwnProfile, checkUsernameAvailability } = useValidation();
+  const { fetchUserInfo } = useUserSettings()
 
-  // Function to update saved state (call this after successful save)
-  const updateSavedState = useCallback(() => {
-    setSavedLightTheme(lightTheme);
-    setSavedDarkTheme(darkTheme);
-    setSavedAccentColor(accentColor);
-    setSavedLanguage(language);
-    setSavedSettings(settings);
-    setSavedThemeVariant(themeVariant);
-    setSavedLoader(loader);
-  }, [
-    lightTheme,
-    darkTheme,
-    accentColor,
-    language,
-    settings,
-    themeVariant,
-    loader,
-  ]);
+  const usernameInUrl = checkIfOwnProfile()?.username ?? null;
 
-  // Function to check if there are unsaved changes
-  const checkForUnsavedChanges = useCallback(() => {
-    const hasChanges =
-      JSON.stringify(lightTheme) !== JSON.stringify(savedLightTheme) ||
-      JSON.stringify(darkTheme) !== JSON.stringify(savedDarkTheme) ||
-      JSON.stringify(accentColor) !== JSON.stringify(savedAccentColor) ||
-      JSON.stringify(language) !== JSON.stringify(savedLanguage) ||
-      JSON.stringify(settings) !== JSON.stringify(savedSettings) ||
-      themeVariant !== savedThemeVariant ||
-      loader !== savedLoader;
+  const userInfo = useUserSettings((s) => s.userInfo); // reactive subscription
 
-    return hasChanges;
-  }, [
-    lightTheme,
-    darkTheme,
-    accentColor,
-    language,
-    settings,
-    themeVariant,
-    loader,
-    savedLightTheme,
-    savedDarkTheme,
-    savedAccentColor,
-    savedLanguage,
-    savedSettings,
-    savedThemeVariant,
-    savedLoader,
-  ]);
+  const isViewingOwnProfile = useMemo(() => {
+    if (!usernameInUrl) return true;
+    return userInfo?.username?.toLowerCase() === usernameInUrl.toLowerCase();
+  }, [usernameInUrl, userInfo]); // now re-evaluates when userInfo loads
+  // ── Derived state from store (read directly, no local copies) ───────────
+  // The settings source to read from — public when visiting others, own when on own profile
+  const settingsSource = isViewingOwnProfile ? store.settings : store.publicSettings;
 
-  // Function to show save buttons with timeout
+  const draft = isViewingOwnProfile ? store.draftSettings : null;
+
+  const lightTheme = useMemo(() => store.getLightTheme(settingsSource, draft), [settingsSource, draft]);
+  const darkTheme = useMemo(() => store.getDarkTheme(settingsSource, draft), [settingsSource, draft]);
+  const accentColor = useMemo(() => store.getAccentColor(settingsSource, draft), [settingsSource, draft]);
+  const language = useMemo(() => store.getLanguage(settingsSource, draft), [settingsSource, draft]);
+  const settings = useMemo(() => store.getLayoutSettings(settingsSource, draft), [settingsSource, draft]);
+  const themeVariant = useMemo(() => store.getThemeVariant(settingsSource, draft), [settingsSource, draft]);
+  const loader = useMemo(() => store.getLoader(settingsSource, draft), [settingsSource, draft]);
+  const hasUnsavedChanges = useMemo(() => store.hasUnsavedChanges(draft), [draft]);
+
+
+  // ── Helpers ─────────────────────────────────────────────────────────────
+
+  const resolveLoaderInput = (input: LoaderInput): Loader =>
+    (typeof input === "string" ? input : input.style) as Loader;
+
   const showSaveButtonsWithTimeout = useCallback(() => {
     setShowSaveButtons(true);
-
-    // Clear existing timeout
-    if (saveButtonsTimeoutRef.current) {
-      clearTimeout(saveButtonsTimeoutRef.current);
-    }
-
-    // Set new timeout to hide buttons after 5 seconds
-    saveButtonsTimeoutRef.current = setTimeout(() => {
-      setShowSaveButtons(false);
-    }, 15000);
+    if (saveButtonsTimeoutRef.current) clearTimeout(saveButtonsTimeoutRef.current);
+    saveButtonsTimeoutRef.current = setTimeout(() => setShowSaveButtons(false), 15000);
   }, []);
 
-  // Save changes function
-  const saveChanges = useCallback(
-    async (customSettings = settings) => {
-      if (!accessToken || isUpdatingSettings.current) return;
-
-      isUpdatingSettings.current = true;
-      setLoading("updating_user_settings");
-
-      try {
-        const updateRes: UserPreferences = await UpdateAllData({
-          access: accessToken,
-          field: {
-            language: language.code,
-            theme: themeVariant,
-            primary_theme: lightTheme.background,
-            secondary_theme: lightTheme.foreground,
-            accent: accentColor.color,
-            primary_theme_dark: darkTheme.background,
-            secondary_theme_dark: darkTheme.foreground,
-            loader: loader,
-            layout_style: customSettings,
-          },
-          url: `${V1_BASE_URL}/settings/`,
-        });
-
-        if (updateRes) {
-          // // Update saved state to match current state
-          // updateSavedState();
-
-          // Hide save buttons and clear unsaved changes
-          setShowSaveButtons(false);
-          setHasUnsavedChanges(false);
-
-          // Clear timeout
-          if (saveButtonsTimeoutRef.current) {
-            clearTimeout(saveButtonsTimeoutRef.current);
-          }
-
-          // Optional: Show success toast
-          // toast.toast("Settings saved successfully", { type: "success" });
-        }
-      } catch (error) {
-        console.error("Error saving user settings:", error);
-        // Optional: Show error toast
-        // toast.toast("Failed to save settings", { type: "error" });
-      } finally {
-        setLoading("updating_user_settings");
-        isUpdatingSettings.current = false;
-      }
-    },
-    [
-      accessToken,
-      language,
-      themeVariant,
-      lightTheme,
-      darkTheme,
-      accentColor,
-      loader,
-      settings,
-      setLoading,
-      updateSavedState,
-    ]
-  );
-
-  // Cancel changes function
-  const cancelChanges = useCallback(() => {
-    // Revert all changes to saved state
-    setLightTheme(savedLightTheme);
-    setDarkTheme(savedDarkTheme);
-    setAccentColor(savedAccentColor);
-    setLanguage(savedLanguage);
-    setSettings(savedSettings);
-    setThemeVariant(savedThemeVariant);
-    _setLoader(savedLoader);
-
-    // Hide save buttons and clear unsaved changes
-    setShowSaveButtons(false);
-    setHasUnsavedChanges(false);
-
-    // Clear timeout
-    if (saveButtonsTimeoutRef.current) {
-      clearTimeout(saveButtonsTimeoutRef.current);
-    }
-  }, [
-    savedLightTheme,
-    savedDarkTheme,
-    savedAccentColor,
-    savedLanguage,
-    savedSettings,
-    savedThemeVariant,
-    savedLoader,
-  ]);
-
-  // Monitor for changes and show save buttons
+  // ── Show save buttons when unsaved changes detected ─────────────────────
   useEffect(() => {
-    if (initialLoadComplete.current) {
-      const hasChanges = checkForUnsavedChanges();
-      setHasUnsavedChanges(hasChanges);
-
-      if (hasChanges) {
-        showSaveButtonsWithTimeout();
-      }
+    if (hasUnsavedChanges) {
+      showSaveButtonsWithTimeout();
     }
-  }, [
-    lightTheme,
-    darkTheme,
-    accentColor,
-    language,
-    settings,
-    themeVariant,
-    loader,
-    checkForUnsavedChanges,
-    showSaveButtonsWithTimeout,
-  ]);
+  }, [hasUnsavedChanges, showSaveButtonsWithTimeout]);
 
-  // Get system preference - memoized with proper dependencies
+  // ── Theme application (reads from store via derived memo) ───────────────
   const getSystemTheme = useCallback((): Theme => {
     if (typeof window !== "undefined" && window.matchMedia) {
-      return window.matchMedia("(prefers-color-scheme: dark)").matches
-        ? darkTheme
-        : lightTheme;
+      return window.matchMedia("(prefers-color-scheme: dark)").matches ? darkTheme : lightTheme;
     }
     return lightTheme;
   }, [lightTheme, darkTheme]);
 
-  // Apply theme to DOM and state
   const applyTheme = useCallback(
     (newTheme: Theme, darkMode: boolean) => {
       setTheme(newTheme);
       setIsDarkMode(darkMode);
-
-      // Apply to CSS variables
       if (typeof document !== "undefined") {
-        document.documentElement.style.setProperty(
-          "--background",
-          newTheme.background
-        );
-        document.documentElement.style.setProperty(
-          "--foreground",
-          newTheme.foreground
-        );
-        document.documentElement.style.setProperty(
-          "--accent",
-          accentColor.color
-        );
+        document.documentElement.style.setProperty("--background", newTheme.background);
+        document.documentElement.style.setProperty("--foreground", newTheme.foreground);
+        document.documentElement.style.setProperty("--accent", accentColor.color);
       }
     },
     [accentColor.color]
   );
 
-  // Update theme based on variant
   const updateTheme = useCallback(
     (variant: ThemeVariant) => {
-      let newTheme: Theme;
-      let darkMode: boolean;
-
       switch (variant) {
         case "dark":
-          newTheme = darkTheme;
-          darkMode = true;
-          break;
+          return applyTheme(darkTheme, true);
         case "light":
-          newTheme = lightTheme;
-          darkMode = false;
-          break;
-        case "system":
-        default:
-          newTheme = getSystemTheme();
-          darkMode = newTheme.background === darkTheme.background;
-          break;
+          return applyTheme(lightTheme, false);
+        default: {
+          const sys = getSystemTheme();
+          return applyTheme(sys, sys.background === darkTheme.background);
+        }
       }
-
-      applyTheme(newTheme, darkMode);
     },
     [lightTheme, darkTheme, getSystemTheme, applyTheme]
   );
 
+  // ── React to theme changes ──────────────────────────────────────────────
   useEffect(() => {
     updateTheme(themeVariant);
   }, [themeVariant, updateTheme]);
 
-  // Listen for system theme changes
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-      const handler = () => {
-        if (themeVariant === "system") {
-          updateTheme("system");
-        }
-      };
-      mediaQuery.addEventListener("change", handler);
-
-      return () => mediaQuery.removeEventListener("change", handler);
-    }
-  }, [themeVariant, updateTheme]);
-
-  // Update theme when light/dark theme configurations change
   useEffect(() => {
     updateTheme(themeVariant);
   }, [lightTheme, darkTheme, updateTheme]);
 
-  // Update accent color in CSS when it changes
   useEffect(() => {
     if (typeof document !== "undefined") {
       document.documentElement.style.setProperty("--accent", accentColor.color);
     }
   }, [accentColor]);
 
-  const toggleThemeVariant = () => {
-    setThemeVariant((current) => {
-      if (current === "system") return "dark";
-      if (current === "dark") return "light";
-      return "system";
-    });
-  };
+  // ── System theme listener ───────────────────────────────────────────────
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const handler = () => {
+      if (themeVariant === "system") updateTheme("system");
+    };
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, [themeVariant, updateTheme]);
 
-  const getUserSettings = async (url = currentUser) => {
-    if (!accessToken || isUpdatingSettings.current) return;
-    setLayoutLoaded(false);
+  // ── Setter functions → update store draft ────────────────────────────────
 
-    setLoading("fething_user_settings");
-    url = currentUser
-      ? `${V1_BASE_URL}/settings/${currentUser}`
-      : `${V1_BASE_URL}/settings/`;
+  const setThemeVariantFn = useCallback(
+    (variant: ThemeVariant) => {
+      store.setDraftField("theme", variant);
+    },
+    [store]
+  );
 
-    try {
-      const settingsRes: UserPreferences = await GetAllData({
-        access: accessToken,
-        url: url,
-        type: "User Settings",
-      });
+  const toggleThemeVariant = useCallback(() => {
+    const current = store.getThemeVariant();
+    const next = current === "system" ? "dark" : current === "dark" ? "light" : "system";
+    store.setDraftField("theme", next);
+  }, [store]);
 
-      if (settingsRes) {
-        let needsUpdate = false;
-        console.log("Fetched user settings:", settingsRes);
-        const requiredSettings = [
-          "language",
-          "theme",
-          "primary_theme",
-          "secondary_theme",
-          "primary_theme_dark",
-          "secondary_theme_dark",
-          "loader",
-          "accent",
-          "layout_style",
-        ];
+  const setLightThemeFn = useCallback(
+    (theme: Theme) => {
+      store.setDraftField("primary_theme", theme.background);
+      store.setDraftField("secondary_theme", theme.foreground);
+    },
+    [store]
+  );
 
-        // Check if any required setting is missing or falsy
-        needsUpdate = requiredSettings.some(
-          (setting) => !settingsRes[setting as keyof UserPreferences]
-        );
+  const setDarkThemeFn = useCallback(
+    (theme: Theme) => {
+      store.setDraftField("primary_theme_dark", theme.background);
+      store.setDraftField("secondary_theme_dark", theme.foreground);
+    },
+    [store]
+  );
 
-        // Apply settings if they exist
-        if (settingsRes.accent && isValidHexColorStrict(settingsRes.accent)) {
-          setAccentColor({ color: settingsRes.accent });
-        } else {
-          needsUpdate = true;
-        }
+  const setAccentColorFn = useCallback(
+    (accent: Accent) => {
+      store.setDraftField("accent", accent.color);
+    },
+    [store]
+  );
 
-        if (settingsRes.language) {
-          setLanguage(
-            findMatch(
-              settingsRes.language,
-              systemLanguages,
-              ["code"],
-              true
-            ) || { code: "en", name: "English" }
-          );
-        } else {
-          needsUpdate = true;
-        }
+  const setLoaderFn = useCallback(
+    (input: LoaderInput) => {
+      store.setDraftField("loader", resolveLoaderInput(input));
+    },
+    [store]
+  );
 
-        if (
-          settingsRes.theme &&
-          ["light", "dark", "system"].includes(settingsRes.theme)
-        ) {
-          setThemeVariant(settingsRes.theme as ThemeVariant);
-        } else {
-          needsUpdate = true;
-        }
+  const setLanguageFn = useCallback(
+    (lang: LanguageProps) => {
+      store.setDraftField("language", lang.code);
+    },
+    [store]
+  );
 
-        if (
-          isValidHexColorStrict(
-            settingsRes.primary_theme || lightTheme.background
-          ) &&
-          isValidHexColorStrict(
-            settingsRes.secondary_theme || lightTheme.foreground
-          )
-        ) {
-          setLightTheme({
-            background: settingsRes.primary_theme || lightTheme.background,
-            foreground: settingsRes.secondary_theme || lightTheme.foreground,
-          });
-        } else {
-          needsUpdate = true;
-        }
+  const setSettingsFn = useCallback(
+    (newSettings: ProfileSettings) => {
+      store.setDraftField("layout_style", newSettings);
+    },
+    [store]
+  );
 
-        if (
-          isValidHexColorStrict(
-            settingsRes.primary_theme_dark || darkTheme.background
-          ) &&
-          isValidHexColorStrict(
-            settingsRes.secondary_theme_dark || darkTheme.foreground
-          )
-        ) {
-          setDarkTheme({
-            background: settingsRes.primary_theme_dark || darkTheme.background,
-            foreground:
-              settingsRes.secondary_theme_dark || darkTheme.foreground,
-          });
-        } else {
-          needsUpdate = true;
-        }
+  // ── Save / Cancel / Reset → delegate to store ────────────────────────────
 
-        if (settingsRes.loader) {
-          setLoader(settingsRes.loader);
-        } else {
-          needsUpdate = true;
-        }
+  const saveChanges = useCallback(
+    async (customUpdates?: Partial<UserPreferences>) => {
+      if (!isAuthenticated() || isUpdatingSettings.current) return;
 
-        // Handle layout_style and profile settings
-        if (settingsRes.layout_style) {
-          try {
-            const profileSettings =
-              typeof settingsRes.layout_style === "string"
-                ? JSON.parse(settingsRes.layout_style)
-                : settingsRes.layout_style;
+      isUpdatingSettings.current = true;
+      setLoading("updating_user_settings", true);
 
-            const mergedSettings = Object.assign(
-              {},
-              defaultSettings,
-              profileSettings
-            );
-            setLayoutLoaded(true);
-            setSettings(mergedSettings);
-          } catch (error) {
-            console.error("Error parsing layout_style:", error);
-            setSettings(defaultSettings);
-            needsUpdate = true;
-          }
-        } else {
-          setSettings(defaultSettings);
-          needsUpdate = true;
-        }
+      try {
+        const activeSettings = store.getActiveSettings();
 
-        initialLoadComplete.current = true;
+        const payload: Record<string, unknown> = {
+          language: customUpdates?.language ?? activeSettings.language ?? language.code,
+          theme: customUpdates?.theme ?? activeSettings.theme ?? themeVariant,
+          primary_theme:
+            customUpdates?.primary_theme ?? activeSettings.primary_theme ?? lightTheme.background,
+          secondary_theme:
+            customUpdates?.secondary_theme ?? activeSettings.secondary_theme ?? lightTheme.foreground,
+          accent: customUpdates?.accent ?? activeSettings.accent ?? accentColor.color,
+          primary_theme_dark:
+            customUpdates?.primary_theme_dark ??
+            activeSettings.primary_theme_dark ??
+            darkTheme.background,
+          secondary_theme_dark:
+            customUpdates?.secondary_theme_dark ??
+            activeSettings.secondary_theme_dark ??
+            darkTheme.foreground,
+          loader: customUpdates?.loader ?? activeSettings.loader ?? loader,
+          layout_style: customUpdates?.layout_style ?? activeSettings.layout_style ?? settings,
+        };
 
-        // Update saved state after loading settings
-        setTimeout(() => {
-          updateSavedState();
-        }, 100);
+        await store.updateSettings(payload as Partial<UserSettingsBase>);
 
-        // Trigger update if any setting was missing
-        if (needsUpdate) {
-          // For initial setup, save immediately without showing buttons
-          setTimeout(() => {
-            saveChanges();
-          }, 200);
-        }
+        setShowSaveButtons(false);
+        if (saveButtonsTimeoutRef.current) clearTimeout(saveButtonsTimeoutRef.current);
+      } catch (error) {
+        console.error("Error saving user settings:", error);
+      } finally {
+        setLoading("updating_user_settings", false);
+        isUpdatingSettings.current = false;
       }
-    } catch (error) {
-      console.error("Error fetching user settings:", error);
-      setSettings(defaultSettings);
-      setLightTheme(initialLightTheme);
-      setDarkTheme(initialDarkTheme);
-      setAccentColor(initialAccentColor);
-      setLanguage(initialLanguage);
-      setThemeVariant(defaultThemeVariant);
-      _setLoader(() => {
-        if (typeof initialLoader === "string") {
-          return initialLoader as Loader;
-        }
-        return initialLoader.style as Loader;
-      });
-      initialLoadComplete.current = true;
-      setLayoutLoaded(true);
-      setTimeout(() => {
-        updateSavedState();
-      }, 100);
-      setTimeout(() => {
-        saveChanges();
-      }, 200);
-    } finally {
-      setLoading("fething_user_settings");
-    }
-  };
+    },
+    [store, language, themeVariant, lightTheme, darkTheme, accentColor, loader, settings, setLoading]
+  );
+
+  const cancelChanges = useCallback(() => {
+    store.resetDraft();
+    setShowSaveButtons(false);
+    if (saveButtonsTimeoutRef.current) clearTimeout(saveButtonsTimeoutRef.current);
+  }, [store]);
 
   const resetToDefaults = useCallback(() => {
-    // Reset all theme and settings to their initial default values
-    setLightTheme(initialLightTheme);
-    setDarkTheme(initialDarkTheme);
-    setAccentColor(initialAccentColor);
-    setLanguage(initialLanguage);
-    setThemeVariant(defaultThemeVariant);
-    _setLoader(() => {
-      if (typeof initialLoader === "string") {
-        return initialLoader as Loader;
-      }
-      return initialLoader.style as Loader;
+    store.setDraftSettings({
+      language: initialLanguage.code,
+      theme: defaultThemeVariant,
+      primary_theme: initialLightTheme.background,
+      secondary_theme: initialLightTheme.foreground,
+      accent: initialAccentColor.color,
+      primary_theme_dark: initialDarkTheme.background,
+      secondary_theme_dark: initialDarkTheme.foreground,
+      loader: resolveLoaderInput(initialLoader),
+      layout_style: defaultSettings,
     });
-    setSettings(defaultSettings);
+  }, [initialLanguage, defaultThemeVariant, initialLightTheme, initialDarkTheme, initialAccentColor, initialLoader]);
 
-    // Update saved state to match the reset values
-    setSavedLightTheme(initialLightTheme);
-    setSavedDarkTheme(initialDarkTheme);
-    setSavedAccentColor(initialAccentColor);
-    setSavedLanguage(initialLanguage);
-    setSavedThemeVariant(defaultThemeVariant);
-    setSavedLoader(() => {
-      if (typeof initialLoader === "string") {
-        return initialLoader as Loader;
+  // ── Fetch settings on mount ─────────────────────────────────────────────
+
+
+  const getUserSettings = useCallback(async () => {
+    const authenticated = isAuthenticated();
+
+    // ── Case: no username in URL at all ──────────────────────────────────
+    if (!usernameInUrl) {
+      if (authenticated) {
+        await store.fetchSettings();
       }
-      return initialLoader.style as Loader;
-    });
-    setSavedSettings(defaultSettings);
-  }, [
-    initialLightTheme,
-    initialDarkTheme,
-    initialAccentColor,
-    initialLanguage,
-    defaultThemeVariant,
-    initialLoader,
-    accessToken,
-    saveChanges,
-  ]);
-
-  // Load user settings on mount when accessToken is available
-  useEffect(() => {
-    if (accessToken && !initialLoadComplete.current) {
-      getUserSettings();
+      setLayoutLoaded(true);
+      return;
     }
-  }, [accessToken, currentUser]);
 
-  // Cleanup timeout on unmount
+    // ── Case: authenticated visitor ───────────────────────────────────────
+    if (authenticated) {
+      const currentUserInfo = useUserSettings.getState().userInfo;
+      const isOwnProfile =
+        currentUserInfo?.username?.toLowerCase() === usernameInUrl.toLowerCase();
+
+      if (isOwnProfile) {
+        store.clearPublicData(); // ← clear stale public data first
+        await store.fetchSettings();
+        setLayoutLoaded(true);
+        return;
+      }
+      // Viewing someone else's profile → validate username first
+      const { exists } = await checkUsernameAvailability(usernameInUrl);
+
+      if (exists) {
+        await Promise.all([
+          store.fetchPublicSettings(usernameInUrl),
+          store.fetchPublicUserInfo(usernameInUrl),
+          store.fetchPublicProfile(usernameInUrl),
+        ]);
+        setLayoutLoaded(true);
+      } else {
+        // Invalid profile → warn and redirect to own profile
+        const ownUsername = currentUserInfo?.username;
+        toast.warning("The profile you attempted to visit does not exist.");
+        router.push(`/${ownUsername}`);
+        setLayoutLoaded(true);
+      }
+      return;
+    }
+
+    // ── Case: non-authenticated visitor ──────────────────────────────────
+    const { exists } = await checkUsernameAvailability(usernameInUrl);
+
+    if (exists) {
+      await Promise.all([
+        store.fetchPublicSettings(usernameInUrl),
+        store.fetchPublicUserInfo(usernameInUrl),
+        store.fetchPublicProfile(usernameInUrl),
+      ]);
+      setLayoutLoaded(true);
+    } else {
+      toast.error("This profile does not exist.");
+      router.push("/");
+      setLayoutLoaded(true);
+    }
+  }, [usernameInUrl, checkUsernameAvailability, store, router]);
+
+  useEffect(() => {
+    const initializeApp = async () => {
+      try {
+        // Skip if on unprotected route
+        if (unprotectedRoutes.some(route => pathname.startsWith(route))) {
+          setLayoutLoaded(true);
+          return;
+        }
+
+        setLayoutLoaded(false);
+        if (isAuthenticated()) {
+          await fetchUserInfo();
+        }
+        await getUserSettings();
+      } catch (error) {
+        console.error("Initialization error:", error);
+        setLayoutLoaded(true);
+      }
+    };
+
+    initializeApp();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [usernameInUrl, pathname]);
+  // ── Cleanup ─────────────────────────────────────────────────────────────
   useEffect(() => {
     return () => {
-      if (saveButtonsTimeoutRef.current) {
-        clearTimeout(saveButtonsTimeoutRef.current);
-      }
+      if (saveButtonsTimeoutRef.current) clearTimeout(saveButtonsTimeoutRef.current);
     };
   }, []);
 
+  // ── Context value (stable via useMemo) ───────────────────────────────────
+  const contextValue = useMemo<ThemeContextType>(
+    () => ({
+      theme,
+      themeVariant,
+      setThemeVariant: setThemeVariantFn,
+      toggleThemeVariant,
+      isDarkMode,
+      setLightTheme: setLightThemeFn,
+      setDarkTheme: setDarkThemeFn,
+      lightTheme,
+      darkTheme,
+      accentColor,
+      setAccentColor: setAccentColorFn,
+      loader,
+      setLoader: setLoaderFn,
+      language,
+      setLanguage: setLanguageFn,
+      settings,
+      setSettings: setSettingsFn,
+      defaultSettings,
+      layoutLoaded,
+      setLayoutLoaded,
+      getUserSettings,
+      hasUnsavedChanges,
+      showSaveButtons,
+      saveChanges,
+      cancelChanges,
+      resetToDefaults,
+    }),
+    [
+      theme,
+      themeVariant,
+      setThemeVariantFn,
+      toggleThemeVariant,
+      isDarkMode,
+      setLightThemeFn,
+      setDarkThemeFn,
+      lightTheme,
+      darkTheme,
+      accentColor,
+      setAccentColorFn,
+      loader,
+      setLoaderFn,
+      language,
+      setLanguageFn,
+      settings,
+      setSettingsFn,
+      layoutLoaded,
+      getUserSettings,
+      hasUnsavedChanges,
+      showSaveButtons,
+      saveChanges,
+      cancelChanges,
+      resetToDefaults,
+    ]
+  );
   return (
-    <ThemeContext.Provider
-      value={{
-        theme,
-        themeVariant,
-        setThemeVariant,
-        toggleThemeVariant,
-        isDarkMode,
-        setLightTheme,
-        setDarkTheme,
-        lightTheme,
-        darkTheme,
-        accentColor,
-        setAccentColor,
-        loader,
-        setLoader,
-        language,
-        setLanguage,
-        settings,
-        setSettings,
-        defaultSettings,
-        layoutLoaded,
-        setLayoutLoaded,
-        getUserSettings,
-        hasUnsavedChanges,
-        showSaveButtons,
-        saveChanges,
-        cancelChanges,
-        resetToDefaults,
-      }}
-    >
-      {children}
+    <ThemeContext.Provider value={contextValue}>
+      {!layoutLoaded ? (
+        <div className="w-full h-screen flex-col flex items-center justify-center">
+          <PortfolioProLogo scale={0.8} />
+          <p>Loading theme...</p>
+        </div>
+      ) : (
+        children
+      )}
     </ThemeContext.Provider>
   );
 };
+
+
+// ── Hook ────────────────────────────────────────────────────────────────────
 
 export const useTheme = (): ThemeContextType => {
   const context = useContext(ThemeContext);

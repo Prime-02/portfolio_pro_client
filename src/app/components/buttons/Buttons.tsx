@@ -9,7 +9,7 @@ import React, {
 } from "react";
 import { getLoader, SpinLoader } from "../loaders/Loader";
 import { useTheme } from "../theme/ThemeContext ";
-import { getColorShade } from "../utilities/syncFunctions/syncs";
+import { getColorShade } from "@/lib/utilities/syncFunctions/syncs";
 
 type ButtonProps = {
   icon?: ReactNode;

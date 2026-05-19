@@ -1,7 +1,7 @@
 import React from "react";
 import Button from "../buttons/Buttons";
-import { useGlobalState } from "@/app/globalStateProvider";
 import { useTheme } from "./ThemeContext ";
+import { useUIStore } from "@/lib/stores/ui/useUIStore";
 
 export const SaveCancelButtons = () => {
   const {
@@ -11,7 +11,7 @@ export const SaveCancelButtons = () => {
     cancelChanges,
     settings,
   } = useTheme();
-  const { loading } = useGlobalState();
+  const { isLoading } = useUIStore();
 
   if (!showSaveButtons || !hasUnsavedChanges) {
     return null;
@@ -20,11 +20,11 @@ export const SaveCancelButtons = () => {
   return (
     <div className="flex gap-2 z-50">
       <Button
-        onClick={() => saveChanges(settings)}
+        onClick={() => saveChanges({ layout_style: settings })}
         variant="outline"
         size="sm"
         disabled={!showSaveButtons || !hasUnsavedChanges}
-        loading={loading.includes("updating_user_settings")}
+        loading={isLoading("updating_user_settings")}
         text="Save Changes"
       />
       <Button
@@ -42,15 +42,15 @@ export const SaveCancelButtons = () => {
 export const AnimatedSaveCancelButtons = () => {
   const { showSaveButtons, hasUnsavedChanges, saveChanges, cancelChanges } =
     useTheme();
-  const { loading } = useGlobalState();
+  const { isLoading } = useUIStore();
+
 
   return (
     <div
-      className={` flex gap-2 z-50 transform transition-transform duration-300 ease-in-out ${
-        showSaveButtons && hasUnsavedChanges
-          ? "translate-y-0 opacity-100"
-          : "translate-y-16 opacity-0 pointer-events-none"
-      }`}
+      className={` flex gap-2 z-50 transform transition-transform duration-300 ease-in-out ${showSaveButtons && hasUnsavedChanges
+        ? "translate-y-0 opacity-100"
+        : "translate-y-16 opacity-0 pointer-events-none"
+        }`}
     >
       <Button
         onClick={cancelChanges}
@@ -64,7 +64,7 @@ export const AnimatedSaveCancelButtons = () => {
         variant="outline"
         size="sm"
         disabled={!showSaveButtons || !hasUnsavedChanges}
-        loading={loading.includes("updating_user_settings")}
+        loading={isLoading("updating_user_settings")}
         text="Save Changes"
       />
     </div>
@@ -75,15 +75,14 @@ export const AnimatedSaveCancelButtons = () => {
 export const ToastSaveCancelButtons = () => {
   const { showSaveButtons, hasUnsavedChanges, saveChanges, cancelChanges } =
     useTheme();
-  const { loading } = useGlobalState();
+  const { isLoading } = useUIStore();
 
   return (
     <div
-      className={`fixed top-4 right-4 max-w-md bg-[var(--background)] border border-gray-300 rounded-lg p-4 shadow-lg z-50 transition-all duration-300 ${
-        showSaveButtons && hasUnsavedChanges
-          ? "translate-x-0 opacity-100"
-          : "translate-x-full opacity-0 pointer-events-none"
-      }`}
+      className={`fixed top-4 right-4 max-w-md bg-[var(--background)] border border-gray-300 rounded-lg p-4 shadow-lg z-50 transition-all duration-300 ${showSaveButtons && hasUnsavedChanges
+        ? "translate-x-0 opacity-100"
+        : "translate-x-full opacity-0 pointer-events-none"
+        }`}
     >
       <div className="flex items-center justify-between mb-3">
         <h4 className="text-sm font-medium text-[var(--foreground)]">
@@ -103,7 +102,7 @@ export const ToastSaveCancelButtons = () => {
           variant="outline"
           size="sm"
           disabled={!showSaveButtons || !hasUnsavedChanges}
-          loading={loading.includes("updating_user_settings")}
+          loading={isLoading("updating_user_settings")}
           text="Save Changes"
         />
       </div>

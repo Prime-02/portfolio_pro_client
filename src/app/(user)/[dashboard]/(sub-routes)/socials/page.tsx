@@ -1,11 +1,11 @@
 "use client";
+import SocialLinksPage from "@/src/app/components/socials";
 import React from "react";
-import SocialsDisplay from "./page-componet/SocialsDisplay";
 
 const Socials = () => {
   return (
-    <div className="-auto">
-      <SocialsDisplay />
+    <div className="">
+      <SocialLinksPage/>
     </div>
   );
 };

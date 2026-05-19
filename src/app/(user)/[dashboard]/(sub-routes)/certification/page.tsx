@@ -1,11 +1,11 @@
 "use client";
+import CertificationsPage from "@/src/app/components/certifications";
 import React from "react";
-import CertDisplay from "./page-components/CertDisplay";
 
 const Cert = () => {
   return (
     <div className=" h-auto">
-      <CertDisplay />
+      <CertificationsPage />
     </div>
   );
 };

@@ -1,16 +1,15 @@
-import Button from "@/app/components/buttons/Buttons";
-import { useTheme } from "@/app/components/theme/ThemeContext ";
-import { useGlobalState } from "@/app/globalStateProvider";
 import Link from "next/link";
 import React from "react";
 import { Sun, Moon, Monitor } from "lucide-react";
 import { IconType } from "react-icons";
-import { ThemeVariant } from "@/app/components/types and interfaces/loaderTypes";
-import { SaveCancelButtons } from "@/app/components/theme/SaveThemeActions";
+import { useTheme } from "@/src/app/components/theme/ThemeContext ";
+import { ThemeVariant } from "@/src/app/components/types and interfaces/loaderTypes";
+import Button from "@/src/app/components/buttons/Buttons";
+import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 
 const ThemeSettings = () => {
   const { themeVariant, setThemeVariant } = useTheme();
-  const { userData } = useGlobalState();
+  const { userInfo } = useUserSettings();
 
   type ThemeType = {
     theme: ThemeVariant;
@@ -65,11 +64,10 @@ const ThemeSettings = () => {
             </div>
           </div>
         ))}
-        <SaveCancelButtons/>
       </div>
       <div className="w-full">
         <Link
-          href={`/${userData.username}/preference`}
+          href={`/${userInfo?.username}/preference`}
           className="block w-full"
         >
           <Button

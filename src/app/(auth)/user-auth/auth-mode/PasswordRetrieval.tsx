@@ -1,15 +1,17 @@
 "use client";
-import Button from "@/app/components/buttons/Buttons";
-import BasicHeader from "@/app/components/containers/divs/header/BasicHeader";
-import { Textinput } from "@/app/components/inputs/Textinput";
-import { toast } from "@/app/components/toastify/Toastify";
-import { PostAllData } from "@/app/components/utilities/asyncFunctions/lib/crud";
-import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
-import { useGlobalState } from "@/app/globalStateProvider";
+
+import { api } from "@/lib/client/api";
+import { useRouting } from "@/lib/hooks/routing/useRouting";
+import { useUIStore } from "@/lib/stores/ui/useUIStore";
+import Button from "@/src/app/components/buttons/Buttons";
+import BasicHeader from "@/src/app/components/containers/divs/header/BasicHeader";
+import { Textinput } from "@/src/app/components/inputs/Textinput";
+import { toast } from "@/src/app/components/toastify/Toastify";
 import React, { useState } from "react";
 
 const PasswordRetrieval = () => {
-  const { loading, setLoading, checkParams, router } = useGlobalState();
+  const { isLoading, startLoading, stopLoading } = useUIStore()
+  const { checkParams, router } = useRouting()
   const token = checkParams("token");
   const [email, setEmail] = useState("");
   const [resetPassword, setResetPassword] = useState({
@@ -22,13 +24,9 @@ const PasswordRetrieval = () => {
       toast.error("Please enter a valid email.");
       return;
     }
-    setLoading("requesting_password_reset");
+    startLoading("requesting_password_reset");
     try {
-      const requestRes: { message: string } = await PostAllData({
-        access: "",
-        url: `${V1_BASE_URL}/auth/forgotten-password`,
-        data: { email: email },
-      });
+      const requestRes: { message: string } = await api.post("/auth/forgotten-password", { email: email });
       if (requestRes.message) {
         toast.success(requestRes.message, {
           title: "Password Reset Requested",
@@ -37,7 +35,7 @@ const PasswordRetrieval = () => {
     } catch (error) {
       console.log("Error requesting password reset:", error);
     } finally {
-      setLoading("requesting_password_reset");
+      stopLoading("requesting_password_reset");
     }
   };
 
@@ -46,13 +44,9 @@ const PasswordRetrieval = () => {
       toast.error("Passwords do not match.");
       return;
     }
-    setLoading("resetting_password");
+    startLoading("resetting_password");
     try {
-      const resetRes: { message: string } = await PostAllData({
-        access: String(token),
-        url: `${V1_BASE_URL}/auth/reset-password`,
-        data: { token: token, new_password: resetPassword.password },
-      });
+      const resetRes: { message: string } = await api.post("/auth/reset-password", { token: token, new_password: resetPassword.password });
       if (resetRes.message) {
         toast.success(
           `${resetRes.message}. Please login with your new credentials to access your account.`,
@@ -65,7 +59,7 @@ const PasswordRetrieval = () => {
     } catch (error) {
       console.log("Error resetting password:", error);
     } finally {
-      setLoading("resetting_password");
+      stopLoading("resetting_password");
     }
   };
 
@@ -83,7 +77,6 @@ const PasswordRetrieval = () => {
           value={resetPassword.password}
           onChange={(e) => setResetPassword({ ...resetPassword, password: e })}
           desc="Enter your new password."
-          labelBgHexIntensity={1}
         />
         <Textinput
           label="Confirm New Password"
@@ -93,7 +86,6 @@ const PasswordRetrieval = () => {
             setResetPassword({ ...resetPassword, confirmPassword: e })
           }
           desc="Re-enter your new password."
-          labelBgHexIntensity={1}
         />
         <Button
           text="Reset Password"
@@ -101,12 +93,12 @@ const PasswordRetrieval = () => {
           className="w-full"
           onClick={resetPasswordFunc}
           disabled={
-            loading.includes("resetting_password") ||
+            isLoading("resetting_password") ||
             !resetPassword.password ||
             !resetPassword.confirmPassword ||
             resetPassword.password !== resetPassword.confirmPassword
           }
-          loading={loading.includes("resetting_password")}
+          loading={isLoading("resetting_password")}
         />
       </div>
     );
@@ -125,7 +117,6 @@ const PasswordRetrieval = () => {
             value={email}
             onChange={(e) => setEmail(e)}
             desc="Enter your email to receive password reset instructions."
-            labelBgHexIntensity={1}
           />
         </div>
         <Button
@@ -133,8 +124,8 @@ const PasswordRetrieval = () => {
           size="sm"
           className="w-full"
           onClick={requestPasswordReset}
-          disabled={loading.includes("requesting_password_reset") || !email}
-          loading={loading.includes("requesting_password_reset")}
+          disabled={isLoading("requesting_password_reset") || !email}
+          loading={isLoading("requesting_password_reset")}
         />
       </div>
     );

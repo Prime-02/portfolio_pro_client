@@ -1,32 +1,29 @@
-import {
-  PrivacyNotifications,
-  ProfileVisibility,
-} from "@/app/components/types and interfaces/UserForm";
-import { useGlobalState } from "@/app/globalStateProvider";
-import React, { FormEvent, useEffect, useState } from "react";
-import TemplateStructure, { ComponentArrangement } from "./TemplateStructure";
-import { toast } from "@/app/components/toastify/Toastify";
-import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
-import {
-  GetAllData,
-  UpdateAllData,
-} from "@/app/components/utilities/asyncFunctions/lib/crud";
-import { privacyAndNotification } from "@/app/components/utilities/indices/MultiStepWriteUp";
-import Switch from "@/app/components/inputs/Switch";
-import CheckBox from "@/app/components/inputs/CheckBox";
-import { Textinput } from "@/app/components/inputs/Textinput";
-import Button from "@/app/components/buttons/Buttons";
+import { useRouting } from "@/lib/hooks/routing/useRouting";
 import Image from "next/image";
+import { FormEvent, useEffect, useState } from "react";
+import TemplateStructure, { ComponentArrangement } from "./TemplateStructure";
+import { isAuthenticated } from "@/lib/client/api";
+import { toast } from "@/src/app/components/toastify/Toastify";
+import { privacyAndNotification } from "@/lib/utilities/indices/MultiStepWriteUp";
+import CheckBox from "@/src/app/components/inputs/CheckBox";
+import Button from "@/src/app/components/buttons/Buttons";
+import { Textinput } from "@/src/app/components/inputs/Textinput";
+import { useUserOnboarding } from "@/lib/stores/user/useUserOnboarding";
+import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 
 const Step4 = () => {
+  const { router, extendRouteWithQuery } = useRouting();
+  const { userInfo } = useUserSettings();
+
   const {
-    router,
-    userData,
-    setLoading,
-    accessToken,
-    loading,
-    extendRouteWithQuery,
-  } = useGlobalState();
+    step4,
+    isLoading: storeLoading,
+    isSaving,
+    error: storeError,
+    fetchStep4,
+    updateStep4,
+  } = useUserOnboarding();
+
   const [formData, setFormData] = useState({
     show_email: false,
     show_phone: false,
@@ -36,18 +33,52 @@ const Step4 = () => {
     push_notifications: true,
     marketing_emails: false,
     weekly_digest: true,
-    profile_visibility: ProfileVisibility.Public,
+    profile_visibility: "public",
   });
+
   const [currentArrangement, setCurrentArrangement] =
     useState<ComponentArrangement>("B-C-D-A");
+
+  // Fetch existing data on component mount
+  useEffect(() => {
+    if (!isAuthenticated()) return;
+    fetchStep4();
+  }, []);
+
+  // Populate form data when store data changes
+  useEffect(() => {
+    if (step4) {
+      setFormData((prev) => ({
+        ...prev,
+        show_email: step4.show_email ?? false,
+        show_phone: step4.show_phone ?? false,
+        allow_indexing: step4.allow_indexing ?? true,
+        show_last_active: step4.show_last_active ?? true,
+        email_notifications: step4.email_notifications ?? true,
+        push_notifications: step4.push_notifications ?? true,
+        marketing_emails: step4.marketing_emails ?? false,
+        weekly_digest: step4.weekly_digest ?? true,
+        profile_visibility: step4.profile_visibility ?? "public",
+      }));
+    }
+  }, [step4]);
+
+  // Handle store error
+  useEffect(() => {
+    if (storeError) {
+      toast.error(storeError, {
+        title: "Error",
+      });
+    }
+  }, [storeError]);
 
   const handleBack = () => {
     router.back();
   };
 
   const handleSkip = () => {
-    if (userData.username) {
-      router.push(`/${userData.username}`);
+    if (userInfo?.username) {
+      router.push(`/${userInfo?.username}`);
     } else {
       toast.warning("A username is required to proceed", {
         title: "Warning",
@@ -68,93 +99,38 @@ const Step4 = () => {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setLoading("submitting_pro_info");
+
     try {
-      const updateRes: PrivacyNotifications = await UpdateAllData({
-        access: accessToken,
-        url: `${V1_BASE_URL}/user-multistep-form/step4`,
-        field: formData,
-      });
-      if (updateRes) {
+      await updateStep4(formData);
+
+      // Update form data with response from store
+      if (step4) {
         setFormData((prev) => ({
           ...prev,
-          show_email: updateRes.show_email ?? true,
-          show_phone: updateRes.show_phone ?? true,
-          allow_indexing: updateRes.allow_indexing ?? true,
-          email_notifications: updateRes.email_notifications ?? true,
-          push_notifications: updateRes.push_notifications ?? false,
-          marketing_emails: updateRes.marketing_emails ?? false,
-          weekly_digest: updateRes.weekly_digest ?? false,
-          profile_visibility:
-            updateRes.profile_visibility ?? ProfileVisibility.Public,
-        }));
-        toast.success(
-          "Your privacy and notification settings has been updated. Proceeding...",
-          {
-            title: "Success",
-          }
-        );
-        extendRouteWithQuery({ step: "5" });
-      }
-    } catch (error) {
-      console.log("Error submitting Pro Info: ", error);
-    } finally {
-      setLoading("submitting_pro_info");
-    }
-  };
-
-  const fetchingPrivacySettings = async () => {
-    setLoading("fetching_privacy_settings");
-    try {
-      const privacyRes: PrivacyNotifications = await GetAllData({
-        access: accessToken,
-        url: `${V1_BASE_URL}/user-multistep-form/step4`,
-      });
-
-      if (privacyRes) {
-        setFormData((prev) => ({
-          ...prev,
-          show_email: privacyRes.show_email ?? false,
-          show_phone: privacyRes.show_phone ?? false,
-          allow_indexing: privacyRes.allow_indexing ?? true,
-          show_last_active: privacyRes.show_last_active ?? true,
-          email_notifications: privacyRes.email_notifications ?? true,
-          push_notifications: privacyRes.push_notifications ?? true,
-          marketing_emails: privacyRes.marketing_emails ?? false,
-          weekly_digest: privacyRes.weekly_digest ?? true,
-          profile_visibility:
-            privacyRes.profile_visibility ?? ProfileVisibility.Public,
+          show_email: step4.show_email ?? false,
+          show_phone: step4.show_phone ?? false,
+          allow_indexing: step4.allow_indexing ?? true,
+          show_last_active: step4.show_last_active ?? true,
+          email_notifications: step4.email_notifications ?? true,
+          push_notifications: step4.push_notifications ?? true,
+          marketing_emails: step4.marketing_emails ?? false,
+          weekly_digest: step4.weekly_digest ?? true,
+          profile_visibility: step4.profile_visibility ?? "public",
         }));
       }
-    } catch (error) {
-      console.error("Error fetching privacy settings:", error);
-    } finally {
-      setLoading("fetching_privacy_settings");
-    }
-  };
 
-  useEffect(() => {
-    if (!accessToken) return;
-
-    // Optional: Add cleanup for async operation
-    let isMounted = true;
-
-    const fetchData = async () => {
-      try {
-        await fetchingPrivacySettings();
-      } catch (error) {
-        if (isMounted) {
-          console.error("Fetch error:", error);
+      toast.success(
+        "Your privacy and notification settings has been updated. Proceeding...",
+        {
+          title: "Success",
         }
-      }
-    };
-
-    fetchData();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [accessToken]);
+      );
+      extendRouteWithQuery({ step: "5" });
+    } catch (error) {
+      console.log("Error submitting privacy settings: ", error);
+      // Error toast is handled by the store error effect
+    }
+  };
 
   return (
     <TemplateStructure
@@ -190,29 +166,31 @@ const Step4 = () => {
       >
         {/* Show Email */}
         <span className="flex items-center w-full justify-between shadow-lg rounded-2xl p-3">
-          <Switch
-            isSwitched={formData.show_email}
-            onSwitch={(e: boolean) => handleFieldChange("show_email", e)}
+          <p className="font-semibold">Show Email</p>
+          <CheckBox
+            id="show_email"
+            isChecked={formData.show_email}
+            setIsChecked={(e: boolean) => handleFieldChange("show_email", e)}
             description={privacyAndNotification.fields[0].description}
             showDescriptionOn="hover"
           />
-          <p className="font-semibold">Show Email</p>
         </span>
 
         {/* Show Phone */}
         <span className="flex items-center w-full justify-between shadow-lg rounded-2xl p-3">
           <p className="font-semibold">Show Phone</p>
-          <Switch
-            isSwitched={formData.show_phone}
-            onSwitch={(e: boolean) => handleFieldChange("show_phone", e)}
+          <CheckBox
+            id="show_phone"
+            isChecked={formData.show_phone}
+            setIsChecked={(e: boolean) => handleFieldChange("show_phone", e)}
             description={privacyAndNotification.fields[1].description}
             showDescriptionOn="hover"
-            direction="left"
           />
         </span>
 
         {/* Allow Indexing */}
         <span className="flex items-center w-full justify-between shadow-lg rounded-2xl p-3">
+          <p className="font-semibold">Allow Indexing</p>
           <CheckBox
             id="allow_indexing"
             isChecked={formData.allow_indexing}
@@ -222,16 +200,17 @@ const Step4 = () => {
             description={privacyAndNotification.fields[2].description}
             showDescriptionOn="hover"
           />
-          <p className="font-semibold">Allow Indexing</p>
         </span>
 
         {/* Show Last Active */}
         <span className="flex items-center w-full justify-between shadow-lg rounded-2xl p-3">
           <p className="font-semibold">Show Last Active</p>
-          <Switch
-          direction="left"
-            isSwitched={formData.show_last_active}
-            onSwitch={(e: boolean) => handleFieldChange("show_last_active", e)}
+          <CheckBox
+            id="show_last_active"
+            isChecked={formData.show_last_active}
+            setIsChecked={(e: boolean) =>
+              handleFieldChange("show_last_active", e)
+            }
             description={privacyAndNotification.fields[3].description}
             showDescriptionOn="hover"
           />
@@ -239,6 +218,7 @@ const Step4 = () => {
 
         {/* Email Notifications */}
         <span className="flex items-center w-full justify-between shadow-lg rounded-2xl p-3">
+          <p className="font-semibold">Enable Email Notification</p>
           <CheckBox
             id="email_notification"
             isChecked={formData.email_notifications}
@@ -248,14 +228,12 @@ const Step4 = () => {
             description={privacyAndNotification.fields[4].description}
             showDescriptionOn="hover"
           />
-          <p className="font-semibold">Enable Email Notification</p>
         </span>
 
         {/* Push Notifications */}
         <span className="flex items-center w-full justify-between shadow-lg rounded-2xl p-3">
           <p className="font-semibold">Enable Push Notification</p>
           <CheckBox
-          direction="left"
             id="push_notifications"
             isChecked={formData.push_notifications}
             setIsChecked={(e: boolean) =>
@@ -268,13 +246,16 @@ const Step4 = () => {
 
         {/* Weekly Digest */}
         <span className="flex items-center w-full justify-between shadow-lg rounded-2xl p-3">
-          <Switch
-            isSwitched={formData.weekly_digest}
-            onSwitch={(e: boolean) => handleFieldChange("weekly_digest", e)}
+          <p className="font-semibold">Enable Weekly Digest</p>
+          <CheckBox
+            id="weekly_digest"
+            isChecked={formData.weekly_digest}
+            setIsChecked={(e: boolean) =>
+              handleFieldChange("weekly_digest", e)
+            }
             description={privacyAndNotification.fields[7].description}
             showDescriptionOn="hover"
           />
-          <p className="font-semibold">Enable Weekly Digest</p>
         </span>
 
         {/* Profile Visibility */}
@@ -293,7 +274,8 @@ const Step4 = () => {
         <Button
           type="submit"
           text="Continue"
-          loading={loading.includes("submitting_pro_info")}
+          loading={storeLoading || isSaving}
+          disabled={storeLoading || isSaving}
         />
       </form>
     </TemplateStructure>

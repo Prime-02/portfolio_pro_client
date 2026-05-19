@@ -13,7 +13,7 @@ import {
   Monitor,
   Download,
 } from "lucide-react";
-import { getColorShade } from "../utilities/syncFunctions/syncs";
+import { getColorShade } from "@/lib/utilities/syncFunctions/syncs";
 import { useTheme } from "../theme/ThemeContext ";
 import Button from "../buttons/Buttons";
 import RangeInput from "./RangeInput";

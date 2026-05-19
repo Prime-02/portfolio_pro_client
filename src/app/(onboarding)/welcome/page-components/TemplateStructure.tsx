@@ -1,9 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import Button from "@/app/components/buttons/Buttons";
 import { ChevronLeft, ChevronRight, Grid3X3 } from "lucide-react";
-import Modal from "@/app/components/containers/modals/Modal";
-import PortfolioPro from "@/app/components/logo/PortfolioProTextLogo";
+import Modal from "@/src/app/components/containers/modals/Modal";
+import Button from "@/src/app/components/buttons/Buttons";
+import PortfolioProLogo from "@/src/app/components/logo/PortfolioProTextLogo";
+import { useUserSettings } from "@/lib/stores/user/useUserSettings";
+
 
 export type ComponentArrangement =
   | "A-D-B-C" // A and D on top row, B and C on bottom row
@@ -84,6 +86,7 @@ const TemplateStructure = ({
     inline: "nearest",
   },
 }: TemplateStructureProps) => {
+  const { isLoading } = useUserSettings()
   const [hoveredSection, setHoveredSection] = useState<ComponentType | null>(
     null
   );
@@ -115,9 +118,9 @@ const TemplateStructure = ({
         rect.top >= 0 &&
         rect.left >= 0 &&
         rect.bottom <=
-          (window.innerHeight || document.documentElement.clientHeight) &&
+        (window.innerHeight || document.documentElement.clientHeight) &&
         rect.right <=
-          (window.innerWidth || document.documentElement.clientWidth);
+        (window.innerWidth || document.documentElement.clientWidth);
 
       // Only scroll if element is not fully visible and initial animations are complete
       if (!isInViewport) {
@@ -141,7 +144,7 @@ const TemplateStructure = ({
     hasAnimated,
     scrollBehavior,
     scrollIntoViewOptions,
-    hasScrolledOnMount, 
+    hasScrolledOnMount,
   ]);
   // Get all possible arrangements for a given component as first
   const getArrangementsWithComponentFirst = (
@@ -189,7 +192,7 @@ const TemplateStructure = ({
           className={`flex flex-col ${headerAlignment === "left" ? "justify-start text-left" : "justify-start text-right"}`}
         >
           <p className="text-sm opacity-65">Step {step} {`/6`}</p>
-          <PortfolioPro
+          <PortfolioProLogo
             tracking={0.1}
             fontWeight={"bold"}
             fullText={title}
@@ -254,19 +257,17 @@ const TemplateStructure = ({
             <button
               key={index}
               onClick={() => handleLayoutChange(arr)}
-              className={`p-3 border rounded-lg hover:bg-[var(--background)] transition-colors text-sm ${
-                arr === arrangement ? "border-[var(--accent)]/20" : "border"
-              }`}
+              className={`p-3 border rounded-lg hover:bg-[var(--background)] transition-colors text-sm ${arr === arrangement ? "border-[var(--accent)]/20" : "border"
+                }`}
             >
               <div className="grid grid-cols-2 gap-1 mb-2">
                 {arr.split("-").map((comp, i) => (
                   <div
                     key={i}
-                    className={`w-4 h-4 rounded border text-xs flex items-center justify-center ${
-                      comp === component
-                        ? "bg-[var(--accent)] text-white"
-                        : "bg-[var(--background)]"
-                    }`}
+                    className={`w-4 h-4 rounded border text-xs flex items-center justify-center ${comp === component
+                      ? "bg-[var(--accent)] text-white"
+                      : "bg-[var(--background)]"
+                      }`}
                   >
                     {comp}
                   </div>
@@ -334,30 +335,29 @@ const TemplateStructure = ({
         opacity: hasAnimated
           ? { duration: 0 }
           : {
-              duration: 0.8,
-              ease: [0.25, 0.46, 0.45, 0.94],
-              delay: getAnimationDelayForComponent(component),
-            },
+            duration: 0.8,
+            ease: [0.25, 0.46, 0.45, 0.94],
+            delay: getAnimationDelayForComponent(component),
+          },
         x: hasAnimated
           ? { duration: 0 }
           : {
-              duration: 0.8,
-              ease: [0.25, 0.46, 0.45, 0.94],
-              delay: getAnimationDelayForComponent(component),
-            },
+            duration: 0.8,
+            ease: [0.25, 0.46, 0.45, 0.94],
+            delay: getAnimationDelayForComponent(component),
+          },
         y: hasAnimated
           ? { duration: 0 }
           : {
-              duration: 0.8,
-              ease: [0.25, 0.46, 0.45, 0.94],
-              delay: getAnimationDelayForComponent(component),
-            },
+            duration: 0.8,
+            ease: [0.25, 0.46, 0.45, 0.94],
+            delay: getAnimationDelayForComponent(component),
+          },
       }}
-      className={`${getComponentClasses(position)} flex items-center justify-center relative ${
-        focusedComponent === component
-          ? "ring-2 ring-[var(--accent)]/20 ring-opacity-50  rounded-lg"
-          : ""
-      }`}
+      className={`${getComponentClasses(position)} flex items-center justify-center relative ${focusedComponent === component
+        ? "ring-2 ring-[var(--accent)]/20 ring-opacity-50  rounded-lg"
+        : ""
+        }`}
       onMouseEnter={() => setHoveredSection(component)}
       onMouseLeave={() => setHoveredSection(null)}
     >
@@ -372,7 +372,7 @@ const TemplateStructure = ({
             exit={{ opacity: 0, scale: 0.8 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
             onClick={() => setShowLayoutSelector(component)}
-            className="absolute top-2 right-2 p-2 bg-[var(--background)] cursor-pointer backdrop-blur-sm rounded-full shadow-lg  transition-colors z-10"
+            className="absolute top-2 right-2 p-2 hidden bg-[var(--background)] cursor-pointer backdrop-blur-sm rounded-full shadow-lg  transition-colors z-10"
             title={`Change layout with ${component} first`}
           >
             <Grid3X3 size={14} />
@@ -403,13 +403,15 @@ const TemplateStructure = ({
         transition={{ duration: 0.5 }}
         className="w-full h-auto flex items-center justify-between"
       >
-        <Button
-          icon={<ChevronLeft size={14} />}
-          text="Back"
-          onClick={onBack}
-          variant="outline"
-          size="sm"
-        />
+        <div>
+          <Button
+            icon={<ChevronLeft size={14} />}
+            text="Back"
+            onClick={onBack}
+            variant="outline"
+            size="sm"
+          />
+        </div>
         <span>
           {Number(step) < 6 && (
             <Button
@@ -418,6 +420,8 @@ const TemplateStructure = ({
               onClick={onSkip}
               variant="outline"
               size="sm"
+              loading={isLoading}
+              disabled={isLoading}
             />
           )}
         </span>

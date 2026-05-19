@@ -9,13 +9,10 @@ import {
   MapPin,
   Calendar,
 } from "lucide-react";
-import {
-  getColorShade,
-  getImageSrc,
-} from "../../utilities/syncFunctions/syncs";
 import { useTheme } from "../../theme/ThemeContext ";
 import Button from "../../buttons/Buttons";
 import Image from "next/image";
+import { getColorShade, getImageSrc } from "@/lib/utilities/syncFunctions/syncs";
 
 interface Profile {
   profile_picture?: string;

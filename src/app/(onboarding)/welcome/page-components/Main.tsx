@@ -1,5 +1,4 @@
-import { useGlobalState } from "@/app/globalStateProvider";
-import React from "react";
+import React, { useEffect } from "react";
 import Step1 from "./Step1";
 import Step2 from "./Step2";
 import Step3 from "./Step3";
@@ -7,10 +6,20 @@ import Step4 from "./Step4";
 import Step5 from "./Step5";
 import Step0 from "./Step0";
 import Step6 from "./Step6";
+import { useRouting } from "@/lib/hooks/routing/useRouting";
+import { useUserSettings } from "@/lib/stores/user/useUserSettings";
+import { isAuthenticated } from "@/lib/client/api";
 
 const Main = () => {
-  const { searchParams } = useGlobalState();
+  const { searchParams } = useRouting();
+  const { fetchUserInfo } = useUserSettings()
   const currentStep = searchParams.get("step");
+
+  useEffect(() => {
+    if (isAuthenticated()) {
+      fetchUserInfo()
+    }
+  }, [])
 
   const renderStep = () => {
     switch (currentStep) {

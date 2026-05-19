@@ -1,53 +1,25 @@
-import React, {
-  useState,
-  useRef,
-  useEffect,
-  RefObject,
-  ReactNode,
-} from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Dropdown from "./DynamicDropdown";
 import PhoneInputComponent from "./PhoneInput";
-import { getColorShade } from "../utilities/syncFunctions/syncs";
-import { useTheme } from "../theme/ThemeContext ";
-import CheckBox from "./CheckBox";
+import { Eye, EyeOff, XCircle } from "lucide-react";
+import { BsInfoCircle } from "react-icons/bs";
 
-interface TextInputProps {
+interface TextInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'type'> {
   label?: string;
   type?: string;
   value?: string | number;
-  onChange: (value: string) => void;
+  onChange?: (value: string) => void;
   className?: string;
-  placeholder?: string;
   labelStyle?: string;
   tag?: string;
   id?: string;
   options?: Array<{ id: string | number; code: string }>;
   desc?: string;
-  ref?: RefObject<HTMLInputElement | null>;
-  maxLength?: number;
-  max?: number;
-  minLength?: number;
-  min?: number;
-  autoComplete?: string;
-  inputMode?:
-    | "text"
-    | "numeric"
-    | "tel"
-    | "email"
-    | "url"
-    | "search"
-    | "decimal";
-  onClick?: () => void;
-  onKeyDown?: (e: React.KeyboardEvent) => void;
-  labelBgHex?: string;
-  labelBgHexIntensity?: number;
   error?: string;
   loading?: boolean;
-  required?: boolean;
-  pattern?: string;
-  step?: number;
-  icon?: ReactNode;
+  icon?: React.ReactNode;
   disabled?: boolean;
+  required?: boolean;
 }
 
 export const Textinput: React.FC<TextInputProps> = ({
@@ -56,188 +28,221 @@ export const Textinput: React.FC<TextInputProps> = ({
   value,
   onChange,
   className = "",
-  placeholder,
-  labelStyle = "card",
+  labelStyle = "",
   tag,
   id = "floating_label",
   options,
   desc,
-  ref,
-  maxLength = 100000,
-  max = 100000,
-  minLength = 3,
-  min = 3,
-  autoComplete = "",
-  inputMode = "text",
-  labelBgHex,
-  labelBgHexIntensity = 10,
-  onClick = () => {},
-  onKeyDown = () => {},
-  error = "",
+  error,
   loading = false,
-  required = false,
-  pattern,
-  step,
   icon,
   disabled,
+  required,
+  ...inputProps
 }) => {
   const [passwordVisible, setPasswordVisible] = useState(false);
-  const { theme } = useTheme();
+  const [isFocused, setIsFocused] = useState(false);
   const [showDesc, setShowDesc] = useState(false);
+  const [isHovering, setIsHovering] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const descRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const toggleShowPassword = () => {
-    setPasswordVisible(!passwordVisible);
-  };
+  const hasValue = value !== undefined && value !== "";
+  const isDropdownType = type === "dropdown" || type === "datalist";
+  const isPhoneType = type === "phone";
 
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedDate = e.target.value;
-    onChange(selectedDate);
-  };
 
+  // Handle click outside to close description
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        wrapperRef.current &&
-        !wrapperRef.current.contains(event.target as Node) &&
-        descRef.current &&
-        !descRef.current.contains(event.target as Node)
-      ) {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
         setShowDesc(false);
+        setIsFocused(false);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const renderInput = () => {
-    if (loading) {
-      return (
-        <div
-          className={`${className} block px-2.5 pb-2.5 pt-4 h-10 w-full text-sm bg-gray-200 dark:bg-gray-700  border-1 border-gray-300 dark:border-gray-600 rounded-full`}
-        />
-      );
-    }
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onChange?.(e.target.value);
+  };
 
-    if (type === "dropdown" || type === "datalist") {
-      return (
+  // Loading state
+  if (loading) {
+    return (
+      <div className="relative">
+        {label && (
+          <label className="block text-sm font-medium text-[var(--foreground)] mb-1 opacity-70">
+            {label}
+          </label>
+        )}
+        <div className="w-full h-10 bg-[var(--foreground)] opacity-10 rounded-lg animate-pulse" />
+      </div>
+    );
+  }
+
+  // Dropdown type
+  if (isDropdownType) {
+    return (
+      <div className="relative">
         <Dropdown
           type={type}
-          label={label}
           options={options || []}
-          onSelect={(selectedValue: string) => onChange(selectedValue)}
-          placeholder={placeholder}
+          onSelect={(selectedValue: string | string[]) => onChange?.(selectedValue as string)}
+          placeholder={label as string}
           tag={tag}
           valueKey="id"
           displayKey="code"
           className={labelStyle}
-          divClassName={className}
-          emptyMessage={`No ${tag} available`}
           value={value as string}
-          onFocus={() => desc && setShowDesc(true)}
         />
-      );
-    }
+        {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+      </div>
+    );
+  }
 
-    if (type === "phone") {
-      return (
+  // Phone type
+  if (isPhoneType) {
+    return (
+      <div className="relative">
+        {label && (
+          <label className="block text-sm font-medium text-[var(--foreground)] mb-1 opacity-90">
+            {label}
+            {required && <span className="text-red-500 ml-0.5">*</span>}
+          </label>
+        )}
         <PhoneInputComponent
           label={label || ""}
           phone={value as string}
           setPhone={onChange}
-          onFocus={() => desc && setShowDesc(true)}
         />
-      );
-    }
-
-    return (
-      <input
-        min={min}
-        max={max}
-        pattern={pattern}
-        required={required}
-        maxLength={maxLength}
-        minLength={minLength}
-        autoComplete={autoComplete}
-        inputMode={inputMode}
-        onKeyDown={onKeyDown}
-        onClick={onClick}
-        disabled={disabled}
-        ref={ref}
-        value={value || ""}
-        type={
-          type === "password"
-            ? passwordVisible
-              ? "text"
-              : "password"
-            : type === "date"
-              ? "date"
-              : type === "phone"
-                ? "tel"
-                : type
-        }
-        onChange={
-          type === "date"
-            ? handleDateChange
-            : (e: React.ChangeEvent<HTMLInputElement>) =>
-                onChange(e.target.value)
-        }
-        onFocus={() => desc && setShowDesc(true)}
-        id={id || label}
-        className={`${className} block px-2.5 pb-2.5 pt-4 w-full  bg-transparent border-1 border-gray-300 appearance-none dark:border-gray-600 dark:focus:border-[var(--accent)] focus:outline-none focus:ring-0 focus:border-[var(--accent)] peer rounded-full text-center`}
-        placeholder={label ? " " : placeholder || ""}
-        step={step}
-      />
+        {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+      </div>
     );
-  };
+  }
 
+  // Default input types
   return (
-    <div className="flex flex-col">
-      <div className="relative" ref={wrapperRef}>
-        {renderInput()}
-        {error && <span className="text-red-500 text-xs">{error}</span>}
+    <div className="relative" ref={wrapperRef}>
+      <div className="relative">
+        <input
+          {...inputProps}
+          ref={inputRef}
+          value={value || ""}
+          type={
+            type === "password"
+              ? passwordVisible ? "text" : "password"
+              : type
+          }
+          onChange={type === "date" ? handleDateChange : (e) => onChange?.(e.target.value)}
+          onFocus={(e) => {
+            setIsFocused(true);
+            inputProps.onFocus?.(e);
+          }}
+          onBlur={(e) => {
+            setIsFocused(false);
+            inputProps.onBlur?.(e);
+          }}
+          id={id}
+          disabled={disabled}
+          required={required}
+          className={`
+            peer w-full px-3 py-2.5 
+            bg-transparent
+            border border-[var(--foreground)] border-opacity-30
+            rounded-lg
+            text-[var(--foreground)]
+            placeholder-transparent
+            focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent
+            disabled:opacity-50 disabled:cursor-not-allowed
+            transition-all duration-200
+            ${error ? 'border-red-500 focus:ring-red-500' : ''}
+            ${type === 'password' ? 'pr-10' : ''}
+            ${icon ? 'pl-10' : ''}
+            ${desc ? 'pr-10' : ''}
+            ${className}
+          `}
+          placeholder={inputProps.placeholder || label || " "}
+        />
 
-        {type !== "dropdown" && type !== "phone" && (
+        {/* Floating label */}
+        {label && (
           <label
             htmlFor={id}
-            className={`absolute text-sm dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 origin-[0] px-2 peer-focus:px-2 peer-focus:text-[var(--accent)] peer-focus:dark:text-[var(--accent)] peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto flex items-center gap-1 start-1 ${labelStyle}`}
-            style={{
-              backgroundColor:
-                (labelBgHex || theme.background) && labelBgHexIntensity
-                  ? getColorShade(
-                      labelBgHex || theme.background,
-                      labelBgHexIntensity,
-                    )
-                  : "none",
-            }}
+            className={`
+              absolute left-3
+              transition-all duration-200 pointer-events-none
+              select-none
+              ${icon ? 'left-10' : ''}
+              ${isFocused || hasValue
+                ? `text-xs -translate-y-2.5 px-1
+                     bg-[var(--background)] text-[var(--accent)]`
+                : 'text-sm top-2.5 text-[var(--foreground)] opacity-60'
+              }
+              ${error ? 'text-red-500' : ''}
+              ${isFocused && error ? 'text-red-500' : ''}
+              ${hasValue && !isFocused && !error ? 'text-[var(--foreground)] opacity-80' : ''}
+            `}
           >
-            <span className="scale-80">{icon}</span>
-            <span>{label}</span>
+            {label}
+            {required && <span className="text-red-500 ml-0.5">*</span>}
           </label>
         )}
-        {desc && showDesc && (
-          <div
-            ref={descRef}
-            className="absolute z-10 w-64 p-3 mt-1 text-sm rounded-lg shadow-lg bg-[var(--background)] border-[var(--accent)] border "
-            style={{ bottom: "100%", left: 0 }}
-          >
-            {desc}
-            <div className="absolute w-4 h-4 transform rotate-45  bg-[var(--background)] border-[var(--accent)]  -bottom-1 left-4 border-b border-r "></div>
+
+        {/* Left icon */}
+        {icon && (
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--foreground)] opacity-50">
+            {icon}
           </div>
         )}
+
+        {/* Right side actions */}
+        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
+          {/* Info icon for description */}
+          {desc && (
+            <button
+              type="button"
+              onMouseEnter={() => setIsHovering(true)}
+              onMouseLeave={() => setIsHovering(false)}
+              onClick={() => setShowDesc(!showDesc)}
+              className="text-[var(--foreground)] opacity-40 hover:opacity-80 transition-opacity cursor-help"
+              tabIndex={-1}
+            >
+              {
+                !showDesc ? <BsInfoCircle className="w-4 h-4" /> : <XCircle className="w-4 h-4" />
+              }
+            </button>
+          )}
+
+          {/* Password toggle */}
+          {type === "password" && (
+            <button
+              type="button"
+              onClick={() => setPasswordVisible(!passwordVisible)}
+              className="text-[var(--foreground)] opacity-50 hover:opacity-80 transition-opacity"
+              tabIndex={-1}
+            >
+              {passwordVisible ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          )}
+        </div>
       </div>
-      {type === "password" && !loading && (
-        <span className="mt-2 flex">
-          <CheckBox
-            isChecked={passwordVisible}
-            setIsChecked={toggleShowPassword}
-            label={`Show ${label}`}
-          />
-        </span>
+
+      {/* Description tooltip */}
+      {desc && showDesc && (
+        <div
+          className="absolute z-10 mt-1 p-3 text-sm card rounded-lg shadow-lg border border-[var(--foreground)] border-opacity-20 max-w-xs"
+          onMouseEnter={() => setIsHovering(true)}
+          onMouseLeave={() => setIsHovering(false)}
+        >
+          <p className="text-[var(--foreground)] opacity-90">{desc}</p>
+        </div>
+      )}
+
+      {/* Error message */}
+      {error && (
+        <p className="mt-1 text-xs text-red-500 font-medium">{error}</p>
       )}
     </div>
   );

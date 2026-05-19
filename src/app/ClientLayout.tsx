@@ -2,14 +2,14 @@
 import { usePathname } from "next/navigation";
 import { ReactNode } from "react";
 import LandingPageNavbar from "./components/landing-page-components/navigations/LandingPageNavbar";
-import { useGlobalState } from "./globalStateProvider";
+import { useUIStore } from "@/lib/stores/ui/useUIStore";
 
 interface ClientLayoutProps {
   children: ReactNode;
 }
 
 export default function ClientLayout({ children }: ClientLayoutProps) {
-  const { viewportWidth } = useGlobalState();
+  const { viewportWidth } = useUIStore();
   const pathname = usePathname(); // Current route path
   
   // Check if the current path is one of the allowed routes

@@ -1,9 +1,9 @@
-import Button from "@/app/components/buttons/Buttons";
-import { useTheme } from "@/app/components/theme/ThemeContext ";
-import { toast } from "@/app/components/toastify/Toastify";
-import { GetAllData } from "@/app/components/utilities/asyncFunctions/lib/crud";
-import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
-import { useGlobalState } from "@/app/globalStateProvider";
+import { api } from "@/lib/client/api";
+import { useRouting } from "@/lib/hooks/routing/useRouting";
+import { useUIStore } from "@/lib/stores/ui/useUIStore";
+import Button from "@/src/app/components/buttons/Buttons";
+import { useTheme } from "@/src/app/components/theme/ThemeContext ";
+import { toast } from "@/src/app/components/toastify/Toastify";
 import Image from "next/image";
 import React from "react";
 
@@ -69,16 +69,15 @@ const OAuthButton: React.FC<OAuthButtonProps> = ({
   fullWidth = false,
 }) => {
   const { isDarkMode } = useTheme();
-  const { loading, setLoading, router } = useGlobalState();
+  const { isLoading, startLoading, stopLoading } = useUIStore();
+  const {router} = useRouting()
 
   const config = OAUTH_BUTTON_CONFIG[provider];
 
   const continueWithProvider = async () => {
-    setLoading(config.loadingKey);
+    startLoading(config.loadingKey);
     try {
-      const response: { url: string } = await GetAllData({
-        url: `${V1_BASE_URL}/${config.endpoint}`,
-      });
+      const response: { url: string } = await api.get(`/${config.endpoint}`);
 
       if (response && response.url) {
         toast.success("Kindly continue the verification process");
@@ -91,7 +90,7 @@ const OAuthButton: React.FC<OAuthButtonProps> = ({
       console.log("An Error Occurred: ", error);
       toast.error("Something went wrong, please try again");
     } finally {
-      setLoading(config.loadingKey);
+      stopLoading(config.loadingKey);
     }
   };
 
@@ -125,7 +124,7 @@ const OAuthButton: React.FC<OAuthButtonProps> = ({
         className={`${fullWidth ? "w-full" : ""} ${className}`}
         size="sm"
         text={config.buttonText}
-        loading={loading.includes(config.loadingKey)}
+        loading={isLoading(config.loadingKey)}
       />
     </div>
   );

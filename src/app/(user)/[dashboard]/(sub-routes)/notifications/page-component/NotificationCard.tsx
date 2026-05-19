@@ -1,43 +1,30 @@
-import Button from "@/app/components/buttons/Buttons";
-import { useTheme } from "@/app/components/theme/ThemeContext ";
-import { ProcessedNotification } from "@/app/components/types and interfaces/NotificationsInterface";
-import {
-  DeleteData,
-  UpdateAllData,
-} from "@/app/components/utilities/asyncFunctions/lib/crud";
-import {
-  formatDateString,
-  getColorShade,
-} from "@/app/components/utilities/syncFunctions/syncs";
-import { useGlobalState } from "@/app/globalStateProvider";
-import { useWebSocketContext } from "@/app/WebSocketContext";
+import { api } from "@/lib/client/api";
+import { useUIStore } from "@/lib/stores/ui/useUIStore";
+import { formatDateString, getColorShade } from "@/lib/utilities/syncFunctions/syncs";
+import Button from "@/src/app/components/buttons/Buttons";
+import { useTheme } from "@/src/app/components/theme/ThemeContext ";
+import { ProcessedNotification } from "@/src/app/components/types and interfaces/NotificationsInterface";
+import { useWebSocketContext } from "@/src/app/WebSocketContext";
 import React from "react";
 
 const NotificationCard = (prop: ProcessedNotification) => {
   const { type, message, createdAt, isRead, id } = prop;
-  const { setLoading, isLoading, accessToken } = useGlobalState();
+  const { setLoading, isLoading } = useUIStore();
   const { theme } = useTheme();
   const { reconnect } = useWebSocketContext();
 
   const notificationActions = async (action: string) => {
     if (action === "delete") {
-      setLoading(`deleting_notification_${id}`);
+      setLoading(`deleting_notification_${id}`, true);
     } else {
-      setLoading(`marking_notification_${id}_as_read`);
+      setLoading(`marking_notification_${id}_as_read`, true);
     }
     let actionRes;
     try {
       if (action === "delete") {
-        actionRes = await DeleteData({
-          access: accessToken,
-          url: `/notifications/${id}`,
-        });
+        actionRes = await api.delete(`/notifications/${id}`);
       } else {
-        actionRes = await UpdateAllData({
-          access: accessToken,
-          url: `/notifications/${id}`,
-          field: { is_read: true },
-        });
+        actionRes = await api.put(`/notifications/${id}`, { is_read: true });
       }
       if (actionRes) {
         reconnect();
@@ -46,9 +33,9 @@ const NotificationCard = (prop: ProcessedNotification) => {
       console.log(error);
     } finally {
       if (action === "delete") {
-        setLoading(`deleting_notification_${id}`);
+        setLoading(`deleting_notification_${id}`, false);
       } else {
-        setLoading(`marking_notification_${id}_as_read`);
+        setLoading(`marking_notification_${id}_as_read`, false);
       }
     }
   };

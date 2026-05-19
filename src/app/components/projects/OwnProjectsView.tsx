@@ -1,0 +1,114 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { FolderOpen, Plus } from "lucide-react";
+import { ProjectStatsBar } from "./ProjectStatsBar";
+import { ProjectFilters } from "./ProjectFilters";
+import { ProjectGrid } from "./ProjectGrid";
+import { EmptyProjectsState } from "./EmptyProjectsState";
+import { LoadingSkeleton } from "./LoadingSkeleton";
+import { DeleteProjectDialog } from "./DeleteProjectDialog";
+import type { PortfolioProjectResponse, ProjectStats } from "@/lib/stores/projects/types/project.types";
+import { PageHeader } from "../ui/PageHeader";
+import Button from "../buttons/Buttons";
+import { ErrorMessage } from "../ui/ErrorMessage";
+
+interface OwnProjectsViewProps {
+  projects: PortfolioProjectResponse[];
+  totalProjects: number;
+  projectStats: ProjectStats | null;
+  isLoading: boolean;
+  error: string | null;
+  onClearError: () => void;
+  filterParams: {
+    query: string;
+    filterPlatform: string;
+    sort: "name" | "date";
+    sortDirection: "asc" | "desc";
+  };
+  onFilterChange: (params: OwnProjectsViewProps["filterParams"]) => void;
+  onDelete: (projectIds: string[]) => Promise<void>;
+  deleting: boolean;
+}
+
+export function OwnProjectsView({
+  projects,
+  totalProjects,
+  projectStats,
+  isLoading,
+  error,
+  onClearError,
+  filterParams,
+  onFilterChange,
+  onDelete,
+  deleting,
+}: OwnProjectsViewProps) {
+  const router = useRouter();
+  const [deleteProject, setDeleteProject] = useState<PortfolioProjectResponse | null>(null);
+
+  const handleEdit = (project: PortfolioProjectResponse) => {
+    router.push(`projects/${project.id}/edit`);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteProject) return;
+    await onDelete([deleteProject.id]);
+    setDeleteProject(null);
+  };
+
+  if (isLoading && projects.length === 0) return <LoadingSkeleton />;
+
+  return (
+    <div className="min-h-screen p-6 md:p-8 lg:p-10 max-w-7xl mx-auto">
+      <PageHeader
+        icon={<FolderOpen className="w-6 h-6 text-[var(--accent)]" />}
+        title="My Projects"
+        description={`${totalProjects} project${totalProjects !== 1 ? "s" : ""} in your portfolio`}
+        action={
+          <Button
+            onClick={() => router.push("projects/create")}
+            className="self-start sm:self-auto"
+            text="New Project"
+            icon={<Plus className="w-4 h-4" />}
+          />
+        }
+      />
+
+      <ProjectStatsBar stats={projectStats} totalProjects={totalProjects} />
+
+      <ProjectFilters
+        query={filterParams.query}
+        onQueryChange={(query) => onFilterChange({ ...filterParams, query })}
+        filterPlatform={filterParams.filterPlatform}
+        onPlatformChange={(filterPlatform) => onFilterChange({ ...filterParams, filterPlatform })}
+        sort={filterParams.sort}
+        onSortChange={(sort) => onFilterChange({ ...filterParams, sort })}
+        sortDirection={filterParams.sortDirection}
+        onSortDirectionChange={(sortDirection) => onFilterChange({ ...filterParams, sortDirection })}
+      />
+
+      {error && <ErrorMessage message={error} onDismiss={onClearError} />}
+
+      {projects.length === 0 && !isLoading ? (
+        <EmptyProjectsState isOwner={true} />
+      ) : (
+        <ProjectGrid
+          projects={projects}
+          isLoading={isLoading}
+          isOwner={true}
+          onEdit={handleEdit}
+          onDelete={setDeleteProject}
+        />
+      )}
+
+      <DeleteProjectDialog
+        projectName={deleteProject?.project_name ?? ""}
+        open={!!deleteProject}
+        isLoading={deleting}
+        onConfirm={handleDeleteConfirm}
+        onOpenChange={(open) => !open && setDeleteProject(null)}
+      />
+    </div>
+  );
+}

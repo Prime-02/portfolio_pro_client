@@ -1,31 +1,30 @@
-import { toast } from "@/app/components/toastify/Toastify";
-import {
-  GetAllData,
-  UpdateAllData,
-} from "@/app/components/utilities/asyncFunctions/lib/crud";
-import { contactAndLocation } from "@/app/components/utilities/indices/MultiStepWriteUp";
-import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
-import { removeEmptyStringValues } from "@/app/components/utilities/syncFunctions/syncs";
-import { useGlobalState } from "@/app/globalStateProvider";
-import React, { FormEvent, useEffect, useState } from "react";
-import TemplateStructure, { ComponentArrangement } from "./TemplateStructure";
-import DataList from "@/app/components/inputs/DataList";
-import { Textinput } from "@/app/components/inputs/Textinput";
-import CheckBox from "@/app/components/inputs/CheckBox";
-import Switch from "@/app/components/inputs/Switch";
-import Button from "@/app/components/buttons/Buttons";
-import { ContactLocation } from "@/app/components/types and interfaces/UserForm";
+import { useRouting } from "@/lib/hooks/routing/useRouting";
 import Image from "next/image";
+import { FormEvent, useEffect, useState } from "react";
+import TemplateStructure, { ComponentArrangement } from "./TemplateStructure";
+import { toast } from "@/src/app/components/toastify/Toastify";
+import { isAuthenticated } from "@/lib/client/api";
+import { removeEmptyStringValues } from "@/lib/utilities/syncFunctions/syncs";
+import { contactAndLocation } from "@/lib/utilities/indices/MultiStepWriteUp";
+import { Textinput } from "@/src/app/components/inputs/Textinput";
+import CheckBox from "@/src/app/components/inputs/CheckBox";
+import Button from "@/src/app/components/buttons/Buttons";
+import { useUserOnboarding } from "@/lib/stores/user/useUserOnboarding";
+import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 
 const Step3 = () => {
+  const { extendRouteWithQuery, router } = useRouting();
+  const { userInfo } = useUserSettings();
+
   const {
-    router,
-    userData,
-    setLoading,
-    accessToken,
-    loading,
-    extendRouteWithQuery,
-  } = useGlobalState();
+    step3,
+    isLoading: storeLoading,
+    isSaving,
+    error: storeError,
+    fetchStep3,
+    updateStep3,
+  } = useUserOnboarding();
+
   const [formData, setFormData] = useState({
     website_url: "",
     github_username: "",
@@ -33,17 +32,46 @@ const Step3 = () => {
     preferred_contact_method: "",
     available_for_contact: true,
   });
-  const [isDev, setIsDev] = useState(false);
+
   const [currentArrangement, setCurrentArrangement] =
     useState<ComponentArrangement>("C-B-A-D");
+
+  // Fetch existing data on component mount
+  useEffect(() => {
+    if (!isAuthenticated()) return;
+    fetchStep3();
+  }, []);
+
+  // Populate form data when store data changes
+  useEffect(() => {
+    if (step3) {
+      setFormData((prev) => ({
+        ...prev,
+        website_url: step3.website_url || "",
+        github_username: step3.github_username || "",
+        location: step3.location || "",
+        preferred_contact_method: step3.preferred_contact_method || "",
+        available_for_contact: step3.available_for_contact ?? true,
+      }));
+    }
+  }, [step3]);
+
+  // Handle store error
+  useEffect(() => {
+    if (storeError) {
+      toast.error(storeError, {
+        title: "Error",
+      });
+    }
+  }, [storeError]);
 
   const handleBack = () => {
     router.back();
   };
 
   const handleSkip = () => {
-    if (userData.username) {
-      router.push(`/${userData.username}`);
+    if (userInfo?.username) {
+      router.push(`/${userInfo?.username}`);
     } else {
       toast.warning("A username is required to proceed", {
         title: "Warning",
@@ -64,65 +92,35 @@ const Step3 = () => {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setLoading("submitting_contact_info");
+
     try {
-      const updateRes: ContactLocation = await UpdateAllData({
-        access: accessToken,
-        url: `${V1_BASE_URL}/user-multistep-form/step3`,
-        field: removeEmptyStringValues(formData),
-      });
-      if (updateRes) {
+      const data = removeEmptyStringValues(formData);
+      await updateStep3(data);
+
+      // Update form data with response from store
+      if (step3) {
         setFormData((prev) => ({
           ...prev,
-          website_url: updateRes.website_url || "",
-          github_username: updateRes.github_username || "",
-          location: updateRes.location || "",
-          preferred_contact_method: updateRes.preferred_contact_method || "",
-          available_for_contact: updateRes.available_for_contact || false,
+          website_url: step3.website_url || "",
+          github_username: step3.github_username || "",
+          location: step3.location || "",
+          preferred_contact_method: step3.preferred_contact_method || "",
+          available_for_contact: step3.available_for_contact ?? true,
         }));
-        toast.success(
-          "Your contact and location information has been updated. Proceeding...",
-          {
-            title: "Success",
-          }
-        );
-        extendRouteWithQuery({ step: "4" });
       }
+
+      toast.success(
+        "Your contact and location information has been updated. Proceeding...",
+        {
+          title: "Success",
+        }
+      );
+      extendRouteWithQuery({ step: "4" });
     } catch (error) {
       console.log("Error submitting Contact and location info: ", error);
-    } finally {
-      setLoading("submitting_contact_info");
+      // Error toast is handled by the store error effect
     }
   };
-
-  const fetchingContactInfo = async () => {
-    setLoading("fetching_pro_info");
-    try {
-      const contactRes: ContactLocation = await GetAllData({
-        access: accessToken,
-        url: `${V1_BASE_URL}/user-multistep-form/step3`,
-      });
-      if (contactRes) {
-        setFormData((prev) => ({
-          ...prev,
-          website_url: contactRes.website_url || "",
-          github_username: contactRes.github_username || "",
-          location: contactRes.location || "",
-          preferred_contact_method: contactRes.preferred_contact_method || "",
-          available_for_contact: contactRes.available_for_contact || false,
-        }));
-      }
-    } catch (error) {
-      console.log("Error fethcing your professional information: ", error);
-    } finally {
-      setLoading("fetching_pro_info");
-    }
-  };
-
-  useEffect(() => {
-    if (!accessToken) return;
-    fetchingContactInfo();
-  }, [accessToken]);
 
   return (
     <TemplateStructure
@@ -157,23 +155,18 @@ const Step3 = () => {
         className="flex flex-col gap-y-3"
       >
         <div className="w-full">
-          <DataList
-            maxLength={contactAndLocation.fields[2].constraints.max_length}
-            labelBgHexIntensity={1}
-            url={`${V1_BASE_URL}/location/search/places`}
-            onSetValue={(e) => {
+          <Textinput
+            loading={storeLoading}
+            onChange={(e) => {
               handleFieldChange("location", e);
             }}
-            dataPath="results"
-            displayKeys={[
-              "place.Municipality",
-              "place.Region",
-              "place.Country",
-            ]}
-            separator=", "
-            placeholder="Search for a location..."
-            minQueryLength={3}
+            value={formData.location || ""}
+            label="Address"
+            maxLength={contactAndLocation.fields[2].constraints.max_length}
+            pattern={contactAndLocation.fields[2].constraints.pattern}
             desc={contactAndLocation.fields[2].description}
+            required={contactAndLocation.fields[2].required}
+            id={contactAndLocation.fields[2].name}
           />
         </div>
         <div className="flex flex-col gap-y-3 md:justify-between md:flex-row gap-x-2">
@@ -188,10 +181,11 @@ const Step3 = () => {
           </span>
           <span className="min-w-[65%]">
             <Textinput
+              loading={storeLoading}
               type={contactAndLocation.fields[3].type}
               options={contactAndLocation.fields[3].constraints.enum_values}
               value={formData.preferred_contact_method || ""}
-              onChange={(e) => handleFieldChange("job_seeking_status", e)}
+              onChange={(e) => handleFieldChange("preferred_contact_method", e)}
               desc={contactAndLocation.fields[3].description}
               required={contactAndLocation.fields[3].required}
               placeholder="Preferred Contact  Method"
@@ -200,51 +194,26 @@ const Step3 = () => {
             />
           </span>
         </div>
-        <div className="w-full">
-          <Textinput
-            value={formData.website_url}
-            label="Your website URL"
-            onChange={(e: string) => {
-              handleFieldChange("website_url", e);
-            }}
-            maxLength={contactAndLocation.fields[0].constraints.max_length}
-            pattern={contactAndLocation.fields[0].constraints.pattern}
-            desc={contactAndLocation.fields[0].description}
-            required={contactAndLocation.fields[0].required}
-            id={contactAndLocation.fields[0].name}
-            labelBgHexIntensity={1}
-          />
-        </div>
-        <div className="flex flex-col gap-y-3 md:justify-between md:flex-row gap-x-2">
-          <span className="flex flex-wrap items-center md:justify-end min-w-min-w-[35%] gap-x-1">
-            <Switch
-              isSwitched={isDev}
-              onSwitch={(value: boolean) => setIsDev(value)}
+        {formData.preferred_contact_method === "website" && (
+          <div className="w-full">
+            <Textinput
+              loading={storeLoading}
+              value={formData.website_url}
+              label="Your website URL"
+              onChange={(e: string) => {
+                handleFieldChange("website_url", e);
+              }}
+              maxLength={contactAndLocation.fields[0].constraints.max_length}
+              pattern={contactAndLocation.fields[0].constraints.pattern}
+              desc={contactAndLocation.fields[0].description}
+              required={contactAndLocation.fields[0].required}
+              id={contactAndLocation.fields[0].name}
             />
-            <p className="text-xs text-[var(--accent)]">{"Developer Option"}</p>
-          </span>
-          {isDev && (
-            <span className="min-w-[65%]">
-              <Textinput
-                type={contactAndLocation.fields[1].type}
-                options={contactAndLocation.fields[1].constraints.enum_values}
-                value={formData.github_username || ""}
-                onChange={(e) => handleFieldChange("github_username", e)}
-                desc={contactAndLocation.fields[1].description}
-                required={contactAndLocation.fields[1].required}
-                label="Your github username"
-                id={contactAndLocation.fields[1].name}
-                labelBgHexIntensity={1}
-              />
-            </span>
-          )}
-        </div>
-        {formData.github_username.length > 3 && (
-          <div className="w-full">GitHub Contribution graph comming soon</div>
+          </div>
         )}
         <Button
           type="submit"
-          loading={loading.includes("submitting_contact_info")}
+          loading={isSaving}
           text="Continue"
         />
       </form>

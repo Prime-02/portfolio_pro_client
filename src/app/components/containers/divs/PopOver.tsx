@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useTheme } from "../../theme/ThemeContext ";
-import { getColorShade } from "../../utilities/syncFunctions/syncs";
-import { useGlobalState } from "@/app/globalStateProvider";
+import { useRouting } from "@/lib/hooks/routing/useRouting";
+import { getColorShade } from "@/lib/utilities/syncFunctions/syncs";
 
 export type PopOverPosition =
   | "top-left"
@@ -38,7 +38,7 @@ const Popover: React.FC<PopoverProps> = ({
   mobileBreakpoint = 670,
 }) => {
   const { accentColor } = useTheme();
-  const { pathname } = useGlobalState();
+  const { pathname } = useRouting();
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [clickerRect, setClickerRect] = useState<DOMRect | null>(null);

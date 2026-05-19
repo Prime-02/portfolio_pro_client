@@ -1,14 +1,15 @@
 "use client";
 import React from "react";
 import UserAuth from "./auth-mode/UserAuth";
-import { useGlobalState } from "@/app/globalStateProvider";
-import PortfolioProLogo from "@/app/components/logo/PortfolioProTextLogo";
+import PortfolioProLogo from "../../components/logo/PortfolioProTextLogo";
+import { useUserSettings } from "@/lib/stores/user/useUserSettings";
+
 
 const MainAuth = () => {
-  const { accessToken } = useGlobalState();
+  const { userInfo } = useUserSettings()
 
   // Don't render the auth form if user is already authenticated
-  if (accessToken) {
+  if (userInfo?.username) {
     return (
       <div className="w-full h-screen flex flex-col items-center justify-center">
         <div>

@@ -5,6 +5,7 @@ import LoadingSkeletons from "../skeletons/LoadingSkeletons";
 import ErrorDisplay from "./ErrorDisplay";
 import EmptyState from "./EmptyState";
 
+
 export interface Portfolio {
   id?: string;
   name?: string;

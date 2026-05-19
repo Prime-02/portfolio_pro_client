@@ -1,14 +1,14 @@
 "use client"
 // contexts/WebSocketContext.tsx
 import { createContext, useContext } from 'react';
-import { useWebSocket } from './components/utilities/hooks/wesocketHook';
 import { UseWebSocketReturn } from './components/types and interfaces/NotificationsInterface';
+import { useWebSocket } from '@/lib/hooks/webSocketHook';
 
 const WebSocketContext = createContext<UseWebSocketReturn | null>(null);
 
 export const WebSocketProvider = ({ children }: { children: React.ReactNode }) => {
   const webSocket = useWebSocket();
-  
+
   return (
     <WebSocketContext.Provider value={webSocket}>
       {children}

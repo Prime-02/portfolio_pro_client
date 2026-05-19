@@ -1,0 +1,433 @@
+import axios, {
+  AxiosInstance,
+  AxiosResponse,
+  AxiosError,
+  InternalAxiosRequestConfig,
+} from "axios";
+import {
+  removeEmptyStringValues,
+  handleAxiosError,
+  isNumericString,
+} from "@/lib/utilities/syncFunctions/syncs";
+import { toast } from "@/src/app/components/toastify/Toastify";
+
+// ---------------------------------------------------------------------------
+// URLS
+// ---------------------------------------------------------------------------
+
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const V1_BASE_URL = `${BASE_URL}/api/v1`;
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+export interface ApiResponse<T = unknown> {
+  data: T;
+  message?: string;
+  success?: boolean;
+}
+
+export interface ApiError {
+  message: string;
+  code?: string;
+  details?: Record<string, unknown>;
+}
+
+// ---------------------------------------------------------------------------
+// Token storage helpers
+// ---------------------------------------------------------------------------
+
+const TOKEN_KEYS = {
+  SESSION: "session_token",
+  REFRESH: "refresh_token",
+  EXPIRES_AT: "expires_at",
+  SESSION_ID: "session_id",
+} as const;
+
+export const tokenStore = {
+  save(
+    session_token: string,
+    refresh_token: string,
+    expires_at: string,
+    session_id?: string,
+  ): void {
+    if (typeof window === "undefined") return;
+    localStorage.setItem(TOKEN_KEYS.SESSION, session_token);
+    localStorage.setItem(TOKEN_KEYS.REFRESH, refresh_token);
+    localStorage.setItem(TOKEN_KEYS.EXPIRES_AT, expires_at);
+    if (session_id) {
+      localStorage.setItem(TOKEN_KEYS.SESSION_ID, session_id);
+    }
+  },
+
+  getSessionToken(): string | null {
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem(TOKEN_KEYS.SESSION);
+  },
+
+  getRefreshToken(): string | null {
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem(TOKEN_KEYS.REFRESH);
+  },
+
+  getExpiresAt(): Date | null {
+    if (typeof window === "undefined") return null;
+    const raw = localStorage.getItem(TOKEN_KEYS.EXPIRES_AT);
+    return raw ? new Date(raw) : null;
+  },
+
+  getSessionId(): string | null {
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem(TOKEN_KEYS.SESSION_ID);
+  },
+
+  isExpired(): boolean {
+    const expiresAt = tokenStore.getExpiresAt();
+    if (!expiresAt) return true;
+    return new Date() >= new Date(expiresAt.getTime() - 30_000);
+  },
+
+  clear(): void {
+    if (typeof window === "undefined") return;
+    localStorage.removeItem(TOKEN_KEYS.SESSION);
+    localStorage.removeItem(TOKEN_KEYS.REFRESH);
+    localStorage.removeItem(TOKEN_KEYS.EXPIRES_AT);
+    localStorage.removeItem(TOKEN_KEYS.SESSION_ID);
+  },
+};
+
+// ---------------------------------------------------------------------------
+// API Key
+// ---------------------------------------------------------------------------
+
+const getApiKey = (): string => {
+  return process.env.NEXT_PUBLIC_X_API_KEY || "";
+};
+
+// ---------------------------------------------------------------------------
+// Token extraction — per-endpoint response shape
+// ---------------------------------------------------------------------------
+
+function extractTokenFields(
+  url: string,
+  data: Record<string, unknown>,
+): {
+  session_token: string;
+  refresh_token: string;
+  expires_at: string;
+  session_id?: string;
+} | null {
+  if (!data || typeof data !== "object") return null;
+
+  const normalisedUrl = url.startsWith("/") ? url : `/${url}`;
+
+  if (urlContains(normalisedUrl, "/auth/login")) {
+    const session = data.session as Record<string, unknown> | undefined;
+    if (
+      session &&
+      typeof session.session_token === "string" &&
+      typeof session.refresh_token === "string" &&
+      typeof session.expires_at === "string"
+    ) {
+      return {
+        session_token: session.session_token,
+        refresh_token: session.refresh_token,
+        expires_at: session.expires_at,
+        session_id:
+          typeof session.session_id === "string"
+            ? session.session_id
+            : undefined,
+      };
+    }
+    return null;
+  }
+
+  if (
+    urlContains(normalisedUrl, REFRESH_URL) ||
+    urlContains(normalisedUrl, "/callback")
+  ) {
+    if (
+      typeof data.session_token === "string" &&
+      typeof data.refresh_token === "string" &&
+      typeof data.expires_at === "string"
+    ) {
+      return {
+        session_token: data.session_token,
+        refresh_token: data.refresh_token,
+        expires_at: data.expires_at,
+        session_id:
+          typeof data.session_id === "string" ? data.session_id : undefined,
+      };
+    }
+    return null;
+  }
+
+  return null;
+}
+
+// ---------------------------------------------------------------------------
+// Authentication check
+// ---------------------------------------------------------------------------
+
+export function isAuthenticated(): boolean {
+  if (typeof window === "undefined") return false;
+  const sessionToken = tokenStore.getSessionToken();
+  if (!sessionToken) return false;
+  return !tokenStore.isExpired();
+}
+
+export function getToken(): string | null {
+  if (typeof window === "undefined") return null;
+  const sessionToken = tokenStore.getSessionToken();
+  if (tokenStore.isExpired()) return null;
+  return sessionToken || null;
+}
+
+// ---------------------------------------------------------------------------
+// URL helpers
+// ---------------------------------------------------------------------------
+
+const REFRESH_URL = "/sessions/refresh";
+
+const normaliseUrl = (url: string): string => {
+  if (
+    url.includes("/api/") ||
+    url.startsWith("http://") ||
+    url.startsWith("https://")
+  ) {
+    return url;
+  }
+  const cleanUrl = url.startsWith("/") ? url.slice(1) : url;
+  const base = V1_BASE_URL.endsWith("/")
+    ? V1_BASE_URL.slice(0, -1)
+    : V1_BASE_URL;
+  return `${base}/${cleanUrl}`;
+};
+
+const urlContains = (fullUrl: string, fragment: string): boolean =>
+  fullUrl.includes(fragment);
+
+// ---------------------------------------------------------------------------
+// FormData builder
+// ---------------------------------------------------------------------------
+
+export interface BuildFormDataOptions {
+  intToString?: boolean;
+}
+
+export function buildFormData<T extends Record<string, unknown>>(
+  data: T,
+  { intToString = true }: BuildFormDataOptions = {},
+): FormData {
+  const formData = new FormData();
+  const cleaned = removeEmptyStringValues(data);
+
+  Object.entries(cleaned).forEach(([key, value]) => {
+    if (value === null || value === undefined) return;
+
+    if (Array.isArray(value)) {
+      if (value.length === 0) return;
+      if (value.every((item) => item instanceof File)) {
+        value.forEach((file) => formData.append(key, file));
+      } else {
+        formData.append(key, JSON.stringify(value));
+      }
+      return;
+    }
+
+    if (
+      typeof value === "object" &&
+      !(value instanceof File) &&
+      !(value instanceof Blob)
+    ) {
+      formData.append(key, JSON.stringify(value));
+      return;
+    }
+
+    if (typeof value === "boolean") {
+      formData.append(key, value.toString());
+    } else if (typeof value === "number") {
+      formData.append(key, value.toString());
+    } else if (typeof value === "string") {
+      if (intToString && isNumericString(value)) {
+        formData.append(key, parseInt(value, 10).toString());
+      } else {
+        formData.append(key, value);
+      }
+    } else if (value instanceof File || value instanceof Blob) {
+      formData.append(key, value);
+    } else {
+      formData.append(key, String(value));
+    }
+  });
+
+  return formData;
+}
+
+// ---------------------------------------------------------------------------
+// Token refresh (singleton promise — prevents parallel refresh races)
+// ---------------------------------------------------------------------------
+
+let refreshPromise: Promise<string> | null = null;
+
+async function refreshSession(): Promise<string> {
+  if (refreshPromise) return refreshPromise;
+
+  refreshPromise = (async () => {
+    const refreshToken = tokenStore.getRefreshToken();
+    const sessionId = tokenStore.getSessionId();
+
+    if (!refreshToken) {
+      tokenStore.clear();
+      throw new Error("No refresh token available. Please log in again.");
+    }
+
+    try {
+      const headers: Record<string, string> = {
+        "ngrok-skip-browser-warning": "true",
+        "X_Api_Key": getApiKey(),
+      };
+
+      if (sessionId) {
+        headers["X-Session-Id"] = sessionId;
+      }
+
+      const response = await axios.post(
+        normaliseUrl(REFRESH_URL),
+        { refresh_token: refreshToken },
+        { headers },
+      );
+
+      const tokens = extractTokenFields(REFRESH_URL, response.data);
+      if (tokens) {
+        tokenStore.save(
+          tokens.session_token,
+          tokens.refresh_token,
+          tokens.expires_at,
+          tokens.session_id || sessionId || undefined,
+        );
+      }
+
+      return response.data.session_token as string;
+    } catch (err) {
+      tokenStore.clear();
+      throw err;
+    } finally {
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
+}
+
+// ---------------------------------------------------------------------------
+// Axios instance
+// ---------------------------------------------------------------------------
+
+const api: AxiosInstance = axios.create({
+  baseURL: V1_BASE_URL,
+  headers: {
+    "Content-Type": "application/json",
+    "ngrok-skip-browser-warning": "true",
+    "X_Api_Key": getApiKey(),
+  },
+});
+
+// ---------------------------------------------------------------------------
+// REQUEST interceptor — inject token, API key, session ID, refresh if expired
+// ---------------------------------------------------------------------------
+
+api.interceptors.request.use(
+  async (
+    config: InternalAxiosRequestConfig,
+  ): Promise<InternalAxiosRequestConfig> => {
+    const requestUrl = config.url ?? "";
+    const isRefreshEndpoint = urlContains(requestUrl, REFRESH_URL);
+
+    // Add API key to every request
+    config.headers = config.headers ?? {};
+    config.headers["X_Api_Key"] = getApiKey();
+
+    // Add session ID if available
+    const sessionId = tokenStore.getSessionId();
+    if (sessionId) {
+      config.headers["X-Session-Id"] = sessionId;
+    }
+
+    if (!isRefreshEndpoint) {
+      if (tokenStore.isExpired()) {
+        const hasRefreshToken = !!tokenStore.getRefreshToken();
+        if (hasRefreshToken) {
+          try {
+            await refreshSession();
+          } catch {
+            // Refresh failed — continue without token; server will 401
+          }
+        }
+      }
+
+      const sessionToken = tokenStore.getSessionToken();
+      if (sessionToken) {
+        config.headers.Authorization = `Bearer ${sessionToken}`;
+      }
+    }
+
+    return config;
+  },
+  (error: AxiosError) => Promise.reject(error),
+);
+
+// ---------------------------------------------------------------------------
+// RESPONSE interceptor — auto-save tokens (with session_id), handle 401
+// ---------------------------------------------------------------------------
+
+api.interceptors.response.use(
+  (response: AxiosResponse): AxiosResponse => {
+    const url = response.config.url ?? "";
+    const tokens = extractTokenFields(url, response.data);
+    if (tokens) {
+      tokenStore.save(
+        tokens.session_token,
+        tokens.refresh_token,
+        tokens.expires_at,
+        tokens.session_id,
+      );
+    }
+
+    return response;
+  },
+  async (error: AxiosError) => {
+    const originalRequest = error.config as InternalAxiosRequestConfig & {
+      _retry?: boolean;
+    };
+
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !urlContains(originalRequest.url ?? "", REFRESH_URL)
+    ) {
+      originalRequest._retry = true;
+      try {
+        const newToken = await refreshSession();
+        originalRequest.headers = originalRequest.headers ?? {};
+        originalRequest.headers.Authorization = `Bearer ${newToken}`;
+        // Ensure API key and session ID are preserved on retry
+        originalRequest.headers["X_Api_Key"] = getApiKey();
+        const sessionId = tokenStore.getSessionId();
+        if (sessionId) {
+          originalRequest.headers["X-Session-Id"] = sessionId;
+        }
+        return api(originalRequest);
+      } catch {
+        // Refresh failed; fall through to error handler
+      }
+    }
+
+    const errorMessage = handleAxiosError(error);
+    toast.error(errorMessage);
+    return Promise.reject(error);
+  },
+);
+
+export { api };

@@ -2,12 +2,12 @@ import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Textinput } from "./Textinput";
 import { useTheme } from "../theme/ThemeContext ";
-import { useGlobalState } from "@/app/globalStateProvider";
-import { getColorShade } from "../utilities/syncFunctions/syncs";
-import { PostAllData, GetAllData } from "../utilities/asyncFunctions/lib/crud";
 import { getLoader } from "../loaders/Loader";
 import Button from "../buttons/Buttons";
 import { Accent, Theme } from "../types and interfaces/loaderTypes";
+import { getColorShade } from "@/lib/utilities/syncFunctions/syncs";
+import { useUIStore } from "@/lib/stores/ui/useUIStore";
+import { api } from "@/lib/client/api";
 
 interface SearchItem {
   [key: string]: string | number | boolean | null | undefined;
@@ -67,7 +67,6 @@ interface DropdownContentProps {
   setShowDropdown: (show: boolean) => void;
   theme: Theme;
   accentColor: Accent;
-  loading: string[];
   onSelectItem?: (item: SearchItem) => void;
   // New props for enhanced features
   includeNoneOption?: boolean;
@@ -94,7 +93,6 @@ const DropdownContent: React.FC<DropdownContentProps> = ({
   searchingText,
   query,
   setShowDropdown,
-  loading,
   includeNoneOption = false,
   includeQueryAsOption = false,
   noneOptionText = "None",
@@ -102,6 +100,7 @@ const DropdownContent: React.FC<DropdownContentProps> = ({
   displayKeys,
   valueKeys,
 }) => {
+  const {isLoading} = useUIStore()
   const { theme, loader, accentColor } = useTheme();
   const LoaderComponent = getLoader(loader);
   const [position, setPosition] = useState<"top" | "bottom">("bottom");
@@ -161,9 +160,9 @@ const DropdownContent: React.FC<DropdownContentProps> = ({
   };
 
   // Check if query should be shown as an option
-  const shouldShowQueryAsOption = includeQueryAsOption && 
-    query.trim() !== "" && 
-    !searchResult.some(item => 
+  const shouldShowQueryAsOption = includeQueryAsOption &&
+    query.trim() !== "" &&
+    !searchResult.some(item =>
       formatDisplayText(item).toLowerCase() === query.toLowerCase()
     );
 
@@ -171,22 +170,22 @@ const DropdownContent: React.FC<DropdownContentProps> = ({
   // Get item at specific index considering special options
   const getItemAtIndex = (index: number): { type: 'none' | 'query' | 'result', item?: SearchItem, resultIndex?: number } => {
     let currentIndex = 0;
-    
+
     if (includeNoneOption) {
       if (index === currentIndex) return { type: 'none' };
       currentIndex++;
     }
-    
+
     if (shouldShowQueryAsOption) {
       if (index === currentIndex) return { type: 'query' };
       currentIndex++;
     }
-    
+
     const resultIndex = index - currentIndex;
     if (resultIndex >= 0 && resultIndex < searchResult.length) {
       return { type: 'result', item: searchResult[resultIndex], resultIndex };
     }
-    
+
     return { type: 'result' };
   };
 
@@ -222,7 +221,7 @@ const DropdownContent: React.FC<DropdownContentProps> = ({
   // Handle item selection based on type
   const handleSpecialItemSelect = (index: number) => {
     const itemInfo = getItemAtIndex(index);
-    
+
     switch (itemInfo.type) {
       case 'none':
         // Create none item
@@ -233,7 +232,7 @@ const DropdownContent: React.FC<DropdownContentProps> = ({
         };
         handleItemSelect(noneItem, -2); // Special index for none
         break;
-        
+
       case 'query':
         // Create query item
         const queryItem: SearchItem = {};
@@ -246,7 +245,7 @@ const DropdownContent: React.FC<DropdownContentProps> = ({
         queryItem.isManual = true;
         handleItemSelect(queryItem, -1); // Special index for manual
         break;
-        
+
       case 'result':
         if (itemInfo.item && itemInfo.resultIndex !== undefined) {
           handleItemSelect(itemInfo.item, itemInfo.resultIndex);
@@ -285,11 +284,10 @@ const DropdownContent: React.FC<DropdownContentProps> = ({
             {/* None option */}
             {includeNoneOption && (
               <div
-                className={`px-4 py-3 cursor-pointer transition-colors duration-200 rounded-lg ${
-                  selectedIndex === (includeNoneOption ? 0 : -1)
-                    ? "bg-[var(--accent)]"
-                    : "hover:bg-[var(--accent)]"
-                }`}
+                className={`px-4 py-3 cursor-pointer transition-colors duration-200 rounded-lg ${selectedIndex === (includeNoneOption ? 0 : -1)
+                  ? "bg-[var(--accent)]"
+                  : "hover:bg-[var(--accent)]"
+                  }`}
                 style={{
                   backgroundColor:
                     selectedIndex === (includeNoneOption ? 0 : -1) ? `${accentColor}20` : undefined,
@@ -310,11 +308,10 @@ const DropdownContent: React.FC<DropdownContentProps> = ({
             {/* Query as option */}
             {shouldShowQueryAsOption && (
               <div
-                className={`px-4 py-3 cursor-pointer transition-colors duration-200 rounded-lg border-gray-300 ${
-                  selectedIndex === (includeNoneOption ? 1 : 0)
-                    ? "bg-[var(--accent)]"
-                    : "hover:bg-[var(--accent)]"
-                }`}
+                className={`px-4 py-3 cursor-pointer transition-colors duration-200 rounded-lg border-gray-300 ${selectedIndex === (includeNoneOption ? 1 : 0)
+                  ? "bg-[var(--accent)]"
+                  : "hover:bg-[var(--accent)]"
+                  }`}
                 style={{
                   backgroundColor:
                     selectedIndex === (includeNoneOption ? 1 : 0) ? `${accentColor}20` : undefined,
@@ -327,7 +324,7 @@ const DropdownContent: React.FC<DropdownContentProps> = ({
                   style={{ color: theme.foreground }}
                   title={`"${query}" ${queryOptionSuffix}`}
                 >
-                 {` "${query}" (${queryOptionSuffix})`}
+                  {` "${query}" (${queryOptionSuffix})`}
                 </div>
               </div>
             )}
@@ -338,11 +335,10 @@ const DropdownContent: React.FC<DropdownContentProps> = ({
               return (
                 <div
                   key={index}
-                  className={`px-4 py-3 cursor-pointer transition-colors duration-200 rounded-lg ${
-                    selectedIndex === adjustedIndex
-                      ? "bg-[var(--accent)]"
-                      : "hover:bg-[var(--accent)]"
-                  }`}
+                  className={`px-4 py-3 cursor-pointer transition-colors duration-200 rounded-lg ${selectedIndex === adjustedIndex
+                    ? "bg-[var(--accent)]"
+                    : "hover:bg-[var(--accent)]"
+                    }`}
                   style={{
                     backgroundColor:
                       selectedIndex === adjustedIndex ? `${accentColor}20` : undefined,
@@ -393,7 +389,7 @@ const DropdownContent: React.FC<DropdownContentProps> = ({
         ) : null}
 
         {/* Loading indicator at bottom */}
-        {loading.includes("querring_from_data_list") && (
+        {isLoading("querring_from_data_list") && (
           <div
             className="px-4 py-2 border-t"
             style={{ borderColor: getColorShade(theme.foreground, 20) }}
@@ -448,7 +444,7 @@ const DataList = ({
   queryOptionSuffix = "(Create new)",
 }: DataListProps) => {
   const { theme, accentColor } = useTheme();
-  const { loading, setLoading } = useGlobalState();
+  const { isLoading, setLoading } = useUIStore();
   const [searchResult, setSearchResults] = useState<SearchItem[]>([]);
   const [query, setQuery] = useState<string>("");
   const [isSearching, setIsSearching] = useState(false);
@@ -499,8 +495,8 @@ const DataList = ({
   const getTotalSelectableItems = () => {
     let total = searchResult.length;
     if (includeNoneOption) total += 1;
-    if (includeQueryAsOption && query.trim() !== "" && 
-        !searchResult.some(item => formatDisplayText(item).toLowerCase() === query.toLowerCase())) {
+    if (includeQueryAsOption && query.trim() !== "" &&
+      !searchResult.some(item => formatDisplayText(item).toLowerCase() === query.toLowerCase())) {
       total += 1;
     }
     return total;
@@ -654,7 +650,7 @@ const DataList = ({
     if (query.length < minQueryLength) return;
 
     setIsSearching(true);
-    setLoading("querring_from_data_list");
+    setLoading("querring_from_data_list", true);
 
     // Update trigger position before showing dropdown
     if (inputRef.current) {
@@ -668,20 +664,13 @@ const DataList = ({
       if (requestMethod === "GET") {
         // Use GetAllData for GET requests with query building
         const queryUrl = buildQueryUrl(url, query);
-        queryRes = await GetAllData({
-          url: queryUrl,
-          type: "Skill Suggestion",
-        });
+        queryRes = await api.get(queryUrl);
       } else {
         // Use PostAllData for POST requests (backward compatibility)
-        queryRes = await PostAllData({
-          access: undefined,
-          data: {
-            [queryParam]: query,
-            ...additionalParams,
-            ...(maxResults && { limit: maxResults }),
-          },
-          url: url,
+        queryRes = await api.post(url, {
+          [queryParam]: query,
+          ...additionalParams,
+          ...(maxResults && { limit: maxResults }),
         });
       }
 
@@ -700,7 +689,7 @@ const DataList = ({
       setHasSearched(true);
     } finally {
       setIsSearching(false);
-      setLoading("");
+      setLoading("querring_from_data_list", true);
     }
   };
 
@@ -730,7 +719,7 @@ const DataList = ({
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     const totalItems = getTotalSelectableItems();
-    
+
     if (!showDropdown || totalItems === 0) return;
 
     switch (e.key) {
@@ -753,7 +742,7 @@ const DataList = ({
         if (selectedIndex >= 0) {
           // Get the item at the selected index and handle selection
           let currentIndex = 0;
-          
+
           if (includeNoneOption) {
             if (selectedIndex === currentIndex) {
               const noneItem: SearchItem = {
@@ -766,13 +755,13 @@ const DataList = ({
             }
             currentIndex++;
           }
-          
-          const shouldShowQuery = includeQueryAsOption && 
-            query.trim() !== "" && 
-            !searchResult.some(item => 
+
+          const shouldShowQuery = includeQueryAsOption &&
+            query.trim() !== "" &&
+            !searchResult.some(item =>
               formatDisplayText(item).toLowerCase() === query.toLowerCase()
             );
-            
+
           if (shouldShowQuery) {
             if (selectedIndex === currentIndex) {
               const queryItem: SearchItem = {};
@@ -788,7 +777,7 @@ const DataList = ({
             }
             currentIndex++;
           }
-          
+
           const resultIndex = selectedIndex - currentIndex;
           if (resultIndex >= 0 && resultIndex < searchResult.length) {
             handleItemSelect(searchResult[resultIndex], resultIndex);
@@ -813,8 +802,6 @@ const DataList = ({
           }}
           onKeyDown={handleKeyDown}
           label={placeholder}
-          labelBgHex={theme.background}
-          labelBgHexIntensity={labelBgHexIntensity ? labelBgHexIntensity : 10}
           desc={desc}
           maxLength={maxLength}
         />
@@ -842,7 +829,6 @@ const DataList = ({
             setShowDropdown={setShowDropdown}
             theme={theme}
             accentColor={accentColor}
-            loading={loading}
             onSelectItem={onSelectItem}
             includeNoneOption={includeNoneOption}
             includeQueryAsOption={includeQueryAsOption}

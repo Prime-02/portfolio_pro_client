@@ -1,14 +1,17 @@
 import React, { useState } from "react";
 import TemplateStructure, { ComponentArrangement } from "./TemplateStructure";
-import { gettingStarted } from "@/app/components/utilities/indices/MultiStepWriteUp";
+import { useRouting } from "@/lib/hooks/routing/useRouting";
+import { useUserStore } from "@/lib/stores/user/userStore";
+import { toast } from "@/src/app/components/toastify/Toastify";
+import { gettingStarted } from "@/lib/utilities/indices/MultiStepWriteUp";
 import Image from "next/image";
-import { useGlobalState } from "@/app/globalStateProvider";
-import Button from "@/app/components/buttons/Buttons";
+import Button from "@/src/app/components/buttons/Buttons";
 import { ChevronRight } from "lucide-react";
-import { toast } from "@/app/components/toastify/Toastify";
+
 
 const Step0 = () => {
-  const { userData, router, extendRouteWithQuery } = useGlobalState();
+  const { router, extendRouteWithQuery } = useRouting();
+  const { userData } = useUserStore()
   const [currentArrangement, setCurrentArrangement] =
     useState<ComponentArrangement>("A-C-B-D");
 

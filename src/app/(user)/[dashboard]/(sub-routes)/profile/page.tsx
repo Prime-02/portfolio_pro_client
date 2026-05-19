@@ -1,20 +1,10 @@
-"use client";
-import { getCurrentUrl } from "@/app/components/utilities/syncFunctions/syncs";
-import React from "react";
-import ProfileTemplate from "./page-components/ProfileTemplate";
-import { useGlobalState } from "@/app/globalStateProvider";
-const ProfileMain = () => {
-  const { userData } = useGlobalState();
+import { UserProfilePage } from '@/src/app/components/profile/UserProfilePage'
+import React from 'react'
 
+const page = () => {
   return (
-    <div className=" flex flex-col w-full mx-auto gap-y-5">
-      <div className=" w-full flex flex-col p h-auto p-2 relative">
-        <ProfileTemplate
-          showSettings={getCurrentUrl("pathSegment", 0) === userData.username}
-        />
-      </div>
-    </div>
-  );
-};
+    <UserProfilePage/>
+  )
+}
 
-export default ProfileMain;
+export default page

@@ -1,6 +1,7 @@
-import SidebarToggle from "@/app/components/buttons/CollapseButton";
-import { onboardingSteps } from "@/app/components/utilities/indices/MultiStepWriteUp";
-import { useGlobalState } from "@/app/globalStateProvider";
+
+import { useRouting } from "@/lib/hooks/routing/useRouting";
+import { onboardingSteps } from "@/lib/utilities/indices/MultiStepWriteUp";
+import SidebarToggle from "@/src/app/components/buttons/CollapseButton";
 import { Check, Circle } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import { IconType } from "react-icons";
@@ -14,7 +15,7 @@ interface OnboardingStep {
 }
 
 const Sidebar: React.FC = () => {
-  const { extendRouteWithQuery, searchParams } = useGlobalState();
+  const { extendRouteWithQuery, searchParams } = useRouting();
 
   // Initialize with SSR-safe defaults
   const [isCollapsed, setIsCollapsed] = useState(true);

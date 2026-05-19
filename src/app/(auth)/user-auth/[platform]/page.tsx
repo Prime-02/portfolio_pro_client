@@ -1,14 +1,13 @@
 "use client";
-
-import { PathUtil } from "@/app/components/utilities/syncFunctions/syncs";
-import { useGlobalState } from "@/app/globalStateProvider";
 import React from "react";
-import Button from "@/app/components/buttons/Buttons";
 import Link from "next/link";
 import OAuthComponent, { OAuthProvider } from "./platforms/OAuthComponent";
+import { useRouting } from "@/lib/hooks/routing/useRouting";
+import { PathUtil } from "@/lib/utilities/syncFunctions/syncs";
+import Button from "@/src/app/components/buttons/Buttons";
 
 const DynamicMultiPlatformsPage = () => {
-  const { currentPath, checkParams } = useGlobalState();
+  const { currentPath, checkParams } = useRouting();
   const currentPage = PathUtil.getLastSegment(currentPath);
   const code = checkParams("code");
   const validProviders: OAuthProvider[] = [

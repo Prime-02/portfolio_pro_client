@@ -1,10 +1,10 @@
+import TestimonialsPage from "@/src/app/components/testimonials/TestimonialsPage";
 import React from "react";
-import TestimonialsMain from "./page-components/TestimonialsMain";
 
 const Testimonials = () => {
   return (
     <div>
-      <TestimonialsMain />
+      <TestimonialsPage />
     </div>
   );
 };

@@ -1,5 +1,4 @@
 import { ReactNode, forwardRef, useRef, useImperativeHandle } from "react";
-import { getColorShade } from "../utilities/syncFunctions/syncs";
 import { useTheme } from "../theme/ThemeContext ";
 import {
   Bold,
@@ -17,6 +16,7 @@ import {
   ListOrdered,
   Link,
 } from "lucide-react";
+import { getColorShade } from "@/lib/utilities/syncFunctions/syncs";
 
 interface TextAreaProps {
   label?: string;
@@ -49,9 +49,9 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
       id,
       labelStyle,
       labelBgHex,
-      labelBgHexIntensity = 10,
-      maxLength = 500,
-      showLimit = true,
+      labelBgHexIntensity = 1,
+      maxLength = Infinity,
+      showLimit = false,
       desc,
       loading = false,
       required = false,
@@ -304,11 +304,13 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
                 }
                 onKeyDown={handleKeyDown}
                 disabled={disabled}
-                rows={
-                  value && value?.split("\n").length > 1
-                    ? value.split("\n").length
-                    : 1
-                }
+                  rows={
+                    value
+                      ? value.split('\n').reduce((total, line) =>
+                        total + Math.max(1, Math.ceil(line.length / 50)), 0
+                      )
+                      : 1
+                  }
                 id={id}
                 className={`${className?.startsWith("modText") ? `rounded-2xl block px-2.5 pb-2.5 pt-4 w-full ${className} bg-transparent border-1 border-gray-300 appearance-none dark:border-gray-600 dark:focus:border-[var(--accent)] focus:outline-none focus:ring-0 focus:border-[var(--accent)] peer` : ` ${className} rounded-2xl block px-2.5 pb-2.5 pt-4 w-full text-sm bg-transparent border-1 border-gray-300 appearance-none dark:border-gray-600 dark:focus:border-[var(--accent)] focus:outline-none focus:ring-0 focus:border-[var(--accent)] peer`} `}
                 placeholder={label ? " " : placeholder || ""}

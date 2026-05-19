@@ -1,20 +1,19 @@
-import Button from "@/app/components/buttons/Buttons";
-import PortfolioProLogo from "@/app/components/logo/PortfolioProTextLogo";
-import { useTheme } from "@/app/components/theme/ThemeContext ";
-import { toast } from "@/app/components/toastify/Toastify";
-import {
-  GetAllData,
-  PostAllData,
-} from "@/app/components/utilities/asyncFunctions/lib/crud";
-import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
-import { PathUtil } from "@/app/components/utilities/syncFunctions/syncs";
-import { useGlobalState } from "@/app/globalStateProvider";
 import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
 import OAuthButton from "./OAuthButton";
 import VercelButton from "./vercel/VercelButton";
-import Modal from "@/app/components/containers/modals/Modal";
-import { Textinput } from "@/app/components/inputs/Textinput";
+import { useRouting } from "@/lib/hooks/routing/useRouting";
+import { useUserStore } from "@/lib/stores/user/userStore";
+import { useUIStore } from "@/lib/stores/ui/useUIStore";
+import { useTheme } from "@/src/app/components/theme/ThemeContext ";
+import { PathUtil } from "@/lib/utilities/syncFunctions/syncs";
+import { api } from "@/lib/client/api";
+import { toast } from "@/src/app/components/toastify/Toastify";
+import PortfolioProLogo from "@/src/app/components/logo/PortfolioProTextLogo";
+import Modal from "@/src/app/components/containers/modals/Modal";
+import { Textinput } from "@/src/app/components/inputs/Textinput";
+import Button from "@/src/app/components/buttons/Buttons";
+
 
 // Configuration for different OAuth providers
 const PROVIDER_CONFIG = {
@@ -90,15 +89,15 @@ const OAuthComponent: React.FC<OAuthComponentProps> = ({
   provider,
   mode = "approved",
 }) => {
+
   const {
-    loading,
-    setLoading,
     checkParams,
-    clearQuerryParam,
-    setAccessToken,
+    clearQueryParam,
     router,
-    fetchUserData,
-  } = useGlobalState();
+  } = useRouting()
+  const { fetchUserData } = useUserStore()
+  const { isLoading,
+    startLoading, stopLoading, } = useUIStore()
   const { isDarkMode } = useTheme();
   const hasCalledApproveUser = useRef(false);
   const [emailVerification, setEmailVerification] = useState(false);
@@ -111,18 +110,18 @@ const OAuthComponent: React.FC<OAuthComponentProps> = ({
   const params =
     mode === "approved"
       ? config.params.reduce(
-          (acc, param) => {
-            const value = checkParams(param);
-            if (value) acc[param] = value;
-            return acc;
-          },
-          {} as Record<string, string>
-        )
+        (acc, param) => {
+          const value = checkParams(param);
+          if (value) acc[param] = value;
+          return acc;
+        },
+        {} as Record<string, string>
+      )
       : {};
 
   const constructedURL =
     mode === "approved"
-      ? PathUtil.buildUrlWithQuery(`${V1_BASE_URL}/${config.endpoint}`, params)
+      ? PathUtil.buildUrlWithQuery(`/${config.endpoint}`, params)
       : "";
 
   const approveUser = async () => {
@@ -130,7 +129,7 @@ const OAuthComponent: React.FC<OAuthComponentProps> = ({
       return;
     }
     hasCalledApproveUser.current = true;
-    setLoading(config.loadingKey);
+    startLoading(config.loadingKey);
     try {
       const getVerification: {
         message: string;
@@ -141,12 +140,10 @@ const OAuthComponent: React.FC<OAuthComponentProps> = ({
         user: {
           username: string;
         };
-      } = await GetAllData({
-        url: constructedURL.slice(1),
-      });
+      } = await api.get(constructedURL.slice(1));
 
       if (getVerification) {
-        await fetchUserData(getVerification.session_token);
+        await fetchUserData();
 
         // Handle success message first
         if (getVerification.message) {
@@ -155,10 +152,7 @@ const OAuthComponent: React.FC<OAuthComponentProps> = ({
 
         // Handle session token
         if (getVerification.session_token) {
-          const { session_token, refresh_token, expires_at } = getVerification;
           console.log("Data retrieved after verification", getVerification);
-          setAccessToken(session_token, refresh_token, expires_at);
-          localStorage.setItem("session_token", getVerification.session_token);
         }
 
         // Handle routing based on user status
@@ -171,7 +165,7 @@ const OAuthComponent: React.FC<OAuthComponentProps> = ({
         toast.error("We were unable to verify you. Please try again", {
           title: "Verification Error",
         });
-        clearQuerryParam();
+        clearQueryParam();
         console.log("Data gotten: ", getVerification);
       }
     } catch (error) {
@@ -179,20 +173,17 @@ const OAuthComponent: React.FC<OAuthComponentProps> = ({
         title: "Verification Error",
       });
       console.log("Something went wrong: ", error);
-      clearQuerryParam();
+      clearQueryParam();
     } finally {
-      setLoading(config.loadingKey);
+      stopLoading(config.loadingKey);
     }
   };
 
   const requestEmailVerification = async () => {
-    setLoading("verify_email_in_progress");
+    startLoading("verify_email_in_progress");
     try {
       const verificationData = Object.assign(params, { email: email });
-      const verificationRes: { message: string } = await PostAllData({
-        url: `${V1_BASE_URL}/canva-auth/verify-email`,
-        data: verificationData,
-      });
+      const verificationRes: { message: string } = await api.post("`/canva-auth/verify-email", verificationData);
       if (verificationRes?.message) {
         toast.success(verificationRes.message, {
           title: "Verification Email Sent",
@@ -210,7 +201,7 @@ const OAuthComponent: React.FC<OAuthComponentProps> = ({
       });
       console.log("Something went wrong: ", error);
     } finally {
-      setLoading("verify_email_in_progress");
+      stopLoading("verify_email_in_progress");
     }
   };
 
@@ -251,7 +242,7 @@ const OAuthComponent: React.FC<OAuthComponentProps> = ({
   if (mode === "approved") {
     return (
       <div className="w-full min-h-screen flex items-center justify-center p-8">
-        {loading.includes(config.loadingKey) ? (
+        {isLoading(config.loadingKey) ? (
           <div>
             <div>
               <PortfolioProLogo
@@ -285,11 +276,11 @@ const OAuthComponent: React.FC<OAuthComponentProps> = ({
                 />
                 <Button
                   text="Send Verification Email"
-                  loading={loading.includes("verify_email_in_progress")}
+                  loading={isLoading("verify_email_in_progress")}
                   onClick={requestEmailVerification}
                   className="w-full"
                   disabled={
-                    loading.includes("verify_email_in_progress") || !email
+                    isLoading("verify_email_in_progress") || !email
                   }
                 />
               </div>

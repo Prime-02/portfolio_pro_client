@@ -1,10 +1,3 @@
-import Button from "@/app/components/buttons/Buttons";
-import { useTheme } from "@/app/components/theme/ThemeContext ";
-import {
-  getColorShade,
-  getImageSrc,
-} from "@/app/components/utilities/syncFunctions/syncs";
-import { useGlobalState } from "@/app/globalStateProvider";
 import { ChevronRight, ChevronLeft } from "lucide-react";
 import React, { useState } from "react";
 import {
@@ -19,9 +12,14 @@ import HelpComponent from "./profile-components/HelpComponent";
 import LogOutComponent from "./LogOutComponent";
 import Link from "next/link";
 import Image from "next/image";
+import { useTheme } from "../../../theme/ThemeContext ";
+import { getColorShade, getImageSrc } from "@/lib/utilities/syncFunctions/syncs";
+import Button from "../../../buttons/Buttons";
+import { isAuthenticated } from "@/lib/client/api";
+import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 
 const Profile = () => {
-  const { userData, accessToken } = useGlobalState();
+  const { userInfo } = useUserSettings();
   const { theme } = useTheme();
   const [activeTab, setActiveTab] = useState("");
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -30,7 +28,7 @@ const Profile = () => {
   const handleImageError = () => {
     setImageError(true);
   };
-  const fallbackLetter = userData?.username?.toUpperCase() || "User";
+  const fallbackLetter = userInfo?.username?.toUpperCase() || "User";
 
   const tabs = [
     {
@@ -89,11 +87,10 @@ const Profile = () => {
     >
       {/* Main Content */}
       <div
-        className={`transition-all duration-500 ease-in-out ${
-          activeTab || isTransitioning
-            ? "transform -translate-x-full opacity-0"
-            : "transform translate-x-0 opacity-100"
-        }`}
+        className={`transition-all duration-500 ease-in-out ${activeTab || isTransitioning
+          ? "transform -translate-x-full opacity-0"
+          : "transform translate-x-0 opacity-100"
+          }`}
         style={{
           position: activeTab ? "absolute" : "relative",
           width: "100%",
@@ -106,7 +103,7 @@ const Profile = () => {
                 {imageError ? (
                   <Image
                     src={`https://avatar.oxro.io/avatar.svg?name=${fallbackLetter}`}
-                    alt={`${userData?.username || "User"}'s Profile Picture`}
+                    alt={`${userInfo?.username || "User"}'s Profile Picture`}
                     width={100}
                     height={100}
                     className="h-full w-full "
@@ -116,13 +113,13 @@ const Profile = () => {
                 ) : (
                   <Image
                     src={getImageSrc(
-                      userData?.profile_picture,
-                      userData?.username
+                      userInfo?.profile_picture,
+                      userInfo?.username ?? "user"
                     )}
-                    alt={`${userData?.username || "User"}'s Profile Picture`}
+                    alt={`${userInfo?.username || "User"}'s Profile Picture`}
                     width={100}
                     height={100}
-                    className="h-full w-full "
+                    className="h-full w-full object-cover "
                     onError={handleImageError}
                     loading="lazy"
                   />
@@ -131,36 +128,35 @@ const Profile = () => {
 
               <span className="flex flex-col">
                 <h3 className="text-lg font-semibold">
-                  {userData.username
-                    ? userData.username
-                    : accessToken && !userData.username
+                  {userInfo?.username
+                    ? userInfo?.username
+                    : isAuthenticated() && !userInfo?.username
                       ? "Your Profile Is Incomplete"
                       : "Sign Up"}
                 </h3>
                 <span className="flex gap-x-2">
-                  <p>{userData.firstname}</p>
-                  <p>{userData.lastname}</p>
+                  <p>{userInfo?.firstname}</p>
+                  <p>{userInfo?.lastname}</p>
                 </span>
-                <p className="text-sm opacity-65">{userData.email}</p>
+                <p className="text-sm opacity-65">{userInfo?.email}</p>
               </span>
             </div>
           </div>
           <span className="w-[80%] mx-auto h-[0.5px] bg-[var(--foreground)]"></span>
           <Link
-            href={`/${
-              userData.username
-                ? `${userData.username}/profile`
-                : accessToken && !userData.username
-                  ? "welcome"
-                  : "/user-auth?auth_mode=signup"
-            }`}
+            href={`/${userInfo?.username
+              ? `${userInfo?.username}/profile`
+              : isAuthenticated() && !userInfo?.username
+                ? "welcome"
+                : "/user-auth?auth_mode=signup"
+              }`}
             className="w-full flex"
           >
             <Button
               variant="outline"
               className="w-full"
               size="md"
-              text={`${userData.username ? "View Your Profile" : "Set Up Your Profile"}`}
+              text={`${userInfo?.username ? "View Your Profile" : "Set Up Your Profile"}`}
             />
           </Link>
         </div>
@@ -190,11 +186,10 @@ const Profile = () => {
       {/* Tab Content */}
       {activeTab && (
         <div
-          className={`transition-all duration-500 ease-in-out ${
-            isTransitioning
-              ? "transform translate-x-full opacity-0"
-              : "transform translate-x-0 opacity-100"
-          }`}
+          className={`transition-all duration-500 ease-in-out ${isTransitioning
+            ? "transform translate-x-full opacity-0"
+            : "transform translate-x-0 opacity-100"
+            }`}
         >
           <div className="flex items-center gap-4 mb-6">
             <span

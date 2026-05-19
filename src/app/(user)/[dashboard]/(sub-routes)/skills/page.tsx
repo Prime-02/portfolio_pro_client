@@ -1,11 +1,11 @@
 "use client"
+import SkillsPage from '@/src/app/components/skills'
 import React from 'react'
-import SkillsDisplay from './page-components/SkillsDisplay'
 
 const Skills = () => {
   return (
-    <div className='h-auto p-8'>
-     <SkillsDisplay/>
+    <div className='h-auto'>
+      <SkillsPage/>
     </div>
   )
 }

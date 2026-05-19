@@ -4,7 +4,7 @@ import "react-phone-input-2/lib/style.css";
 
 interface PhoneInputComponentProps {
   phone: string;
-  setPhone: (value: string) => void;
+  setPhone?: (value: string) => void;
   label?: string;
   onFocus?: () => void;
 }

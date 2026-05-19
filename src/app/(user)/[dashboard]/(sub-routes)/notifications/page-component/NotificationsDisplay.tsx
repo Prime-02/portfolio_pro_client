@@ -1,7 +1,7 @@
-import EmptyState from "@/app/components/containers/cards/EmptyState";
-import { useWebSocketContext } from "@/app/WebSocketContext";
 import React from "react";
 import NotificationCard from "./NotificationCard";
+import { useWebSocketContext } from "@/src/app/WebSocketContext";
+import EmptyState from "@/src/app/components/containers/cards/EmptyState";
 
 const NotificationsDisplay = () => {
   const { notifications, reconnect } = useWebSocketContext();

@@ -1,20 +1,21 @@
-import Button from "@/app/components/buttons/Buttons";
-import Dropdown from "@/app/components/inputs/DynamicDropdown";
-import { Textinput } from "@/app/components/inputs/Textinput";
-import { TextArea } from "@/app/components/inputs/TextArea";
-import { useTheme } from "@/app/components/theme/ThemeContext ";
-import { toast } from "@/app/components/toastify/Toastify";
-import { PostAllData } from "@/app/components/utilities/asyncFunctions/lib/crud";
-import { titles } from "@/app/components/utilities/indices/DropDownItems";
-import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
-import { validateFields } from "@/app/components/utilities/syncFunctions/syncs";
-import { useGlobalState } from "@/app/globalStateProvider";
+import { api } from "@/lib/client/api";
+import { useUIStore } from "@/lib/stores/ui/useUIStore";
+import { useUserStore } from "@/lib/stores/user/userStore";
+import { titles } from "@/lib/utilities/indices/DropDownItems";
+import { validateFields } from "@/lib/utilities/syncFunctions/syncs";
+import Button from "@/src/app/components/buttons/Buttons";
+import Dropdown from "@/src/app/components/inputs/DynamicDropdown";
+import { TextArea } from "@/src/app/components/inputs/TextArea";
+import { Textinput } from "@/src/app/components/inputs/Textinput";
+import { useTheme } from "@/src/app/components/theme/ThemeContext ";
+import { toast } from "@/src/app/components/toastify/Toastify";
 import Link from "next/link";
 import React, { useState } from "react";
 
 const FeedBackComponent = () => {
   const { theme } = useTheme();
-  const { accessToken, setLoading, loading, userData } = useGlobalState();
+  const { startLoading, stopLoading, isLoading } = useUIStore();
+  const { userData } = useUserStore()
   const [sugestion, setSugestion] = useState({
     title: "",
     description: "",
@@ -22,13 +23,9 @@ const FeedBackComponent = () => {
 
   const makeSuggestions = async () => {
     if (!validateFields(sugestion)) return;
-    setLoading("making_sugestions");
+    startLoading("making_sugestions");
     try {
-      const sugestionRes = await PostAllData({
-        access: accessToken,
-        url: `${V1_BASE_URL}/suggestions/`,
-        data: sugestion,
-      });
+      const sugestionRes = await api.post(`/suggestions/`, sugestion);
       if (sugestionRes) {
         toast.success(
           "Thank you for your sugestion, please be rest assured that we hear you "
@@ -40,9 +37,9 @@ const FeedBackComponent = () => {
       }
     } catch (error) {
       console.log(error)
-      
+
     } finally {
-      setLoading("making_sugestions");
+      stopLoading("making_sugestions");
     }
   };
 
@@ -54,10 +51,8 @@ const FeedBackComponent = () => {
             {sugestion.title === "custom" ? (
               <Textinput
                 type="text"
-                label="Enter your sugestion title"
-                labelBgHex={theme.background}
-                labelBgHexIntensity={10}
-                value={sugestion.description}
+                label="Enter your suggestion title"
+                value={sugestion.title}  // Changed from description to title
                 onChange={(e: string) => {
                   setSugestion((prev) => ({
                     ...prev,
@@ -67,15 +62,17 @@ const FeedBackComponent = () => {
               />
             ) : (
               <Dropdown
-                onSelect={(e: string) => {
+                onSelect={(e) => {
                   setSugestion((prev) => ({
                     ...prev,
-                    title: e,
+                    title: e as string,
                   }));
                 }}
                 type="datalist"
                 options={titles}
                 value={sugestion.title}
+                placeholder="Select a title"
+                label="Suggestion Title"
                 className="rounded-full outline focus:outline-[var(--accent)]"
               />
             )}
@@ -101,7 +98,7 @@ const FeedBackComponent = () => {
               text="Submit"
               size="md"
               type="submit"
-              loading={loading.includes("making_sugestions")}
+              loading={isLoading("making_sugestions")}
               onClick={() => {
                 makeSuggestions();
               }}

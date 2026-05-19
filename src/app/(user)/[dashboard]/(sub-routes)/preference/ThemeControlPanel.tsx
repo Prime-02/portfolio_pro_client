@@ -2,13 +2,12 @@
 
 import React, { useState, useRef, ReactNode } from "react";
 import { Zap, Info } from "lucide-react";
-import SideBar from "@/app/(user)/components/SideBar";
 import Themes from "./tabs/Themes";
 import Loaders from "./tabs/Loaders";
 import Pro from "./tabs/Pro";
-import { useTheme } from "@/app/components/theme/ThemeContext ";
-import { tabConfig } from "@/app/components/utilities/indices/Themes";
-import { SaveCancelButtons } from "@/app/components/theme/SaveThemeActions";
+import { useTheme } from "@/src/app/components/theme/ThemeContext ";
+import { tabConfig } from "@/lib/utilities/indices/Themes";
+import SideBar from "../../../components/SideBar";
 
 export interface ThemeColors {
   background: string;
@@ -53,7 +52,6 @@ const ThemeControlPanel = ({ component }: ThemeControlPanelProp) => {
               </h2>
             </div>
             <div className="flex items-center gap-x-2 sticky top-0">
-              <SaveCancelButtons />
               {component}
             </div>
           </div>
@@ -75,7 +73,7 @@ const ThemeControlPanel = ({ component }: ThemeControlPanelProp) => {
           {activeTab === "pro" && <Pro />}
         </div>
       </div>
-         <div className="relative">
+      <div className="relative">
         <SideBar
           activeTab={activeTab}
           themeVariant={themeVariant}

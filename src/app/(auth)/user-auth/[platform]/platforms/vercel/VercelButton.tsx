@@ -1,25 +1,24 @@
-import Button from "@/app/components/buttons/Buttons";
-import Modal from "@/app/components/containers/modals/Modal";
-import { Textinput } from "@/app/components/inputs/Textinput";
-import { useTheme } from "@/app/components/theme/ThemeContext ";
-import { toast } from "@/app/components/toastify/Toastify";
-import { PostAllData } from "@/app/components/utilities/asyncFunctions/lib/crud";
-import { V1_BASE_URL } from "@/app/components/utilities/indices/urls";
-import { PathUtil } from "@/app/components/utilities/syncFunctions/syncs";
-import { useGlobalState } from "@/app/globalStateProvider";
+import { api } from "@/lib/client/api";
+import { useRouting } from "@/lib/hooks/routing/useRouting";
+import { useUIStore } from "@/lib/stores/ui/useUIStore";
+import { PathUtil } from "@/lib/utilities/syncFunctions/syncs";
+import Button from "@/src/app/components/buttons/Buttons";
+import Modal from "@/src/app/components/containers/modals/Modal";
+import { Textinput } from "@/src/app/components/inputs/Textinput";
+import { useTheme } from "@/src/app/components/theme/ThemeContext ";
+import { toast } from "@/src/app/components/toastify/Toastify";
 import Image from "next/image";
 import React, { FormEvent, useState } from "react";
 
 const VercelButton = () => {
   const { isDarkMode } = useTheme();
+  const {startLoading, stopLoading, isLoading} = useUIStore()
   const {
-    setLoading,
-    loading,
     checkParams,
-    clearQuerryParam,
+    clearQueryParam,
     router,
     currentPathWithQuery,
-  } = useGlobalState();
+  } = useRouting()
   const tokenModal = checkParams("token_modal");
   const [token, setToken] = useState("");
 
@@ -29,11 +28,9 @@ const VercelButton = () => {
       toast.error("Invalid token");
       return;
     }
-    setLoading("validating_token");
+    startLoading("validating_token");
     try {
-      const verificationRes: { valid: boolean } = await PostAllData({
-        url: `${V1_BASE_URL}/vercel/validate-token?token=${token.trim()}`,
-      });
+      const verificationRes: { valid: boolean } = await api.post(`/vercel/validate-token?token=${token.trim()}`);
       if (verificationRes.valid) {
         toast.success("Your vercel token has been validated. Redirecting...", {
           title: "Validation successful",
@@ -60,7 +57,7 @@ const VercelButton = () => {
       );
       console.log(error);
     } finally {
-      setLoading("validating_token");
+      stopLoading("validating_token");
     }
   };
 
@@ -70,7 +67,7 @@ const VercelButton = () => {
         title={"Validate Token"}
         isOpen={tokenModal ? true : false}
         onClose={() => {
-          clearQuerryParam();
+          clearQueryParam();
         }}
       >
         <form className="flex flex-col w-full gap-y-3" onSubmit={validateToken}>
@@ -88,7 +85,7 @@ const VercelButton = () => {
               text="Verify & Continue"
               size="sm"
               className="w-full"
-              loading={loading.includes("validating_token")}
+              loading={isLoading("validating_token")}
               type="submit"
             />
           </span>

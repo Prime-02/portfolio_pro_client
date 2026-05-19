@@ -1,16 +1,16 @@
 "use client";
 
+import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 import { useEffect } from "react";
-import { useGlobalState } from "./globalStateProvider";
 
 
 const DynamicTitle = () => {
-  const { userData } = useGlobalState(); 
+  const { userInfo } = useUserSettings(); 
 
   useEffect(() => {
-    const title = userData.username && `Welcome ${userData.username}`;
+    const title = userInfo?.username ? `Welcome - ${userInfo?.username}` : `Welcome To Portfolio Pro`;
     document.title = title; 
-  }, [userData]);
+  }, [userInfo]);
 
   return null; 
 };

@@ -1,11 +1,11 @@
 "use client"
+import EducationPage from '@/src/app/components/education'
 import React from 'react'
-import EducationMain from './page-components/EducationMain'
 
 const Education = () => {
   return (
     <div>
-      <EducationMain/>
+      <EducationPage />
     </div>
   )
 }

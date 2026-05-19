@@ -1,5 +1,5 @@
-import { privateRoutes } from "@/app/components/utilities/indices/NavigationItems";
-import { useGlobalState } from "@/app/globalStateProvider";
+import { useUserSettings } from "@/lib/stores/user/useUserSettings";
+import { privateRoutes } from "@/lib/utilities/indices/NavigationItems";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
@@ -11,16 +11,17 @@ const routeCategories = {
     "portfolios",
     "projects",
     "resume",
+    "experience",
     "certification",
     "education",
     "skills",
   ],
-  CONTENT: ["media-gallery", "testimonials", "posts"],
-  SETTINGS: ["preference"],
+  CONTENT: [ "testimonials", "blogs"],
+  SETTINGS: ["preference", "account-settings", 'session-management'],
 };
 
 const Menu = ({ isCollapsed }: { isCollapsed: boolean }) => {
-  const { userData } = useGlobalState();
+  const { userInfo } = useUserSettings();
   const pathname = usePathname();
 
   // Group routes by category
@@ -32,7 +33,7 @@ const Menu = ({ isCollapsed }: { isCollapsed: boolean }) => {
   );
 
   const isActiveRoute = (routeLink: string) => {
-    const basePath = `/${userData.username}/`;
+    const basePath = `/${userInfo?.username ?? "user"}/`;
     const fullRoutePath = `${basePath}${routeLink}`.replace(/\/+$/, "");
     const cleanPathname = pathname.replace(/\/+$/, "");
     return cleanPathname === fullRoutePath;
@@ -67,21 +68,19 @@ const Menu = ({ isCollapsed }: { isCollapsed: boolean }) => {
                 return (
                   <Link
                     key={route.slug}
-                    href={`/${userData.username}${route.link}`}
-                    className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all justify-center duration-200 ${
-                      isActive
-                        ? `bg-[var(--accent)] text-[var(--accent)] border-r-2 border-[var(--accent)]`
-                        : "hover:bg-[var(--background)]/10"
-                    } mx-auto `}
+                    href={`/${userInfo?.username ?? "user"}${route.link}`}
+                    className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all justify-center duration-200 ${isActive
+                      ? `bg-[var(--accent)] text-[var(--accent)] border-r-2 border-[var(--accent)]`
+                      : "hover:bg-[var(--background)]/10"
+                      } mx-auto `}
                   >
                     <IconComponent
-                      className={`${
-                        isActive ? `text-[var(--accent)]` : ""
-                      } mx-auto `}
+                      className={`${isActive ? `text-[var(--accent)]` : ""
+                        } mx-auto `}
                     />
                     {isCollapsed && (
                       <div className="flex-1 min-w-0"
-                      title={route.description}
+                        title={route.description}
                       >
                         <span className="block text-sm font-medium truncate">
                           {route.name}

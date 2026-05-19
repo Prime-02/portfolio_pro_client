@@ -1,17 +1,14 @@
-import SidebarToggle from "@/app/components/buttons/CollapseButton";
-import { useTheme } from "@/app/components/theme/ThemeContext ";
-import {
-  Accent,
-  Theme,
-  ThemeVariant,
-} from "@/app/components/types and interfaces/loaderTypes";
+
 import {
   Monitor,
   Moon,
   Sun,
   Zap,
 } from "lucide-react";
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
+import { Accent, Theme, ThemeVariant } from "../../components/types and interfaces/loaderTypes";
+import SidebarToggle from "../../components/buttons/CollapseButton";
+import { useTheme } from "../../components/theme/ThemeContext ";
 
 interface TabConfigItem {
   key: string;
@@ -33,21 +30,39 @@ interface SideBarProps {
 const SideBar = ({
   activeTab = "",
   tabConfig = [],
-  setActiveTab = () => {},
+  setActiveTab = () => { },
 }: SideBarProps) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
-  const { setThemeVariant, theme, themeVariant, accentColor } = useTheme();
+  const {
+    setThemeVariant,
+    theme,
+    themeVariant,
+    accentColor,
+    saveChanges,
+    hasUnsavedChanges
+  } = useTheme();
 
   const toggleCollapse = () => {
     setIsCollapsed(!isCollapsed);
   };
+  const handleVariantChange = useCallback(async (variant: "light" | "dark" | "system") => {
+    // Don't do anything if it's the same variant
+    if (variant === themeVariant) return;
+    setThemeVariant(variant);
+    saveChanges({ theme: variant });
+  }, [themeVariant, setThemeVariant, saveChanges]);
+
 
   return (
     <div
-      className={`min-h-screen h-full flex z-10 left-0 flex-col border-l border-[var(--accent)]/20 transition-all duration-300 rounded-r-3xl ease-in-out ${
-        isCollapsed ? "w-16" : "w-64"
-      }`}
+      className={`min-h-screen h-full flex z-10 left-0 flex-col border-l border-[var(--accent)]/20 transition-all duration-300 rounded-r-3xl ease-in-out ${isCollapsed ? "w-16" : "w-64"
+        }`}
     >
+      {/* Optional: Show unsaved changes indicator */}
+      {hasUnsavedChanges && !isCollapsed && (
+        <div className="absolute top-4 right-4 w-2 h-2 rounded-full bg-yellow-500 animate-pulse" />
+      )}
+
       {/* Collapse Button - Fixed at top */}
       <SidebarToggle className="rotate-180 border-none" onToggle={toggleCollapse} showKeyboardHints={false} isCollapsed={isCollapsed} />
 
@@ -62,13 +77,9 @@ const SideBar = ({
             {(["light", "dark", "system"] as const).map((variant) => (
               <button
                 key={variant}
-                onClick={() => {
-                  setThemeVariant(variant);
-                  console.log(variant);
-                }}
-                className={`w-full ${isCollapsed ? "h-8" : "py-2 px-3"} rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                  isCollapsed ? "justify-center" : ""
-                }`}
+                onClick={() => handleVariantChange(variant)}
+                className={`w-full ${isCollapsed ? "h-8" : "py-2 px-3"} rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${isCollapsed ? "justify-center" : ""
+                  }`}
                 style={{
                   backgroundColor:
                     themeVariant === variant
@@ -102,11 +113,10 @@ const SideBar = ({
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`w-full text-left  ${isCollapsed ? "h-10" : "py-2 px-3"} rounded-lg transition-colors flex items-center gap-3 ${
-                  activeTab === tab.key
-                    ? "text-current font-medium"
-                    : "opacity-60 hover:opacity-80"
-                } ${isCollapsed ? "justify-center" : ""}`}
+                className={`w-full text-left  ${isCollapsed ? "h-10" : "py-2 px-3"} rounded-lg transition-colors flex items-center gap-3 ${activeTab === tab.key
+                  ? "text-current font-medium"
+                  : "opacity-60 hover:opacity-80"
+                  } ${isCollapsed ? "justify-center" : ""}`}
                 style={{
                   backgroundColor:
                     activeTab === tab.key

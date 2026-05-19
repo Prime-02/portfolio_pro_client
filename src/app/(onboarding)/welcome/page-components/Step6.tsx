@@ -1,19 +1,18 @@
 import React, { useState } from "react";
 import TemplateStructure, { ComponentArrangement } from "./TemplateStructure";
-import { completionMessage } from "@/app/components/utilities/indices/MultiStepWriteUp";
-import Image from "next/image";
-import { useGlobalState } from "@/app/globalStateProvider";
-import { toast } from "@/app/components/toastify/Toastify";
-import Button from "@/app/components/buttons/Buttons";
-import { ArrowRight, Share2 } from "lucide-react";
-import {
-  copyToClipboard,
-  getCurrentUrl,
-} from "@/app/components/utilities/syncFunctions/syncs";
 import Link from "next/link";
+import { useRouting } from "@/lib/hooks/routing/useRouting";
+import { useUserStore } from "@/lib/stores/user/userStore";
+import { toast } from "@/src/app/components/toastify/Toastify";
+import { completionMessage } from "@/lib/utilities/indices/MultiStepWriteUp";
+import Image from "next/image";
+import Button from "@/src/app/components/buttons/Buttons";
+import { ArrowRight, Share2 } from "lucide-react";
+import { copyToClipboard, getCurrentUrl } from "@/lib/utilities/syncFunctions/syncs";
 
 const Step6 = () => {
-  const { userData, router, extendRouteWithQuery } = useGlobalState();
+  const { router, extendRouteWithQuery } = useRouting();
+  const { userData } = useUserStore()
   const [currentArrangement, setCurrentArrangement] =
     useState<ComponentArrangement>("A-D-B-C");
 

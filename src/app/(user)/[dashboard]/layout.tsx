@@ -1,20 +1,23 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import { motion } from "framer-motion";
+import { useUserSettings } from "@/lib/stores/user/useUserSettings";
+import { isAuthenticated } from "@/lib/client/api";
 
 const UsersLayout = ({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) => {
+  const { fetchUserInfo } = useUserSettings()
+
+  useEffect(() => {
+    if (!isAuthenticated())
+      fetchUserInfo()
+  }, [])
+
   return (
     <div className="flex h-screen overflow-hidden">
-      {/* Fixed Sidebar - doesn't scroll */}
-      {/* <div className="flex-shrink-0">
-        <ProfileSideBar />
-      </div>
-       */}
-      {/* Main Content Area - scrollable */}
       <div className="flex-1 overflow-auto custom-scrollbar">
         <motion.div
           className="flex items-start justify-center min-h-full w-full mx-auto py-5 px-2"

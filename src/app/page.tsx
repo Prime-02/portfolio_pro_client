@@ -20,6 +20,7 @@ export default function Home() {
             fontWeight={"extrabold"}
             reanimateDelay={3000}
           />
+          
 
           <div className="flex flex-col gap-4">
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold  leading-tight">

@@ -131,33 +131,24 @@ const OAuthComponent: React.FC<OAuthComponentProps> = ({
     hasCalledApproveUser.current = true;
     startLoading(config.loadingKey);
     try {
-      const getVerification: {
-        message: string;
-        session_token: string;
-        refresh_token: string;
-        expires_at: string;
-        is_new: boolean;
-        user: {
-          username: string;
-        };
-      } = await api.get(constructedURL.slice(1));
+      const { data } = await api.get(constructedURL.slice(1));
 
-      if (getVerification) {
+      if (data) {
         await fetchUserData();
 
         // Handle success message first
-        if (getVerification.message) {
-          toast.success(getVerification.message);
+        if (data.message) {
+          toast.success(data.message);
         }
 
         // Handle session token
-        if (getVerification.session_token) {
-          console.log("Data retrieved after verification", getVerification);
+        if (data.session_token) {
+          console.log("Data retrieved after verification", data);
         }
 
         // Handle routing based on user status
-        if (!getVerification.is_new) {
-          router.replace(`/${getVerification?.user?.username ?? "dashboard"}`);
+        if (!data.is_new) {
+          router.replace(`/${data?.user?.username ?? "dashboard"}`);
         } else {
           router.replace(`/welcome`);
         }
@@ -166,7 +157,7 @@ const OAuthComponent: React.FC<OAuthComponentProps> = ({
           title: "Verification Error",
         });
         clearQueryParam();
-        console.log("Data gotten: ", getVerification);
+        console.log("Data gotten: ", data);
       }
     } catch (error) {
       toast.error("We were unable to verify you. Please try again", {

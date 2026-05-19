@@ -1,153 +1,201 @@
 "use client";
-import { useState, useCallback } from "react";
-import { AlertCircle, Power, RotateCcw, ArrowLeft, Zap } from "lucide-react";
-import { useRouter } from "next/navigation";
 
-type ErrorPageProps = {
+import { useEffect, useState } from "react";
+import { AlertCircle, RefreshCw, Home } from "lucide-react";
+
+interface ErrorProps {
   error: Error & { digest?: string };
   reset: () => void;
-};
+}
 
-export default function ErrorPage({ error, reset }: ErrorPageProps) {
-  const [isAnimating, setIsAnimating] = useState(false);
-  const router = useRouter();
+export default function Error({ error, reset }: ErrorProps) {
+  const [mounted, setMounted] = useState(false);
+  const [isRetrying, setIsRetrying] = useState(false);
 
-  // Handle the reset action with proper animation timing
-  const handleReset = useCallback(async () => {
-    if (isAnimating) return; // Prevent multiple clicks
-
-    setIsAnimating(true);
-
-    try {
-      // Add a small delay to show the animation
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      reset();
-    } catch (error) {
-      console.error("Error during reset:", error);
-    } finally {
-      // Reset animation state after a delay
-      setTimeout(() => {
-        setIsAnimating(false);
-      }, 500);
-    }
-  }, [isAnimating, reset]);
-
-  // Handle back navigation with error handling
-  const handleGoBack = useCallback(() => {
-    try {
-      if (window.history.length > 1) {
-        router.back();
-      } else {
-        // If no history, go to home page
-        router.push("/");
-      }
-    } catch (error) {
-      console.error("Navigation error:", error);
-      // Fallback to home page
-      router.push("/");
-    }
-  }, [router]);
-
-  // Extract error message safely
-  const getErrorMessage = useCallback(() => {
-    if (!error) return "An unexpected error occurred.";
-
-    // Handle different error types
-    if (error.message) {
-      return error.message;
-    }
-
-    if (error.digest) {
-      return `Error occurred (ID: ${error.digest})`;
-    }
-
-    if (typeof error === "string") {
-      return error;
-    }
-
-    return "An unexpected error occurred.";
+  useEffect(() => {
+    setMounted(true);
+    // Log the error to an error reporting service
+    console.error("Application error:", error);
   }, [error]);
 
+  const handleReset = () => {
+    setIsRetrying(true);
+    // Small delay to show the retrying state
+    setTimeout(() => {
+      setIsRetrying(false);
+      reset();
+    }, 400);
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-[var(--accent)] to-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Animated background sparkles */}
-      {/* Main error container */}
-      <div className="max-w-2xl w-full text-center relative z-10">
-        {/* Animated plug icon */}
-        <div className="relative mb-8">
+    <div
+      className="min-h-screen flex flex-col items-center justify-center px-6"
+      style={{
+        background: "var(--background)",
+        color: "var(--foreground)",
+      }}
+    >
+      {/* Animated gradient background blob */}
+      <div
+        className="absolute inset-0 overflow-hidden pointer-events-none"
+        aria-hidden="true"
+      >
+        <div
+          className="animated-gradient absolute -top-1/2 -left-1/2 w-[200%] h-[200%] opacity-[0.03]"
+          style={{
+            background:
+              "radial-gradient(circle at 30% 30%, var(--accent), transparent 40%), radial-gradient(circle at 70% 70%, var(--foreground), transparent 40%)",
+          }}
+        />
+      </div>
+
+      <div
+        className={`relative z-10 text-center max-w-lg transition-all duration-700 ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
+          }`}
+      >
+        {/* Error Icon */}
+        <div
+          className="mx-auto mb-6 flex items-center justify-center w-20 h-20 rounded-2xl"
+          style={{
+            background: "var(--foreground)",
+            opacity: 0.08,
+          }}
+        >
+          <AlertCircle
+            size={36}
+            strokeWidth={1.5}
+            style={{
+              color: "var(--foreground)",
+              opacity: 0.7,
+            }}
+          />
+        </div>
+
+        {/* Error Code / Status */}
+        <h1
+          className="font-league text-5xl md:text-6xl mb-2"
+          style={{
+            fontFamily: "var(--font-league)",
+            fontWeight: 800,
+            color: "var(--foreground)",
+          }}
+        >
+          Oops!
+        </h1>
+
+        {/* Divider line */}
+        <div
+          className="w-16 h-[2px] mx-auto my-5 rounded-full"
+          style={{
+            background: "var(--accent)",
+            opacity: 0.6,
+          }}
+        />
+
+        {/* Heading */}
+        <h2
+          className="font-league text-2xl md:text-3xl mb-4"
+          style={{
+            fontFamily: "var(--font-league)",
+            fontWeight: 700,
+            color: "var(--foreground)",
+          }}
+        >
+          Something Went Wrong
+        </h2>
+
+        {/* Description */}
+        <p
+          className="text-base md:text-lg mb-4 leading-relaxed"
+          style={{
+            color: "var(--foreground)",
+            opacity: 0.6,
+            maxWidth: "420px",
+            marginLeft: "auto",
+            marginRight: "auto",
+          }}
+        >
+          We encountered an unexpected error while loading this page. Please try
+          again or contact support if the problem persists.
+        </p>
+
+        {/* Error digest (Next.js error ID) */}
+        {error.digest && (
           <div
-            className={`inline-block p-8 rounded-full bg-gradient-to-br from-red-500 to-pink-600 shadow-2xl transform transition-all duration-700 ${isAnimating ? "scale-110 rotate-12" : "hover:scale-105"}`}
+            className="inline-block mb-8 px-4 py-2 rounded-md text-xs font-mono"
+            style={{
+              background: "var(--foreground)",
+              color: "var(--background)",
+              opacity: 0.1,
+            }}
           >
-            <Power
-              size={80}
-              className={`text-white transition-all duration-500 ${isAnimating ? "animate-spin" : ""}`}
-            />
+            Error ID: {error.digest}
           </div>
+        )}
 
-          {/* Electric spark effect */}
-          <div className="absolute -top-2 -right-2">
-            <Zap className="text-yellow-400 animate-bounce" size={32} />
-          </div>
-        </div>
-
-        {/* Error message */}
-        <div className="space-y-4 mb-12">
-          <h1 className="text-6xl font-bold text-white mb-4 bg-gradient-to-r from-white to-gray-300 bg-clip-text ">
-            Oops!
-          </h1>
-          <h2 className="text-2xl font-semibold text-gray-200 mb-2">
-            {`Looks like you pulled a plug
-`}
-          </h2>
-          <p className="text-lg text-white max-w-md mx-auto leading-relaxed">
-            {` Don't worry, these things happen. The connection got a bit tangled,
-            but we can get everything back up and running.`}
-          </p>
-        </div>
-
-        {/* Error details card */}
-        <div className="bg-black/20 backdrop-blur-lg rounded-2xl p-6 mb-8 border border-white/10">
-          <div className="flex items-center justify-center space-x-2 mb-3">
-            <AlertCircle className="text-white" size={20} />
-            <span className="text-white font-medium">{`Error Details`}</span>
-          </div>
-          <p className="text-white text-sm">{getErrorMessage()}</p>
-        </div>
-
-        {/* Action buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+          {/* Retry Button */}
           <button
             onClick={handleReset}
-            disabled={isAnimating}
-            className={`group bg-gradient-to-r from-blue-600 to-[var(--accent)] hover:from-blue-700 hover:to-[var(--accent)] text-white font-semibold py-4 px-8 rounded-xl shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-xl disabled:opacity-75 disabled:cursor-not-allowed flex items-center space-x-2 ${isAnimating ? "animate-pulse" : ""}`}
+            disabled={isRetrying}
+            className="inline-flex items-center gap-2 px-8 py-3.5 rounded-lg font-league text-base transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
+            style={{
+              fontFamily: "var(--font-league)",
+              fontWeight: 600,
+              background: "var(--foreground)",
+              color: "var(--background)",
+              boxShadow: "0 4px 20px -4px var(--foreground)",
+            }}
           >
-            <RotateCcw
-              className={`transition-transform duration-300 ${isAnimating ? "animate-spin" : "group-hover:rotate-180"}`}
-              size={20}
-            />
-            <span>{isAnimating ? "Reconnecting..." : "Plug Back In"}</span>
+            {isRetrying ? (
+              <>
+                <RefreshCw
+                  size={18}
+                  strokeWidth={2}
+                  className="animate-spin"
+                />
+                Retrying...
+              </>
+            ) : (
+              <>
+                <RefreshCw size={18} strokeWidth={2} />
+                Try Again
+              </>
+            )}
           </button>
 
-          <button
-            onClick={handleGoBack}
-            className="group bg-white/10 hover:bg-white/20 text-white font-semibold py-4 px-8 rounded-xl backdrop-blur-sm border border-white/20 transition-all duration-300 hover:scale-105 flex items-center space-x-2"
+          {/* Go Home Button */}
+          <a
+            href="/"
+            className="inline-flex items-center gap-2 px-8 py-3.5 rounded-lg font-league text-base transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+            style={{
+              fontFamily: "var(--font-league)",
+              fontWeight: 600,
+              background: "transparent",
+              color: "var(--foreground)",
+              border: "1.5px solid var(--foreground)",
+              opacity: 0.7,
+            }}
           >
-            <ArrowLeft
-              className="group-hover:scale-110 transition-transform duration-300"
-              size={20}
-            />
-            <span>Go Back</span>
-          </button>
-        </div>
-
-        {/* Helpful tips */}
-        <div className="mt-12 text-center">
-          <p className="text-white text-sm">
-            {` If the problem persists, try refreshing the page or checking your
-            internet connection`}
-          </p>
+            <Home size={18} strokeWidth={2} />
+            Go Home
+          </a>
         </div>
       </div>
+
+      {/* Bottom decorative text */}
+      <p
+        className="absolute bottom-8 text-xs tracking-widest uppercase font-league"
+        style={{
+          fontFamily: "var(--font-league)",
+          fontWeight: 500,
+          color: "var(--foreground)",
+          opacity: 0.15,
+        }}
+      >
+        Application Error
+      </p>
     </div>
   );
 }

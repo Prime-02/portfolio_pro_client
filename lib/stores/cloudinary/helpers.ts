@@ -2,9 +2,7 @@
 // Client-safe helpers — no secrets, only public_id transformations
 // These run on both server and client
 
-const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-
-const BASE_URL = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload`;
+const BASE_URL = `https://res.cloudinary.com/df1gkpvzj/image/upload`;
 
 // ── Build a Cloudinary URL from a public_id with transformations ──────────────
 export function getImageUrl(

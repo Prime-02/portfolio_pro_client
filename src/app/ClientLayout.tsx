@@ -11,29 +11,24 @@ interface ClientLayoutProps {
 export default function ClientLayout({ children }: ClientLayoutProps) {
   const { viewportWidth } = useUIStore();
   const pathname = usePathname(); // Current route path
-  
-  // Check if the current path is one of the allowed routes
-  const shouldShowNavbarAndFooter = [
-    // "/",
-    // "/portfolios",
-    // "/projects",
-    // "/terms_of_services",
+
+  // Check if the current path is one of the routes where navbar should be HIDDEN
+  const shouldHideNavbar = [
     "/user-auth",
     "/welcome",
-    "",
-  ].includes(pathname || "");
+    "/studio",
+  ].some(route => pathname?.includes(route));
 
   const isMobile = viewportWidth < 768;
 
   return (
     <main className="min-w-sm flex">
-      {!shouldShowNavbarAndFooter && <LandingPageNavbar />}
+      {!shouldHideNavbar && <LandingPageNavbar />}
 
       {/* Render the page content */}
       <div
-        className={`w-full overflow-auto ${
-          !shouldShowNavbarAndFooter && isMobile ? "pt-16" : ""
-        }`}
+        className={`w-full overflow-auto ${!shouldHideNavbar && isMobile ? "pt-16" : ""
+          }`}
       >
         {children}
       </div>

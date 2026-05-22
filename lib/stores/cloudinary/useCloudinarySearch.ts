@@ -40,7 +40,7 @@ interface CloudinarySearchState extends CloudinarySliceState {
   searchAssets: (request: SearchRequest) => Promise<SearchResult>;
   searchByTag: (params: SearchByTagParams) => Promise<SearchResult>;
   searchByPrefix: (params: SearchByPrefixParams) => Promise<SearchResult>;
-  listFolders: () => Promise<FolderListResult>;
+  listFolders: (subFolder?: string | null) => Promise<FolderListResult>;
   listTags: (max_results?: number) => Promise<TagListResult>;
 
   clearError: () => void;
@@ -71,7 +71,9 @@ function errMsg(err: unknown, fallback: string): string {
   return err instanceof Error ? err.message : fallback;
 }
 
-function buildQueryString(params: Record<string, string | number | boolean | undefined>): string {
+function buildQueryString(
+  params: Record<string, string | number | boolean | undefined>,
+): string {
   const qs = new URLSearchParams();
   for (const [key, val] of Object.entries(params)) {
     if (val !== undefined) qs.set(key, String(val));
@@ -95,7 +97,10 @@ export const useCloudinarySearch = create<CloudinarySearchState>()((set) => ({
   searchAssets: async (request) => {
     set({ isLoading: true, error: null });
     try {
-      const res = await api.post<SearchResult>("cloudinary/search/assets", request);
+      const res = await api.post<SearchResult>(
+        "cloudinary/search/assets",
+        request,
+      );
       set({ searchResults: res.data });
       return res.data;
     } catch (err) {
@@ -112,7 +117,7 @@ export const useCloudinarySearch = create<CloudinarySearchState>()((set) => ({
     try {
       const qs = buildQueryString({ resource_type, max_results });
       const res = await api.get<SearchResult>(
-        `cloudinary/search/by-tag/${encodeURIComponent(tag)}${qs}`
+        `cloudinary/search/by-tag/${encodeURIComponent(tag)}${qs}`,
       );
       set({ searchResults: res.data });
       return res.data;
@@ -125,12 +130,16 @@ export const useCloudinarySearch = create<CloudinarySearchState>()((set) => ({
   },
 
   // GET /cloudinary/search/by-prefix/{prefix}
-  searchByPrefix: async ({ prefix, resource_type = "image", max_results = 50 }) => {
+  searchByPrefix: async ({
+    prefix,
+    resource_type = "image",
+    max_results = 50,
+  }) => {
     set({ isLoading: true, error: null });
     try {
       const qs = buildQueryString({ resource_type, max_results });
       const res = await api.get<SearchResult>(
-        `cloudinary/search/by-prefix/${encodeURIComponent(prefix)}${qs}`
+        `cloudinary/search/by-prefix/${encodeURIComponent(prefix)}${qs}`,
       );
       set({ searchResults: res.data });
       return res.data;
@@ -143,10 +152,12 @@ export const useCloudinarySearch = create<CloudinarySearchState>()((set) => ({
   },
 
   // GET /cloudinary/search/folders
-  listFolders: async () => {
+  listFolders: async (subFolder?: string | null) => {
     set({ isLoading: true, error: null });
     try {
-      const res = await api.get<FolderListResult>("cloudinary/search/folders");
+      const res = await api.get<FolderListResult>(
+        `cloudinary/search/folders${subFolder ? `/${encodeURIComponent(subFolder)}` : ""}`,
+      );
       set({ folders: res.data });
       return res.data;
     } catch (err) {
@@ -162,7 +173,7 @@ export const useCloudinarySearch = create<CloudinarySearchState>()((set) => ({
     set({ isLoading: true, error: null });
     try {
       const res = await api.get<TagListResult>(
-        `cloudinary/search/tags${buildQueryString({ max_results })}`
+        `cloudinary/search/tags${buildQueryString({ max_results })}`,
       );
       set({ tags: res.data });
       return res.data;
@@ -177,5 +188,11 @@ export const useCloudinarySearch = create<CloudinarySearchState>()((set) => ({
   clearError: () => set({ error: null }),
 
   reset: () =>
-    set({ isLoading: false, error: null, searchResults: null, folders: null, tags: null }),
+    set({
+      isLoading: false,
+      error: null,
+      searchResults: null,
+      folders: null,
+      tags: null,
+    }),
 }));

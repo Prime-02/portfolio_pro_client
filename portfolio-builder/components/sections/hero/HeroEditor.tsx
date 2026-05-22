@@ -1,0 +1,342 @@
+"use client";
+
+import { useState, useCallback, useRef, useEffect } from "react";
+import { HeroData, HeroCTA } from "@/portfolio-builder/types/hero";
+import type { HeroAnimations, SocialLink } from "@/portfolio-builder/types/hero";
+import {
+    ContentTab,
+    LayoutTab,
+    MediaTab,
+    BackgroundTab,
+    CTATab,
+    EffectsTab,
+    EditorTabs,
+    EditorPreview,
+    EditorActions,
+    AnimationsTab,
+} from "./editor-components";
+import HeroRenderer from "./HeroRenderer";
+import SocialLinksTab from "./editor-components/SocialLinksTab";
+import { getDefaultAnimations } from "@/portfolio-builder/types/hero";
+
+interface HeroEditorProps {
+    initialData: HeroData;
+    onSave: (data: HeroData) => void;
+    onCancel: () => void;
+}
+
+export default function HeroEditor({ initialData, onSave, onCancel }: HeroEditorProps) {
+    const [data, setData] = useState<HeroData>(() => structuredClone(initialData));
+    const [activeTab, setActiveTab] = useState<
+        "content" | "layout" | "media" | "background" | "cta" | "effects" | "animations" | "social"
+    >("content");
+    const [isEditorVisible, setIsEditorVisible] = useState(true);
+    const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+
+    // ── Stable serialised baseline — only updates after a successful save ─────
+    const savedSnapshotRef = useRef(JSON.stringify(initialData));
+    const hasChanges = JSON.stringify(data) !== savedSnapshotRef.current;
+
+    // ── Save orchestration refs ───────────────────────────────────────────────
+    const isSavingRef = useRef(false);
+    const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const pendingSaveRef = useRef<HeroData | null>(null);
+    const savedStatusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    // ── Core save executor — always runs immediately ──────────────────────────
+    const executeSave = useCallback((nextData: HeroData) => {
+        if (isSavingRef.current) {
+            // Already saving — queue the latest data to retry after current save
+            pendingSaveRef.current = nextData;
+            return;
+        }
+
+        if (!isValidData(nextData)) return;
+
+        isSavingRef.current = true;
+        setSaveStatus("saving");
+
+        Promise.resolve(onSave(nextData))
+            .then(() => {
+                // Advance the baseline so hasChanges resets correctly
+                savedSnapshotRef.current = JSON.stringify(nextData);
+                setSaveStatus("saved");
+
+                // Clear "saved" indicator after 2s
+                if (savedStatusTimerRef.current) clearTimeout(savedStatusTimerRef.current);
+                savedStatusTimerRef.current = setTimeout(() => setSaveStatus("idle"), 2000);
+
+                // Flush any queued save that arrived while we were saving
+                if (pendingSaveRef.current) {
+                    const queued = pendingSaveRef.current;
+                    pendingSaveRef.current = null;
+                    executeSave(queued);
+                }
+            })
+            .catch(() => {
+                setSaveStatus("error");
+                pendingSaveRef.current = null;
+            })
+            .finally(() => {
+                isSavingRef.current = false;
+            });
+    }, [onSave]);
+
+    // ── Debounced auto-save — schedules executeSave after quiet period ────────
+    const scheduleSave = useCallback((nextData: HeroData) => {
+        if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+        saveTimerRef.current = setTimeout(() => executeSave(nextData), 800);
+    }, [executeSave]);
+
+    // ── Trigger debounced save whenever data diverges from the saved baseline ─
+    useEffect(() => {
+        if (hasChanges) {
+            scheduleSave(data);
+        }
+        // Cleanup: cancel pending debounce on unmount
+        return () => {
+            if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [data]); // intentionally only `data` — scheduleSave is stable, hasChanges is derived
+
+    // ── Prevent accidental page unload ───────────────────────────────────────
+    useEffect(() => {
+        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+            if (!hasChanges && saveStatus !== "saving" && saveStatus !== "error") return;
+
+            const message =
+                saveStatus === "saving" ? "Changes are still being saved. Please wait..." :
+                    saveStatus === "error" ? "Save failed! You have unsaved changes. Leave anyway?" :
+                        "You have unsaved changes. Are you sure you want to leave?";
+
+            e.preventDefault();
+            e.returnValue = message;
+            return message;
+        };
+
+        window.addEventListener("beforeunload", handleBeforeUnload);
+        return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+    }, [hasChanges, saveStatus]);
+
+    // ── Field updaters ───────────────────────────────────────────────────────
+    const updateField = <K extends keyof HeroData>(key: K, value: HeroData[K]) => {
+        setData((prev) => ({ ...prev, [key]: value }));
+    };
+
+    const updateMedia = (value: Partial<HeroData["media"]>) => {
+        setData((prev) => ({
+            ...prev,
+            media: { ...prev.media, type: prev.media?.type || "none", ...value },
+        }));
+    };
+
+    const updateBackground = (value: Partial<HeroData["background"]>) => {
+        setData((prev) => ({
+            ...prev,
+            background: { ...prev.background, type: prev.background?.type || "solid", ...value },
+        }));
+    };
+
+    const updateEffects = (value: Partial<HeroData["effects"]>) => {
+        setData((prev) => ({
+            ...prev,
+            effects: { ...prev.effects, ...value },
+        }));
+    };
+
+    const updateAnimations = (value: Partial<HeroAnimations>) => {
+        setData((prev) => ({
+            ...prev,
+            // Merge over defaults so required fields are never missing
+            animations: {
+                ...getDefaultAnimations(),
+                ...prev.animations,
+                ...value,
+            },
+        }));
+    };
+
+    const updateSocialLinks = (links: SocialLink[]) => {
+        setData((prev) => ({ ...prev, socialLinks: links }));
+    };
+
+    // ── CTA helpers ──────────────────────────────────────────────────────────
+    const addCTA = () => {
+        const newCTA: HeroCTA = { label: "", url: "", variant: "primary" };
+        setData((prev) => ({
+            ...prev,
+            ctaButtons: [...(prev.ctaButtons || []), newCTA],
+        }));
+    };
+
+    const updateCTA = (index: number, value: Partial<HeroCTA>) => {
+        setData((prev) => {
+            const updated = [...(prev.ctaButtons || [])];
+            updated[index] = { ...updated[index], ...value };
+            return { ...prev, ctaButtons: updated };
+        });
+    };
+
+    const removeCTA = (index: number) => {
+        setData((prev) => ({
+            ...prev,
+            ctaButtons: (prev.ctaButtons || []).filter((_, i) => i !== index),
+        }));
+    };
+
+    const reorderCTA = (from: number, to: number) => {
+        setData((prev) => {
+            const buttons = [...(prev.ctaButtons || [])];
+            if (to < 0 || to >= buttons.length) return prev;
+            const [moved] = buttons.splice(from, 1);
+            buttons.splice(to, 0, moved);
+            return { ...prev, ctaButtons: buttons };
+        });
+    };
+
+    // ── Validation ───────────────────────────────────────────────────────────
+    const isValidData = (d: HeroData): boolean => {
+        if (!d.name?.trim()) return false;
+        if (d.ctaButtons?.some((btn) => !btn.label.trim() || !btn.url.trim())) return false;
+        return true;
+    };
+
+    // ── Manual save — bypasses debounce, fires immediately ───────────────────
+    const handleSave = () => {
+        if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+        executeSave(data);
+    };
+
+    // ── Cancel ───────────────────────────────────────────────────────────────
+    const handleCancel = () => {
+        if (saveStatus === "saving") {
+            alert("Cannot cancel while saving is in progress. Please wait...");
+            return;
+        }
+
+        if (saveStatus === "error") {
+            const confirmed = window.confirm(
+                "Save failed and you have unsaved changes. Are you sure you want to discard your changes?"
+            );
+            if (!confirmed) return;
+        } else if (hasChanges) {
+            const confirmed = window.confirm("You have unsaved changes. Discard them?");
+            if (!confirmed) return;
+        }
+
+        onCancel();
+    };
+
+    const toggleEditor = () => setIsEditorVisible((prev) => !prev);
+
+    // ── Save status display ───────────────────────────────────────────────────
+    const saveStatusText = {
+        idle: hasChanges ? "Unsaved changes" : "Saved",
+        saving: "Saving...",
+        saved: "Saved",
+        error: "Save failed",
+    };
+
+    const saveStatusColor = {
+        idle: hasChanges ? "text-amber-400" : "text-neutral-500",
+        saving: "text-blue-400",
+        saved: "text-emerald-400",
+        error: "text-red-400",
+    };
+
+    // ── Tab content ──────────────────────────────────────────────────────────
+    const renderTabContent = () => {
+        switch (activeTab) {
+            case "content": return <ContentTab data={data} onChange={updateField} />;
+            case "layout": return <LayoutTab data={data} onChange={updateField} />;
+            case "media": return <MediaTab data={data} onUpdate={updateMedia} />;
+            case "background": return <BackgroundTab data={data} onUpdate={updateBackground} />;
+            case "cta": return <CTATab data={data} onAdd={addCTA} onUpdate={updateCTA} onRemove={removeCTA} onReorder={reorderCTA} />;
+            case "social": return <SocialLinksTab data={data} onUpdate={updateSocialLinks} />;
+            case "effects": return <EffectsTab data={data} onUpdate={updateEffects} />;
+            case "animations": return <AnimationsTab data={data} onUpdate={updateAnimations} />;
+            default: return null;
+        }
+    };
+
+    // ── Render ───────────────────────────────────────────────────────────────
+    return (
+        <div className="flex flex-col lg:flex-row gap-6 h-full bg-(--background)">
+            {/* Save status banner */}
+            {(saveStatus === "saving" || saveStatus === "error") && (
+                <div className={`fixed top-4 right-4 z-50 px-4 py-2 rounded-lg shadow-lg ${saveStatus === "saving"
+                        ? "bg-blue-900/90 text-blue-200 border border-blue-700"
+                        : "bg-red-900/90 text-red-200 border border-red-700"
+                    }`}>
+                    <div className="flex items-center gap-2">
+                        {saveStatus === "saving" ? (
+                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-300 border-t-transparent" />
+                        ) : (
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                            </svg>
+                        )}
+                        <span className="text-sm font-medium">
+                            {saveStatus === "saving" ? "Saving..." : "Save failed! Don't close the page"}
+                        </span>
+                    </div>
+                </div>
+            )}
+
+            {/* Editor panel */}
+            {isEditorVisible && (
+                <div className="flex-1 flex flex-col min-w-0 bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
+                    <EditorTabs activeTab={activeTab} onTabChange={setActiveTab} />
+
+                    <div className="p-6 overflow-y-auto flex-1 space-y-6">
+                        {renderTabContent()}
+                    </div>
+
+                    <EditorActions
+                        hasChanges={hasChanges}
+                        isValid={isValidData(data)}
+                        saveStatus={saveStatusText[saveStatus]}
+                        saveStatusColor={saveStatusColor[saveStatus]}
+                        onSave={handleSave}
+                        onCancel={handleCancel}
+                    />
+                </div>
+            )}
+
+            {/* Preview panel */}
+            <div className={`${isEditorVisible ? "flex-1" : "flex-[2]"
+                } min-w-0 bg-neutral-950 border border-neutral-800 rounded-xl overflow-hidden transition-all duration-300`}>
+                <div className="px-4 py-2 border-b border-neutral-800 flex items-center justify-between">
+                    <span className="text-xs text-neutral-500 uppercase tracking-wide">Preview</span>
+                    <button
+                        onClick={toggleEditor}
+                        className="text-xs text-neutral-400 hover:text-white transition-colors flex items-center gap-1"
+                        title={isEditorVisible ? "Hide editor for fullscreen preview" : "Show editor"}
+                    >
+                        {isEditorVisible ? (
+                            <>
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                                </svg>
+                                Fullscreen
+                            </>
+                        ) : (
+                            <>
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 4H4v14h14v-7" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.5 2.5l5 5M8 13l5-5 5 5" />
+                                </svg>
+                                Show Editor
+                            </>
+                        )}
+                    </button>
+                </div>
+                <div className="h-[calc(100%-37px)] overflow-y-auto">
+                    <HeroRenderer data={data} />
+                </div>
+            </div>
+        </div>
+    );
+}

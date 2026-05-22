@@ -21,7 +21,7 @@ interface DropdownProps {
   emptyMessage?: string;
   onFocus?: () => void;
   type?: string;
-  value?: string | string[];
+  value?: string | string[] | number | number[];
   label?: string;
   disabled?: boolean;
   includeNoneOption?: boolean;

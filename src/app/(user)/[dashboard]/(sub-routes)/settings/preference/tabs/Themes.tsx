@@ -1,36 +1,34 @@
 import { useUIStore } from "@/lib/stores/ui/useUIStore";
 import { useTheme } from "@/src/app/components/theme/ThemeContext ";
 import { useCallback } from "react";
-import { ThemePreset } from "../ThemeControlPanel";
 import { themePresets } from "@/lib/utilities/indices/Themes";
 import { Moon, Sun } from "lucide-react";
 import Button from "@/src/app/components/buttons/Buttons";
 
 
+export interface ThemeColors {
+  background: string;
+  foreground: string;
+}
+
+interface ThemePreset {
+  name: string;
+  light: ThemeColors;
+  dark: ThemeColors;
+  accent: string;
+}
+
+
 const Themes = () => {
   const {
-    setLightTheme,
-    setDarkTheme,
-    setAccentColor,
-    saveChanges,
+    applyThemePreset,
     accentColor
   } = useTheme();
   const { isLoading } = useUIStore()
 
-  const applyPreset = useCallback(async (preset: ThemePreset) => {
-    // Update local state immediately
-    setLightTheme(preset.light);
-    setDarkTheme(preset.dark);
-    setAccentColor({ color: preset.accent });
-
-    saveChanges({
-      primary_theme: preset.light.background,
-      secondary_theme: preset.light.foreground,
-      primary_theme_dark: preset.dark.background,
-      secondary_theme_dark: preset.dark.foreground,
-      accent: preset.accent,
-    });
-  }, [setLightTheme, setDarkTheme, setAccentColor, saveChanges]);
+  const applyPreset = useCallback((preset: ThemePreset) => {
+    applyThemePreset(preset.light, preset.dark, { color: preset.accent });
+  }, [applyThemePreset]);
 
   return (
     <div className="space-y-6">
@@ -50,7 +48,10 @@ const Themes = () => {
                   borderColor: preset.light.foreground,
                   color: preset.light.foreground,
                 }}
-                onClick={() => applyPreset(preset)}
+                onClick={() => {
+                  if (accentColor.color === preset.accent) return
+                  applyPreset(preset)
+                }}
               >
                 <h4 className="font-semibold mb-3 flex items-center gap-2">
                   <Sun className="w-4 h-4" />

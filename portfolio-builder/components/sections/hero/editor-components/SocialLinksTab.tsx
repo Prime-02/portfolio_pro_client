@@ -1,6 +1,6 @@
 // portfolio-builder/components/sections/hero/editor-components/SocialLinksTab.tsx
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { HeroData, SocialLink } from "@/portfolio-builder/types/hero";
 import Field from "./Field";
@@ -9,6 +9,8 @@ import { useSocialLinks, SocialLink as UserSocialLink } from "@/lib/stores/socia
 import { socialMediaPlatforms } from "@/lib/utilities/indices/DropDownItems";
 import { RefreshCw, ExternalLink, Plus, X } from "lucide-react";
 import ColorPicker from "./ColorPicker";
+import { Textinput } from "@/src/app/components/inputs/Textinput";
+import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 
 interface SocialLinksTabProps {
     data: HeroData;
@@ -22,6 +24,7 @@ interface HeroSocialLink extends SocialLink {
 
 export default function SocialLinksTab({ data, onUpdate }: SocialLinksTabProps) {
     const router = useRouter();
+    const { userInfo } = useUserSettings()
     const links = (data.socialLinks || []) as HeroSocialLink[];
 
     const {
@@ -106,8 +109,9 @@ export default function SocialLinksTab({ data, onUpdate }: SocialLinksTabProps) 
         return { IconComponent, displayColor, platform };
     };
 
-    const navigateToSocialLinks = () => {
-        router.push("/dashboard/social-links");
+    const navigateToSocialLinks = (addNew: boolean) => {
+        const url = `/${userInfo?.username}/socials${addNew ? '?add=new' : ''}`;
+        window.open(url, '_blank', 'noopener,noreferrer');
     };
 
     const availableLinks = userSocialLinks.filter((ul) => !isLinkAdded(ul));
@@ -130,7 +134,7 @@ export default function SocialLinksTab({ data, onUpdate }: SocialLinksTabProps) 
                         Refresh
                     </button>
                     <button
-                        onClick={navigateToSocialLinks}
+                        onClick={() => navigateToSocialLinks(true)}
                         className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-neutral-400 hover:text-neutral-200 bg-neutral-800 hover:bg-neutral-700 rounded-lg transition-colors"
                         title="Add new social link"
                     >
@@ -170,7 +174,7 @@ export default function SocialLinksTab({ data, onUpdate }: SocialLinksTabProps) 
                             No social links available
                         </p>
                         <button
-                            onClick={navigateToSocialLinks}
+                            onClick={() => navigateToSocialLinks(true)}
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-neutral-300 bg-neutral-700 hover:bg-neutral-600 rounded-lg transition-colors"
                         >
                             <Plus className="w-4 h-4" />
@@ -251,7 +255,7 @@ export default function SocialLinksTab({ data, onUpdate }: SocialLinksTabProps) 
                                             htmlFor={`social-${link.platformId}-${index}`}
                                             className="flex-1"
                                         >
-                                            <input
+                                            <Textinput
                                                 id={`social-${link.platformId}-${index}`}
                                                 type="url"
                                                 value={link.url}
@@ -265,8 +269,8 @@ export default function SocialLinksTab({ data, onUpdate }: SocialLinksTabProps) 
                                             <button
                                                 onClick={() => toggleColorMode(index)}
                                                 className={`flex items-center gap-1.5 px-2 py-1 text-xs rounded transition-colors ${link.useIconColor !== false
-                                                        ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
-                                                        : "bg-neutral-700 text-neutral-400 border border-neutral-600"
+                                                    ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
+                                                    : "bg-neutral-700 text-neutral-400 border border-neutral-600"
                                                     }`}
                                             >
                                                 <span
@@ -279,7 +283,7 @@ export default function SocialLinksTab({ data, onUpdate }: SocialLinksTabProps) 
                                             </button>
                                         </div>
 
-                                        {/* Custom color picker (replaces the old popup) */}
+                                        {/* Custom color picker */}
                                         {link.useIconColor === false && (
                                             <ColorPicker
                                                 id={`color-${link.platformId}-${index}`}
@@ -308,7 +312,7 @@ export default function SocialLinksTab({ data, onUpdate }: SocialLinksTabProps) 
             {/* External link to manage social links */}
             <div className="pt-3 border-t border-neutral-800">
                 <button
-                    onClick={navigateToSocialLinks}
+                    onClick={() => navigateToSocialLinks(false)}
                     className="flex items-center gap-2 text-xs text-neutral-500 hover:text-neutral-300 transition-colors group"
                 >
                     <ExternalLink className="w-3.5 h-3.5 group-hover:text-neutral-400" />

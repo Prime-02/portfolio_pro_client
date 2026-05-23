@@ -36,6 +36,7 @@ export const unprotectedRoutes = [
   "/register",
   "/auth",
   "/public",
+  "/welcome"
 ];
 
 export const privateRoutes: Route[] = [

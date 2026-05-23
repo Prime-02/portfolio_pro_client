@@ -17,7 +17,7 @@ const STYLES = `
 
 /* Card */
 .mde2-card {
-  border: 2px solid var(--accent); border-radius: 14px;
+  border: 2px solid var(--foreground); border-radius: 14px;
   overflow: clip; background: var(--background);
   transition: accent 0.2s, box-shadow 0.2s;
 }
@@ -31,10 +31,10 @@ const STYLES = `
 .mde2-toolbar {
   display: flex; flex-wrap: wrap; align-items: center;
   gap: 1px; padding: 6px 10px;
-  border-bottom: 1.5px solid var(--accent);
-  background: color-mix(in srgb, var(--background) 70%, var(--accent) 30%);
+  border-bottom: 1.5px solid var(--foreground);
+  background: color-mix(in srgb, var(--background) 70%, var(--foreground) 30%);
 }
-.mde2-sep { width: 1px; height: 20px; background: var(--accent); margin: 0 5px; }
+.mde2-sep { width: 1px; height: 20px; background: var(--foreground); margin: 0 5px; }
 .mde2-tbtn {
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 30px; height: 26px; padding: 0 5px; border: none;
@@ -49,8 +49,8 @@ const STYLES = `
 /* Tabs */
 .mde2-tabs {
   display: flex;
-  border-bottom: 1.5px solid var(--accent);
-  background: color-mix(in srgb, var(--background) 70%, var(--accent) 30%);
+  border-bottom: 1.5px solid var(--foreground);
+  background: color-mix(in srgb, var(--background) 70%, var(--foreground) 30%);
 }
 .mde2-tab {
   flex: 1; padding: 5px 0;
@@ -70,7 +70,7 @@ const STYLES = `
   flex: 1; overflow: auto;
   position: relative; /* needed for upload overlay positioning */
 }
-.mde2-pane + .mde2-pane { border-left: 1.5px solid var(--accent); }
+.mde2-pane + .mde2-pane { border-left: 1.5px solid var(--foreground); }
 
 /* ── WYSIWYG EDITOR ── */
 .mde2-editor {
@@ -96,8 +96,8 @@ const STYLES = `
   font-family: 'Lora', serif; font-weight: 700;
   color: var(--foreground); margin: 0.9em 0 0.3em; line-height: 1.25;
 }
-.mde2-editor h1, .mde2-preview h1 { font-size: 2rem; border-bottom: 2px solid var(--accent); padding-bottom: 6px; }
-.mde2-editor h2, .mde2-preview h2 { font-size: 1.5rem; border-bottom: 1px solid var(--accent); padding-bottom: 4px; }
+.mde2-editor h1, .mde2-preview h1 { font-size: 2rem; border-bottom: 2px solid var(--foreground); padding-bottom: 6px; }
+.mde2-editor h2, .mde2-preview h2 { font-size: 1.5rem; border-bottom: 1px solid var(--foreground); padding-bottom: 4px; }
 .mde2-editor h3, .mde2-preview h3 { font-size: 1.2rem; }
 .mde2-editor h4, .mde2-preview h4 { font-size: 1.05rem; }
 .mde2-editor p,  .mde2-preview p  { margin: 0.4em 0; }
@@ -108,7 +108,7 @@ const STYLES = `
 .mde2-editor del, .mde2-preview del,
 .mde2-editor s,  .mde2-preview s  { text-decoration: line-through; opacity: 0.65; }
 .mde2-editor a, .mde2-preview a   { color: var(--foreground); text-decoration: underline; }
-.mde2-editor hr, .mde2-preview hr { border: none; border-top: 2px solid var(--accent); margin: 1.2em 0; }
+.mde2-editor hr, .mde2-preview hr { border: none; border-top: 2px solid var(--foreground); margin: 1.2em 0; }
 .mde2-editor blockquote, .mde2-preview blockquote {
   border-left: 3px solid var(--foreground); margin: 0.7em 0; padding: 4px 16px;
   background: color-mix(in srgb, var(--foreground) 6%, transparent);
@@ -128,7 +128,7 @@ const STYLES = `
 }
 .mde2-editor pre, .mde2-preview pre {
   background: color-mix(in srgb, var(--foreground) 7%, var(--background));
-  border: 1.5px solid var(--accent); border-radius: 8px;
+  border: 1.5px solid var(--foreground); border-radius: 8px;
   padding: 12px 16px; margin: 0.8em 0; overflow-x: auto; position: relative;
 }
 .mde2-editor pre::before, .mde2-preview pre::before {
@@ -143,7 +143,7 @@ const STYLES = `
 }
 .mde2-editor table, .mde2-preview table { border-collapse: collapse; width: 100%; margin: 0.8em 0; font-size: 0.9em; }
 .mde2-editor th, .mde2-preview th,
-.mde2-editor td, .mde2-preview td { border: 1px solid var(--accent); padding: 7px 12px; text-align: left; }
+.mde2-editor td, .mde2-preview td { border: 1px solid var(--foreground); padding: 7px 12px; text-align: left; }
 .mde2-editor th, .mde2-preview th {
   background: color-mix(in srgb, var(--foreground) 8%, transparent); font-weight: 700;
 }
@@ -160,15 +160,15 @@ const STYLES = `
 /* Footer */
 .mde2-footer {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 5px 14px; border-top: 1.5px solid var(--accent);
-  background: color-mix(in srgb, var(--background) 70%, var(--accent) 30%);
+  padding: 5px 14px; border-top: 1.5px solid var(--foreground);
+  background: color-mix(in srgb, var(--background) 70%, var(--foreground) 30%);
 }
 .mde2-counter { font-size: 0.68rem; color: var(--foreground); font-family: 'DM Mono', monospace; letter-spacing: 0.03em; }
 .mde2-actions { display: flex; gap: 6px; }
 .mde2-action-btn {
   display: inline-flex; align-items: center; gap: 4px;
   padding: 3px 10px; border-radius: 6px;
-  border: 1.5px solid var(--accent); background: var(--background);
+  border: 1.5px solid var(--foreground); background: var(--background);
   color: var(--foreground); font-size: 0.7rem; font-weight: 600;
   font-family: 'DM Mono', monospace; cursor: pointer;
   transition: all 0.14s; letter-spacing: 0.02em;
@@ -263,8 +263,8 @@ export const RENDERER_STYLES = `
   margin: 0.9em 0 0.3em;
   line-height: 1.25;
 }
-.mdr h1 { font-size: 2rem;   border-bottom: 2px solid var(--accent, #e2e8f0); padding-bottom: 6px; }
-.mdr h2 { font-size: 1.5rem; border-bottom: 1px solid var(--accent, #e2e8f0); padding-bottom: 4px; }
+.mdr h1 { font-size: 2rem;   border-bottom: 2px solid var(--foreground, #e2e8f0); padding-bottom: 6px; }
+.mdr h2 { font-size: 1.5rem; border-bottom: 1px solid var(--foreground, #e2e8f0); padding-bottom: 4px; }
 .mdr h3 { font-size: 1.2rem; }
 .mdr h4 { font-size: 1.05rem; }
 .mdr h5 { font-size: 0.95rem; }
@@ -276,7 +276,7 @@ export const RENDERER_STYLES = `
 .mdr em, .mdr i     { font-style: italic; }
 .mdr del, .mdr s    { text-decoration: line-through; opacity: 0.65; }
 .mdr a              { color: var(--foreground, #6366f1); text-decoration: underline; }
-.mdr hr             { border: none; border-top: 2px solid var(--accent, #e2e8f0); margin: 1.2em 0; }
+.mdr hr             { border: none; border-top: 2px solid var(--foreground, #e2e8f0); margin: 1.2em 0; }
 
 /* ── Blockquote ── */
 .mdr blockquote {
@@ -326,7 +326,7 @@ export const RENDERER_STYLES = `
 /* ── Code block ── */
 .mdr pre {
   background: color-mix(in srgb, var(--foreground, #1a1a1a) 7%, var(--background, #fff));
-  border: 1.5px solid var(--accent, #e2e8f0);
+  border: 1.5px solid var(--foreground, #e2e8f0);
   border-radius: 8px;
   padding: 12px 16px;
   margin: 0.8em 0;
@@ -363,7 +363,7 @@ export const RENDERER_STYLES = `
   font-size: 0.9em;
 }
 .mdr th, .mdr td {
-  border: 1px solid var(--accent, #e2e8f0);
+  border: 1px solid var(--foreground, #e2e8f0);
   padding: 7px 12px;
   text-align: left;
 }
@@ -382,7 +382,7 @@ export const RENDERER_STYLES = `
 
 /* ── Details / Summary ── */
 .mdr details {
-  border: 1.5px solid var(--accent, #e2e8f0);
+  border: 1.5px solid var(--foreground, #e2e8f0);
   border-radius: 8px;
   padding: 6px 14px;
   margin: 0.6em 0;

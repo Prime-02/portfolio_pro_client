@@ -1,4 +1,3 @@
-
 import {
   Monitor,
   Moon,
@@ -38,19 +37,15 @@ const SideBar = ({
     theme,
     themeVariant,
     accentColor,
-    saveChanges,
-    hasUnsavedChanges
   } = useTheme();
 
   const toggleCollapse = () => {
     setIsCollapsed(!isCollapsed);
   };
-  const handleVariantChange = useCallback(async (variant: "light" | "dark" | "system") => {
-    // Don't do anything if it's the same variant
+  const handleVariantChange = useCallback((variant: "light" | "dark" | "system") => {
     if (variant === themeVariant) return;
     setThemeVariant(variant);
-    saveChanges({ theme: variant });
-  }, [themeVariant, setThemeVariant, saveChanges]);
+  }, [themeVariant, setThemeVariant]);
 
 
   return (
@@ -58,11 +53,6 @@ const SideBar = ({
       className={`min-h-screen h-full flex z-10 left-0 flex-col border-l border-[var(--accent)]/20 transition-all duration-300 rounded-r-3xl ease-in-out ${isCollapsed ? "w-16" : "w-64"
         }`}
     >
-      {/* Optional: Show unsaved changes indicator */}
-      {hasUnsavedChanges && !isCollapsed && (
-        <div className="absolute top-4 right-4 w-2 h-2 rounded-full bg-yellow-500 animate-pulse" />
-      )}
-
       {/* Collapse Button - Fixed at top */}
       <SidebarToggle className="rotate-180 border-none" onToggle={toggleCollapse} showKeyboardHints={false} isCollapsed={isCollapsed} />
 

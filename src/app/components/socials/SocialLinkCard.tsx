@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Pencil, Trash2, ExternalLink, Globe, ChevronDown } from "lucide-react";
+import { Pencil, Trash2, Globe, ChevronDown, Copy } from "lucide-react";
 import type { SocialLink } from "@/lib/stores/social_links/useSocialLinks";
 import { socialMediaPlatforms } from "@/lib/utilities/indices/DropDownItems";
 import { useUserSettings } from "@/lib/stores/user/useUserSettings";
+import { copyToClipboard } from "@/lib/utilities/syncFunctions/syncs";
 
 interface SocialLinkCardProps {
     link: SocialLink;
@@ -89,9 +90,10 @@ export function SocialLinkCard({ link, onEdit, onDelete, isPrivate = true }: Soc
                 </div>
 
                 {/* Profile URL */}
-                <a
-                    href={link.profile_url}
-                    target="_blank"
+                <div
+                    onClick={() => {
+                        copyToClipboard(link.profile_url)
+                    }}
                     rel="noopener noreferrer"
                     className="block mb-3 p-3 rounded-xl bg-[var(--foreground)]/5
                 hover:bg-[var(--foreground)]/10 transition-colors group/link"
@@ -100,12 +102,12 @@ export function SocialLinkCard({ link, onEdit, onDelete, isPrivate = true }: Soc
                         <p className="text-sm text-[var(--foreground)]/70 truncate flex-1 mr-2">
                             {link.profile_url.replace(/^https?:\/\//, "")}
                         </p>
-                        <ExternalLink
+                        <Copy
                             className="w-4 h-4 flex-shrink-0 text-[var(--foreground)]/40 
                                        group-hover/link:text-[var(--accent)] transition-colors"
                         />
                     </div>
-                </a>
+                </div>
 
                 {/* Headline (expandable) */}
                 {link.profile_headline && (

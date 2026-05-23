@@ -1,10 +1,9 @@
-import { ThemePreset } from "@/src/app/(user)/[dashboard]/(sub-routes)/preference/ThemeControlPanel";
 import { Crown, Loader, Palette } from "lucide-react";
 
-export const themePresets: ThemePreset[] = [
+export const themePresets = [
   {
     name: "Portfolio Pro",
-    accent: "#05df72", // Vibrant green, high contrast against white and dark backgrounds
+    accent: "#737373",
     light: { background: "#ffffff", foreground: "#171717" },
     dark: { background: "#0a0a0a", foreground: "#ededed" },
   },

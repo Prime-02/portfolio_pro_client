@@ -49,8 +49,7 @@ export const Textinput: React.FC<TextInputProps> = ({
 
   const hasValue = value !== undefined && value !== "";
   const isDropdownType = type === "dropdown" || type === "datalist";
-  const isPhoneType = type === "phone";
-
+  const isPhoneType = type === "phone" || type === "tel";
 
   // Handle click outside to close description
   useEffect(() => {
@@ -105,20 +104,15 @@ export const Textinput: React.FC<TextInputProps> = ({
   // Phone type
   if (isPhoneType) {
     return (
-      <div className="relative">
-        {label && (
-          <label className="block text-sm font-medium text-[var(--foreground)] mb-1 opacity-90">
-            {label}
-            {required && <span className="text-red-500 ml-0.5">*</span>}
-          </label>
-        )}
-        <PhoneInputComponent
-          label={label || ""}
-          phone={value as string}
-          setPhone={onChange}
-        />
-        {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
-      </div>
+      <PhoneInputComponent
+        label={label}
+        phone={value as string}
+        setPhone={onChange}
+        error={error}
+        disabled={disabled}
+        required={required}
+        className={className}
+      />
     );
   }
 

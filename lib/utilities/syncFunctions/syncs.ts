@@ -1,9 +1,8 @@
 export type Primitive = string | number | boolean | symbol | null | undefined;
 
-
 /**
  * Generates a shade of a given hex color based on a percentage (1-100).
- * @param hex - The base color in hex format (e.g., "#05df72").
+ * @param hex - The base color in hex format (e.g., "#737373").
  * @param percent - A number between 1 (lightest) and 100 (darkest).
  * @returns The resulting shade in hex format.
  */
@@ -223,7 +222,7 @@ export function isValidHexColorStrict(hex: string): hex is HexColor {
  */
 export function validateFields<T extends Record<string, unknown>>(
   form: T | null | undefined,
-  allowedEmptyKeys: string[] = []
+  allowedEmptyKeys: string[] = [],
 ): form is T {
   // Handle null/undefined form
   if (!form) {
@@ -243,7 +242,7 @@ export function validateFields<T extends Record<string, unknown>>(
     // Check for empty strings, null, or undefined
     if (value === "" || value === null || value === undefined) {
       toast.warning(
-        `Please fill in the "${replaceCharacters(["_"], [" "], key)}" field.`
+        `Please fill in the "${replaceCharacters(["_"], [" "], key)}" field.`,
       );
       return false;
     }
@@ -251,7 +250,7 @@ export function validateFields<T extends Record<string, unknown>>(
     // Optional: Check for empty arrays/objects if needed
     if (isArray(value) && value.length === 0) {
       toast.warning(
-        `Please provide at least one item for "${replaceCharacters(["_"], [" "], key)}".`
+        `Please provide at least one item for "${replaceCharacters(["_"], [" "], key)}".`,
       );
       return false;
     }
@@ -267,7 +266,7 @@ export function validateFields<T extends Record<string, unknown>>(
  */
 export function hasOwnProperty<T extends Record<string, unknown>>(
   obj: T,
-  key: string | number | symbol
+  key: string | number | symbol,
 ): key is keyof T {
   return Object.prototype.hasOwnProperty.call(obj, key);
 }
@@ -313,7 +312,7 @@ export function findMatch<T extends Record<string, unknown>>(
   searchString: string,
   array: T[] = [],
   keys?: keyof T | Array<keyof T>,
-  exactMatch: boolean = false
+  exactMatch: boolean = false,
 ): T | undefined {
   // Early return for invalid cases
   if (!searchString || !array.length) return undefined;
@@ -334,7 +333,7 @@ export function findMatch<T extends Record<string, unknown>>(
       return exactMatch
         ? lowerValue === lowerSearch
         : lowerValue.includes(lowerSearch);
-    })
+    }),
   );
 }
 
@@ -345,7 +344,7 @@ export type ImageSource = string | null | undefined;
 
 export function getImageSrc(
   profilePicture: ImageSource,
-  initials: string = "User"
+  initials: string = "User",
 ): string {
   // Handle cases where profilePicture is null, undefined, or empty string
   if (!profilePicture) {
@@ -378,14 +377,14 @@ export function getImageSrc(
  */
 export async function base64ToFile(
   base64String: string,
-  filename: string
+  filename: string,
 ): Promise<File> {
   // Extract the content type and base64 data from the string
   const matches = base64String.match(/^data:(.+);base64,(.+)$/);
 
   if (!matches || matches.length !== 3) {
     throw new Error(
-      "Invalid base64 string format. Expected format: data:<content-type>;base64,<data>"
+      "Invalid base64 string format. Expected format: data:<content-type>;base64,<data>",
     );
   }
 
@@ -453,7 +452,7 @@ function createAddressArray(locationData: LocationData[]): AddressItem[] {
 
 // Alternative version with country code suffix for better uniqueness
 export function createAddressArrayWithCountry(
-  locationData: LocationData[]
+  locationData: LocationData[],
 ): AddressItem[] {
   return locationData.map((item: LocationData) => {
     const label: string = item.Place.Label;
@@ -481,7 +480,7 @@ export function generateSimpleId(): string {
 }
 // Version with custom ID generation (UUID-style)
 export function createAddressArrayWithUUID(
-  locationData: LocationData[]
+  locationData: LocationData[],
 ): AddressItem[] {
   return locationData.map((item: LocationData) => {
     const label: string = item.Place.Label;
@@ -560,7 +559,7 @@ type UrlPart =
 //This utility function is now depreciated, use The PathUtil class for all path operations
 export function getCurrentUrl(
   part: UrlPart = "full",
-  segmentIndex?: number
+  segmentIndex?: number,
 ): string {
   // Check if running in a browser environment
   if (typeof window === "undefined") {
@@ -700,7 +699,7 @@ export function validateUsername(username: string): {
  */
 export async function downloadMediaFile(
   url: string,
-  filename?: string
+  filename?: string,
 ): Promise<void> {
   try {
     // Validate URL format
@@ -721,7 +720,7 @@ export async function downloadMediaFile(
 
     if (!response.ok) {
       throw new Error(
-        `Failed to fetch file: ${response.status} ${response.statusText}`
+        `Failed to fetch file: ${response.status} ${response.statusText}`,
       );
     }
 
@@ -732,7 +731,7 @@ export async function downloadMediaFile(
       !contentType.startsWith("video/")
     ) {
       throw new Error(
-        `File is not a video or image. Content-Type: ${contentType}`
+        `File is not a video or image. Content-Type: ${contentType}`,
       );
     }
 
@@ -899,7 +898,7 @@ export class PathUtil {
    */
   static removeSegmentByValue(
     currentPath: string,
-    segmentValue: string
+    segmentValue: string,
   ): string {
     const segments = this.getSegments(currentPath);
     const index = segments.indexOf(segmentValue);
@@ -918,7 +917,7 @@ export class PathUtil {
    */
   static removeAllSegmentsByValue(
     currentPath: string,
-    segmentValue: string
+    segmentValue: string,
   ): string {
     const segments = this.getSegments(currentPath);
     const filtered = segments.filter((segment) => segment !== segmentValue);
@@ -963,7 +962,7 @@ export class PathUtil {
   static addSegmentAtIndex(
     currentPath: string,
     index: number,
-    segmentValue: string
+    segmentValue: string,
   ): string {
     const segments = this.getSegments(currentPath);
     const clampedIndex = Math.max(0, Math.min(index, segments.length));
@@ -981,7 +980,7 @@ export class PathUtil {
   static replaceSegmentAtIndex(
     currentPath: string,
     index: number,
-    newValue: string
+    newValue: string,
   ): string {
     const segments = this.getSegments(currentPath);
     if (index < 0 || index >= segments.length) {
@@ -1029,7 +1028,7 @@ export class PathUtil {
   static getSegmentRange(
     currentPath: string,
     startIndex: number,
-    endIndex?: number
+    endIndex?: number,
   ): string[] {
     const segments = this.getSegments(currentPath);
     return segments.slice(startIndex, endIndex);
@@ -1042,7 +1041,7 @@ export class PathUtil {
    */
   static buildPath(segments: string[]): string {
     const filtered = segments.filter(
-      (segment) => segment && segment.length > 0
+      (segment) => segment && segment.length > 0,
     );
     return filtered.length > 0 ? `/${filtered.join("/")}` : "/";
   }
@@ -1086,7 +1085,7 @@ export class PathUtil {
       string,
       string | number | boolean | string[] | null | undefined
     >,
-    includeQuestionMark: boolean = true
+    includeQuestionMark: boolean = true,
   ): string {
     const searchParams = new URLSearchParams();
 
@@ -1121,7 +1120,7 @@ export class PathUtil {
     queryParams: Record<
       string,
       string | number | boolean | string[] | null | undefined
-    >
+    >,
   ): string {
     const normalizedPath = basePath.startsWith("/") ? basePath : `/${basePath}`;
     const queryString = this.buildQueryString(queryParams, true);
@@ -1141,7 +1140,7 @@ export class PathUtil {
       string,
       string | number | boolean | string[] | null | undefined
     >,
-    overwrite: boolean = true
+    overwrite: boolean = true,
   ): string {
     const [basePath, existingQuery] = currentUrl.split("?");
     const existingParams = existingQuery
@@ -1163,7 +1162,7 @@ export class PathUtil {
    */
   static removeQueryParams(
     currentUrl: string,
-    paramsToRemove: string[]
+    paramsToRemove: string[],
   ): string {
     const [basePath, existingQuery] = currentUrl.split("?");
     if (!existingQuery) return basePath;
@@ -1192,7 +1191,7 @@ export class PathUtil {
     updates: Record<
       string,
       string | number | boolean | string[] | null | undefined
-    >
+    >,
   ): string {
     return this.addQueryParams(currentUrl, updates, true);
   }
@@ -1205,7 +1204,7 @@ export class PathUtil {
    */
   static getQueryParam(
     url: string,
-    paramName: string
+    paramName: string,
   ): string | string[] | null {
     const params = this.parseQueryParams(url);
     return params[paramName] || null;
@@ -1305,7 +1304,7 @@ export class DetailedError extends Error {
 }
 
 export function generateQueryParams(
-  params: Record<string, string | number | boolean | null | undefined> = {}
+  params: Record<string, string | number | boolean | null | undefined> = {},
 ): string {
   const searchParams = new URLSearchParams();
 
@@ -1322,12 +1321,12 @@ export function generateQueryParams(
 export function replaceCharacters(
   findChars: string[],
   replaceChars: string[],
-  inputString: string
+  inputString: string,
 ): string {
   // Validate input arrays have the same length
   if (findChars.length !== replaceChars.length) {
     throw new Error(
-      "findChars and replaceChars arrays must have the same length"
+      "findChars and replaceChars arrays must have the same length",
     );
   }
 
@@ -1343,10 +1342,10 @@ export function replaceCharacters(
   const regex = new RegExp(
     `[${findChars
       .map(
-        (char) => char.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") // Escape regex special characters
+        (char) => char.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), // Escape regex special characters
       )
       .join("")}]`,
-    "g"
+    "g",
   );
 
   return inputString.replace(regex, (match) => charMap[match] || match);
@@ -1367,7 +1366,7 @@ export const formatDateString = (
     locale?: string;
     useProximity?: boolean;
     capitalizeFirst?: boolean;
-  } = {}
+  } = {},
 ): string => {
   const {
     includeTime = false,
@@ -1422,7 +1421,7 @@ export const formatDateString = (
     };
 
     const formatted = new Intl.DateTimeFormat(locale, formatOptions).format(
-      date
+      date,
     );
     return capitalizeFirst ? capitalize(formatted) : formatted;
   } catch (error) {
@@ -1437,7 +1436,7 @@ function formatProximityDate(
   date: Date,
   locale: string,
   includeTime: boolean,
-  timeStyle: "full" | "long" | "medium" | "short"
+  timeStyle: "full" | "long" | "medium" | "short",
 ): string | null {
   const now = new Date();
   const diffInMs = date.getTime() - now.getTime();
@@ -1476,10 +1475,10 @@ function formatProximityDate(
     const dateDay = new Date(
       date.getFullYear(),
       date.getMonth(),
-      date.getDate()
+      date.getDate(),
     );
     const dayDiff = Math.round(
-      (dateDay.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+      (dateDay.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
     );
 
     if (dayDiff === 0) {
@@ -1489,7 +1488,7 @@ function formatProximityDate(
       }
       if (includeTime) {
         const timeStr = new Intl.DateTimeFormat(locale, { timeStyle }).format(
-          date
+          date,
         );
         return isPast
           ? `${diffInHours} hours ago (${timeStr})`
@@ -1503,14 +1502,14 @@ function formatProximityDate(
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const dateDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
   const dayDiff = Math.round(
-    (dateDay.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+    (dateDay.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
   );
 
   // Today (already handled above, but keeping for clarity)
   if (dayDiff === 0) {
     if (includeTime) {
       const timeStr = new Intl.DateTimeFormat(locale, { timeStyle }).format(
-        date
+        date,
       );
       return `today at ${timeStr}`;
     }
@@ -1521,7 +1520,7 @@ function formatProximityDate(
   if (dayDiff === -1) {
     if (includeTime) {
       const timeStr = new Intl.DateTimeFormat(locale, { timeStyle }).format(
-        date
+        date,
       );
       const hour = date.getHours();
       // "Last night" for evening/night times (6 PM to 5 AM)
@@ -1537,7 +1536,7 @@ function formatProximityDate(
   if (dayDiff === 1) {
     if (includeTime) {
       const timeStr = new Intl.DateTimeFormat(locale, { timeStyle }).format(
-        date
+        date,
       );
       const hour = date.getHours();
       // "Tomorrow night" for evening/night times
@@ -1619,7 +1618,7 @@ function formatProximityDate(
 function formatTime(
   date: Date,
   locale: string,
-  timeStyle: "full" | "long" | "medium" | "short"
+  timeStyle: "full" | "long" | "medium" | "short",
 ): string {
   return new Intl.DateTimeFormat(locale, { timeStyle }).format(date);
 }
@@ -1660,7 +1659,7 @@ function handleAxiosError(axiosError: AxiosError): string {
           .map((item) =>
             typeof item === "object" && item !== null
               ? Object.values(item).join(" ")
-              : String(item)
+              : String(item),
           )
           .join(", ");
       } else if (typeof detail === "object" && detail !== null) {
@@ -1676,7 +1675,7 @@ function handleAxiosError(axiosError: AxiosError): string {
         .map((item) =>
           typeof item === "object" && item !== null
             ? Object.values(item).join(" ")
-            : String(item)
+            : String(item),
         )
         .join(", ");
     } else if (typeof responseData === "object" && responseData !== null) {
@@ -1688,7 +1687,7 @@ function handleAxiosError(axiosError: AxiosError): string {
             messages.push(value);
           } else if (Array.isArray(value)) {
             messages.push(
-              ...value.filter((i): i is string => typeof i === "string")
+              ...value.filter((i): i is string => typeof i === "string"),
             );
           } else if (typeof value === "object" && value !== null) {
             collectMessages(value as Record<string, unknown>);
@@ -1709,7 +1708,6 @@ function handleAxiosError(axiosError: AxiosError): string {
   return errorMessage;
 }
 
-
 /**
  * Finds an object in an array by a specific key-value pair and returns its index.
  *
@@ -1721,11 +1719,11 @@ function handleAxiosError(axiosError: AxiosError): string {
 
 export const findObjectByKey = <
   T extends Record<PropertyKey, Primitive>,
-  K extends keyof T = 'id'
+  K extends keyof T = "id",
 >(
-  arr: T[] | null | undefined, 
+  arr: T[] | null | undefined,
   value: T[K] | string | number,
-  key: K = 'id' as K
+  key: K = "id" as K,
 ): number => {
   const index = arr?.findIndex((obj) => obj[key] === value) ?? -1;
 

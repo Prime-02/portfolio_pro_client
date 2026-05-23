@@ -22,12 +22,12 @@ type ButtonProps = {
   title?: string;
   type?: "button" | "submit" | "reset";
   variant?:
-    | "primary"
-    | "secondary"
-    | "outline"
-    | "ghost"
-    | "danger"
-    | "success";
+  | "primary"
+  | "secondary"
+  | "outline"
+  | "ghost"
+  | "danger"
+  | "success";
   size?: "sm" | "md" | "lg";
   customColor?: string;
   colorIntensity?: "light" | "medium" | "dark";
@@ -36,7 +36,7 @@ type ButtonProps = {
 
 // Enhanced color normalization with better error handling
 const normalizeColorToHex = (color: string): string => {
-  if (!color) return "#05df72";
+  if (!color) return "#737373";
 
   const colorStr = String(color).trim();
 
@@ -117,7 +117,7 @@ const normalizeColorToHex = (color: string): string => {
   if (typeof window !== "undefined") {
     console.warn(`Could not parse color format: "${colorStr}", using fallback`);
   }
-  return "#05df72";
+  return "#737373";
 };
 
 // Enhanced color generation with intensity options

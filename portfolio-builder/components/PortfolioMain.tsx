@@ -5,7 +5,10 @@
 import { useEffect } from "react";
 import { usePortfolioStore } from "@/portfolio-builder/store/usePortfolioStore";
 import HeroSectionController from "@/portfolio-builder/components/sections/hero/HeroSectionController";
+import BioSectionController from "@/portfolio-builder/components/sections/bio/BioSectionController";
 import PortfolioProLogo from "@/src/app/components/logo/PortfolioProTextLogo";
+import { HeroData } from "@/portfolio-builder/types/hero";
+import { BioData } from "@/portfolio-builder/types/bio";
 
 // ---------------------------------------------------------------------------
 // Props
@@ -16,11 +19,58 @@ interface PortfolioMainProps {
 }
 
 // ---------------------------------------------------------------------------
+// Layout helpers
+// ---------------------------------------------------------------------------
+
+interface PortfolioSection {
+  type: string;
+  data: Record<string, unknown>;
+}
+
+interface PortfolioLayout {
+  sections: PortfolioSection[];
+}
+
+function getSectionData<T>(
+  layout: Record<string, unknown> | null,
+  sectionType: string
+): T | null {
+  if (!layout) return null;
+
+  const sections = (layout as unknown as PortfolioLayout).sections;
+  if (!sections || !Array.isArray(sections)) return null;
+
+  const section = sections.find((s) => s.type === sectionType);
+  if (!section) return null;
+
+  return section.data as unknown as T;
+}
+
+function setSectionData<T>(
+  layout: Record<string, unknown> | null,
+  sectionType: string,
+  sectionData: T
+): Record<string, unknown> {
+  const currentLayout = layout ? (layout as unknown as PortfolioLayout) : { sections: [] };
+  const sections = [...(currentLayout.sections || [])];
+
+  const sectionIndex = sections.findIndex((s) => s.type === sectionType);
+
+  if (sectionIndex >= 0) {
+    sections[sectionIndex] = { type: sectionType, data: sectionData as unknown as Record<string, unknown> };
+  } else {
+    sections.push({ type: sectionType, data: sectionData as unknown as Record<string, unknown> });
+  }
+
+  return { sections };
+}
+
+// ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
 export default function PortfolioMain({ portfolioId }: PortfolioMainProps) {
-  const { currentPortfolio, isLoading, error, fetchPortfolioById } =
+  const { currentPortfolio, isLoading, error, fetchPortfolioById, updatePortfolio } =
     usePortfolioStore();
 
   // Fetch the portfolio on mount (or when portfolioId changes)
@@ -32,7 +82,7 @@ export default function PortfolioMain({ portfolioId }: PortfolioMainProps) {
   if (isLoading || !currentPortfolio) {
     return (
       <div className="flex items-center flex-col justify-center min-h-screen bg-neutral-950">
-        <PortfolioProLogo scale={0.7}/>
+        <PortfolioProLogo scale={0.7} />
         <p className="text-neutral-400">Loading portfolio...</p>
       </div>
     );
@@ -51,12 +101,23 @@ export default function PortfolioMain({ portfolioId }: PortfolioMainProps) {
   }
 
   // ---- Build mode — render sections ----------------------------------------
+  const heroData = getSectionData<HeroData>(currentPortfolio.layout, "hero");
+  const bioData = getSectionData<BioData>(currentPortfolio.layout, "bio");
+
+  const handleHeroSave = async (updatedHeroData: HeroData) => {
+    const newLayout = setSectionData(currentPortfolio.layout, "hero", updatedHeroData);
+    await updatePortfolio(portfolioId, { layout: newLayout });
+  };
+
+  const handleBioSave = async (updatedBioData: BioData) => {
+    const newLayout = setSectionData(currentPortfolio.layout, "bio", updatedBioData);
+    await updatePortfolio(portfolioId, { layout: newLayout });
+  };
+
   return (
     <div className="min-h-screen bg-neutral-950">
-      <HeroSectionController
-        portfolioId={currentPortfolio.id}
-        layout={currentPortfolio.layout}
-      />
+      <HeroSectionController heroData={heroData} onSave={handleHeroSave} />
+      <BioSectionController bioData={bioData} onSave={handleBioSave} />
 
       {/*
         Future sections:

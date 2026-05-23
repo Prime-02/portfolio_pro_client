@@ -239,7 +239,7 @@ const Step2 = () => {
               desc={professionalInformation.fields[5].description}
             />
           </span>
-          <span className="w-full md:min-w-[45%] md:translate-y-3 ">
+          <span className="w-full md:min-w-[45%] ">
             <Textinput
               loading={storeLoading}
               type="number"

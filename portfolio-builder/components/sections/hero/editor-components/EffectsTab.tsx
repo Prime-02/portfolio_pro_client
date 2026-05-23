@@ -3,6 +3,7 @@
 import { HeroData } from "@/portfolio-builder/types/hero";
 import Field from "./Field";
 import { inputClass } from "./styles";
+import { Textinput } from "@/src/app/components/inputs/Textinput";
 
 interface EffectsTabProps {
     data: HeroData;
@@ -42,17 +43,16 @@ export default function EffectsTab({ data, onUpdate }: EffectsTabProps) {
                 </label>
 
                 {data.effects?.typewriter && (
-                    <Field label="Speed (ms per character)" htmlFor="typewriterSpeed">
-                        <input
-                            id="typewriterSpeed"
-                            type="number"
-                            min={10}
-                            max={500}
-                            value={data.effects?.typewriterSpeed ?? 50}
-                            onChange={(e) => onUpdate({ typewriterSpeed: Number(e.target.value) })}
-                            className={inputClass}
-                        />
-                    </Field>
+                    <Textinput
+                        id="typewriterSpeed"
+                        type="number"
+                        label="Speed (ms per character)"
+                        min={10}
+                        max={500}
+                        value={data.effects?.typewriterSpeed ?? 50}
+                        onChange={(e) => onUpdate({ typewriterSpeed: Number(e) })}
+                        className={inputClass}
+                    />
                 )}
             </div>
 

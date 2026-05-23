@@ -125,8 +125,10 @@ export function getHoverProps(
   switch (anim.hoverEffect) {
     case "scale":
       return {
-        whileHover: { scale: anim.hoverScale ?? 1.03 },
-        transition: { type: "spring", stiffness: 300, damping: 20 } as any,
+        whileHover: {
+          scale: anim.hoverScale ?? 1.03,
+          transition: { type: "spring", stiffness: 300, damping: 20 },
+        },
       };
     case "lift":
       return {
@@ -134,8 +136,8 @@ export function getHoverProps(
           y: -6,
           scale: anim.hoverScale ?? 1.02,
           boxShadow: "0 20px 40px rgba(0,0,0,0.4)",
+          transition: { type: "spring", stiffness: 300, damping: 20 },
         },
-        transition: { type: "spring", stiffness: 300, damping: 20 } as any,
       };
     case "glow":
       return {

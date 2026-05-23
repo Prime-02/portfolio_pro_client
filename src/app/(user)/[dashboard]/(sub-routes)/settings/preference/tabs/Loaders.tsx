@@ -9,18 +9,12 @@ type LoadersProps = {
 };
 
 const Loaders = ({ loaderRef }: LoadersProps) => {
-  const { theme, loader, accentColor, setLoader, saveChanges } = useTheme();
+  const { theme, loader, accentColor, setLoader } = useTheme();
 
-  const handleLoaderChange = useCallback(async (newLoader: string) => {
-    // Don't do anything if it's the same loader
+  const handleLoaderChange = useCallback((newLoader: string) => {
     if (newLoader === loader) return;
-
-    // Update local state immediately for UI feedback
     setLoader(newLoader);
-
-    // Save directly with the new loader value - no race condition!
-    saveChanges({ loader: newLoader });
-  }, [loader, setLoader, saveChanges]);
+  }, [loader, setLoader]);
 
   const LoaderComponent = getLoader(loader);
 

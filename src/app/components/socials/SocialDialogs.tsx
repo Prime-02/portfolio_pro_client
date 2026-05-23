@@ -3,6 +3,8 @@ import type { SocialLink } from "@/lib/stores/social_links/useSocialLinks";
 import { AddSocialLinkDialog } from "./AddSocialLinkDialog";
 import { EditSocialLinkDialog } from "./EditSocialLinkDialog";
 import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
+import { useParams } from "next/navigation";
+import { useRouting } from "@/lib/hooks/routing/useRouting";
 
 interface SocialDialogsProps {
     addDialogOpen: boolean;
@@ -25,10 +27,12 @@ export function SocialDialogs({
     isDeleting,
     onDeleteConfirm,
 }: SocialDialogsProps) {
+    const { checkParams } = useRouting()
+    const isAdd = checkParams("add") === "new";
     return (
         <>
             <AddSocialLinkDialog
-                open={addDialogOpen}
+                open={addDialogOpen || !!isAdd}
                 onOpenChange={onAddDialogChange}
             />
 

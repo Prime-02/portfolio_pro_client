@@ -9,18 +9,6 @@ import { useTheme } from "@/src/app/components/theme/ThemeContext ";
 import { tabConfig } from "@/lib/utilities/indices/Themes";
 import SideBar from "@/src/app/(user)/components/SideBar";
 
-export interface ThemeColors {
-  background: string;
-  foreground: string;
-}
-
-export interface ThemePreset {
-  name: string;
-  light: ThemeColors;
-  dark: ThemeColors;
-  accent: string;
-}
-
 interface ThemeControlPanelProp {
   component?: ReactNode;
 }

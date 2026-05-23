@@ -11,7 +11,6 @@ import {
     CTATab,
     EffectsTab,
     EditorTabs,
-    EditorPreview,
     EditorActions,
     AnimationsTab,
 } from "./editor-components";
@@ -265,7 +264,7 @@ export default function HeroEditor({ initialData, onSave, onCancel }: HeroEditor
         <div className="flex flex-col lg:flex-row gap-6 h-full bg-(--background)">
             {/* Save status banner */}
             {(saveStatus === "saving" || saveStatus === "error") && (
-                <div className={`fixed top-4 right-4 z-50 px-4 py-2 rounded-lg shadow-lg ${saveStatus === "saving"
+                <div className={`fixed bottom-4 right-4 z-50 px-4 py-2 rounded-lg shadow-lg ${saveStatus === "saving"
                         ? "bg-blue-900/90 text-blue-200 border border-blue-700"
                         : "bg-red-900/90 text-red-200 border border-red-700"
                     }`}>

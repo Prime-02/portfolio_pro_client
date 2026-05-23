@@ -67,13 +67,9 @@ export default function SocialLinks({
         },
     };
 
-    const Wrapper = isAnimated && shouldAnimate ? motion.div : "div";
-    const wrapperProps = isAnimated && shouldAnimate
-        ? {
-            variants: containerVariants,
-            initial: "hidden",
-            animate: "visible",
-        }
+    const Wrapper = isAnimated ? motion.div : "div";
+    const wrapperProps = isAnimated
+        ? { variants: containerVariants }
         : {};
 
     return (
@@ -86,8 +82,8 @@ export default function SocialLinks({
                     ? platform.color
                     : (link.customColor || "#ffffff");
 
-                const ItemWrapper = isAnimated && shouldAnimate ? motion.a : "a";
-                const itemProps = isAnimated && shouldAnimate
+                const ItemWrapper = isAnimated ? motion.a : "a";
+                const itemProps = isAnimated
                     ? { variants: itemVariants }
                     : {};
 

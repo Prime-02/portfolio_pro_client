@@ -9,6 +9,7 @@ import Modal from "../containers/modals/Modal";
 import { socialMediaPlatforms } from "@/lib/utilities/indices/DropDownItems";
 import { Plus, Search, ChevronDown, ChevronUp, CheckCircle2 } from "lucide-react";
 import { useUserSettings } from "@/lib/stores/user/useUserSettings";
+import { useRouting } from "@/lib/hooks/routing/useRouting";
 
 interface AddSocialLinkDialogProps {
     open: boolean;
@@ -78,6 +79,7 @@ function deriveUrlType(value: string): string {
 
 export function AddSocialLinkDialog({ open, onOpenChange }: AddSocialLinkDialogProps) {
     const { createSocialLink, isCreating } = useSocialLinks();
+    const { clearQueryParam } = useRouting()
     const { getThemeVariant } = useUserSettings();
     const [selectedPlatform, setSelectedPlatform] = useState("");
     const [profileUrl, setProfileUrl] = useState("");
@@ -165,6 +167,7 @@ export function AddSocialLinkDialog({ open, onOpenChange }: AddSocialLinkDialogP
             onClose={() => {
                 resetForm();
                 onOpenChange(false);
+                clearQueryParam()
             }}
             title={
                 <DialogHeader>

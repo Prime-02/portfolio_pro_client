@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import TemplateStructure, { ComponentArrangement } from "./TemplateStructure";
-import Link from "next/link";
 import { useRouting } from "@/lib/hooks/routing/useRouting";
 import { useUserStore } from "@/lib/stores/user/userStore";
 import { toast } from "@/src/app/components/toastify/Toastify";
@@ -9,20 +8,23 @@ import Image from "next/image";
 import Button from "@/src/app/components/buttons/Buttons";
 import { ArrowRight, Share2 } from "lucide-react";
 import { copyToClipboard, getCurrentUrl } from "@/lib/utilities/syncFunctions/syncs";
+import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 
 const Step6 = () => {
   const { router, extendRouteWithQuery } = useRouting();
-  const { userData } = useUserStore()
+  const { userInfo, isLoading } = useUserSettings()
   const [currentArrangement, setCurrentArrangement] =
     useState<ComponentArrangement>("A-D-B-C");
+
+  const isDisabled = !userInfo?.username || isLoading;
 
   const handleBack = () => {
     router.back();
   };
 
   const handleSkip = () => {
-    if (userData.username) {
-      router.push(`/${userData.username}`);
+    if (userInfo?.username) {
+      router.push(`/${userInfo?.username}`);
     } else {
       toast.warning("A username is required to proceed", {
         title: "Warning",
@@ -31,6 +33,18 @@ const Step6 = () => {
           onClick: () => router.push("/user-auth?auth_mode=signup"),
         },
       });
+    }
+  };
+
+  const handleBuildPortfolio = () => {
+    if (!isDisabled) {
+      router.push(`/${userInfo?.username || "dashboard"}/portfolios`);
+    }
+  };
+
+  const handleGoToDashboard = () => {
+    if (!isDisabled) {
+      extendRouteWithQuery({ step: "1" });
     }
   };
 
@@ -67,6 +81,8 @@ const Step6 = () => {
           variant="primary"
           text="Build Your First Portfolio"
           icon2={<ArrowRight size={16} />}
+          onClick={handleBuildPortfolio}
+          disabled={isDisabled}
         />
         <div className="flex md:flex-row gap-1 justify-between items-center ">
           <span className="min-w-1/2 flex">
@@ -82,28 +98,23 @@ const Step6 = () => {
                   return;
                 }
                 copyToClipboard(
-                  `${getCurrentUrl("origin")}/${userData.username}`
+                  `${getCurrentUrl("origin")}/${userInfo?.username}`
                 );
               }}
               className="w-full"
               icon={<Share2 size={16} />}
+              disabled={isDisabled}
             />
           </span>
-          <Link
-            href={`/${userData.username || "dashboard"}`}
-            className="min-w-1/2 flex"
-          >
-            <Button
-              onClick={() => {
-                extendRouteWithQuery({ step: "1" });
-              }}
-              className="w-full"
-              size="sm"
-              variant="outline"
-              text={completionMessage.cta.secondary}
-              icon2={<ArrowRight size={16} />}
-            />
-          </Link>
+          <Button
+            onClick={handleGoToDashboard}
+            className="min-w-1/2 flex w-full"
+            size="sm"
+            variant="outline"
+            text={completionMessage.cta.secondary}
+            icon2={<ArrowRight size={16} />}
+            disabled={isDisabled}
+          />
         </div>
       </div>
     </TemplateStructure>

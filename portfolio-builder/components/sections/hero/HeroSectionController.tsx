@@ -3,7 +3,6 @@
 "use client";
 
 import { useState } from "react";
-import { usePortfolioStore } from "@/portfolio-builder/store/usePortfolioStore";
 import HeroRenderer from "@/portfolio-builder/components/sections/hero/HeroRenderer";
 import HeroEditor from "@/portfolio-builder/components/sections/hero/HeroEditor";
 import { HeroData, getEmptyHeroData } from "@/portfolio-builder/types/hero";
@@ -13,67 +12,20 @@ import { HeroData, getEmptyHeroData } from "@/portfolio-builder/types/hero";
 // ---------------------------------------------------------------------------
 
 interface HeroSectionControllerProps {
-    portfolioId: string;
-    layout: Record<string, unknown> | null;
-}
-
-// ---------------------------------------------------------------------------
-// Layout helpers
-// ---------------------------------------------------------------------------
-
-interface PortfolioSection {
-    type: string;
-    data: Record<string, unknown>;
-}
-
-interface PortfolioLayout {
-    sections: PortfolioSection[];
-}
-
-function getHeroDataFromLayout(layout: Record<string, unknown> | null): HeroData | null {
-    if (!layout) return null;
-
-    const sections = (layout).sections;
-    if (!sections || !Array.isArray(sections)) return null;
-
-    const heroSection = sections.find((s) => s.type === "hero");
-    if (!heroSection) return null;
-
-    return heroSection.data as unknown as HeroData;
-}
-
-function setHeroDataInLayout(
-    layout: Record<string, unknown> | null,
-    heroData: HeroData,
-): Record<string, unknown> {
-    const currentLayout = (layout) || { sections: [] };
-    const sections = [...(currentLayout.sections as PortfolioSection[] || [])];
-
-    const heroIndex = sections.findIndex((s) => s.type === "hero");
-
-    if (heroIndex >= 0) {
-        sections[heroIndex] = { type: "hero", data: heroData as unknown as Record<string, unknown> };
-    } else {
-        sections.push({ type: "hero", data: heroData as unknown as Record<string, unknown> });
-    }
-
-    return { sections };
+    heroData: HeroData | null;
+    onSave: (updatedHeroData: HeroData) => Promise<void>;
 }
 
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
-export default function HeroSectionController({ portfolioId, layout }: HeroSectionControllerProps) {
-    const { updatePortfolio } = usePortfolioStore();
+export default function HeroSectionController({ heroData, onSave }: HeroSectionControllerProps) {
     const [isEditing, setIsEditing] = useState(false);
-
-    const heroData = getHeroDataFromLayout(layout);
 
     // ---- Save ----------------------------------------------------------------
     const handleSave = async (updatedHeroData: HeroData) => {
-        const newLayout = setHeroDataInLayout(layout, updatedHeroData);
-        await updatePortfolio(portfolioId, { layout: newLayout });
+        await onSave(updatedHeroData);
     };
 
     // ---- Cancel --------------------------------------------------------------

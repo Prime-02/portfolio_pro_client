@@ -7,6 +7,7 @@ import { Textinput } from "../inputs/Textinput";
 import Button from "../buttons/Buttons";
 import { toast } from "../toastify/Toastify";
 import Modal from "../containers/modals/Modal";
+import { useAuthStore } from "@/lib/stores/user/useAuthStore";
 
 
 // ── Reusable Components (hard-coded, update later) ─────────────────────
@@ -162,8 +163,6 @@ export default function AccountSettingsPage() {
     const {
         userInfo,
         fetchUserInfo,
-        isLoading: settingsLoading,
-        error: settingsError,
     } = useUserSettings();
 
     const {
@@ -175,12 +174,10 @@ export default function AccountSettingsPage() {
         isDeactivating,
         isReactivating,
         isDeleting,
-        changePasswordError,
-        deactivateError,
-        reactivateError,
-        deleteError,
         clearErrors,
     } = useUserAccountStore();
+
+    const { logout } = useAuthStore()
 
     // ── Local State ────────────────────────────────────────────────────
     const [currentPassword, setCurrentPassword] = useState("");
@@ -242,6 +239,7 @@ export default function AccountSettingsPage() {
     const handleDelete = useCallback(async () => {
         const success = await deleteAccount({ password: deletePassword });
         if (success) {
+            await logout();
             setDeleteModalOpen(false);
             setDeletePassword("");
             toast.success("Account deleted. Redirecting...");

@@ -57,7 +57,6 @@ interface MotionItemProps {
 export function MotionItem({
     children,
     isAnimated,
-    shouldAnimate,
     anim,
     className,
 }: MotionItemProps) {
@@ -70,8 +69,6 @@ export function MotionItem({
     return (
         <motion.div
             variants={itemVariants}
-            initial="hidden"
-            animate={shouldAnimate ? "visible" : "hidden"}
             className={`w-fit ${className}`}
         >
             {children}

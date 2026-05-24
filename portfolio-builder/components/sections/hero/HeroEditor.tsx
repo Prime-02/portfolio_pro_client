@@ -1,3 +1,5 @@
+// portfolio-builder/components/sections/hero/HeroEditor.tsx
+
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
@@ -17,14 +19,16 @@ import {
 import HeroRenderer from "./HeroRenderer";
 import SocialLinksTab from "./editor-components/SocialLinksTab";
 import { getDefaultAnimations } from "@/portfolio-builder/types/hero";
+import { ResolvedTheme } from "@/portfolio-builder/hooks/usePortfolioTheme";
 
 interface HeroEditorProps {
     initialData: HeroData;
     onSave: (data: HeroData) => void;
     onCancel: () => void;
+    theme: ResolvedTheme;
 }
 
-export default function HeroEditor({ initialData, onSave, onCancel }: HeroEditorProps) {
+export default function HeroEditor({ initialData, onSave, onCancel, theme }: HeroEditorProps) {
     const [data, setData] = useState<HeroData>(() => structuredClone(initialData));
     const [activeTab, setActiveTab] = useState<
         "content" | "layout" | "media" | "background" | "cta" | "effects" | "animations" | "social"
@@ -81,23 +85,21 @@ export default function HeroEditor({ initialData, onSave, onCancel }: HeroEditor
             });
     }, [onSave]);
 
-    // ── Debounced auto-save — schedules executeSave after quiet period ────────
+    // ── Debounced auto-save ───────────────────────────────────────────────────
     const scheduleSave = useCallback((nextData: HeroData) => {
         if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
         saveTimerRef.current = setTimeout(() => executeSave(nextData), 800);
     }, [executeSave]);
 
-    // ── Trigger debounced save whenever data diverges from the saved baseline ─
     useEffect(() => {
         if (hasChanges) {
             scheduleSave(data);
         }
-        // Cleanup: cancel pending debounce on unmount
         return () => {
             if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [data]); // intentionally only `data` — scheduleSave is stable, hasChanges is derived
+    }, [data]);
 
     // ── Prevent accidental page unload ───────────────────────────────────────
     useEffect(() => {
@@ -130,7 +132,7 @@ export default function HeroEditor({ initialData, onSave, onCancel }: HeroEditor
         }));
     };
 
-    const updateBackground = (value: Partial<HeroData["background"]>) => {
+    const updateBackground = (value: Partial<HeroData["background"]> & { type?: string }) => {
         setData((prev) => ({
             ...prev,
             background: { ...prev.background, type: prev.background?.type || "solid", ...value },
@@ -147,7 +149,6 @@ export default function HeroEditor({ initialData, onSave, onCancel }: HeroEditor
     const updateAnimations = (value: Partial<HeroAnimations>) => {
         setData((prev) => ({
             ...prev,
-            // Merge over defaults so required fields are never missing
             animations: {
                 ...getDefaultAnimations(),
                 ...prev.animations,
@@ -201,7 +202,7 @@ export default function HeroEditor({ initialData, onSave, onCancel }: HeroEditor
         return true;
     };
 
-    // ── Manual save — bypasses debounce, fires immediately ───────────────────
+    // ── Manual save ──────────────────────────────────────────────────────────
     const handleSave = () => {
         if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
         executeSave(data);
@@ -238,10 +239,10 @@ export default function HeroEditor({ initialData, onSave, onCancel }: HeroEditor
     };
 
     const saveStatusColor = {
-        idle: hasChanges ? "text-amber-400" : "text-neutral-500",
-        saving: "text-blue-400",
-        saved: "text-emerald-400",
-        error: "text-red-400",
+        idle: hasChanges ? "text-[var(--pb-warning)]" : "text-[var(--pb-text-muted)]",
+        saving: "text-[var(--pb-info)]",
+        saved: "text-[var(--pb-success)]",
+        error: "text-[var(--pb-error)]",
     };
 
     // ── Tab content ──────────────────────────────────────────────────────────
@@ -261,16 +262,16 @@ export default function HeroEditor({ initialData, onSave, onCancel }: HeroEditor
 
     // ── Render ───────────────────────────────────────────────────────────────
     return (
-        <div className="flex flex-col lg:flex-row gap-6 h-full bg-(--background)">
+        <div className="flex flex-col lg:flex-row gap-6 h-full bg-[var(--pb-background)]">
             {/* Save status banner */}
             {(saveStatus === "saving" || saveStatus === "error") && (
                 <div className={`fixed bottom-4 right-4 z-50 px-4 py-2 rounded-lg shadow-lg ${saveStatus === "saving"
-                        ? "bg-blue-900/90 text-blue-200 border border-blue-700"
-                        : "bg-red-900/90 text-red-200 border border-red-700"
+                    ? "bg-[var(--pb-info-bg)] text-[var(--pb-info)] border border-[var(--pb-info-border)]"
+                    : "bg-[var(--pb-error-bg)] text-[var(--pb-error)] border border-[var(--pb-error-border)]"
                     }`}>
                     <div className="flex items-center gap-2">
                         {saveStatus === "saving" ? (
-                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-300 border-t-transparent" />
+                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-[var(--pb-info)] border-t-transparent" />
                         ) : (
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -286,10 +287,10 @@ export default function HeroEditor({ initialData, onSave, onCancel }: HeroEditor
 
             {/* Editor panel */}
             {isEditorVisible && (
-                <div className="flex-1 flex flex-col min-w-0 bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
+                <div className="flex-1 flex flex-col min-w-0 border border-[var(--pb-border)] rounded-xl overflow-hidden">
                     <EditorTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
-                    <div className="p-6 overflow-y-auto flex-1 space-y-6">
+                    <div className="p-6 overflow-y-auto flex-1 space-y-6 bg-[var(--pb-background)]">
                         {renderTabContent()}
                     </div>
 
@@ -306,12 +307,12 @@ export default function HeroEditor({ initialData, onSave, onCancel }: HeroEditor
 
             {/* Preview panel */}
             <div className={`${isEditorVisible ? "flex-1" : "flex-[2]"
-                } min-w-0 bg-neutral-950 border border-neutral-800 rounded-xl overflow-hidden transition-all duration-300`}>
-                <div className="px-4 py-2 border-b border-neutral-800 flex items-center justify-between">
-                    <span className="text-xs text-neutral-500 uppercase tracking-wide">Preview</span>
+                } min-w-0 bg-[var(--pb-background)] border border-[var(--pb-border)] rounded-xl overflow-hidden transition-all duration-300`}>
+                <div className="px-4 py-2 border-b border-[var(--pb-border)] flex items-center justify-between">
+                    <span className="text-xs text-[var(--pb-text-muted)] uppercase tracking-wide">Preview</span>
                     <button
                         onClick={toggleEditor}
-                        className="text-xs text-neutral-400 hover:text-white transition-colors flex items-center gap-1"
+                        className="text-xs text-[var(--pb-text-secondary)] hover:text-[var(--pb-text-primary)] transition-colors flex items-center gap-1"
                         title={isEditorVisible ? "Hide editor for fullscreen preview" : "Show editor"}
                     >
                         {isEditorVisible ? (
@@ -333,7 +334,7 @@ export default function HeroEditor({ initialData, onSave, onCancel }: HeroEditor
                     </button>
                 </div>
                 <div className="h-[calc(100%-37px)] overflow-y-auto">
-                    <HeroRenderer data={data} />
+                    <HeroRenderer data={data} theme={theme} />
                 </div>
             </div>
         </div>

@@ -1,13 +1,12 @@
 // portfolio-builder/components/sections/bio/editor-components/styles.ts
 
 export const inputClass =
-  "w-full bg-neutral-800 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-neutral-500 focus:ring-1 focus:ring-neutral-500 transition-colors";
+  "w-full bg-[var(--pb-input-bg)] border border-[var(--pb-input-border)] rounded-lg px-3 py-2 text-sm text-[var(--pb-text-primary)] placeholder-[var(--pb-input-placeholder)] focus:outline-none focus:border-[var(--pb-input-border-focus)] focus:ring-1 focus:ring-[var(--pb-input-border-focus)] transition-colors";
 
 export const textareaClass =
-  "w-full bg-neutral-800 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-neutral-500 focus:ring-1 focus:ring-neutral-500 transition-colors resize-y min-h-[120px]";
+  "w-full bg-[var(--pb-input-bg)] border border-[var(--pb-input-border)] rounded-lg px-3 py-2 text-sm text-[var(--pb-text-primary)] placeholder-[var(--pb-input-placeholder)] focus:outline-none focus:border-[var(--pb-input-border-focus)] focus:ring-1 focus:ring-[var(--pb-input-border-focus)] transition-colors resize-y min-h-[120px]";
 
-export const sectionClass =
-  "space-y-4";
+export const sectionClass = "space-y-4";
 
 export const sectionTitleClass =
-  "text-xs font-semibold uppercase tracking-widest text-neutral-500 border-b border-neutral-800 pb-2";
+  "text-xs font-semibold uppercase tracking-widest text-[var(--pb-text-muted)] border-b border-[var(--pb-border)] pb-2";

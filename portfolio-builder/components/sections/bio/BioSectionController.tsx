@@ -38,10 +38,10 @@ export default function BioSectionController({ bioData, onSave }: BioSectionCont
     return (
       <div className="flex items-center justify-center min-h-[40vh]">
         <div className="text-center">
-          <p className="text-neutral-500 text-sm mb-4">Bio section not set up</p>
+          <p className="text-[var(--pb-text-muted)] text-sm mb-4">Bio section not set up</p>
           <button
             onClick={() => setIsEditing(true)}
-            className="px-6 py-3 bg-white text-black rounded-lg font-medium text-sm hover:bg-neutral-200 transition-colors"
+            className="px-6 py-3 bg-[var(--pb-foreground)] text-[var(--pb-background)] rounded-lg font-medium text-sm hover:opacity-90 transition-opacity"
           >
             Add Bio Section
           </button>
@@ -69,7 +69,7 @@ export default function BioSectionController({ bioData, onSave }: BioSectionCont
       {/* Edit button */}
       <button
         onClick={() => setIsEditing(true)}
-        className="absolute top-4 right-4 z-50 px-4 py-2 bg-white/10 backdrop-blur text-white border border-white/20 rounded-lg font-medium text-sm hover:bg-white/20 transition-colors"
+        className="absolute top-4 right-4 z-50 px-4 py-2 bg-[var(--pb-foreground-10)] backdrop-blur text-[var(--pb-text-primary)] border border-[var(--pb-border)] rounded-lg font-medium text-sm hover:bg-[var(--pb-foreground-20)] transition-colors"
       >
         Edit
       </button>

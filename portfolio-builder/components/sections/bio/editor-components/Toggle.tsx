@@ -18,17 +18,17 @@ export default function Toggle({ label, description, checked, onChange }: Toggle
           className="sr-only"
         />
         <div
-          className={`w-9 h-5 rounded-full transition-colors ${checked ? "bg-white" : "bg-neutral-700"
+          className={`w-9 h-5 rounded-full transition-colors ${checked ? "bg-foreground" : "bg-foreground/20"
             }`}
         />
         <div
-          className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-black transition-transform ${checked ? "translate-x-4" : "translate-x-0"
+          className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-background transition-transform ${checked ? "translate-x-4" : "translate-x-0"
             }`}
         />
       </div>
       <div>
-        <p className="text-sm text-neutral-300">{label}</p>
-        {description && <p className="text-xs text-neutral-500 mt-0.5">{description}</p>}
+        <p className="text-sm text-foreground/70">{label}</p>
+        {description && <p className="text-xs text-foreground/40 mt-0.5">{description}</p>}
       </div>
     </label>
   );

@@ -1,6 +1,5 @@
 // portfolio-builder/components/sections/hero/editor-components/SelectField.tsx
 
-import { inputClass } from './styles';
 import Field from './Field';
 import Dropdown from '@/src/app/components/inputs/DynamicDropdown';
 
@@ -30,18 +29,6 @@ export default function SelectField({ label, id, value, onChange, options }: Sel
                 onSelect={(val) => onChange(val as string)}
                 includeNoneOption={false}
             />
-            {/* <select
-                id={id}
-                value={value}
-                onChange={(e) => onChange(e.target.value)}
-                className={inputClass}
-            >
-                {options.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                    </option>
-                ))}
-            </select> */}
         </Field>
     );
 }

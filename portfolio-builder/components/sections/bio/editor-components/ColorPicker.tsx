@@ -17,7 +17,7 @@ export default function ColorPicker({ id, value, onChange, placeholder }: ColorP
         type="color"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-10 h-10 rounded cursor-pointer border border-neutral-700"
+        className="w-10 h-10 rounded cursor-pointer border border-foreground/20"
       />
       <input
         type="text"

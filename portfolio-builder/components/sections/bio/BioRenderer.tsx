@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, JSX } from "react";
 import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import { BioData } from "@/portfolio-builder/types/bio";
 import type { BioAnimations } from "@/portfolio-builder/types/bio";
@@ -40,7 +40,7 @@ export default function BioRenderer({ data }: BioRendererProps) {
     fonts,
     typography,
     animations,
-    cta,
+    ctaButtons, // Changed from cta to ctaButtons
   } = data;
 
   const anim: BioAnimations = {
@@ -118,8 +118,9 @@ export default function BioRenderer({ data }: BioRendererProps) {
   // ── Background ───────────────────────────────────────────────────────────
   const bgStyle = getBackgroundStyle(background);
 
-  // ── Alignment ────────────────────────────────────────────────────────────
+  // ── Alignment helpers ────────────────────────────────────────────────────
   const alignClass = alignment === "center" ? "text-center items-center" : "text-left items-start";
+  const alignJustify = alignment === "center" ? "justify-center" : "justify-start";
 
   // ── Spacing ──────────────────────────────────────────────────────────────
   const spacingClasses = {
@@ -128,12 +129,9 @@ export default function BioRenderer({ data }: BioRendererProps) {
     loose: "space-y-8",
   };
 
-  // ── Layout classes ───────────────────────────────────────────────────────
-  const layoutClasses = {
-    standard: "max-w-4xl mx-auto px-6",
-    compact: "max-w-2xl mx-auto px-6",
-    card: "max-w-3xl mx-auto px-8 py-12 rounded-2xl bg-neutral-900/50 border border-neutral-800",
-  };
+  // ── Layout max-width containers (all centered on large screens) ──────────
+  const layoutContainer = (widthClass: string) =>
+    `${widthClass} mx-auto w-full px-4 sm:px-6 lg:px-8`;
 
   // ── Padding ──────────────────────────────────────────────────────────────
   const paddingStyle: React.CSSProperties = {
@@ -163,6 +161,348 @@ export default function BioRenderer({ data }: BioRendererProps) {
     return style;
   };
 
+  // ── Shared content blocks ────────────────────────────────────────────────
+  const StatusBlock = status ? (
+    <MotionItem isAnimated={isAnimated} shouldAnimate={shouldAnimate} anim={anim}>
+      <StatusBadge status={status} />
+    </MotionItem>
+  ) : null;
+
+  const HeadlineBlock = headline ? (
+    <MotionItem isAnimated={isAnimated} shouldAnimate={shouldAnimate} anim={anim}>
+      <h2
+        className="text-2xl md:text-3xl lg:text-4xl font-bold text-[var(--pb-foreground)]"
+        style={getTextStyle("headline")}
+      >
+        {headline}
+      </h2>
+    </MotionItem>
+  ) : null;
+
+  const BioBlock = bio ? (
+    <MotionItem isAnimated={isAnimated} shouldAnimate={shouldAnimate} anim={anim}>
+      <div className="text-base md:text-lg text-[var(--pb-foreground-80)]" style={getTextStyle("bio")}>
+        <MarkdownRenderer markdown={bio} />
+      </div>
+    </MotionItem>
+  ) : null;
+
+  const LocationExpBlock = (location || (yearsExperience && yearsExperience > 0)) ? (
+    <MotionItem isAnimated={isAnimated} shouldAnimate={shouldAnimate} anim={anim}>
+      <div className="flex flex-wrap items-center gap-4 text-sm text-[var(--pb-foreground-60)]">
+        {location && (
+          <span className="inline-flex items-center gap-1.5">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+            </svg>
+            {location}
+          </span>
+        )}
+        {yearsExperience && yearsExperience > 0 && (
+          <span className="inline-flex items-center gap-1.5">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            {yearsExperience} {yearsExperience === 1 ? "year" : "years"} of experience
+          </span>
+        )}
+      </div>
+    </MotionItem>
+  ) : null;
+
+  const LanguagesBlock = languages && languages.length > 0 ? (
+    <MotionItem isAnimated={isAnimated} shouldAnimate={shouldAnimate} anim={anim}>
+      <LanguageList languages={languages} />
+    </MotionItem>
+  ) : null;
+
+  const ContactsBlock = contacts && contacts.length > 0 ? (
+    <MotionItem isAnimated={isAnimated} shouldAnimate={shouldAnimate} anim={anim}>
+      <ContactList contacts={contacts} />
+    </MotionItem>
+  ) : null;
+
+  const MetadataBlock = metadata && metadata.length > 0 ? (
+    <MotionItem isAnimated={isAnimated} shouldAnimate={shouldAnimate} anim={anim}>
+      <MetadataGrid metadata={metadata} />
+    </MotionItem>
+  ) : null;
+
+  // ── CTA Block — Updated to support multiple buttons with all variants ────
+  const CTABlock = ctaButtons && ctaButtons.length > 0 ? (
+    <MotionItem isAnimated={isAnimated} shouldAnimate={shouldAnimate} anim={anim}>
+      <div className="flex flex-wrap gap-3 mt-2">
+        {ctaButtons.map((btn, index) => (
+          <CTAButton
+            key={index}
+            label={btn.label}
+            url={btn.url}
+            variant={btn.variant}
+            openInNewTab={btn.openInNewTab}
+            className=""
+          />
+        ))}
+      </div>
+    </MotionItem>
+  ) : null;
+
+  // ── Helper: alignment-aware wrapper ──────────────────────────────────────
+  const AlignWrap = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
+    <div className={`${alignment === "center" ? "text-center items-center" : "text-left items-start"} ${className}`}>
+      {children}
+    </div>
+  );
+
+  // ── Layout renderers ─────────────────────────────────────────────────────
+
+  const renderStandard = () => (
+    <AlignWrap className={`flex flex-col ${spacingClasses[spacing]}`}>
+      {StatusBlock}
+      {HeadlineBlock}
+      {BioBlock}
+      {LocationExpBlock}
+      {LanguagesBlock}
+      {ContactsBlock}
+      {MetadataBlock}
+      {CTABlock}
+    </AlignWrap>
+  );
+
+  const renderSplit = () => (
+    <div className={`grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 ${alignJustify}`}>
+      <AlignWrap className={`flex flex-col ${spacingClasses[spacing]}`}>
+        {StatusBlock}
+        {HeadlineBlock}
+        {LocationExpBlock}
+      </AlignWrap>
+      <AlignWrap className={`flex flex-col ${spacingClasses[spacing]}`}>
+        {BioBlock}
+        {LanguagesBlock}
+        {ContactsBlock}
+        {MetadataBlock}
+        {CTABlock}
+      </AlignWrap>
+    </div>
+  );
+
+  const renderMagazine = () => (
+    <AlignWrap className="flex flex-col">
+      <div className={`mb-8 lg:mb-12 ${spacingClasses[spacing]}`}>
+        {StatusBlock}
+        {HeadlineBlock}
+        {LocationExpBlock}
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
+        <AlignWrap className={`flex flex-col ${spacingClasses[spacing]}`}>
+          {BioBlock}
+          {LanguagesBlock}
+        </AlignWrap>
+        <AlignWrap className={`flex flex-col ${spacingClasses[spacing]}`}>
+          {ContactsBlock}
+          {MetadataBlock}
+          {CTABlock}
+        </AlignWrap>
+      </div>
+    </AlignWrap>
+  );
+
+  const renderFeatured = () => (
+    <AlignWrap className="flex flex-col">
+      <div className={`mb-8 lg:mb-12 ${spacingClasses[spacing]}`}>
+        {StatusBlock}
+        <div className={alignment === "center" ? "max-w-3xl mx-auto" : "max-w-3xl"}>
+          {HeadlineBlock}
+        </div>
+      </div>
+      {BioBlock && (
+        <div className={`mb-8 lg:mb-12 ${alignment === "center" ? "max-w-3xl mx-auto" : "max-w-2xl"}`}>
+          <div className="pl-4 md:pl-6 border-l-2 border-[var(--pb-border)]">
+            {BioBlock}
+          </div>
+        </div>
+      )}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+        {LocationExpBlock && (
+          <div className="p-4 lg:p-5 rounded-xl bg-[var(--pb-surface-elevated)] border border-[var(--pb-border)]">
+            {LocationExpBlock}
+          </div>
+        )}
+        {LanguagesBlock && (
+          <div className="p-4 lg:p-5 rounded-xl bg-[var(--pb-surface-elevated)] border border-[var(--pb-border)]">
+            {LanguagesBlock}
+          </div>
+        )}
+        {ContactsBlock && (
+          <div className="p-4 lg:p-5 rounded-xl bg-[var(--pb-surface-elevated)] border border-[var(--pb-border)]">
+            {ContactsBlock}
+          </div>
+        )}
+        {MetadataBlock && (
+          <div className="p-4 lg:p-5 rounded-xl bg-[var(--pb-surface-elevated)] border border-[var(--pb-border)]">
+            {MetadataBlock}
+          </div>
+        )}
+      </div>
+      {CTABlock && <div className="mt-8 lg:mt-10">{CTABlock}</div>}
+    </AlignWrap>
+  );
+
+  const renderSidebar = () => (
+    <div className={`grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 ${alignJustify}`}>
+      <AlignWrap className={`lg:col-span-4 flex flex-col ${spacingClasses[spacing]}`}>
+        {StatusBlock}
+        {HeadlineBlock}
+        <div className="mt-4 pt-4 border-t border-[var(--pb-border)] w-full">
+          {LocationExpBlock}
+        </div>
+        <div className="pt-3 w-full">
+          {LanguagesBlock}
+        </div>
+        {ContactsBlock && (
+          <div className="pt-3 w-full">
+            {ContactsBlock}
+          </div>
+        )}
+      </AlignWrap>
+      <AlignWrap className={`lg:col-span-8 flex flex-col ${spacingClasses[spacing]}`}>
+        {BioBlock}
+        {MetadataBlock}
+        {CTABlock}
+      </AlignWrap>
+    </div>
+  );
+
+  const renderMinimal = () => (
+    <AlignWrap className="py-8 md:py-16 lg:py-20">
+      <div className={`max-w-2xl mx-auto w-full ${alignment === "center" ? "" : "lg:mx-0"}`}>
+        <div className={`flex flex-col ${spacingClasses[spacing]}`}>
+          {StatusBlock}
+          {HeadlineBlock}
+          {BioBlock}
+          {LocationExpBlock}
+          {LanguagesBlock}
+          {ContactsBlock}
+          {MetadataBlock}
+          {CTABlock}
+        </div>
+      </div>
+    </AlignWrap>
+  );
+
+  const renderBento = () => (
+    <AlignWrap className="flex flex-col">
+      <div className={`mb-8 lg:mb-10 ${spacingClasses[spacing]}`}>
+        {StatusBlock}
+        {HeadlineBlock}
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5">
+        {/* Bio card — spans 2 columns on large */}
+        {BioBlock && (
+          <div className="sm:col-span-2 lg:col-span-2 p-5 lg:p-6 rounded-2xl bg-[var(--pb-surface)] border border-[var(--pb-border)]">
+            {BioBlock}
+          </div>
+        )}
+        {/* Location & Experience card */}
+        {LocationExpBlock && (
+          <div className="p-5 lg:p-6 rounded-2xl bg-[var(--pb-surface)] border border-[var(--pb-border)]">
+            {LocationExpBlock}
+          </div>
+        )}
+        {/* Languages card */}
+        {LanguagesBlock && (
+          <div className="p-5 lg:p-6 rounded-2xl bg-[var(--pb-surface)] border border-[var(--pb-border)]">
+            {LanguagesBlock}
+          </div>
+        )}
+        {/* Contacts card — spans 2 columns on large */}
+        {ContactsBlock && (
+          <div className="sm:col-span-2 lg:col-span-2 p-5 lg:p-6 rounded-2xl bg-[var(--pb-surface)] border border-[var(--pb-border)]">
+            {ContactsBlock}
+          </div>
+        )}
+        {/* Metadata card */}
+        {MetadataBlock && (
+          <div className="p-5 lg:p-6 rounded-2xl bg-[var(--pb-surface)] border border-[var(--pb-border)]">
+            {MetadataBlock}
+          </div>
+        )}
+        {/* CTA card — spans full width if present */}
+        {CTABlock && (
+          <div className="sm:col-span-2 lg:col-span-3 p-5 lg:p-6 rounded-2xl bg-[var(--pb-surface)] border border-[var(--pb-border)]">
+            {CTABlock}
+          </div>
+        )}
+      </div>
+    </AlignWrap>
+  );
+
+  const renderShowcase = () => (
+    <AlignWrap className="flex flex-col">
+      {/* Hero area with extra breathing room */}
+      <div className={`mb-10 lg:mb-16 ${spacingClasses[spacing]}`}>
+        {StatusBlock}
+        <div className={alignment === "center" ? "max-w-4xl mx-auto" : "max-w-4xl"}>
+          {HeadlineBlock}
+        </div>
+        {BioBlock && (
+          <div className={`mt-6 ${alignment === "center" ? "max-w-2xl mx-auto" : "max-w-2xl"}`}>
+            {BioBlock}
+          </div>
+        )}
+      </div>
+      {/* Info panels in a wide row */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-6">
+        {LocationExpBlock && (
+          <div className="p-5 lg:p-6 rounded-xl bg-[var(--pb-surface)] border border-[var(--pb-border)] backdrop-blur-sm">
+            {LocationExpBlock}
+          </div>
+        )}
+        {LanguagesBlock && (
+          <div className="p-5 lg:p-6 rounded-xl bg-[var(--pb-surface)] border border-[var(--pb-border)] backdrop-blur-sm">
+            {LanguagesBlock}
+          </div>
+        )}
+        {ContactsBlock && (
+          <div className="p-5 lg:p-6 rounded-xl bg-[var(--pb-surface)] border border-[var(--pb-border)] backdrop-blur-sm">
+            {ContactsBlock}
+          </div>
+        )}
+        {MetadataBlock && (
+          <div className="p-5 lg:p-6 rounded-xl bg-[var(--pb-surface)] border border-[var(--pb-border)] backdrop-blur-sm">
+            {MetadataBlock}
+          </div>
+        )}
+      </div>
+      {CTABlock && <div className="mt-10 lg:mt-14">{CTABlock}</div>}
+    </AlignWrap>
+  );
+
+  const layoutRenderers: Record<string, () => JSX.Element> = {
+    standard: renderStandard,
+    split: renderSplit,
+    magazine: renderMagazine,
+    featured: renderFeatured,
+    sidebar: renderSidebar,
+    minimal: renderMinimal,
+    bento: renderBento,
+    showcase: renderShowcase,
+  };
+
+  const renderLayout = layoutRenderers[layout] || renderStandard;
+
+  // ── Container widths per layout (all centered) ─────────────────────────────
+  const layoutWidthClasses: Record<string, string> = {
+    standard: "max-w-4xl",
+    split: "max-w-6xl",
+    magazine: "max-w-5xl",
+    featured: "max-w-5xl",
+    sidebar: "max-w-6xl",
+    minimal: "max-w-3xl",
+    bento: "max-w-5xl",
+    showcase: "max-w-6xl",
+  };
+
   // ── Render content ───────────────────────────────────────────────────────
   return (
     <section
@@ -176,99 +516,9 @@ export default function BioRenderer({ data }: BioRendererProps) {
         anim={anim}
         parallax={anim.parallax}
         parallaxY={parallaxY}
-        className={`relative z-10 ${layoutClasses[layout]} ${alignClass}`}
+        className={`relative z-10 ${layoutContainer(layoutWidthClasses[layout] || "max-w-4xl")} ${alignClass}`}
       >
-        <div className={`flex flex-col ${alignClass} ${spacingClasses[spacing]}`}>
-          {/* Status Badge */}
-          {status && (
-            <MotionItem isAnimated={isAnimated} shouldAnimate={shouldAnimate} anim={anim}>
-              <StatusBadge status={status} />
-            </MotionItem>
-          )}
-
-          {/* Headline */}
-          {headline && (
-            <MotionItem isAnimated={isAnimated} shouldAnimate={shouldAnimate} anim={anim}>
-              <h2
-                className="text-2xl md:text-3xl lg:text-4xl font-bold text-white"
-                style={getTextStyle("headline")}
-              >
-                {headline}
-              </h2>
-            </MotionItem>
-          )}
-
-          {/* Bio / Description */}
-          {bio && (
-            <MotionItem isAnimated={isAnimated} shouldAnimate={shouldAnimate} anim={anim}>
-              <div
-                className="text-base md:text-lg"
-                style={getTextStyle("bio")}
-              >
-                <MarkdownRenderer markdown={bio} />
-              </div>
-            </MotionItem>
-          )}
-
-          {/* Location & Experience row */}
-          {(location || (yearsExperience && yearsExperience > 0)) && (
-            <MotionItem isAnimated={isAnimated} shouldAnimate={shouldAnimate} anim={anim}>
-              <div className="flex flex-wrap items-center gap-4 text-sm text-neutral-400">
-                {location && (
-                  <span className="inline-flex items-center gap-1.5">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
-                    </svg>
-                    {location}
-                  </span>
-                )}
-                {yearsExperience && yearsExperience > 0 && (
-                  <span className="inline-flex items-center gap-1.5">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    {yearsExperience} {yearsExperience === 1 ? "year" : "years"} of experience
-                  </span>
-                )}
-              </div>
-            </MotionItem>
-          )}
-
-          {/* Languages */}
-          {languages && languages.length > 0 && (
-            <MotionItem isAnimated={isAnimated} shouldAnimate={shouldAnimate} anim={anim}>
-              <LanguageList languages={languages} />
-            </MotionItem>
-          )}
-
-          {/* Contact Methods */}
-          {contacts && contacts.length > 0 && (
-            <MotionItem isAnimated={isAnimated} shouldAnimate={shouldAnimate} anim={anim}>
-              <ContactList contacts={contacts} />
-            </MotionItem>
-          )}
-
-          {/* Metadata / Fun Facts */}
-          {metadata && metadata.length > 0 && (
-            <MotionItem isAnimated={isAnimated} shouldAnimate={shouldAnimate} anim={anim}>
-              <MetadataGrid metadata={metadata} />
-            </MotionItem>
-          )}
-
-          {/* CTA Button */}
-          {cta && (
-            <MotionItem isAnimated={isAnimated} shouldAnimate={shouldAnimate} anim={anim}>
-              <CTAButton
-                label={cta.label}
-                url={cta.url}
-                variant={cta.variant}
-                openInNewTab={cta.openInNewTab}
-                className="mt-2"
-              />
-            </MotionItem>
-          )}
-        </div>
+        {renderLayout()}
       </MotionContainer>
     </section>
   );

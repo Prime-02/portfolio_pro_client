@@ -11,9 +11,9 @@ interface FieldProps {
 export default function Field({ label, htmlFor, className, required, children }: FieldProps) {
     return (
         <div className={`space-y-1.5 ${className || ""}`}>
-            <label htmlFor={htmlFor} className="block text-sm font-medium text-neutral-300">
+            <label htmlFor={htmlFor} className="block text-sm font-medium text-[var(--pb-text-secondary)]">
                 {label}
-                {required && <span className="text-red-400 ml-1">*</span>}
+                {required && <span className="text-[var(--pb-error)] ml-1">*</span>}
             </label>
             {children}
         </div>

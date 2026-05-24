@@ -4,7 +4,6 @@ import type { HeroData, HeroMediaShape, HeroMediaSize } from "@/portfolio-builde
 
 interface MediaDisplayProps {
     media?: HeroData["media"];
-    /** Fallback size — used only when media.size is not set */
     size?: HeroMediaSize;
     className?: string;
 }
@@ -30,11 +29,8 @@ export function MediaDisplay({
     size: sizeFallback = "md",
     className,
 }: MediaDisplayProps) {
-    // Prefer the value stored on the media object; fall back to the prop
     const size = media?.size ?? sizeFallback;
     const shape = media?.shape ?? (size === "lg" ? "rounded" : "circle");
-
-    console.log(media)
 
     const shapeClass = getShapeClass(shape);
     const sizeClass = getSizeClasses(size);
@@ -42,7 +38,7 @@ export function MediaDisplay({
     if (!media || media.type === "none") {
         return (
             <div
-                className={`${sizeClass} ${shapeClass} border border-dashed border-neutral-800 flex items-center justify-center text-neutral-600 text-sm ${className ?? ""}`}
+                className={`${sizeClass} ${shapeClass} border border-dashed border-[var(--pb-border)] flex items-center justify-center text-[var(--pb-text-muted)] text-sm ${className ?? ""}`}
             >
                 No media
             </div>
@@ -54,7 +50,7 @@ export function MediaDisplay({
             <img
                 src={media.imageUrl}
                 alt={media.imageAlt || ""}
-                className={`${sizeClass} ${shapeClass} object-cover border-2 border-neutral-700 mx-auto shadow-lg ${className ?? ""}`}
+                className={`${sizeClass} ${shapeClass} object-cover border-2 border-[var(--pb-border)] mx-auto shadow-lg ${className ?? ""}`}
             />
         );
     }
@@ -62,7 +58,7 @@ export function MediaDisplay({
     if (media.type === "lottie" && media.lottieUrl) {
         return (
             <div
-                className={`${sizeClass} ${shapeClass} mx-auto text-neutral-400 text-sm flex items-center justify-center border border-dashed border-neutral-700 ${className ?? ""}`}
+                className={`${sizeClass} ${shapeClass} mx-auto text-[var(--pb-text-muted)] text-sm flex items-center justify-center border border-dashed border-[var(--pb-border)] ${className ?? ""}`}
             >
                 {size === "lg" ? "Lottie Animation" : "Lottie"}
             </div>
@@ -77,7 +73,7 @@ export function MediaDisplay({
                 muted
                 loop
                 playsInline
-                className={`${sizeClass} ${shapeClass} object-cover mx-auto border-2 border-neutral-700 shadow-lg ${className ?? ""}`}
+                className={`${sizeClass} ${shapeClass} object-cover mx-auto border-2 border-[var(--pb-border)] shadow-lg ${className ?? ""}`}
             />
         );
     }

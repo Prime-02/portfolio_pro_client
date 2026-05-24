@@ -8,7 +8,7 @@ import { inputClass } from "./styles";
 
 interface FontPickerProps {
     id: string;
-    value: string; // current font family, or "" for default
+    value: string;
     onChange: (family: string) => void;
     previewText?: string;
 }
@@ -21,12 +21,10 @@ export default function FontPicker({ id, value, onChange, previewText = "Aa" }: 
     const [category, setCategory] = useState<FontCategory | "all">("all");
     const containerRef = useRef<HTMLDivElement>(null);
 
-    // Load the currently selected font on mount / value change
     useEffect(() => {
         if (value) loadGoogleFont(value);
     }, [value]);
 
-    // Close on outside click
     useEffect(() => {
         if (!open) return;
         const handler = (e: MouseEvent) => {
@@ -46,9 +44,7 @@ export default function FontPicker({ id, value, onChange, previewText = "Aa" }: 
         });
     }, [search, category]);
 
-    // Lazy-load fonts only when they scroll into view, not all at once
     const fontListRef = useRef<HTMLDivElement>(null);
-    const [visibleRange, setVisibleRange] = useState({ start: 0, end: 15 });
 
     useEffect(() => {
         if (!open || !fontListRef.current) return;
@@ -96,7 +92,7 @@ export default function FontPicker({ id, value, onChange, previewText = "Aa" }: 
             >
                 <span className="truncate">{value || DEFAULT_LABEL}</span>
                 <svg
-                    className={`w-4 h-4 text-neutral-500 flex-shrink-0 transition-transform ${open ? "rotate-180" : ""}`}
+                    className={`w-4 h-4 text-[var(--pb-text-muted)] flex-shrink-0 transition-transform ${open ? "rotate-180" : ""}`}
                     fill="none" stroke="currentColor" viewBox="0 0 24 24"
                 >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -105,9 +101,9 @@ export default function FontPicker({ id, value, onChange, previewText = "Aa" }: 
 
             {/* Dropdown */}
             {open && (
-                <div className="absolute z-50 mt-1 w-full bg-neutral-900 border border-neutral-700 rounded-xl shadow-2xl overflow-hidden">
+                <div className="absolute z-50 mt-1 w-full bg-[var(--pb-background)] border border-[var(--pb-border)] rounded-xl shadow-2xl overflow-hidden">
                     {/* Search */}
-                    <div className="p-2 border-b border-neutral-800">
+                    <div className="p-2 border-b border-[var(--pb-border)]">
                         <input
                             type="text"
                             value={search}
@@ -119,15 +115,15 @@ export default function FontPicker({ id, value, onChange, previewText = "Aa" }: 
                     </div>
 
                     {/* Category filter */}
-                    <div className="flex gap-1 p-2 border-b border-neutral-800 overflow-x-auto">
+                    <div className="flex gap-1 p-2 border-b border-[var(--pb-border)] overflow-x-auto">
                         {FONT_CATEGORIES.map((cat) => (
                             <button
                                 key={cat.value}
                                 type="button"
                                 onClick={() => setCategory(cat.value as FontCategory | "all")}
                                 className={`px-2.5 py-1 rounded-md text-xs whitespace-nowrap transition-colors flex-shrink-0 ${category === cat.value
-                                    ? "bg-white text-black font-medium"
-                                    : "text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800"
+                                    ? "bg-[var(--pb-foreground)] text-[var(--pb-background)] font-medium"
+                                    : "text-[var(--pb-text-muted)] hover:text-[var(--pb-text-primary)] hover:bg-[var(--pb-surface-hover)]"
                                     }`}
                             >
                                 {cat.label}
@@ -137,18 +133,17 @@ export default function FontPicker({ id, value, onChange, previewText = "Aa" }: 
 
                     {/* Font list */}
                     <div ref={fontListRef} className="max-h-60 overflow-y-auto">
-                        {/* Default / clear option */}
                         <button
                             type="button"
                             onClick={handleClear}
-                            className={`w-full flex items-center justify-between px-3 py-2 text-sm transition-colors hover:bg-neutral-800 ${!value ? "text-white bg-neutral-800" : "text-neutral-400"
+                            className={`w-full flex items-center justify-between px-3 py-2 text-sm transition-colors hover:bg-[var(--pb-surface-hover)] ${!value ? "text-[var(--pb-text-primary)] bg-[var(--pb-surface)]" : "text-[var(--pb-text-muted)]"
                                 }`}
                         >
                             <span>{DEFAULT_LABEL}</span>
                         </button>
 
                         {filtered.length === 0 && (
-                            <p className="px-3 py-4 text-sm text-neutral-500 text-center">No fonts found</p>
+                            <p className="px-3 py-4 text-sm text-[var(--pb-text-muted)] text-center">No fonts found</p>
                         )}
 
                         {filtered.map((font) => {
@@ -160,13 +155,13 @@ export default function FontPicker({ id, value, onChange, previewText = "Aa" }: 
                                     type="button"
                                     onClick={() => handleSelect(font.family)}
                                     data-font={font.family}
-                                    className={`w-full flex items-center justify-between px-3 py-2 text-sm transition-colors hover:bg-neutral-800 ${isSelected ? "text-white bg-neutral-800" : "text-neutral-300"
+                                    className={`w-full flex items-center justify-between px-3 py-2 text-sm transition-colors hover:bg-[var(--pb-surface-hover)] ${isSelected ? "text-[var(--pb-text-primary)] bg-[var(--pb-surface)]" : "text-[var(--pb-text-secondary)]"
                                         }`}
                                 >
                                     <span style={{ fontFamily: font.family }}>{font.family}</span>
                                     <span
                                         style={{ fontFamily: font.family }}
-                                        className="text-neutral-500 text-xs ml-2 flex-shrink-0"
+                                        className="text-[var(--pb-text-muted)] text-xs ml-2 flex-shrink-0"
                                     >
                                         {previewText}
                                     </span>

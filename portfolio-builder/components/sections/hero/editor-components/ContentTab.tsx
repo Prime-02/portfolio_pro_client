@@ -6,6 +6,8 @@ import Field from './Field';
 import FontPicker from './FontPicker';
 import { inputClass } from './styles';
 import { TypographyControl } from "./TypographyControl";
+import { Textinput } from "@/src/app/components/inputs/Textinput";
+import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 
 interface ContentTabProps {
     data: HeroData;
@@ -27,8 +29,8 @@ function CollapsibleSection({
         <div
             className="rounded-sm overflow-hidden"
             style={{
-                border: "1px solid rgba(var(--foreground-rgb,255,255,255),0.08)",
-                backgroundColor: "rgba(var(--foreground-rgb,255,255,255),0.02)",
+                border: "1px solid var(--pb-border)",
+                backgroundColor: "var(--pb-surface)",
             }}
         >
             <button
@@ -36,12 +38,12 @@ function CollapsibleSection({
                 className="w-full flex items-center justify-between px-3 py-2.5 text-left transition-colors duration-150"
                 style={{
                     backgroundColor: isOpen
-                        ? "rgba(var(--foreground-rgb,255,255,255),0.04)"
+                        ? "var(--pb-surface-elevated)"
                         : "transparent",
                 }}
                 onMouseEnter={(e) => {
                     if (!isOpen) {
-                        e.currentTarget.style.backgroundColor = "rgba(var(--foreground-rgb,255,255,255),0.03)";
+                        e.currentTarget.style.backgroundColor = "var(--pb-surface-hover)";
                     }
                 }}
                 onMouseLeave={(e) => {
@@ -52,14 +54,14 @@ function CollapsibleSection({
             >
                 <span
                     className="text-[10px] tracking-[0.15em] font-mono uppercase"
-                    style={{ opacity: 0.5 }}
+                    style={{ color: "var(--pb-text-muted)" }}
                 >
                     {label}
                 </span>
                 <span
                     className="text-[10px] transition-transform duration-200"
                     style={{
-                        opacity: 0.4,
+                        color: "var(--pb-text-muted)",
                         transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
                     }}
                 >
@@ -77,6 +79,7 @@ function CollapsibleSection({
 }
 
 export default function ContentTab({ data, onChange }: ContentTabProps) {
+    const { userInfo } = useUserSettings()
     const updateFont = (field: keyof HeroFonts, family: string) => {
         onChange("fonts", { ...data.fonts, [field]: family || undefined });
     };
@@ -91,16 +94,15 @@ export default function ContentTab({ data, onChange }: ContentTabProps) {
     return (
         <div className="flex flex-col gap-4">
             {/* ── Greeting ── */}
-            <Field label="Greeting" htmlFor="greeting">
-                <input
-                    id="greeting"
-                    type="text"
-                    value={data.greeting || ""}
-                    onChange={(e) => onChange("greeting", e.target.value)}
-                    placeholder='e.g. "Hi, my name is"'
-                    className={inputClass}
-                />
-            </Field>
+            <Textinput
+                label="Greeting"
+                id="greeting"
+                type="text"
+                value={data.greeting || ""}
+                onChange={(e) => onChange("greeting", e)}
+                placeholder='e.g. "Hi, my name is"'
+                className={inputClass}
+            />
 
             <CollapsibleSection label="Greeting Styling">
                 <Field label="Font Family" htmlFor="font-greeting">
@@ -120,16 +122,16 @@ export default function ContentTab({ data, onChange }: ContentTabProps) {
             </CollapsibleSection>
 
             {/* ── Name ── */}
-            <Field label="Name" htmlFor="name" required>
-                <input
-                    id="name"
-                    type="text"
-                    value={data.name || ""}
-                    onChange={(e) => onChange("name", e.target.value)}
-                    placeholder="Your full name"
-                    className={inputClass}
-                />
-            </Field>
+            <Textinput
+                label="Name"
+                id="name"
+                type="text"
+                value={data.name || ""}
+                onChange={(e) => onChange("name", e)}
+                placeholder="Your full name"
+                className={inputClass}
+                required
+            />
 
             <CollapsibleSection label="Name Styling">
                 <Field label="Font Family" htmlFor="font-name">
@@ -149,16 +151,15 @@ export default function ContentTab({ data, onChange }: ContentTabProps) {
             </CollapsibleSection>
 
             {/* ── Title ── */}
-            <Field label="Title / Role" htmlFor="title">
-                <input
-                    id="title"
-                    type="text"
-                    value={data.title || ""}
-                    onChange={(e) => onChange("title", e.target.value)}
-                    placeholder='e.g. "Full Stack Developer"'
-                    className={inputClass}
-                />
-            </Field>
+            <Textinput
+                label="Title / Role"
+                id="title"
+                type="text"
+                value={data.title || ""}
+                onChange={(e) => onChange("title", e)}
+                placeholder='e.g. "Full Stack Developer"'
+                className={inputClass}
+            />
 
             <CollapsibleSection label="Title Styling">
                 <Field label="Font Family" htmlFor="font-title">

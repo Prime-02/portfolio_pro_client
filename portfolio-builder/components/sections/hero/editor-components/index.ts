@@ -13,3 +13,6 @@ export { default as EditorActions } from "./EditorActions";
 export { default as Field } from "./Field";
 export { default as ColorPicker } from "./ColorPicker";
 export { default as SelectField } from "./SelectField";
+export { default as FontPicker } from "./FontPicker";
+export { default as TypographyControl } from "./TypographyControl";
+export { default as SocialLinksTab } from "./SocialLinksTab";

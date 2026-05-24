@@ -20,7 +20,7 @@ import { useCloudinaryCore } from "@/lib/stores/cloudinary/useCloudinaryCore";
 
 interface BackgroundTabProps {
     data: HeroData;
-    onUpdate: (value: Partial<HeroData["background"]>) => void;
+    onUpdate: (value: Partial<HeroData["background"]> & { type?: string }) => void;
 }
 
 const BACKGROUND_TYPE_OPTIONS: { value: HeroBackgroundType; label: string }[] = [
@@ -50,8 +50,6 @@ const BACKGROUND_POSITION_OPTIONS: { value: HeroBackgroundPosition; label: strin
     { value: "bottom right", label: "Bottom Right" },
 ];
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
 function getUrlForType(bg: HeroData["background"]): string | null {
     if (!bg) return null;
     switch (bg.type) {
@@ -78,12 +76,10 @@ function extractCloudinaryInfo(url: string): { publicId: string; resourceType: "
     }
 }
 
-// ── Sub-components ───────────────────────────────────────────────────────────
-
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
     return (
         <div className="space-y-4">
-            <h3 className="text-xs font-semibold uppercase tracking-widest text-neutral-500 border-b border-neutral-800 pb-2">
+            <h3 className="text-xs font-semibold uppercase tracking-widest text-[var(--pb-text-muted)] border-b border-[var(--pb-border)] pb-2">
                 {title}
             </h3>
             {children}
@@ -106,12 +102,12 @@ function Toggle({
         <label className="flex items-start gap-3 cursor-pointer">
             <div className="relative mt-0.5 flex-shrink-0">
                 <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="sr-only" />
-                <div className={`w-9 h-5 rounded-full transition-colors ${checked ? "bg-white" : "bg-neutral-700"}`} />
-                <div className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-black transition-transform ${checked ? "translate-x-4" : "translate-x-0"}`} />
+                <div className={`w-9 h-5 rounded-full transition-colors ${checked ? "bg-[var(--pb-foreground)]" : "bg-[var(--pb-foreground-20)]"}`} />
+                <div className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-[var(--pb-background)] transition-transform ${checked ? "translate-x-4" : "translate-x-0"}`} />
             </div>
             <div>
-                <p className="text-sm text-neutral-300">{label}</p>
-                {description && <p className="text-xs text-neutral-500 mt-0.5">{description}</p>}
+                <p className="text-sm text-[var(--pb-text-secondary)]">{label}</p>
+                {description && <p className="text-xs text-[var(--pb-text-muted)] mt-0.5">{description}</p>}
             </div>
         </label>
     );
@@ -131,16 +127,15 @@ function SliderField({
                 type="range"
                 min={min} max={max} step={step} value={value}
                 onChange={(e) => onChange(Number(e))}
-                className="flex-1 h-1.5 appearance-none bg-neutral-700 rounded-full accent-white cursor-pointer"
+                className="flex-1 h-1.5 appearance-none bg-[var(--pb-foreground-20)] rounded-full accent-[var(--pb-foreground)] cursor-pointer"
             />
-            <span className="text-sm text-neutral-300 tabular-nums w-16 text-right">
+            <span className="text-sm text-[var(--pb-text-secondary)] tabular-nums w-16 text-right">
                 {value}{unit}
             </span>
         </Field>
     );
 }
 
-/** Live gradient preview strip */
 function GradientPreview({ from, to, angle, gradientType, radialPosition }: {
     from: string;
     to: string;
@@ -153,13 +148,12 @@ function GradientPreview({ from, to, angle, gradientType, radialPosition }: {
         : `linear-gradient(${angle}deg, ${from}, ${to})`;
     return (
         <div
-            className="w-full h-10 rounded-lg border border-neutral-700"
+            className="w-full h-10 rounded-lg border border-[var(--pb-border)]"
             style={{ background: bg }}
         />
     );
 }
 
-/** 3×3 background position grid picker */
 function PositionPicker({ value, onChange }: {
     value: HeroBackgroundPosition;
     onChange: (v: HeroBackgroundPosition) => void;
@@ -177,23 +171,19 @@ function PositionPicker({ value, onChange }: {
                     type="button"
                     onClick={() => onChange(pos)}
                     title={pos}
-                    className={[
-                        "h-8 rounded transition-colors",
-                        value === pos
-                            ? "bg-white"
-                            : "bg-neutral-700 hover:bg-neutral-600",
-                    ].join(" ")}
+                    className={`h-8 rounded transition-colors ${value === pos
+                        ? "bg-[var(--pb-foreground)]"
+                        : "bg-[var(--pb-foreground-20)] hover:bg-[var(--pb-foreground-30)]"
+                        }`}
                 />
             ))}
         </div>
     );
 }
 
-// ── Overlay section — shared across image, video, mesh, particles ─────────────
-
 function OverlaySection({ bg, onUpdate }: {
     bg: HeroData["background"];
-    onUpdate: (v: Partial<HeroData["background"]>) => void;
+    onUpdate: (v: Partial<HeroData["background"]> & { type?: string }) => void;
 }) {
     return (
         <Section title="Overlay">
@@ -208,17 +198,15 @@ function OverlaySection({ bg, onUpdate }: {
                 <Field label="Overlay Color" htmlFor="overlayColor">
                     <ColorPicker
                         id="overlayColor"
-                        value={bg?.overlayColor || "#000000"}
+                        value={bg?.overlayColor || "var(--pb-background)"}
                         onChange={(value) => onUpdate({ overlayColor: value })}
-                        placeholder="#000000"
+                        placeholder="var(--pb-background)"
                     />
                 </Field>
             )}
         </Section>
     );
 }
-
-// ── Main component ────────────────────────────────────────────────────────────
 
 export default function BackgroundTab({ data, onUpdate }: BackgroundTabProps) {
     const bg = data.background;
@@ -257,7 +245,6 @@ export default function BackgroundTab({ data, onUpdate }: BackgroundTabProps) {
     };
 
     const gradientType: HeroGradientType = bg?.gradientType ?? "linear";
-    // Sanitize: legacy data may have stored gradientAngle as a string like "135deg"
     const rawAngle = bg?.gradientAngle;
     const gradientAngle = typeof rawAngle === "string" ? (parseFloat(rawAngle) || 135) : (rawAngle ?? 135);
     const radialPosition = bg?.radialPosition ?? "center";
@@ -274,15 +261,15 @@ export default function BackgroundTab({ data, onUpdate }: BackgroundTabProps) {
 
             {/* ── Type switch warning ─────────────────────────────────── */}
             {pendingType && (
-                <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-3 flex flex-col gap-2">
-                    <p className="text-xs text-amber-300 leading-snug">
+                <div className="rounded-lg border border-[var(--pb-warning-border)] bg-[var(--pb-warning-bg)] px-3 py-3 flex flex-col gap-2">
+                    <p className="text-xs text-[var(--pb-warning)] leading-snug">
                         Switching to <span className="font-semibold">{pendingType}</span> will clear your current upload. Continue?
                     </p>
                     <div className="flex gap-2">
-                        <button type="button" onClick={() => commitTypeChange(pendingType)} className="text-xs font-medium px-3 py-1 rounded-md bg-amber-500/20 text-amber-200 hover:bg-amber-500/30 transition-colors">
+                        <button type="button" onClick={() => commitTypeChange(pendingType)} className="text-xs font-medium px-3 py-1 rounded-md bg-[var(--pb-warning)]/20 text-[var(--pb-warning)] hover:bg-[var(--pb-warning)]/30 transition-colors">
                             Yes, switch
                         </button>
-                        <button type="button" onClick={() => setPendingType(null)} className="text-xs font-medium px-3 py-1 rounded-md bg-neutral-700 text-neutral-300 hover:bg-neutral-600 transition-colors">
+                        <button type="button" onClick={() => setPendingType(null)} className="text-xs font-medium px-3 py-1 rounded-md bg-[var(--pb-surface-elevated)] text-[var(--pb-text-secondary)] hover:bg-[var(--pb-surface-hover)] transition-colors border border-[var(--pb-border)]">
                             Cancel
                         </button>
                     </div>
@@ -295,9 +282,9 @@ export default function BackgroundTab({ data, onUpdate }: BackgroundTabProps) {
                     <Field label="Background Color" htmlFor="bgColor">
                         <ColorPicker
                             id="bgColor"
-                            value={bg?.color || "#0a0a0a"}
+                            value={bg?.color || "var(--pb-background)"}
                             onChange={(value) => onUpdate({ color: value })}
-                            placeholder="#0a0a0a"
+                            placeholder="var(--pb-background)"
                         />
                     </Field>
                 </Section>
@@ -306,28 +293,24 @@ export default function BackgroundTab({ data, onUpdate }: BackgroundTabProps) {
             {/* ── GRADIENT ────────────────────────────────────────────── */}
             {type === "gradient" && (
                 <Section title="Gradient">
-                    {/* Live preview */}
                     <GradientPreview
                         from={bg?.gradientFrom || "#1a1a2e"}
-                        to={bg?.gradientTo || "#0a0a0a"}
+                        to={bg?.gradientTo || "var(--pb-background)"}
                         angle={gradientAngle}
                         gradientType={gradientType}
                         radialPosition={radialPosition}
                     />
 
-                    {/* Linear / Radial toggle */}
-                    <div className="flex rounded-lg overflow-hidden border border-neutral-700">
+                    <div className="flex rounded-lg overflow-hidden border border-[var(--pb-border)]">
                         {(["linear", "radial"] as HeroGradientType[]).map((gt) => (
                             <button
                                 key={gt}
                                 type="button"
                                 onClick={() => onUpdate({ gradientType: gt })}
-                                className={[
-                                    "flex-1 py-1.5 text-xs font-medium capitalize transition-colors",
-                                    gradientType === gt
-                                        ? "bg-white text-black"
-                                        : "text-neutral-400 hover:text-white",
-                                ].join(" ")}
+                                className={`flex-1 py-1.5 text-xs font-medium capitalize transition-colors ${gradientType === gt
+                                    ? "bg-[var(--pb-foreground)] text-[var(--pb-background)]"
+                                    : "text-[var(--pb-text-muted)] hover:text-[var(--pb-text-primary)]"
+                                    }`}
                             >
                                 {gt}
                             </button>
@@ -338,10 +321,9 @@ export default function BackgroundTab({ data, onUpdate }: BackgroundTabProps) {
                         <ColorPicker id="gradFrom" value={bg?.gradientFrom || "#1a1a2e"} onChange={(v) => onUpdate({ gradientFrom: v })} placeholder="#1a1a2e" />
                     </Field>
                     <Field label="To" htmlFor="gradTo">
-                        <ColorPicker id="gradTo" value={bg?.gradientTo || "#0a0a0a"} onChange={(v) => onUpdate({ gradientTo: v })} placeholder="#0a0a0a" />
+                        <ColorPicker id="gradTo" value={bg?.gradientTo || "var(--pb-background)"} onChange={(v) => onUpdate({ gradientTo: v })} placeholder="var(--pb-background)" />
                     </Field>
 
-                    {/* Angle slider — linear only */}
                     {gradientType === "linear" && (
                         <SliderField
                             label="Angle"
@@ -352,7 +334,6 @@ export default function BackgroundTab({ data, onUpdate }: BackgroundTabProps) {
                         />
                     )}
 
-                    {/* Radial center position picker */}
                     {gradientType === "radial" && (
                         <Field label="Center Position" htmlFor="radialPosition">
                             <div className="flex flex-col gap-2">
@@ -360,7 +341,7 @@ export default function BackgroundTab({ data, onUpdate }: BackgroundTabProps) {
                                     value={radialPosition as HeroBackgroundPosition}
                                     onChange={(v) => onUpdate({ radialPosition: v })}
                                 />
-                                <p className="text-xs text-neutral-500">
+                                <p className="text-xs text-[var(--pb-text-muted)]">
                                     Controls where the gradient radiates outward from.
                                 </p>
                             </div>
@@ -398,13 +379,12 @@ export default function BackgroundTab({ data, onUpdate }: BackgroundTabProps) {
                                     value={bg?.backgroundPosition ?? "center"}
                                     onChange={(v) => onUpdate({ backgroundPosition: v })}
                                 />
-                                <p className="text-xs text-neutral-500">
+                                <p className="text-xs text-[var(--pb-text-muted)]">
                                     Controls which part of the image stays visible when cropped to fill the section.
                                 </p>
                             </div>
                         </Field>
 
-                        {/* Repeat only makes sense when not cover */}
                         {bg?.backgroundSize !== "cover" && (
                             <Toggle
                                 label="Repeat / tile"
@@ -440,14 +420,14 @@ export default function BackgroundTab({ data, onUpdate }: BackgroundTabProps) {
             {type === "mesh" && (
                 <>
                     <Section title="Mesh Colors">
-                        <p className="text-xs text-neutral-500">
+                        <p className="text-xs text-[var(--pb-text-muted)]">
                             Up to 4 floating color orbs that drift and blend together.
                         </p>
                         {([
                             { key: "meshColor1", label: "Orb 1", default: "#7c3aed" },
                             { key: "meshColor2", label: "Orb 2", default: "#2563eb" },
                             { key: "meshColor3", label: "Orb 3", default: "#0891b2" },
-                            { key: "meshColor4", label: "Orb 4", default: "#0a0a0a" },
+                            { key: "meshColor4", label: "Orb 4", default: "var(--pb-background)" },
                         ] as const).map(({ key, label, default: def }) => (
                             <Field key={key} label={label} htmlFor={key}>
                                 <ColorPicker
@@ -507,25 +487,24 @@ export default function BackgroundTab({ data, onUpdate }: BackgroundTabProps) {
             {type === "particles" && (
                 <>
                     <Section title="Particles">
-                        <p className="text-xs text-neutral-500">
+                        <p className="text-xs text-[var(--pb-text-muted)]">
                             Floating dots rendered on a canvas layer behind your content.
                         </p>
 
-                        {/* Colors together */}
                         <Field label="Particle Color" htmlFor="particleColor">
                             <ColorPicker
                                 id="particleColor"
-                                value={bg?.particleColor || "#ffffff"}
+                                value={bg?.particleColor || "var(--pb-foreground)"}
                                 onChange={(value) => onUpdate({ particleColor: value })}
-                                placeholder="#ffffff"
+                                placeholder="var(--pb-foreground)"
                             />
                         </Field>
                         <Field label="Background Color" htmlFor="particleBg">
                             <ColorPicker
                                 id="particleBg"
-                                value={bg?.particleBg || "#050510"}
+                                value={bg?.particleBg || "var(--pb-background)"}
                                 onChange={(value) => onUpdate({ particleBg: value })}
-                                placeholder="#050510"
+                                placeholder="var(--pb-background)"
                             />
                         </Field>
 
@@ -537,7 +516,7 @@ export default function BackgroundTab({ data, onUpdate }: BackgroundTabProps) {
                             onChange={(v) => onUpdate({ particleCount: v })}
                         />
                         {(bg?.particleCount ?? 80) > 200 && (
-                            <p className="text-xs text-amber-400">
+                            <p className="text-xs text-[var(--pb-warning)]">
                                 High particle counts may affect performance on slower devices.
                             </p>
                         )}

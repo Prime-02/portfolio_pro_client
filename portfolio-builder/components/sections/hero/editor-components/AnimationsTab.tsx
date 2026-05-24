@@ -10,13 +10,12 @@ import type {
 import SelectField from "./SelectField";
 import Field from "./Field";
 import { inputClass } from "./styles";
+import { Textinput } from "@/src/app/components/inputs/Textinput";
 
 interface AnimationsTabProps {
     data: HeroData;
     onUpdate: (value: Partial<HeroAnimations>) => void;
 }
-
-// ─── Option sets ─────────────────────────────────────────────────────────────
 
 const PRESET_OPTIONS: { value: AnimationPreset; label: string }[] = [
     { value: "none", label: "None" },
@@ -50,20 +49,16 @@ const HOVER_OPTIONS: { value: HoverEffect; label: string }[] = [
     { value: "tilt", label: "3D Tilt" },
 ];
 
-// ─── Section wrapper ─────────────────────────────────────────────────────────
-
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
     return (
         <div className="space-y-4">
-            <h3 className="text-xs font-semibold uppercase tracking-widest text-neutral-500 border-b border-neutral-800 pb-2">
+            <h3 className="text-xs font-semibold uppercase tracking-widest text-[var(--pb-text-muted)] border-b border-[var(--pb-border)] pb-2">
                 {title}
             </h3>
             {children}
         </div>
     );
 }
-
-// ─── Toggle ──────────────────────────────────────────────────────────────────
 
 function Toggle({
     label,
@@ -86,23 +81,29 @@ function Toggle({
                     className="sr-only"
                 />
                 <div
-                    className={`w-9 h-5 rounded-full transition-colors ${checked ? "bg-white" : "bg-neutral-700"
+                    className={`w-9 h-5 rounded-full transition-colors ${checked
+                        ? "bg-[var(--pb-foreground)]"
+                        : "bg-[var(--pb-foreground-20)]"
                         }`}
                 />
                 <div
-                    className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-black transition-transform ${checked ? "translate-x-4" : "translate-x-0"
+                    className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-[var(--pb-background)] transition-transform ${checked ? "translate-x-4" : "translate-x-0"
                         }`}
                 />
             </div>
             <div>
-                <p className="text-sm text-neutral-300">{label}</p>
-                {description && <p className="text-xs text-neutral-500 mt-0.5">{description}</p>}
+                <p className="text-sm text-[var(--pb-text-secondary)] group-hover:text-[var(--pb-text-primary)] transition-colors">
+                    {label}
+                </p>
+                {description && (
+                    <p className="text-xs text-[var(--pb-text-muted)] mt-0.5">
+                        {description}
+                    </p>
+                )}
             </div>
         </label>
     );
 }
-
-// ─── Slider ──────────────────────────────────────────────────────────────────
 
 function SliderField({
     label,
@@ -124,28 +125,27 @@ function SliderField({
     onChange: (v: number) => void;
 }) {
     return (
-        <Field label={label} htmlFor={htmlFor}>
-            <div className="flex items-center gap-3">
-                <input
+        <div className="flex items-center gap-3 w-full">
+            <div className="flex-1">
+                <Textinput
                     id={htmlFor}
                     type="range"
                     min={min}
                     max={max}
                     step={step}
+                    label={label}
                     value={value}
-                    onChange={(e) => onChange(Number(e.target.value))}
-                    className="flex-1 h-1.5 appearance-none bg-neutral-700 rounded-full accent-white cursor-pointer"
+                    onChange={(e) => onChange(Number(e))}
+                    className="w-full h-1.5 appearance-none bg-[var(--pb-foreground-20)] rounded-full accent-[var(--pb-foreground)] cursor-pointer"
                 />
-                <span className="text-sm text-neutral-300 tabular-nums w-16 text-right">
-                    {value}
-                    {unit}
-                </span>
             </div>
-        </Field>
+            <span className="text-sm text-[var(--pb-text-secondary)] tabular-nums min-w-[4rem] text-right font-medium">
+                {value}
+                {unit}
+            </span>
+        </div>
     );
 }
-
-// ─── Main component ───────────────────────────────────────────────────────────
 
 export default function AnimationsTab({ data, onUpdate }: AnimationsTabProps) {
     const anim = data.animations ?? ({} as Partial<HeroAnimations>);

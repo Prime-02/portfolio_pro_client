@@ -6,7 +6,6 @@ import { motion } from "framer-motion";
 import { SocialLink } from "@/portfolio-builder/types/hero";
 import { socialMediaPlatforms } from "@/lib/utilities/indices/DropDownItems";
 
-// Extended type to support color preferences (matching the editor)
 interface HeroSocialLink extends SocialLink {
     useIconColor?: boolean;
     customColor?: string;
@@ -15,7 +14,7 @@ interface HeroSocialLink extends SocialLink {
 interface SocialLinksProps {
     links: SocialLink[];
     className?: string;
-    alignment?: "center" | "left";
+    alignment?: "center" | "left" | "right";
     isAnimated?: boolean;
     shouldAnimate?: boolean;
     anim?: {
@@ -45,7 +44,7 @@ export default function SocialLinks({
     const alignClass = alignment === "left" ? "justify-start" : "justify-center";
 
     const containerVariants = {
-        hidden: { opacity: 0 },
+        hidden: { opacity: isAnimated ? 0 : 1 },
         visible: {
             opacity: 1,
             transition: {
@@ -56,7 +55,7 @@ export default function SocialLinks({
     };
 
     const itemVariants = {
-        hidden: { opacity: 0, y: 10 },
+        hidden: { opacity: isAnimated ? 0 : 1, y: isAnimated ? 10 : 0 },
         visible: {
             opacity: 1,
             y: 0,
@@ -69,7 +68,11 @@ export default function SocialLinks({
 
     const Wrapper = isAnimated ? motion.div : "div";
     const wrapperProps = isAnimated
-        ? { variants: containerVariants }
+        ? {
+            variants: containerVariants,
+            initial: "hidden",
+            animate: shouldAnimate ? "visible" : "hidden",
+        }
         : {};
 
     return (
@@ -77,15 +80,12 @@ export default function SocialLinks({
             {validLinks.map((link) => {
                 const platform = socialMediaPlatforms.find((p) => p.id === link.platformId)!;
 
-                // Determine icon color based on preferences
                 const iconColor = link.useIconColor !== false
                     ? platform.color
-                    : (link.customColor || "#ffffff");
+                    : (link.customColor || "var(--pb-foreground)");
 
                 const ItemWrapper = isAnimated ? motion.a : "a";
-                const itemProps = isAnimated
-                    ? { variants: itemVariants }
-                    : {};
+                const itemProps = isAnimated ? { variants: itemVariants } : {};
 
                 return (
                     <ItemWrapper
@@ -93,16 +93,41 @@ export default function SocialLinks({
                         href={link.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="group relative flex items-center justify-center w-10 h-10 rounded-full bg-neutral-800/50 border border-neutral-700/50 hover:bg-neutral-700/50 hover:border-neutral-500/50 transition-all duration-300"
+                        className="group relative flex items-center justify-center w-10 h-10 rounded-full 
+                            bg-[var(--pb-surface-elevated)] 
+                            border border-[var(--pb-border)] 
+                            hover:bg-[var(--pb-surface-hover)] 
+                            hover:border-[var(--pb-foreground-30)] 
+                            transition-all duration-300
+                            shadow-sm"
                         title={platform.code}
                         {...itemProps}
                     >
-                        <platform.icon
-                            className="w-5 h-5 transition-colors duration-300"
-                            style={{ color: iconColor }}
-                        />
-                        {/* Tooltip */}
-                        <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-neutral-800 text-neutral-300 text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                        {platform.icon && (
+                            <platform.icon
+                                className="w-5 h-5 transition-colors duration-300"
+                                style={{
+                                    color: iconColor,
+                                    minWidth: "1.25rem",
+                                    minHeight: "1.25rem",
+                                }}
+                            />
+                        )}
+
+                        {!platform.icon && (
+                            <span className="text-xs font-bold text-[var(--pb-text-primary)]">
+                                {platform.code?.charAt(0) || "?"}
+                            </span>
+                        )}
+
+                        <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 px-2 py-1 
+                            bg-[var(--pb-surface-elevated)] 
+                            text-[var(--pb-text-secondary)] 
+                            text-xs rounded 
+                            opacity-0 group-hover:opacity-100 
+                            transition-opacity whitespace-nowrap pointer-events-none 
+                            border border-[var(--pb-border)]
+                            shadow-lg">
                             {platform.code}
                         </span>
                     </ItemWrapper>

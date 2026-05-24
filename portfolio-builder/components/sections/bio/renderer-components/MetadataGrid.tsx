@@ -10,17 +10,17 @@ export function MetadataGrid({ metadata, className = "" }: MetadataGridProps) {
 
   return (
     <div className={`space-y-3 ${className}`}>
-      <h4 className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
+      <h4 className="text-xs font-semibold uppercase tracking-wider text-[var(--pb-text-muted)]">
         Fun Facts
       </h4>
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+      <div className="flex flex-col gap-3">
         {metadata.map((meta, index) => (
           <div
             key={index}
-            className="p-3 rounded-lg bg-neutral-800/40 border border-neutral-700/30"
+            className="p-3 w-full rounded-lg bg-[var(--pb-surface-elevated)] border border-[var(--pb-border)]"
           >
-            <p className="text-xs text-neutral-500 mb-1">{meta.key}</p>
-            <p className="text-sm text-neutral-200 font-medium">{meta.value}</p>
+            <p className="text-xs text-[var(--pb-text-muted)] mb-1">{meta.key}</p>
+            <p className="text-sm text-[var(--pb-text-primary)] font-medium">{meta.value}</p>
           </div>
         ))}
       </div>

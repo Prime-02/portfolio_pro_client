@@ -63,8 +63,8 @@ function CollapsibleSection({
     <div
       className="rounded-sm overflow-hidden"
       style={{
-        border: "1px solid rgba(var(--foreground-rgb,255,255,255),0.08)",
-        backgroundColor: "rgba(var(--foreground-rgb,255,255,255),0.02)",
+        border: "1px solid color-mix(in srgb, var(--foreground) 8%, transparent)",
+        backgroundColor: "color-mix(in srgb, var(--foreground) 2%, transparent)",
       }}
     >
       <button
@@ -72,12 +72,12 @@ function CollapsibleSection({
         className="w-full flex items-center justify-between px-3 py-2.5 text-left transition-colors duration-150"
         style={{
           backgroundColor: isOpen
-            ? "rgba(var(--foreground-rgb,255,255,255),0.04)"
+            ? "color-mix(in srgb, var(--foreground) 4%, transparent)"
             : "transparent",
         }}
         onMouseEnter={(e) => {
           if (!isOpen) {
-            e.currentTarget.style.backgroundColor = "rgba(var(--foreground-rgb,255,255,255),0.03)";
+            e.currentTarget.style.backgroundColor = "color-mix(in srgb, var(--foreground) 3%, transparent)";
           }
         }}
         onMouseLeave={(e) => {
@@ -330,7 +330,7 @@ export default function ContentTab({ data, onChange }: ContentTabProps) {
       <CollapsibleSection label="Languages">
         <div className="space-y-3">
           {(data.languages || []).length === 0 && (
-            <p className="text-xs text-neutral-500">No languages added yet.</p>
+            <p className="text-xs text-foreground/40">No languages added yet.</p>
           )}
           {(data.languages || []).map((lang, index) => (
             <div key={index} className="flex gap-2 items-start">
@@ -356,7 +356,7 @@ export default function ContentTab({ data, onChange }: ContentTabProps) {
               <button
                 type="button"
                 onClick={() => removeLanguage(index)}
-                className="mt-6 text-xs text-neutral-500 hover:text-red-400 transition-colors px-2"
+                className="mt-6 text-xs text-foreground/40 hover:text-red-500 transition-colors px-2"
               >
                 ✕
               </button>
@@ -365,7 +365,7 @@ export default function ContentTab({ data, onChange }: ContentTabProps) {
           <button
             type="button"
             onClick={addLanguage}
-            className="text-sm text-neutral-400 hover:text-white transition-colors"
+            className="text-sm text-foreground/50 hover:text-foreground transition-colors"
           >
             + Add Language
           </button>
@@ -376,10 +376,10 @@ export default function ContentTab({ data, onChange }: ContentTabProps) {
       <CollapsibleSection label="Contact Methods">
         <div className="space-y-3">
           {(data.contacts || []).length === 0 && (
-            <p className="text-xs text-neutral-500">No contact methods added.</p>
+            <p className="text-xs text-foreground/40">No contact methods added.</p>
           )}
           {(data.contacts || []).map((contact, index) => (
-            <div key={index} className="border border-neutral-800 rounded-lg p-3 space-y-3">
+            <div key={index} className="border border-foreground/15 rounded-lg p-3 space-y-3">
               <div className="flex gap-2 items-start">
                 <div className="w-28">
                   <Dropdown
@@ -404,7 +404,7 @@ export default function ContentTab({ data, onChange }: ContentTabProps) {
                 <button
                   type="button"
                   onClick={() => removeContact(index)}
-                  className="mt-6 text-xs text-neutral-500 hover:text-red-400 transition-colors px-2"
+                  className="mt-6 text-xs text-foreground/40 hover:text-red-500 transition-colors px-2"
                 >
                   ✕
                 </button>
@@ -415,9 +415,9 @@ export default function ContentTab({ data, onChange }: ContentTabProps) {
                     type="checkbox"
                     checked={contact.isPrimary || false}
                     onChange={(e) => updateContact(index, { isPrimary: e.target.checked })}
-                    className="rounded border-neutral-600 bg-neutral-700 text-white"
+                    className="rounded border-foreground/30 bg-foreground/10 text-foreground"
                   />
-                  <span className="text-xs text-neutral-400">Primary contact</span>
+                  <span className="text-xs text-foreground/50">Primary contact</span>
                 </label>
               </div>
             </div>
@@ -425,7 +425,7 @@ export default function ContentTab({ data, onChange }: ContentTabProps) {
           <button
             type="button"
             onClick={addContact}
-            className="text-sm text-neutral-400 hover:text-white transition-colors"
+            className="text-sm text-foreground/50 hover:text-foreground transition-colors"
           >
             + Add Contact Method
           </button>
@@ -436,7 +436,7 @@ export default function ContentTab({ data, onChange }: ContentTabProps) {
       <CollapsibleSection label="Fun Facts & Metadata">
         <div className="space-y-3">
           {(data.metadata || []).length === 0 && (
-            <p className="text-xs text-neutral-500">No metadata added.</p>
+            <p className="text-xs text-foreground/40">No metadata added.</p>
           )}
           {(data.metadata || []).map((meta, index) => (
             <div key={index} className="flex gap-2 items-start">
@@ -463,7 +463,7 @@ export default function ContentTab({ data, onChange }: ContentTabProps) {
               <button
                 type="button"
                 onClick={() => removeMetadata(index)}
-                className="mt-6 text-xs text-neutral-500 hover:text-red-400 transition-colors px-2"
+                className="mt-6 text-xs text-foreground/40 hover:text-red-500 transition-colors px-2"
               >
                 ✕
               </button>
@@ -472,7 +472,7 @@ export default function ContentTab({ data, onChange }: ContentTabProps) {
           <button
             type="button"
             onClick={addMetadata}
-            className="text-sm text-neutral-400 hover:text-white transition-colors"
+            className="text-sm text-foreground/50 hover:text-foreground transition-colors"
           >
             + Add Fun Fact
           </button>

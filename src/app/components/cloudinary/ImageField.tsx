@@ -15,12 +15,13 @@ import { useCloudinaryCore } from "@/lib/stores/cloudinary/useCloudinaryCore";
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 type MediaType = "image" | "video" | "lottie";
-type CropAspect = "free" | "1:1" | "4:3";
+type CropAspect = "free" | "1:1" | "4:3" | "9:16";
 
 const ASPECT_MAP: Record<CropAspect, number | undefined> = {
     free: undefined,
     "1:1": 1,
     "4:3": 4 / 3,
+    "9:16": 9 / 16,
 };
 
 interface ImageFieldProps {
@@ -187,7 +188,7 @@ function CropModal({ imageSrc, mimeType, onConfirm, onCancel }: CropModalProps) 
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px", width: "min(600px, 92vw)" }}>
                 {/* Aspect ratio toggle */}
                 <div style={{ display: "flex", gap: "8px" }}>
-                    {(["free", "1:1", "4:3"] as CropAspect[]).map((a) => (
+                    {(["free", "1:1", "4:3", "9:16"] as CropAspect[]).map((a) => (
                         <button
                             key={a}
                             onClick={() => setAspect(a)}

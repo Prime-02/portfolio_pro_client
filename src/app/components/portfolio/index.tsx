@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import BasicHeader from "../containers/divs/header/BasicHeader"
 import Button from "../buttons/Buttons"
 import { usePortfolioStore } from "@/portfolio-builder/store/usePortfolioStore"
-import type { PortfolioResponse, PortfolioCreate } from "@/portfolio-builder/store/usePortfolioStore"
+import type { PortfolioResponse, PortfolioCreate, PortfolioUpdate } from "@/portfolio-builder/store/usePortfolioStore"
 import PortfolioSkeleton from "./PortfolioSkeleton"
 import CreatePortfolioModal from "./CreatePortfolioModal"
 import PortfolioCard from "./PortfolioCard"
@@ -41,6 +41,7 @@ const PortfolioPage = () => {
             const payload: PortfolioCreate = {
                 ...data,
                 is_default: !hasDefault,
+                layout: data.layout || {}, // Include layout, default to empty object
             }
 
             try {
@@ -51,11 +52,11 @@ const PortfolioPage = () => {
                 // Error handled by store
             }
         },
-        [portfolios, createPortfolio, router]
+        [portfolios, createPortfolio, router, userInfo?.username]
     )
 
     const handleEdit = useCallback(
-        async (id: string, data: { name?: string; description?: string; is_public?: boolean }) => {
+        async (id: string, data: PortfolioUpdate) => {
             try {
                 await updatePortfolio(id, data)
                 setIsEditModalOpen(false)

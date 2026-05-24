@@ -6,6 +6,7 @@ import { useState } from "react";
 import HeroRenderer from "@/portfolio-builder/components/sections/hero/HeroRenderer";
 import HeroEditor from "@/portfolio-builder/components/sections/hero/HeroEditor";
 import { HeroData, getEmptyHeroData } from "@/portfolio-builder/types/hero";
+import { ResolvedTheme } from "@/portfolio-builder/hooks/usePortfolioTheme";
 
 // ---------------------------------------------------------------------------
 // Props
@@ -14,13 +15,14 @@ import { HeroData, getEmptyHeroData } from "@/portfolio-builder/types/hero";
 interface HeroSectionControllerProps {
     heroData: HeroData | null;
     onSave: (updatedHeroData: HeroData) => Promise<void>;
+    theme: ResolvedTheme;
 }
 
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
-export default function HeroSectionController({ heroData, onSave }: HeroSectionControllerProps) {
+export default function HeroSectionController({ heroData, onSave, theme }: HeroSectionControllerProps) {
     const [isEditing, setIsEditing] = useState(false);
 
     // ---- Save ----------------------------------------------------------------
@@ -38,10 +40,10 @@ export default function HeroSectionController({ heroData, onSave }: HeroSectionC
         return (
             <div className="flex items-center justify-center min-h-[60vh]">
                 <div className="text-center">
-                    <p className="text-neutral-500 text-sm mb-4">Hero section not set up</p>
+                    <p className="text-[var(--pb-text-muted)] text-sm mb-4">Hero section not set up</p>
                     <button
                         onClick={() => setIsEditing(true)}
-                        className="px-6 py-3 bg-white text-black rounded-lg font-medium text-sm hover:bg-neutral-200 transition-colors"
+                        className="px-6 py-3 bg-[var(--pb-foreground)] text-[var(--pb-background)] rounded-lg font-medium text-sm hover:opacity-90 transition-opacity"
                     >
                         Add Hero Section
                     </button>
@@ -57,6 +59,7 @@ export default function HeroSectionController({ heroData, onSave }: HeroSectionC
                 initialData={heroData || getEmptyHeroData()}
                 onSave={handleSave}
                 onCancel={handleCancel}
+                theme={theme}
             />
         );
     }
@@ -64,12 +67,12 @@ export default function HeroSectionController({ heroData, onSave }: HeroSectionC
     // ---- Viewing — show renderer ---------------------------------------------
     return (
         <div className="relative">
-            <HeroRenderer data={heroData!} />
+            <HeroRenderer data={heroData!} theme={theme} />
 
             {/* Edit button */}
             <button
                 onClick={() => setIsEditing(true)}
-                className="absolute top-4 right-4 z-50 px-4 py-2 bg-white/10 backdrop-blur text-white border border-white/20 rounded-lg font-medium text-sm hover:bg-white/20 transition-colors"
+                className="absolute top-4 right-4 z-50 px-4 py-2 bg-[var(--pb-foreground-10)] backdrop-blur text-[var(--pb-text-primary)] border border-[var(--pb-border)] rounded-lg font-medium text-sm hover:bg-[var(--pb-foreground-20)] transition-colors"
             >
                 Edit
             </button>

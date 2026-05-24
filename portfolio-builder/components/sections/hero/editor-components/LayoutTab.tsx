@@ -69,8 +69,14 @@ const LAYOUT_OPTIONS: {
     ];
 
 const ALIGNMENT_OPTIONS: { value: HeroAlignment; label: string }[] = [
-    { value: "center", label: "Center" },
     { value: "left", label: "Left" },
+    { value: "center", label: "Center" },
+    { value: "right", label: "Right" },
+];
+
+const SPLIT_ALIGNMENT_OPTIONS: { value: HeroAlignment; label: string }[] = [
+    { value: "left", label: "Left" },
+    { value: "right", label: "Right" },
 ];
 
 const HEIGHT_OPTIONS: {
@@ -116,7 +122,6 @@ const MEDIA_POSITION_OPTIONS: {
 // Sub-components
 // ---------------------------------------------------------------------------
 
-/** Inline toggle switch */
 function Toggle({
     label,
     hint,
@@ -131,8 +136,8 @@ function Toggle({
     return (
         <div className="flex items-start justify-between gap-3 py-2">
             <div className="flex flex-col gap-0.5">
-                <span className="text-sm font-medium text-foreground">{label}</span>
-                {hint && <span className="text-xs text-muted-foreground">{hint}</span>}
+                <span className="text-sm font-medium text-[var(--pb-text-primary)]">{label}</span>
+                {hint && <span className="text-xs text-[var(--pb-text-muted)]">{hint}</span>}
             </div>
             <Switch
                 isSwitched={checked}
@@ -142,7 +147,6 @@ function Toggle({
     );
 }
 
-/** Number input with label and unit label */
 function NumberField({
     label,
     hint,
@@ -178,14 +182,13 @@ function NumberField({
     );
 }
 
-/** Section divider with label */
 function SectionDivider({ label }: { label: string }) {
     return (
         <div className="flex items-center gap-2 pt-2">
-            <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            <span className="text-xs font-semibold uppercase tracking-widest text-[var(--pb-text-muted)]">
                 {label}
             </span>
-            <div className="flex-1 h-px bg-border" />
+            <div className="flex-1 h-px bg-[var(--pb-border)]" />
         </div>
     );
 }
@@ -198,7 +201,6 @@ export default function LayoutTab({ data, onChange }: LayoutTabProps) {
     const isSplit = data.layout === "split";
     const heightHint = HEIGHT_OPTIONS.find((o) => o.value === (data.height ?? "screen"))?.hint;
 
-    // Helpers for nested updates
     function handleEffectChange(key: "scrollIndicator", value: boolean) {
         onChange("effects", { ...data.effects, [key]: value });
     }
@@ -208,7 +210,7 @@ export default function LayoutTab({ data, onChange }: LayoutTabProps) {
     }
 
     return (
-        <div className="flex flex-col gap-4 ">
+        <div className="flex flex-col gap-4">
             {/* ── Layout picker ─────────────────────────────────────── */}
             <SectionDivider label="Layout" />
 
@@ -220,28 +222,17 @@ export default function LayoutTab({ data, onChange }: LayoutTabProps) {
                             key={value}
                             type="button"
                             onClick={() => onChange("layout", value)}
-                            className={[
-                                "flex flex-col items-center gap-2 rounded-xl border-2 p-3",
-                                "transition-all duration-150 focus-visible:outline-none",
-                                "focus-visible:ring-2 focus-visible:ring-ring hover:border-primary/60",
-                                active
-                                    ? "border-primary bg-primary/5 text-primary"
-                                    : "border-border bg-background text-foreground/50 hover:bg-muted/40",
-                            ].join(" ")}
+                            className={`flex flex-col items-center gap-2 rounded-xl border-2 p-3 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pb-accent)] hover:border-[var(--pb-accent)]/60 ${active
+                                ? "border-[var(--pb-foreground)] bg-[var(--pb-foreground-10)] text-[var(--pb-foreground)]"
+                                : "border-[var(--pb-border)] bg-[var(--pb-surface)] text-[var(--pb-text-muted)] hover:bg-[var(--pb-surface-hover)]"
+                                }`}
                         >
-                            {/* Mini preview */}
                             <div className="h-10 w-full">{preview}</div>
-
                             <div className="flex flex-col items-center gap-0.5 text-center">
-                                <span
-                                    className={[
-                                        "text-xs font-semibold",
-                                        active ? "text-primary" : "text-foreground",
-                                    ].join(" ")}
-                                >
+                                <span className={`text-xs font-semibold ${active ? "text-[var(--pb-text-primary)]" : "text-[var(--pb-text-secondary)]"}`}>
                                     {label}
                                 </span>
-                                <span className="text-[10px] leading-tight text-muted-foreground">
+                                <span className="text-[10px] leading-tight text-[var(--pb-text-muted)]">
                                     {description}
                                 </span>
                             </div>
@@ -253,19 +244,13 @@ export default function LayoutTab({ data, onChange }: LayoutTabProps) {
             {/* ── Alignment ─────────────────────────────────────────── */}
             <SectionDivider label="Alignment" />
 
-            {isSplit ? (
-                <div className="rounded-lg border border-border bg-muted/30 px-3 py-2.5 text-xs text-muted-foreground">
-                    Horizontal alignment is fixed in <span className="font-semibold text-foreground">Split</span> layout — text fills its column automatically.
-                </div>
-            ) : (
-                <SelectField
-                    label="Horizontal"
-                    id="alignment"
-                    value={data.alignment ?? "center"}
-                    onChange={(value) => onChange("alignment", value as HeroAlignment)}
-                    options={ALIGNMENT_OPTIONS}
-                />
-            )}
+            <SelectField
+                label="Horizontal"
+                id="alignment"
+                value={data.alignment ?? (isSplit ? "left" : "center")}
+                onChange={(value) => onChange("alignment", value as HeroAlignment)}
+                options={isSplit ? SPLIT_ALIGNMENT_OPTIONS : ALIGNMENT_OPTIONS}
+            />
 
             <SelectField
                 label="Vertical"
@@ -288,9 +273,8 @@ export default function LayoutTab({ data, onChange }: LayoutTabProps) {
                 options={HEIGHT_OPTIONS.map(({ value, label }) => ({ value, label }))}
             />
 
-            {/* Hint text for the selected height option */}
             {heightHint && (
-                <p className="text-xs text-muted-foreground -mt-2 pl-0.5">{heightHint}</p>
+                <p className="text-xs text-[var(--pb-text-muted)] -mt-2 pl-0.5">{heightHint}</p>
             )}
 
             {/* ── Padding ───────────────────────────────────────────── */}

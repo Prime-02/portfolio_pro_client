@@ -9,6 +9,9 @@ import BioSectionController from "@/portfolio-builder/components/sections/bio/Bi
 import PortfolioProLogo from "@/src/app/components/logo/PortfolioProTextLogo";
 import { HeroData } from "@/portfolio-builder/types/hero";
 import { BioData } from "@/portfolio-builder/types/bio";
+import { usePortfolioTheme, PortfolioThemeData } from "@/portfolio-builder/hooks/usePortfolioTheme";
+// 👇 Import the portfolio-builder theme CSS once at the top level
+import "@/portfolio-builder/styles/portfolio-theme.css";
 
 // ---------------------------------------------------------------------------
 // Props
@@ -46,6 +49,14 @@ function getSectionData<T>(
   return section.data as unknown as T;
 }
 
+function getTopLevelData<T>(
+  layout: Record<string, unknown> | null,
+  key: string
+): T | null {
+  if (!layout) return null;
+  return (layout as Record<string, unknown>)[key] as T ?? null;
+}
+
 function setSectionData<T>(
   layout: Record<string, unknown> | null,
   sectionType: string,
@@ -78,12 +89,16 @@ export default function PortfolioMain({ portfolioId }: PortfolioMainProps) {
     fetchPortfolioById(portfolioId);
   }, [portfolioId]);
 
+  // Resolve and inject theme CSS variables
+  const themeData = getTopLevelData<PortfolioThemeData>(currentPortfolio?.layout ?? null, "theme");
+  const resolvedTheme = usePortfolioTheme(themeData);
+
   // ---- Loading -------------------------------------------------------------
   if (isLoading || !currentPortfolio) {
     return (
-      <div className="flex items-center flex-col justify-center min-h-screen bg-neutral-950">
+      <div className="flex items-center flex-col justify-center min-h-screen bg-[var(--pb-background)]">
         <PortfolioProLogo scale={0.7} />
-        <p className="text-neutral-400">Loading portfolio...</p>
+        <p className="text-[var(--pb-text-muted)]">Loading portfolio...</p>
       </div>
     );
   }
@@ -91,10 +106,10 @@ export default function PortfolioMain({ portfolioId }: PortfolioMainProps) {
   // ---- Error ---------------------------------------------------------------
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-neutral-950">
+      <div className="flex items-center justify-center min-h-screen bg-[var(--pb-background)]">
         <div className="text-center">
-          <p className="text-red-400 mb-4">Failed to load portfolio</p>
-          <p className="text-neutral-500 text-sm">{error}</p>
+          <p className="text-[var(--pb-error)] mb-4">Failed to load portfolio</p>
+          <p className="text-[var(--pb-text-muted)] text-sm">{error}</p>
         </div>
       </div>
     );
@@ -115,9 +130,9 @@ export default function PortfolioMain({ portfolioId }: PortfolioMainProps) {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-950">
-      <HeroSectionController heroData={heroData} onSave={handleHeroSave} />
-      <BioSectionController bioData={bioData} onSave={handleBioSave} />
+    <div className="min-h-screen bg-[var(--pb-background)]">
+      <HeroSectionController heroData={heroData} onSave={handleHeroSave} theme={resolvedTheme} />
+      <BioSectionController bioData={bioData} onSave={handleBioSave} theme={resolvedTheme} />
 
       {/*
         Future sections:

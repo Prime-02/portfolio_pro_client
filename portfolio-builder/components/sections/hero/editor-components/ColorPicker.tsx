@@ -1,5 +1,6 @@
 // portfolio-builder/components/sections/hero/editor-components/ColorPicker.tsx
 
+import { Textinput } from "@/src/app/components/inputs/Textinput";
 import { inputClass } from "./styles";
 
 interface ColorPickerProps {
@@ -17,12 +18,12 @@ export default function ColorPicker({ id, value, onChange, placeholder }: ColorP
                 type="color"
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
-                className="w-10 h-10 rounded cursor-pointer border border-neutral-700"
+                className="w-10 h-10 rounded cursor-pointer border border-[var(--pb-border)] bg-[var(--pb-surface)]"
             />
-            <input
+            <Textinput
                 type="text"
                 value={value}
-                onChange={(e) => onChange(e.target.value)}
+                onChange={(e) => onChange(e)}
                 placeholder={placeholder}
                 className={inputClass}
             />

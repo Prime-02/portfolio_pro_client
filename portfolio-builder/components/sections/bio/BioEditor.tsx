@@ -185,10 +185,10 @@ export default function BioEditor({ initialData, onSave, onCancel }: BioEditorPr
   };
 
   const saveStatusColor = {
-    idle: hasChanges ? "text-amber-400" : "text-neutral-500",
-    saving: "text-blue-400",
-    saved: "text-emerald-400",
-    error: "text-red-400",
+    idle: hasChanges ? "text-[var(--pb-warning)]" : "text-[var(--pb-text-muted)]",
+    saving: "text-[var(--pb-info)]",
+    saved: "text-[var(--pb-success)]",
+    error: "text-[var(--pb-error)]",
   };
 
   // ── Tab content ──────────────────────────────────────────────────────────
@@ -211,18 +211,18 @@ export default function BioEditor({ initialData, onSave, onCancel }: BioEditorPr
 
   // ── Render ───────────────────────────────────────────────────────────────
   return (
-    <div className="flex flex-col lg:flex-row gap-6 h-full bg-(--background)">
+    <div className="flex flex-col lg:flex-row gap-6 h-full bg-[var(--pb-background)]">
       {/* Save status banner */}
       {(saveStatus === "saving" || saveStatus === "error") && (
         <div
           className={`fixed bottom-4 right-4 z-50 px-4 py-2 rounded-lg shadow-lg ${saveStatus === "saving"
-            ? "bg-blue-900/90 text-blue-200 border border-blue-700"
-            : "bg-red-900/90 text-red-200 border border-red-700"
+            ? "bg-[var(--pb-info-bg)] text-[var(--pb-info)] border border-[var(--pb-info-border)]"
+            : "bg-[var(--pb-error-bg)] text-[var(--pb-error)] border border-[var(--pb-error-border)]"
             }`}
         >
           <div className="flex items-center gap-2">
             {saveStatus === "saving" ? (
-              <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-300 border-t-transparent" />
+              <div className="animate-spin rounded-full h-4 w-4 border-2 border-[var(--pb-info)] border-t-transparent" />
             ) : (
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -242,10 +242,10 @@ export default function BioEditor({ initialData, onSave, onCancel }: BioEditorPr
 
       {/* Editor panel */}
       {isEditorVisible && (
-        <div className="flex-1 flex flex-col min-w-0 bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
+        <div className="flex-1 flex flex-col min-w-0 border border-[var(--pb-border)] rounded-xl overflow-hidden bg-[var(--pb-surface)]">
           <EditorTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
-          <div className="p-6 overflow-y-auto flex-1 space-y-6">
+          <div className="p-6 overflow-y-auto flex-1 space-y-6 bg-[var(--pb-background)]">
             {renderTabContent()}
           </div>
 
@@ -263,13 +263,13 @@ export default function BioEditor({ initialData, onSave, onCancel }: BioEditorPr
       {/* Preview panel */}
       <div
         className={`${isEditorVisible ? "flex-1" : "flex-[2]"
-          } min-w-0 bg-neutral-950 border border-neutral-800 rounded-xl overflow-hidden transition-all duration-300`}
+          } min-w-0 bg-[var(--pb-background)] border border-[var(--pb-border)] rounded-xl overflow-hidden transition-all duration-300`}
       >
-        <div className="px-4 py-2 border-b border-neutral-800 flex items-center justify-between">
-          <span className="text-xs text-neutral-500 uppercase tracking-wide">Preview</span>
+        <div className="px-4 py-2 border-b border-[var(--pb-border)] flex items-center justify-between">
+          <span className="text-xs text-[var(--pb-text-muted)] uppercase tracking-wide">Preview</span>
           <button
             onClick={toggleEditor}
-            className="text-xs text-neutral-400 hover:text-white transition-colors flex items-center gap-1"
+            className="text-xs text-[var(--pb-text-secondary)] hover:text-[var(--pb-text-primary)] transition-colors flex items-center gap-1"
             title={isEditorVisible ? "Hide editor for fullscreen preview" : "Show editor"}
           >
             {isEditorVisible ? (

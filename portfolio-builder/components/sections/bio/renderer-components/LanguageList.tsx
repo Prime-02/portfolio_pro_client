@@ -19,17 +19,17 @@ export function LanguageList({ languages, className = "" }: LanguageListProps) {
 
   return (
     <div className={`space-y-2 ${className}`}>
-      <h4 className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
+      <h4 className="text-xs font-semibold uppercase tracking-wider text-[var(--pb-text-muted)]">
         Languages
       </h4>
       <div className="flex flex-wrap gap-2">
         {languages.map((lang, index) => (
           <span
             key={index}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-neutral-800/60 border border-neutral-700/50 text-sm text-neutral-300"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[var(--pb-surface-elevated)] border border-[var(--pb-border)] text-sm text-[var(--pb-text-primary)]"
           >
             <span>{lang.language}</span>
-            <span className="text-xs text-neutral-500">{PROFICIENCY_LABELS[lang.proficiency]}</span>
+            <span className="text-xs text-[var(--pb-text-muted)]">{PROFICIENCY_LABELS[lang.proficiency]}</span>
           </span>
         ))}
       </div>

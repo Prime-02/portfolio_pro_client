@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import { HeroData } from "@/portfolio-builder/types/hero";
 import type { HeroAnimations } from "@/portfolio-builder/types/hero";
@@ -18,12 +18,14 @@ import { resolveEasing } from "./renderer-components/animations";
 import SocialLinks from "./renderer-components/SocialLinks";
 import { useTypewriter } from "./renderer-components/useTypewriter";
 import { loadGoogleFont } from "./editor-components/fonts";
+import { ResolvedTheme } from "@/portfolio-builder/hooks/usePortfolioTheme";
 
 interface HeroRendererProps {
     data: HeroData;
+    theme: ResolvedTheme;
 }
 
-export default function HeroRenderer({ data }: HeroRendererProps) {
+export default function HeroRenderer({ data, theme }: HeroRendererProps) {
     const {
         layout = "centered",
         height = "screen",
@@ -69,7 +71,6 @@ export default function HeroRenderer({ data }: HeroRendererProps) {
     const fonts = data.fonts ?? {};
     const typography = data.typography ?? {};
 
-    // Track which fonts are actually ready to render
     const [readyFonts, setReadyFonts] = useState<Set<string>>(new Set());
 
     useEffect(() => {
@@ -84,7 +85,7 @@ export default function HeroRenderer({ data }: HeroRendererProps) {
         fontsToLoad.forEach(({ family }) => {
             loadGoogleFont(family).then(() => {
                 setReadyFonts((prev) => {
-                    if (prev.has(family)) return prev; // no-op if already added
+                    if (prev.has(family)) return prev;
                     const next = new Set(prev);
                     next.add(family);
                     return next;
@@ -92,14 +93,16 @@ export default function HeroRenderer({ data }: HeroRendererProps) {
             });
         });
     }, [fonts.greeting, fonts.name, fonts.title]);
+
     const isAnimated = anim.preset !== "none";
 
-    // ── Refs & hooks ─────────────────────────────────────────────────────────
     const sectionRef = useRef<HTMLElement>(null);
     const isInView = useInView(sectionRef, {
-        once: anim.scrollOnce,
+        once: anim.scrollTrigger ? anim.scrollOnce : false,
         amount: 0.2,
     });
+
+    const animKey = `${anim.preset}-${anim.duration}-${anim.delay}-${anim.easing}-${anim.staggerChildren}-${anim.staggerDelay}`;
 
     const { scrollYProgress } = useScroll({
         target: sectionRef,
@@ -123,51 +126,43 @@ export default function HeroRenderer({ data }: HeroRendererProps) {
             : true
         : false;
 
-    // ── Height ───────────────────────────────────────────────────────────────
     const heightClass =
         height === "auto" ? "" :
             height === "min-screen" ? "min-h-screen" :
                 "h-screen";
 
-    // ── Vertical alignment ───────────────────────────────────────────────────
     const verticalAlignClass =
         verticalAlignment === "top" ? "items-start" :
             verticalAlignment === "bottom" ? "items-end" :
                 "items-center";
 
-    // ── Padding ──────────────────────────────────────────────────────────────
-    // height="auto" uses py-20 baseline; custom padding overrides it entirely.
     const paddingStyle: React.CSSProperties =
         height === "auto" && !padding?.top && !padding?.bottom
-            ? {} // let heightClass py-20 handle spacing
+            ? {}
             : {
                 paddingTop: padding?.top != null ? `${padding.top}px` : height === "auto" ? "5rem" : undefined,
                 paddingBottom: padding?.bottom != null ? `${padding.bottom}px` : height === "auto" ? "7rem" : undefined,
             };
 
-    // ── Background ───────────────────────────────────────────────────────────
     const bgStyle = getBackgroundStyle(background);
 
-    // ── Alignment ────────────────────────────────────────────────────────────
     const alignClass =
-        alignment === "left" ? "text-left items-start" : "text-center items-center";
+        alignment === "left" ? "text-left items-start" :
+            alignment === "right" ? "text-right items-end" :
+                "text-center items-center";
 
-    // Tailwind class for horizontal justify on the section itself
     const justifyClass = layout !== "split" ? "justify-center" : "";
 
-    // Helper: build complete style object for a text field
     const getTextStyle = (fontKey: "greeting" | "name" | "title") => {
         const fieldTypography = typography[fontKey];
         const family = fonts[fontKey];
 
         const style: React.CSSProperties = {};
 
-        // Font family (only if loaded)
         if (family && readyFonts.has(family)) {
             style.fontFamily = family;
         }
 
-        // Typography overrides
         if (fieldTypography) {
             if (fieldTypography.size !== undefined) style.fontSize = `${fieldTypography.size}px`;
             if (fieldTypography.weight !== undefined) style.fontWeight = fieldTypography.weight;
@@ -183,85 +178,91 @@ export default function HeroRenderer({ data }: HeroRendererProps) {
     const textContent = (
         <>
             {greeting && (
-                anim.textReveal ? (
-                    <AnimatedText delay={anim.textRevealDelay} className="mb-4" shouldAnimate={shouldAnimate}>
-                        <p
-                            className="text-sm md:text-base font-mono text-neutral-400"
-                            style={getTextStyle("greeting")}
-                        >
-                            {greeting}
-                        </p>
-                    </AnimatedText>
-                ) : (
-                    <MotionItem isAnimated={isAnimated} shouldAnimate={shouldAnimate} anim={anim}>
-                        <p
-                            className="text-sm md:text-base font-mono text-neutral-400 mb-4"
-                            style={getTextStyle("greeting")}
-                        >
-                            {greeting}
-                        </p>
-                    </MotionItem>
-                )
+                <React.Fragment key={`${animKey}-greeting`}>
+                    {anim.textReveal ? (
+                        <AnimatedText delay={anim.textRevealDelay} className="mb-4" shouldAnimate={shouldAnimate} anim={anim}>
+                            <p
+                                className="text-sm md:text-base font-mono text-[var(--pb-foreground-60)]"
+                                style={getTextStyle("greeting")}
+                            >
+                                {greeting}
+                            </p>
+                        </AnimatedText>
+                    ) : (
+                        <MotionItem isAnimated={isAnimated} shouldAnimate={shouldAnimate} anim={anim}>
+                            <p
+                                className="text-sm md:text-base font-mono text-[var(--pb-foreground-60)] mb-4"
+                                style={getTextStyle("greeting")}
+                            >
+                                {`${greeting}`}
+                            </p>
+                        </MotionItem>
+                    )}
+                </React.Fragment>
             )}
 
             {name && (
-                anim.textReveal ? (
-                    <AnimatedText delay={(anim.textRevealDelay ?? 0.2) + 0.1} className="mb-4" shouldAnimate={shouldAnimate}>
-                        <h1
-                            className="text-4xl md:text-6xl lg:text-7xl font-bold text-white"
-                            style={getTextStyle("name")}
-                        >
-                            {effects?.typewriter ? typewriterName : name}
-                            {effects?.typewriter && !typewriterDone && (
-                                <span className="inline-block w-[3px] h-[0.85em] bg-white ml-1 align-middle animate-pulse" />
-                            )}
-                        </h1>
-                    </AnimatedText>
-                ) : (
-                    <MotionItem isAnimated={isAnimated} shouldAnimate={shouldAnimate} anim={anim}>
-                        <h1
-                            className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-4"
-                            style={getTextStyle("name")}
-                        >
-                            {effects?.typewriter ? typewriterName : name}
-                            {effects?.typewriter && !typewriterDone && (
-                                <span className="inline-block w-[3px] h-[0.85em] bg-white ml-1 align-middle animate-pulse" />
-                            )}
-                        </h1>
-                    </MotionItem>
-                )
+                <React.Fragment key={`${animKey}-name`}>
+                    {anim.textReveal ? (
+                        <AnimatedText delay={(anim.textRevealDelay ?? 0.2) + 0.1} className="mb-4" shouldAnimate={shouldAnimate} anim={anim}>
+                            <h1
+                                className="text-4xl md:text-6xl lg:text-7xl font-bold text-[var(--pb-foreground)]"
+                                style={getTextStyle("name")}
+                            >
+                                {`${effects?.typewriter ? typewriterName : name}`}
+                                {effects?.typewriter && !typewriterDone && (
+                                    <span className="inline-block w-[3px] h-[0.85em] bg-[var(--pb-foreground)] ml-1 align-middle animate-pulse" />
+                                )}
+                            </h1>
+                        </AnimatedText>
+                    ) : (
+                        <MotionItem isAnimated={isAnimated} shouldAnimate={shouldAnimate} anim={anim}>
+                            <h1
+                                className="text-4xl md:text-6xl lg:text-7xl font-bold text-[var(--pb-foreground)] mb-4"
+                                style={getTextStyle("name")}
+                            >
+                                {effects?.typewriter ? typewriterName : name}
+                                {effects?.typewriter && !typewriterDone && (
+                                    <span className="inline-block w-[3px] h-[0.85em] bg-[var(--pb-foreground)] ml-1 align-middle animate-pulse" />
+                                )}
+                            </h1>
+                        </MotionItem>
+                    )}
+                </React.Fragment>
             )}
 
             {title && (
-                anim.textReveal ? (
-                    <AnimatedText delay={(anim.textRevealDelay ?? 0.2) + 0.2} shouldAnimate={shouldAnimate}>
-                        <p
-                            className="text-lg md:text-xl text-neutral-300"
-                            style={getTextStyle("title")}
-                        >
-                            {title}
-                        </p>
-                    </AnimatedText>
-                ) : (
-                    <MotionItem isAnimated={isAnimated} shouldAnimate={shouldAnimate} anim={anim}>
-                        <p
-                            className="text-lg md:text-xl text-neutral-300"
-                            style={getTextStyle("title")}
-                        >
-                            {title}
-                        </p>
-                    </MotionItem>
-                )
+                <React.Fragment key={`${animKey}-title`}>
+                    {anim.textReveal ? (
+                        <AnimatedText delay={(anim.textRevealDelay ?? 0.2) + 0.2} shouldAnimate={shouldAnimate} anim={anim}>
+                            <p
+                                className="text-lg md:text-xl text-[var(--pb-foreground-80)]"
+                                style={getTextStyle("title")}
+                            >
+                                {`${title}`}
+                            </p>
+                        </AnimatedText>
+                    ) : (
+                        <MotionItem isAnimated={isAnimated} shouldAnimate={shouldAnimate} anim={anim}>
+                            <p
+                                className="text-lg md:text-xl text-[var(--pb-foreground-80)]"
+                                style={getTextStyle("title")}
+                            >
+                                {`${title}`}
+                            </p>
+                        </MotionItem>
+                    )}
+                </React.Fragment>
             )}
 
             {ctaButtons && ctaButtons.length > 0 && (
-                <MotionItem isAnimated={isAnimated} shouldAnimate={shouldAnimate} anim={anim}>
-                    <CTAButtons buttons={ctaButtons} className="mt-8" alignment={alignment} />
+                <MotionItem key={`${animKey}-cta`} isAnimated={isAnimated} shouldAnimate={shouldAnimate} anim={anim}>
+                    <CTAButtons buttons={ctaButtons} className="mt-8" alignment={alignment} theme={theme} />
                 </MotionItem>
             )}
 
             {data.socialLinks && data.socialLinks.length > 0 && (
-                <MotionItem isAnimated={isAnimated} shouldAnimate={shouldAnimate} anim={anim} className="w-fit">
+                <MotionItem key={`${animKey}-social`} isAnimated={isAnimated} shouldAnimate={shouldAnimate} anim={anim} className="w-fit">
                     <SocialLinks
                         links={data.socialLinks}
                         alignment={alignment}
@@ -282,9 +283,7 @@ export default function HeroRenderer({ data }: HeroRendererProps) {
             className={`relative flex overflow-hidden ${heightClass} ${verticalAlignClass} ${justifyClass}`}
             style={{ ...bgStyle, ...paddingStyle }}
         >
-            {/* Background Layers */}
-
-            {/* Shared overlay — image, video, mesh (particles handles its own overlay on canvas) */}
+            {/* Background overlay for image/video/mesh */}
             {(() => {
                 const overlayTypes = ["image", "video", "mesh"];
                 const opacity = background?.overlayOpacity ?? 0;
@@ -293,7 +292,7 @@ export default function HeroRenderer({ data }: HeroRendererProps) {
                     <div
                         className="absolute inset-0 z-[1] pointer-events-none"
                         style={{
-                            backgroundColor: background.overlayColor || "#000000",
+                            backgroundColor: background.overlayColor || "var(--pb-background)",
                             opacity: opacity / 100,
                         }}
                     />
@@ -305,7 +304,7 @@ export default function HeroRenderer({ data }: HeroRendererProps) {
                     color1={background.meshColor1 || "#7c3aed"}
                     color2={background.meshColor2 || "#2563eb"}
                     color3={background.meshColor3 || "#0891b2"}
-                    color4={background.meshColor4 || "#0a0a0a"}
+                    color4={background.meshColor4 || "var(--pb-background)"}
                     speed={background.meshSpeed ?? 6}
                     blur={background.meshBlur ?? 80}
                     size={background.meshSize ?? 60}
@@ -316,15 +315,15 @@ export default function HeroRenderer({ data }: HeroRendererProps) {
 
             {background?.type === "particles" && (
                 <ParticlesBackground
-                    color={background.particleColor || "#ffffff"}
+                    color={background.particleColor || "var(--pb-foreground)"}
                     count={background.particleCount ?? 80}
                     size={background.particleSize ?? 2}
                     speed={background.particleSpeed ?? 0.5}
                     opacity={background.particleOpacity ?? 0.6}
                     lines={background.particleLines ?? true}
                     lineDist={background.particleLineDist ?? 120}
-                    bgColor={background.particleBg || "#050510"}
-                    overlayColor={background.overlayColor || "#000000"}
+                    bgColor={background.particleBg || "var(--pb-background)"}
+                    overlayColor={background.overlayColor || "var(--pb-background)"}
                     overlayOpacity={background.overlayOpacity ?? 0}
                 />
             )}
@@ -344,40 +343,41 @@ export default function HeroRenderer({ data }: HeroRendererProps) {
             {/* Centered Layout */}
             {layout === "centered" && (
                 <MotionContainer
+                    key={animKey}
                     isAnimated={isAnimated}
                     shouldAnimate={shouldAnimate}
                     anim={anim}
                     parallax={anim.parallax}
                     parallaxY={parallaxY}
-                    className={`relative z-10 flex flex-col w-full ${alignment === "left" ? "items-start" : "items-center"}`}
+                    className={`relative z-10 flex flex-col w-full ${alignment === "left" ? "items-start" : alignment === "right" ? "items-end" : "items-center"}`}
                 >
                     {media && media.type !== "none" && (
-                        <MotionItem isAnimated={isAnimated} shouldAnimate={shouldAnimate} anim={anim}>
+                        <MotionItem key={`${animKey}-media`} isAnimated={isAnimated} shouldAnimate={shouldAnimate} anim={anim}>
                             <MediaDisplay media={media} size="md" className="mb-8" />
                         </MotionItem>
                     )}
 
-                    <div className={`max-w-4xl mx-auto px-6 flex flex-col ${alignClass}`}>{textContent}</div>
+                    <div key={animKey} className={`max-w-4xl mx-auto px-6 flex flex-col ${alignClass}`}>{textContent}</div>
                 </MotionContainer>
             )}
 
             {/* Split Layout */}
             {layout === "split" && (
                 <div className="relative z-10 grid md:grid-cols-2 gap-12 items-center max-w-6xl mx-auto px-6 w-full">
-                    {/* Text column — order-2 when media is on the left */}
                     <MotionContainer
+                        key={animKey}
                         isAnimated={isAnimated}
                         shouldAnimate={shouldAnimate}
                         anim={anim}
                         parallax={anim.parallax}
                         parallaxY={parallaxY}
-                        className={mediaPosition === "left" ? "md:order-2" : undefined}
+                        className={`flex flex-col ${alignClass} ${mediaPosition === "left" ? "md:order-2" : ""}`}
                     >
-                        {textContent}
+                        <div key={animKey}>{textContent}</div>
                     </MotionContainer>
 
-                    {/* Media column — order-1 when media is on the left */}
                     <motion.div
+                        key={`${animKey}-media`}
                         className={`flex justify-center ${mediaPosition === "left" ? "md:order-1" : ""}`}
                         style={anim.parallax ? { y: parallaxYSlow } : undefined}
                         initial={isAnimated ? { opacity: 0, x: mediaPosition === "left" ? -40 : 40 } : false}
@@ -402,6 +402,7 @@ export default function HeroRenderer({ data }: HeroRendererProps) {
             {/* Minimal Layout */}
             {layout === "minimal" && (
                 <MotionContainer
+                    key={animKey}
                     isAnimated={isAnimated}
                     shouldAnimate={shouldAnimate}
                     anim={anim}
@@ -409,7 +410,7 @@ export default function HeroRenderer({ data }: HeroRendererProps) {
                     parallaxY={parallaxY}
                     className={`relative z-10 max-w-3xl mx-auto px-6 flex flex-col ${alignClass}`}
                 >
-                    {textContent}
+                    <div key={animKey}>{textContent}</div>
                 </MotionContainer>
             )}
 

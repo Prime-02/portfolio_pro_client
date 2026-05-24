@@ -28,7 +28,7 @@ export function ContactList({ contacts, className = "" }: ContactListProps) {
 
   return (
     <div className={`space-y-3 ${className}`}>
-      <h4 className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
+      <h4 className="text-xs font-semibold uppercase tracking-wider text-[var(--pb-text-muted)]">
         Contact
       </h4>
       <div className="flex flex-wrap gap-2">
@@ -37,8 +37,8 @@ export function ContactList({ contacts, className = "" }: ContactListProps) {
             contact.type === "email"
               ? `mailto:${contact.value}`
               : contact.type === "phone"
-              ? `tel:${contact.value}`
-              : contact.value;
+                ? `tel:${contact.value}`
+                : contact.value;
 
           return (
             <a
@@ -46,11 +46,10 @@ export function ContactList({ contacts, className = "" }: ContactListProps) {
               href={href}
               target={contact.type === "website" || contact.type === "calendly" ? "_blank" : undefined}
               rel={contact.type === "website" || contact.type === "calendly" ? "noopener noreferrer" : undefined}
-              className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
-                contact.isPrimary || contact === primaryContact
-                  ? "bg-white text-black hover:bg-neutral-200"
-                  : "bg-neutral-800 text-neutral-300 hover:bg-neutral-700 border border-neutral-700"
-              }`}
+              className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${contact.isPrimary || contact === primaryContact
+                  ? "bg-[var(--pb-foreground)] text-[var(--pb-background)] hover:opacity-90"
+                  : "bg-[var(--pb-surface-elevated)] text-[var(--pb-text-primary)] hover:bg-[var(--pb-surface-hover)] border border-[var(--pb-border)]"
+                }`}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d={CONTACT_ICONS[contact.type]} />

@@ -2,6 +2,7 @@
 
 import { inputClass } from "./styles";
 import Field from "./Field";
+import Dropdown from "@/src/app/components/inputs/DynamicDropdown";
 
 interface SelectOption {
   value: string;
@@ -18,20 +19,16 @@ interface SelectFieldProps {
 }
 
 export default function SelectField({ label, id, value, onChange, options, hint }: SelectFieldProps) {
+  const formattedArray = options.map((opt) => ({
+    id: opt.value,
+    code: opt.label,
+  }));
   return (
-    <Field label={label} htmlFor={id} hint={hint}>
-      <select
-        id={id}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className={inputClass}
-      >
-        {options.map((opt) => (
-          <option key={opt.value} value={opt.value}>
-            {opt.label}
-          </option>
-        ))}
-      </select>
-    </Field>
+    <Dropdown
+      options={formattedArray}
+      value={value}
+      onSelect={(e) => onChange(e as string)}
+      includeNoneOption={false}
+    />
   );
 }

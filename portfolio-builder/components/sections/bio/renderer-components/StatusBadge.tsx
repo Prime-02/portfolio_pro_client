@@ -7,31 +7,31 @@ interface StatusBadgeProps {
   className?: string;
 }
 
-const STATUS_CONFIG: Record<AvailabilityStatus, { label: string; color: string; bgColor: string }> = {
+const STATUS_CONFIG: Record<AvailabilityStatus, { label: string; colorVar: string; bgVar: string }> = {
   "open-to-work": {
     label: "Open to Work",
-    color: "#22c55e",
-    bgColor: "rgba(34, 197, 94, 0.15)",
+    colorVar: "var(--pb-success)",
+    bgVar: "var(--pb-success-bg)",
   },
   freelancing: {
     label: "Freelancing",
-    color: "#3b82f6",
-    bgColor: "rgba(59, 130, 246, 0.15)",
+    colorVar: "var(--pb-info)",
+    bgVar: "var(--pb-info-bg)",
   },
   hiring: {
     label: "Hiring",
-    color: "#8b5cf6",
-    bgColor: "rgba(139, 92, 246, 0.15)",
+    colorVar: "var(--pb-accent)",
+    bgVar: "var(--pb-accent-bg)",
   },
   "open-to-collaborate": {
     label: "Open to Collaborate",
-    color: "#f59e0b",
-    bgColor: "rgba(245, 158, 11, 0.15)",
+    colorVar: "var(--pb-warning)",
+    bgVar: "var(--pb-warning-bg)",
   },
   "not-available": {
     label: "Not Available",
-    color: "#ef4444",
-    bgColor: "rgba(239, 68, 68, 0.15)",
+    colorVar: "var(--pb-error)",
+    bgVar: "var(--pb-error-bg)",
   },
 };
 
@@ -45,14 +45,14 @@ export function StatusBadge({ status, className = "" }: StatusBadgeProps) {
     <span
       className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${className}`}
       style={{
-        color: config.color,
-        backgroundColor: config.bgColor,
-        border: `1px solid ${config.color}30`,
+        color: config.colorVar,
+        backgroundColor: config.bgVar,
+        border: `1px solid ${config.colorVar}30`,
       }}
     >
       <span
         className="w-2 h-2 rounded-full animate-pulse"
-        style={{ backgroundColor: config.color }}
+        style={{ backgroundColor: config.colorVar }}
       />
       {displayLabel}
     </span>

@@ -12,9 +12,9 @@ export function ScrollIndicator() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.2, duration: 0.6 }}
         >
-            <div className="w-5 h-8 border-2 border-neutral-500 rounded-full flex justify-center">
+            <div className="w-5 h-8 border-2 border-[var(--pb-foreground-40)] rounded-full flex justify-center">
                 <motion.div
-                    className="w-1 h-2 bg-neutral-400 rounded-full mt-1"
+                    className="w-1 h-2 bg-[var(--pb-foreground-60)] rounded-full mt-1"
                     animate={{ y: [0, 6, 0] }}
                     transition={{ repeat: Infinity, duration: 1.4, ease: "easeInOut" }}
                 />

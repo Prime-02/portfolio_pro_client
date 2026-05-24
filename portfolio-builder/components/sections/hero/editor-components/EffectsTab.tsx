@@ -15,11 +15,11 @@ export default function EffectsTab({ data, onUpdate }: EffectsTabProps) {
         <div className="space-y-6">
             {/* Typewriter */}
             <div className="space-y-4">
-                <h3 className="text-xs font-semibold uppercase tracking-widest text-neutral-500 border-b border-neutral-800 pb-2">
+                <h3 className="text-xs font-league-600 uppercase tracking-widest text-[color-mix(in_srgb,var(--foreground)_50%,transparent)] border-b border-[color-mix(in_srgb,var(--foreground)_10%,transparent)] pb-2">
                     Typewriter
                 </h3>
 
-                <label className="flex items-start gap-3 cursor-pointer">
+                <label className="flex items-start gap-3 cursor-pointer group">
                     <div className="relative mt-0.5 flex-shrink-0">
                         <input
                             type="checkbox"
@@ -28,17 +28,23 @@ export default function EffectsTab({ data, onUpdate }: EffectsTabProps) {
                             className="sr-only"
                         />
                         <div
-                            className={`w-9 h-5 rounded-full transition-colors ${data.effects?.typewriter ? "bg-white" : "bg-neutral-700"
+                            className={`w-9 h-5 rounded-full transition-colors ${data.effects?.typewriter
+                                    ? "bg-[var(--foreground)]"
+                                    : "bg-[color-mix(in_srgb,var(--foreground)_20%,transparent)]"
                                 }`}
                         />
                         <div
-                            className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-black transition-transform ${data.effects?.typewriter ? "translate-x-4" : "translate-x-0"
+                            className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-[var(--background)] transition-transform ${data.effects?.typewriter ? "translate-x-4" : "translate-x-0"
                                 }`}
                         />
                     </div>
                     <div>
-                        <p className="text-sm text-neutral-300">Typewriter effect on title</p>
-                        <p className="text-xs text-neutral-500 mt-0.5">Characters type out one by one</p>
+                        <p className="text-sm text-[var(--foreground)] group-hover:text-[color-mix(in_srgb,var(--foreground)_80%,transparent)] transition-colors">
+                            Typewriter effect on title
+                        </p>
+                        <p className="text-xs text-[color-mix(in_srgb,var(--foreground)_50%,transparent)] mt-0.5">
+                            Characters type out one by one
+                        </p>
                     </div>
                 </label>
 
@@ -58,11 +64,11 @@ export default function EffectsTab({ data, onUpdate }: EffectsTabProps) {
 
             {/* Scroll indicator */}
             <div className="space-y-4">
-                <h3 className="text-xs font-semibold uppercase tracking-widest text-neutral-500 border-b border-neutral-800 pb-2">
+                <h3 className="text-xs font-league-600 uppercase tracking-widest text-[color-mix(in_srgb,var(--foreground)_50%,transparent)] border-b border-[color-mix(in_srgb,var(--foreground)_10%,transparent)] pb-2">
                     Scroll Indicator
                 </h3>
 
-                <label className="flex items-start gap-3 cursor-pointer">
+                <label className="flex items-start gap-3 cursor-pointer group">
                     <div className="relative mt-0.5 flex-shrink-0">
                         <input
                             type="checkbox"
@@ -71,25 +77,34 @@ export default function EffectsTab({ data, onUpdate }: EffectsTabProps) {
                             className="sr-only"
                         />
                         <div
-                            className={`w-9 h-5 rounded-full transition-colors ${data.effects?.scrollIndicator !== false ? "bg-white" : "bg-neutral-700"
+                            className={`w-9 h-5 rounded-full transition-colors ${data.effects?.scrollIndicator !== false
+                                    ? "bg-[var(--foreground)]"
+                                    : "bg-[color-mix(in_srgb,var(--foreground)_20%,transparent)]"
                                 }`}
                         />
                         <div
-                            className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-black transition-transform ${data.effects?.scrollIndicator !== false ? "translate-x-4" : "translate-x-0"
+                            className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-[var(--background)] transition-transform ${data.effects?.scrollIndicator !== false ? "translate-x-4" : "translate-x-0"
                                 }`}
                         />
                     </div>
                     <div>
-                        <p className="text-sm text-neutral-300">Show scroll-down indicator</p>
-                        <p className="text-xs text-neutral-500 mt-0.5">Animated arrow at the bottom of the hero</p>
+                        <p className="text-sm text-[var(--foreground)] group-hover:text-[color-mix(in_srgb,var(--foreground)_80%,transparent)] transition-colors">
+                            Show scroll-down indicator
+                        </p>
+                        <p className="text-xs text-[color-mix(in_srgb,var(--foreground)_50%,transparent)] mt-0.5">
+                            Animated arrow at the bottom of the hero
+                        </p>
                     </div>
                 </label>
             </div>
 
             {/* Hint */}
-            <div className="rounded-lg bg-neutral-800/50 border border-neutral-700/50 px-4 py-3 text-xs text-neutral-500">
-                ✦ For entrance animations, parallax, hover effects, and stagger timing — see the{" "}
-                <span className="text-neutral-300 font-medium">Animations</span> tab.
+            <div className="rounded-lg card border border-[color-mix(in_srgb,var(--foreground)_10%,transparent)] px-4 py-3 text-xs text-[color-mix(in_srgb,var(--foreground)_50%,transparent)]">
+                <span className="text-[var(--foreground)]">✦</span> For entrance animations, parallax, hover effects, and stagger timing — see the{" "}
+                <span className="text-[var(--foreground)] font-league-500">
+                    Animations
+                </span>{" "}
+                tab.
             </div>
         </div>
     );

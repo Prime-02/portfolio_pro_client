@@ -2,7 +2,7 @@
 
 "use client";
 
-import { motion, MotionValue } from "framer-motion";
+import { motion, MotionValue, type TargetAndTransition } from "framer-motion";
 import type { HeroAnimations } from "@/portfolio-builder/types/hero";
 import {
     buildContainerVariants,
@@ -32,10 +32,15 @@ export function MotionContainer({
     const containerVariants = buildContainerVariants(anim);
     const hoverProps = getHoverProps(anim);
 
+    // When not animated, render as a plain div (no parallax motion value needed)
+    if (!isAnimated) {
+        return <div className={className}>{children}</div>;
+    }
+
     return (
         <motion.div
             variants={containerVariants}
-            initial={isAnimated ? "hidden" : false}
+            initial="hidden"
             animate={shouldAnimate ? "visible" : "hidden"}
             className={className}
             style={parallax ? { y: parallaxY } : undefined}
@@ -57,19 +62,28 @@ interface MotionItemProps {
 export function MotionItem({
     children,
     isAnimated,
+    shouldAnimate,
     anim,
     className,
 }: MotionItemProps) {
-    const itemVariants = isAnimated ? buildVariants(anim) : {};
-
     if (!isAnimated) {
-        return <div className={`w-fit ${className}`}>{children}</div>;
+        return <div className={`w-fit ${className ?? ""}`}>{children}</div>;
     }
 
+    const itemVariants = buildVariants(anim);
+    const hidden = itemVariants.hidden as TargetAndTransition;
+    const visible = itemVariants.visible as TargetAndTransition;
+
+    // Extract transition from the visible variant
+    const transition = visible.transition;
+
+    // Use initial/animate directly instead of variants to avoid relying on
+    // parent variant propagation (which breaks when regular DOM nodes are in between).
     return (
         <motion.div
-            variants={itemVariants}
-            className={`w-fit ${className}`}
+            initial={hidden}
+            animate={shouldAnimate ? { ...visible, transition } : hidden}
+            className={`w-fit ${className ?? ""}`}
         >
             {children}
         </motion.div>

@@ -3,7 +3,7 @@
 interface CTAButtonProps {
   label: string;
   url: string;
-  variant?: "primary" | "secondary" | "outline";
+  variant?: "primary" | "secondary" | "outline" | "ghost" | "link";
   openInNewTab?: boolean;
   className?: string;
 }
@@ -11,10 +11,12 @@ interface CTAButtonProps {
 export function CTAButton({ label, url, variant = "primary", openInNewTab, className = "" }: CTAButtonProps) {
   const baseClass = "inline-flex items-center px-6 py-3 rounded-lg font-medium text-sm transition-colors";
 
-  const variantClasses = {
-    primary: "bg-white text-black hover:bg-neutral-200",
-    secondary: "bg-neutral-700 text-white hover:bg-neutral-600",
-    outline: "border border-neutral-500 text-white hover:bg-neutral-800",
+  const variantClasses: Record<string, string> = {
+    primary: "bg-[var(--pb-foreground)] text-[var(--pb-background)] hover:opacity-90",
+    secondary: "bg-[var(--pb-surface-elevated)] text-[var(--pb-text-primary)] hover:bg-[var(--pb-surface-hover)] border border-[var(--pb-border)]",
+    outline: "border border-[var(--pb-border)] text-[var(--pb-text-primary)] hover:bg-[var(--pb-surface-hover)]",
+    ghost: "text-[var(--pb-text-primary)] hover:bg-[var(--pb-surface-hover)]",
+    link: "text-[var(--pb-foreground)] hover:underline underline-offset-4 px-0 py-0",
   };
 
   return (
@@ -22,7 +24,7 @@ export function CTAButton({ label, url, variant = "primary", openInNewTab, class
       href={url}
       target={openInNewTab ? "_blank" : undefined}
       rel={openInNewTab ? "noopener noreferrer" : undefined}
-      className={`${baseClass} ${variantClasses[variant]} ${className}`}
+      className={`${baseClass} ${variantClasses[variant] || variantClasses.primary} ${className}`}
     >
       {label}
     </a>

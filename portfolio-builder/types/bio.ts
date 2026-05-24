@@ -1,4 +1,4 @@
-// types/bio.ts
+// portfolio-builder/types/bio.ts
 
 // ---------------------------------------------------------------------------
 // Bio Section — Type Definitions
@@ -10,8 +10,15 @@
  * - compact  : Narrower, more condensed layout
  * - card     : Card-style container with distinct background
  */
-export type BioLayout = "standard" | "compact" | "card";
-
+export type BioLayout =
+  | "standard"
+  | "split"
+  | "magazine"
+  | "featured"
+  | "sidebar"
+  | "minimal"
+  | "bento"
+  | "showcase";
 /**
  * Horizontal alignment of the bio content.
  */
@@ -118,6 +125,46 @@ import type { HeroAnimations } from "./hero";
 export type BioAnimations = HeroAnimations;
 
 // ---------------------------------------------------------------------------
+// CTA (Call-to-Action)
+// ---------------------------------------------------------------------------
+
+/**
+ * Visual style variants for call-to-action buttons.
+ */
+export type CTAVariant = "primary" | "secondary" | "outline" | "ghost" | "link";
+
+/**
+ * Optional color overrides for a CTA button.
+ * Applied as inline styles on top of the variant's default Tailwind classes.
+ */
+export interface CTAColorOverride {
+  /** Background color — CSS value (hex, rgb, etc.) */
+  bg?: string;
+  /** Text color */
+  text?: string;
+  /** Border color — most relevant for outline variant */
+  border?: string;
+}
+
+/**
+ * A call-to-action button for the bio section.
+ */
+export interface BioCTA {
+  /** Button text */
+  label: string;
+  /** Where the button links to */
+  url: string;
+  /** Visual style */
+  variant: CTAVariant;
+  /** Optional icon name (e.g. from Lucide, or an emoji) */
+  icon?: string;
+  /** Whether to open the link in a new tab */
+  openInNewTab?: boolean;
+  /** Optional theme color overrides — applied on top of the variant defaults */
+  colorOverride?: CTAColorOverride;
+}
+
+// ---------------------------------------------------------------------------
 // The Main Bio Data Shape
 // ---------------------------------------------------------------------------
 
@@ -165,12 +212,7 @@ export interface BioData {
 
   // -- CTA --
   /** Optional CTA at the bottom of the bio */
-  cta?: {
-    label: string;
-    url: string;
-    variant?: "primary" | "secondary" | "outline";
-    openInNewTab?: boolean;
-  };
+  ctaButtons?: BioCTA[];
 }
 
 // ---------------------------------------------------------------------------

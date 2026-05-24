@@ -1,14 +1,16 @@
 // portfolio-builder/components/sections/hero/renderer-components/CTAButtons.tsx
 
 import type { HeroData, CTAColorOverride } from "@/portfolio-builder/types/hero";
+import { ResolvedTheme } from "@/portfolio-builder/hooks/usePortfolioTheme";
 
 interface CTAButtonsProps {
     buttons: NonNullable<HeroData["ctaButtons"]>;
     className?: string;
     alignment?: string;
+    theme: ResolvedTheme;
 }
 
-export function CTAButtons({ buttons, className, alignment }: CTAButtonsProps) {
+export function CTAButtons({ buttons, className, alignment, theme }: CTAButtonsProps) {
     const justifyClass = alignment === "left" ? "justify-start" : "justify-start";
     return (
         <div className={`flex flex-wrap gap-4 ${justifyClass} ${className ?? ""}`}>
@@ -29,29 +31,23 @@ export function CTAButtons({ buttons, className, alignment }: CTAButtonsProps) {
 }
 
 function getCTAButtonClass(variant?: string): string {
-    const base =
-        "inline-flex items-center px-6 py-3 rounded-lg font-medium text-sm transition-colors";
+    const base = "inline-flex items-center px-6 py-3 rounded-lg font-medium text-sm transition-colors";
+
     switch (variant) {
         case "secondary":
-            return `${base} bg-neutral-700 text-white hover:bg-neutral-600`;
+            return `${base} bg-[var(--pb-foreground-20)] text-[var(--pb-foreground)] hover:bg-[var(--pb-foreground-30)]`;
         case "outline":
-            return `${base} border border-neutral-500 text-white hover:bg-neutral-800`;
+            return `${base} border border-[var(--pb-foreground-40)] text-[var(--pb-foreground)] hover:bg-[var(--pb-foreground-10)]`;
         case "ghost":
-            return `${base} text-neutral-300 hover:text-white hover:bg-neutral-800`;
+            return `${base} text-[var(--pb-foreground-70)] hover:text-[var(--pb-foreground)] hover:bg-[var(--pb-foreground-10)]`;
         case "link":
-            return `${base} text-neutral-300 hover:text-white underline underline-offset-4`;
+            return `${base} text-[var(--pb-foreground-70)] hover:text-[var(--pb-foreground)] underline underline-offset-4`;
         case "primary":
         default:
-            return `${base} bg-white text-black hover:bg-neutral-200`;
+            return `${base} bg-[var(--pb-foreground)] text-[var(--pb-background)] hover:opacity-90`;
     }
 }
 
-/**
- * Converts CTAColorOverride into a React.CSSProperties object.
- * Inline styles take precedence over Tailwind classes so overrides always win.
- * Border needs both `borderColor` and `borderStyle`/`borderWidth` set,
- * otherwise it's invisible on variants that don't have a border class.
- */
 function resolveColorOverride(
     override?: CTAColorOverride,
 ): React.CSSProperties | undefined {

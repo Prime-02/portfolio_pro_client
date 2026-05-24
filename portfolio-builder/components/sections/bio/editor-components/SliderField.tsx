@@ -34,9 +34,9 @@ export default function SliderField({
           step={step}
           value={value}
           onChange={(e) => onChange(Number(e.target.value))}
-          className="flex-1 h-1.5 appearance-none bg-neutral-700 rounded-full accent-white cursor-pointer"
+          className="flex-1 h-1.5 appearance-none bg-foreground/20 rounded-full accent-foreground cursor-pointer"
         />
-        <span className="text-sm text-neutral-300 tabular-nums w-16 text-right">
+        <span className="text-sm text-foreground/70 tabular-nums w-16 text-right">
           {value}
           {unit}
         </span>

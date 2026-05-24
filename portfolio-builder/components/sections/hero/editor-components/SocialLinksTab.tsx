@@ -103,7 +103,7 @@ export default function SocialLinksTab({ data, onUpdate }: SocialLinksTabProps) 
         if (link.useIconColor !== false && platform) {
             displayColor = platform.color;
         } else {
-            displayColor = link.customColor || "#ffffff";
+            displayColor = link.customColor || "var(--pb-foreground)";
         }
 
         return { IconComponent, displayColor, platform };
@@ -119,15 +119,15 @@ export default function SocialLinksTab({ data, onUpdate }: SocialLinksTabProps) 
     return (
         <div className="space-y-6">
             {/* Header with actions */}
-            <div className="flex items-center justify-between border-b border-neutral-800 pb-3">
-                <h3 className="text-xs font-semibold uppercase tracking-widest text-neutral-500">
+            <div className="flex items-center justify-between border-b border-[var(--pb-border)] pb-3">
+                <h3 className="text-xs font-semibold uppercase tracking-widest text-[var(--pb-text-muted)]">
                     Your Social Links
                 </h3>
                 <div className="flex items-center gap-2">
                     <button
                         onClick={() => fetchAllSocialLinks()}
                         disabled={isLoading}
-                        className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-neutral-400 hover:text-neutral-200 bg-neutral-800 hover:bg-neutral-700 rounded-lg transition-colors disabled:opacity-50"
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-[var(--pb-text-secondary)] hover:text-[var(--pb-text-primary)] bg-[var(--pb-surface)] border border-[var(--pb-border)] rounded-lg transition-all disabled:opacity-50 hover:border-[var(--pb-border-hover)]"
                         title="Refresh social links"
                     >
                         <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
@@ -135,7 +135,7 @@ export default function SocialLinksTab({ data, onUpdate }: SocialLinksTabProps) 
                     </button>
                     <button
                         onClick={() => navigateToSocialLinks(true)}
-                        className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-neutral-400 hover:text-neutral-200 bg-neutral-800 hover:bg-neutral-700 rounded-lg transition-colors"
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-[var(--pb-text-secondary)] hover:text-[var(--pb-text-primary)] bg-[var(--pb-surface)] border border-[var(--pb-border)] rounded-lg transition-all hover:border-[var(--pb-border-hover)]"
                         title="Add new social link"
                     >
                         <Plus className="w-3.5 h-3.5" />
@@ -146,11 +146,11 @@ export default function SocialLinksTab({ data, onUpdate }: SocialLinksTabProps) 
 
             {/* Error state */}
             {error && (
-                <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
-                    <p className="text-sm text-red-400">{error}</p>
+                <div className="p-3 bg-[var(--pb-error-bg)] border border-[var(--pb-error-border)] rounded-lg">
+                    <p className="text-sm text-[var(--pb-error)]">{error}</p>
                     <button
                         onClick={() => fetchAllSocialLinks()}
-                        className="mt-1 text-xs text-red-300 hover:text-red-200 underline"
+                        className="mt-1 text-xs text-[var(--pb-error)] hover:text-[var(--pb-error)]/80 underline"
                     >
                         Try again
                     </button>
@@ -159,30 +159,30 @@ export default function SocialLinksTab({ data, onUpdate }: SocialLinksTabProps) 
 
             {/* Available social links to add */}
             <div className="space-y-3">
-                <h4 className="text-xs font-medium text-neutral-400">
+                <h4 className="text-xs font-medium text-[var(--pb-text-secondary)]">
                     Add to Hero Section
                 </h4>
 
                 {isLoading ? (
-                    <div className="flex items-center gap-2 text-sm text-neutral-500 py-4">
+                    <div className="flex items-center gap-2 text-sm text-[var(--pb-text-muted)] py-4">
                         <RefreshCw className="w-4 h-4 animate-spin" />
                         Loading your social links...
                     </div>
                 ) : availableLinks.length === 0 && links.length === 0 ? (
-                    <div className="text-center py-6 bg-neutral-800/50 rounded-lg border border-neutral-800">
-                        <p className="text-sm text-neutral-400 mb-3">
+                    <div className="text-center py-6 bg-[var(--pb-surface)] border border-[var(--pb-border)] rounded-lg">
+                        <p className="text-sm text-[var(--pb-text-secondary)] mb-3">
                             No social links available
                         </p>
                         <button
                             onClick={() => navigateToSocialLinks(true)}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-neutral-300 bg-neutral-700 hover:bg-neutral-600 rounded-lg transition-colors"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-[var(--pb-text-primary)] bg-[var(--pb-foreground)] text-[var(--pb-background)] rounded-lg transition-all hover:opacity-90"
                         >
                             <Plus className="w-4 h-4" />
                             Add Your First Social Link
                         </button>
                     </div>
                 ) : availableLinks.length === 0 && links.length > 0 ? (
-                    <p className="text-sm text-neutral-500 py-2">
+                    <p className="text-sm text-[var(--pb-text-muted)] py-2">
                         All your social links have been added to the hero section.
                     </p>
                 ) : (
@@ -195,7 +195,7 @@ export default function SocialLinksTab({ data, onUpdate }: SocialLinksTabProps) 
                                 <button
                                     key={userLink.id}
                                     onClick={() => addLink(userLink)}
-                                    className="flex items-center gap-2 px-3 py-1.5 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 hover:border-neutral-600 rounded-lg text-sm text-neutral-300 transition-all group"
+                                    className="flex items-center gap-2 px-3 py-1.5 bg-[var(--pb-surface)] border border-[var(--pb-border)] hover:border-[var(--pb-border-hover)] rounded-lg text-sm text-[var(--pb-text-primary)] transition-all group"
                                 >
                                     {IconComponent ? (
                                         <IconComponent
@@ -203,7 +203,7 @@ export default function SocialLinksTab({ data, onUpdate }: SocialLinksTabProps) 
                                             style={{ color: platform.color }}
                                         />
                                     ) : (
-                                        <span className="w-4 h-4 flex items-center justify-center text-xs font-bold uppercase bg-neutral-700 rounded">
+                                        <span className="w-4 h-4 flex items-center justify-center text-xs font-bold uppercase bg-[var(--pb-surface-elevated)] border border-[var(--pb-border)] rounded">
                                             {userLink.platform_name.charAt(0)}
                                         </span>
                                     )}
@@ -219,7 +219,7 @@ export default function SocialLinksTab({ data, onUpdate }: SocialLinksTabProps) 
             {/* Active hero links */}
             {links.length > 0 && (
                 <div className="space-y-3">
-                    <h4 className="text-xs font-medium text-neutral-400">
+                    <h4 className="text-xs font-medium text-[var(--pb-text-secondary)]">
                         Active Hero Links ({links.length})
                     </h4>
                     <div className="space-y-3">
@@ -229,10 +229,10 @@ export default function SocialLinksTab({ data, onUpdate }: SocialLinksTabProps) 
                             return (
                                 <div
                                     key={`${link.platformId}-${index}`}
-                                    className="flex items-start gap-3 p-3 bg-neutral-800/50 rounded-lg border border-neutral-800"
+                                    className="flex items-start gap-3 p-3 bg-[var(--pb-surface)] border border-[var(--pb-border)] rounded-lg"
                                 >
                                     {/* Platform icon */}
-                                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-neutral-700 border border-neutral-600 flex-shrink-0">
+                                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-[var(--pb-surface-elevated)] border border-[var(--pb-border)] flex-shrink-0">
                                         {IconComponent ? (
                                             <IconComponent
                                                 className="w-5 h-5"
@@ -268,9 +268,9 @@ export default function SocialLinksTab({ data, onUpdate }: SocialLinksTabProps) 
                                         <div className="flex items-center gap-2">
                                             <button
                                                 onClick={() => toggleColorMode(index)}
-                                                className={`flex items-center gap-1.5 px-2 py-1 text-xs rounded transition-colors ${link.useIconColor !== false
-                                                    ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
-                                                    : "bg-neutral-700 text-neutral-400 border border-neutral-600"
+                                                className={`flex items-center gap-1.5 px-2 py-1 text-xs rounded transition-all ${link.useIconColor !== false
+                                                    ? "bg-[var(--pb-accent-20)] text-[var(--pb-accent)] border border-[var(--pb-accent-30)]"
+                                                    : "bg-[var(--pb-surface-elevated)] text-[var(--pb-text-primary)] border border-[var(--pb-border)]"
                                                     }`}
                                             >
                                                 <span
@@ -287,9 +287,9 @@ export default function SocialLinksTab({ data, onUpdate }: SocialLinksTabProps) 
                                         {link.useIconColor === false && (
                                             <ColorPicker
                                                 id={`color-${link.platformId}-${index}`}
-                                                value={link.customColor || "#ffffff"}
+                                                value={link.customColor || "var(--pb-foreground)"}
                                                 onChange={(color) => setCustomColor(index, color)}
-                                                placeholder="#000000"
+                                                placeholder="var(--pb-foreground)"
                                             />
                                         )}
                                     </div>
@@ -297,7 +297,7 @@ export default function SocialLinksTab({ data, onUpdate }: SocialLinksTabProps) 
                                     {/* Remove button */}
                                     <button
                                         onClick={() => removeLink(index)}
-                                        className="flex-shrink-0 mt-1 p-1.5 text-neutral-500 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
+                                        className="flex-shrink-0 mt-1 p-1.5 text-[var(--pb-text-muted)] hover:text-[var(--pb-error)] hover:bg-[var(--pb-error-bg)] rounded-lg transition-colors"
                                         title="Remove from hero"
                                     >
                                         <X className="w-4 h-4" />
@@ -310,12 +310,12 @@ export default function SocialLinksTab({ data, onUpdate }: SocialLinksTabProps) 
             )}
 
             {/* External link to manage social links */}
-            <div className="pt-3 border-t border-neutral-800">
+            <div className="pt-3 border-t border-[var(--pb-border)]">
                 <button
                     onClick={() => navigateToSocialLinks(false)}
-                    className="flex items-center gap-2 text-xs text-neutral-500 hover:text-neutral-300 transition-colors group"
+                    className="flex items-center gap-2 text-xs text-[var(--pb-text-muted)] hover:text-[var(--pb-text-primary)] transition-colors group"
                 >
-                    <ExternalLink className="w-3.5 h-3.5 group-hover:text-neutral-400" />
+                    <ExternalLink className="w-3.5 h-3.5 group-hover:text-[var(--pb-text-secondary)]" />
                     Manage all your social links
                 </button>
             </div>

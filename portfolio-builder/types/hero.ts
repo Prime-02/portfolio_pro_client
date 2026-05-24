@@ -16,7 +16,7 @@ export type HeroLayout = "centered" | "split" | "minimal";
  * Where the content sits horizontally within the section.
  * Only applies to layouts where it makes sense (centered, minimal).
  */
-export type HeroAlignment = "left" | "center";
+export type HeroAlignment = "left" | "center" | "right";
 
 /**
  * How tall the hero section is.

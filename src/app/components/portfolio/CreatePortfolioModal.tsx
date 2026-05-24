@@ -1,8 +1,8 @@
-"use client"
-
 import React, { useState, useEffect } from "react"
 import type { PortfolioCreate } from "@/portfolio-builder/store/usePortfolioStore"
 import Modal from "../containers/modals/Modal"
+import { useTheme } from "../theme/ThemeContext "
+import ColorPicker from "../inputs/ColorPicker"
 
 interface CreatePortfolioModalProps {
   isOpen: boolean
@@ -11,22 +11,49 @@ interface CreatePortfolioModalProps {
   isLoading: boolean
 }
 
+interface PortfolioThemeLayout {
+  themeVariant: string
+  lightTheme: {
+    background: string
+    foreground: string
+  }
+  darkTheme: {
+    background: string
+    foreground: string
+  }
+  accent: string
+}
+
 const CreatePortfolioModal = ({
   isOpen,
   onClose,
   onSubmit,
   isLoading,
 }: CreatePortfolioModalProps) => {
+  const { themeVariant, lightTheme, darkTheme, accentColor } = useTheme()
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
   const [isPublic, setIsPublic] = useState(true)
   const [errors, setErrors] = useState<Record<string, string>>({})
+
+  // Portfolio-specific theme settings
+  const [portfolioLightBg, setPortfolioLightBg] = useState(lightTheme.background)
+  const [portfolioLightFg, setPortfolioLightFg] = useState(lightTheme.foreground)
+  const [portfolioDarkBg, setPortfolioDarkBg] = useState(darkTheme.background)
+  const [portfolioDarkFg, setPortfolioDarkFg] = useState(darkTheme.foreground)
+  const [portfolioAccent, setPortfolioAccent] = useState(accentColor.color)
 
   const reset = () => {
     setName("")
     setDescription("")
     setIsPublic(true)
     setErrors({})
+    // Reset to current theme defaults
+    setPortfolioLightBg(lightTheme.background)
+    setPortfolioLightFg(lightTheme.foreground)
+    setPortfolioDarkBg(darkTheme.background)
+    setPortfolioDarkFg(darkTheme.foreground)
+    setPortfolioAccent(accentColor.color)
   }
 
   const handleClose = () => {
@@ -34,6 +61,22 @@ const CreatePortfolioModal = ({
     onClose()
   }
 
+  const buildLayout = () => {
+    return {
+      theme: {
+        themeVariant: themeVariant,
+        lightTheme: {
+          background: portfolioLightBg,
+          foreground: portfolioLightFg,
+        },
+        darkTheme: {
+          background: portfolioDarkBg,
+          foreground: portfolioDarkFg,
+        },
+        accent: portfolioAccent,
+      },
+    }
+  }
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     const newErrors: Record<string, string> = {}
@@ -47,11 +90,14 @@ const CreatePortfolioModal = ({
       return
     }
 
-    onSubmit({
+    const data = {
       name: name.trim(),
       description: description.trim() || undefined,
       is_public: isPublic,
-    })
+      layout: buildLayout(),
+    }
+
+    onSubmit(data)
   }
 
   useEffect(() => {
@@ -93,6 +139,110 @@ const CreatePortfolioModal = ({
           />
         </div>
 
+        {/* Theme Customization Section */}
+        <div className="border border-[var(--foreground)]/10 rounded-lg p-4 space-y-4">
+          <div>
+            <h3 className="text-sm font-medium text-[var(--foreground)] mb-1">
+              Portfolio Theme
+            </h3>
+            <p className="text-xs text-[var(--foreground)]/50">
+              Customize the appearance of your portfolio. Defaults to your current theme settings.
+            </p>
+          </div>
+
+          {/* Accent Color */}
+          <div>
+            <h4 className="text-xs font-medium text-[var(--foreground)]/70 mb-2">
+              Accent Color
+            </h4>
+            <div className="flex items-center gap-3">
+              <ColorPicker
+                value={portfolioAccent}
+                onChange={setPortfolioAccent}
+                size="sm"
+              />
+              <div className="flex-1">
+                <div
+                  className="h-8 rounded-md border border-[var(--foreground)]/20"
+                  style={{ backgroundColor: portfolioAccent }}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Light Theme */}
+          <div>
+            <h4 className="text-xs font-medium text-[var(--foreground)]/70 mb-2">
+              Light Theme Colors
+            </h4>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs text-[var(--foreground)]/60 mb-1">
+                  Background
+                </label>
+                <ColorPicker
+                  value={portfolioLightBg}
+                  onChange={setPortfolioLightBg}
+                  size="sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-[var(--foreground)]/60 mb-1">
+                  Foreground
+                </label>
+                <ColorPicker
+                  value={portfolioLightFg}
+                  onChange={setPortfolioLightFg}
+                  size="sm"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Dark Theme */}
+          <div>
+            <h4 className="text-xs font-medium text-[var(--foreground)]/70 mb-2">
+              Dark Theme Colors
+            </h4>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs text-[var(--foreground)]/60 mb-1">
+                  Background
+                </label>
+                <ColorPicker
+                  value={portfolioDarkBg}
+                  onChange={setPortfolioDarkBg}
+                  size="sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-[var(--foreground)]/60 mb-1">
+                  Foreground
+                </label>
+                <ColorPicker
+                  value={portfolioDarkFg}
+                  onChange={setPortfolioDarkFg}
+                  size="sm"
+                />
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              setPortfolioLightBg(lightTheme.background)
+              setPortfolioLightFg(lightTheme.foreground)
+              setPortfolioDarkBg(darkTheme.background)
+              setPortfolioDarkFg(darkTheme.foreground)
+              setPortfolioAccent(accentColor.color)
+            }}
+            className="text-xs text-[var(--accent)] hover:underline"
+          >
+            Reset to current theme defaults
+          </button>
+        </div>
+
         <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--foreground)]/10">
           <div>
             <p className="text-sm font-medium text-[var(--foreground)]">Public Portfolio</p>
@@ -103,14 +253,12 @@ const CreatePortfolioModal = ({
           <button
             type="button"
             onClick={() => setIsPublic(!isPublic)}
-            className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${
-              isPublic ? "bg-[var(--accent)]" : "bg-[var(--foreground)]/20"
-            }`}
+            className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${isPublic ? "bg-[var(--accent)]" : "bg-[var(--foreground)]/20"
+              }`}
           >
             <span
-              className={`absolute top-1 left-1 w-4 h-4 bg-[var(--background)] rounded-full transition-transform duration-200 ${
-                isPublic ? "translate-x-5" : "translate-x-0"
-              }`}
+              className={`absolute top-1 left-1 w-4 h-4 bg-[var(--background)] rounded-full transition-transform duration-200 ${isPublic ? "translate-x-5" : "translate-x-0"
+                }`}
             />
           </button>
         </div>

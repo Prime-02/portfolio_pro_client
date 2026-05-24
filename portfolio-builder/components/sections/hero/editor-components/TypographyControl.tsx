@@ -48,11 +48,11 @@ export function TypographyControl({
 
   return (
     <div
-      className="rounded-sm p-3 flex flex-col gap-4 bg-(--background)"
+      className="rounded-sm p-3 flex flex-col gap-4 bg-[var(--pb-surface)] border border-[var(--pb-border)]"
     >
       <span
         className="text-[10px] tracking-[0.15em] font-mono uppercase"
-        style={{ opacity: 0.4 }}
+        style={{ color: "var(--pb-text-muted)" }}
       >
         {label}
       </span>

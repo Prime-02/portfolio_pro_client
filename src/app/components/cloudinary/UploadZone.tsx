@@ -9,7 +9,7 @@ interface UploadZoneProps {
     dragging: boolean;
     maxFiles: number;
     currentPath: string;
-    fileInputRef: RefObject<HTMLInputElement>;
+    fileInputRef: RefObject<HTMLInputElement | null>;
     onDrop: (e: React.DragEvent) => void;
     onDragOver: (e: React.DragEvent) => void;
     onDragLeave: () => void;

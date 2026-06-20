@@ -32,7 +32,7 @@ const TRANSFORM_OPTIONS = [
   { id: "capitalize", code: "Capitalize" },
 ];
 
-export function TypographyControl({
+export default function TypographyControl({
   label,
   value,
   onChange,

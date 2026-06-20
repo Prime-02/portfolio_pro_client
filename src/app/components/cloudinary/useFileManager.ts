@@ -331,7 +331,11 @@ export function useFileManager({
   const toggleSelect = useCallback((publicId: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
-      next.has(publicId) ? next.delete(publicId) : next.add(publicId);
+      if (next.has(publicId)) {
+        next.delete(publicId);
+      } else {
+        next.add(publicId);
+      }
       return next;
     });
   }, []);

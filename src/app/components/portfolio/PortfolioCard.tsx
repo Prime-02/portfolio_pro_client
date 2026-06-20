@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation"
 import type { PortfolioResponse } from "@/portfolio-builder/store/usePortfolioStore"
+import { useUserSettings } from "@/lib/stores/user/useUserSettings"
 
 interface PortfolioCardProps {
     portfolio: PortfolioResponse
@@ -11,6 +12,7 @@ interface PortfolioCardProps {
 
 const PortfolioCard = ({ portfolio, onEdit, onDelete }: PortfolioCardProps) => {
     const router = useRouter()
+    const {userInfo} = useUserSettings()
 
     return (
         <div className="card rounded-xl border border-[var(--foreground)]/10 p-5 hover:border-[var(--accent)]/50 transition-all duration-200 group">
@@ -59,7 +61,7 @@ const PortfolioCard = ({ portfolio, onEdit, onDelete }: PortfolioCardProps) => {
 
             <div className="flex gap-2">
                 <button
-                    onClick={() => router.push(`/portfolios/${portfolio.slug}/studio`)}
+                    onClick={() => router.push(`portfolios/${portfolio.slug}/studio`)}
                     className="flex-1 px-4 py-2 text-sm font-medium bg-[var(--accent)] text-[var(--background)] rounded-lg hover:opacity-90 transition-opacity"
                 >
                     Open Studio

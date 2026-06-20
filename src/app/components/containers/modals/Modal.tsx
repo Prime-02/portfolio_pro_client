@@ -38,7 +38,7 @@ const Modal: React.FC<ModalProps> = ({
   onClose,
   children,
   title,
-  size = "md",
+  size = "sm",
   showCloseButton = true,
   showMinimizeButton = false,
   closeOnBackdropClick = true,
@@ -166,13 +166,24 @@ const Modal: React.FC<ModalProps> = ({
     };
   }, [isOpen, isMounted, isMinimized]);
 
-  const sizeClasses = {
-    sm: "max-w-sm",
-    md: "max-w-md",
-    lg: "max-w-lg",
-    xl: "max-w-xl",
-    full: "max-w-full mx-4",
+  type ModalSize = NonNullable<ModalProps["size"]>;
+
+  const sizeClassNames: Record<ModalSize, string> = {
+    sm: "w-full",
+    md: "w-full",
+    lg: "w-full",
+    xl: "w-full",
+    full: "w-full",
     auto: "max-w-fit w-auto mx-4",
+  };
+
+  const sizeStyles: Record<ModalSize, React.CSSProperties | undefined> = {
+    sm: { maxWidth: "40vw", minWidth: "18rem" },
+    md: { maxWidth: "55vw", minWidth: "24rem" },
+    lg: { maxWidth: "70vw", minWidth: "28rem" },
+    xl: { maxWidth: "85vw", minWidth: "36rem" },
+    full: { maxWidth: "100vw", minWidth: "20rem" },
+    auto: undefined,
   };
 
   // Animation variants for backdrop
@@ -378,9 +389,10 @@ const Modal: React.FC<ModalProps> = ({
                 exit="exit"
                 style={{
                   backgroundColor: getColorShade(theme.background, 1),
+                  ...sizeStyles[size],
                 }}
                 className={`
-                  relative w-full ${sizeClasses[size]} 
+                  relative ${sizeClassNames[size]}
                   shadow-2xl pointer-events-auto
                   ${centered ? "rounded-2xl" : "rounded-2xl"}
                   ${className}

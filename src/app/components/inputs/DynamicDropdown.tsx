@@ -612,6 +612,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
   areAllSelected = false,
   maxSelections,
   currentSelectionsCount = 0,
+  placeholder = "Search..."
 }) => {
   const [position, setPosition] = useState<"top" | "bottom">("bottom");
   const menuRef = useRef<HTMLDivElement>(null);
@@ -702,7 +703,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
                 setActiveIndex(-1);
               }}
               onKeyDown={handleSearchKeyDown}
-              placeholder="Search..."
+              placeholder={placeholder}
               className="w-full pl-9 pr-3 py-2 text-sm 
                 bg-[var(--background)] bg-opacity-5
                 border border-[var(--background)] border-opacity-20 rounded-lg

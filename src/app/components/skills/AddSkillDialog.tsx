@@ -10,6 +10,8 @@ import { Plus, Zap, TrendingUp, Award } from "lucide-react";
 import { FileInput } from "../inputs/FileInput";
 import { TextArea } from "../inputs/TextArea";
 import { difficultyLevels } from "@/lib/utilities/indices/DropDownItems";
+import Switch from "../inputs/Switch";
+import Dropdown from "../inputs/DynamicDropdown";
 
 interface AddSkillDialogProps {
     open: boolean;
@@ -23,7 +25,17 @@ const PROFICIENCY_LEVELS = [
 ];
 
 export function AddSkillDialog({ open, onOpenChange }: AddSkillDialogProps) {
-    const { createSkill, isCreating } = useSkills();
+    const { createSkill, isCreating, categories, subcategories } = useSkills();
+
+    const categoryOptions = categories.map((category) => ({
+        id: category,
+        code: category
+    }))
+
+    const subCategoryOptions = subcategories.map((subCategory) => ({
+        id: subCategory,
+        code: subCategory
+    }))
 
     const [skillName, setSkillName] = useState("");
     const [proficiencyLevel, setProficiencyLevel] = useState("Beginner");
@@ -125,17 +137,25 @@ export function AddSkillDialog({ open, onOpenChange }: AddSkillDialogProps) {
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                    <Textinput
+                    <Dropdown
+                    placeholder="Select or enter a new category"
                         label="Category"
-                        desc="e.g., Programming"
+                        type="datalist"
+                        options={categoryOptions}
+                        includeQueryAsOption
+                        emptyMessage="Create at least one category to include here."
                         value={category}
-                        onChange={(e) => setCategory(e)}
+                        onSelect={(e: string | string[]) => setCategory(e as string)}
                     />
-                    <Textinput
+                    <Dropdown
+                    placeholder="Select or enter a new sub category"
                         label="Subcategory"
-                        desc="e.g., Frontend"
                         value={subcategory}
-                        onChange={(e) => setSubcategory(e)}
+                        onSelect={(e: string | string[]) => setSubcategory(e as string)}
+                        emptyMessage="Create at least one category to include here."
+                        includeQueryAsOption
+                        options={subCategoryOptions}
+                        type="datalist"
                     />
                 </div>
 
@@ -166,23 +186,16 @@ export function AddSkillDialog({ open, onOpenChange }: AddSkillDialogProps) {
                             </p>
                         </div>
                     </div>
-                    <button
-                        type="button"
-                        onClick={() => setIsMajor(!isMajor)}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${isMajor ? "bg-[var(--accent)]" : "bg-[var(--foreground)]/20"
-                            }`}
-                    >
-                        <span
-                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isMajor ? "translate-x-6" : "translate-x-1"
-                                }`}
-                        />
-                    </button>
+                    <Switch
+                        isSwitched={isMajor}
+                        onSwitch={() => setIsMajor(!isMajor)}
+                    />
                 </div>
 
                 {/* Skill Logo Upload */}
                 <div>
                     <label className="block text-sm font-medium mb-2">
-                        Skill Logo (optional)
+                        {`Skill Logo (optional)`}
                     </label>
                     <FileInput
                         value={skillLogo}

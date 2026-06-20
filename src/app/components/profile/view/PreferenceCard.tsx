@@ -23,10 +23,6 @@ export const PreferencesCard = ({ settings }: PreferencesCardProps) => {
                 <InfoField label="Language" value={settings.language} />
                 <InfoField label="Theme Mode" value={settings.theme} />
                 <InfoField label="Loader Style" value={settings.loader} />
-                <InfoField
-                    label="Layout"
-                    value={typeof settings.layout_style === "string" ? settings.layout_style : settings.layout_style ? "Custom" : "Default"}
-                />
             </div>
 
             <ColorPalette settings={settings} />

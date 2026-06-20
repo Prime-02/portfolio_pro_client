@@ -110,6 +110,12 @@ export default function PortfolioMain({ portfolioId }: PortfolioMainProps) {
         <div className="text-center">
           <p className="text-[var(--pb-error)] mb-4">Failed to load portfolio</p>
           <p className="text-[var(--pb-text-muted)] text-sm">{error}</p>
+          <button
+            onClick={() => fetchPortfolioById(portfolioId)}
+            className="px-6 py-3 mt-2 bg-[var(--pb-foreground)] text-[var(--pb-background)] rounded-lg font-medium text-sm hover:opacity-90 transition-opacity"
+          >
+            Retry
+          </button>
         </div>
       </div>
     );
@@ -132,7 +138,7 @@ export default function PortfolioMain({ portfolioId }: PortfolioMainProps) {
   return (
     <div className="min-h-screen bg-[var(--pb-background)]">
       <HeroSectionController heroData={heroData} onSave={handleHeroSave} theme={resolvedTheme} />
-      <BioSectionController bioData={bioData} onSave={handleBioSave} theme={resolvedTheme} />
+      <BioSectionController bioData={bioData} onSave={handleBioSave} />
 
       {/*
         Future sections:

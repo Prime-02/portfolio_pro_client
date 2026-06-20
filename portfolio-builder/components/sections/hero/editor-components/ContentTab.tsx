@@ -5,9 +5,9 @@ import { HeroData, HeroFonts, HeroTypography } from "@/portfolio-builder/types/h
 import Field from './Field';
 import FontPicker from './FontPicker';
 import { inputClass } from './styles';
-import { TypographyControl } from "./TypographyControl";
 import { Textinput } from "@/src/app/components/inputs/Textinput";
 import { useUserSettings } from "@/lib/stores/user/useUserSettings";
+import TypographyControl from "./TypographyControl";
 
 interface ContentTabProps {
     data: HeroData;

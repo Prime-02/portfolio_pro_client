@@ -175,6 +175,11 @@ interface ProjectState {
     data: PortfolioProjectUpdate,
   ) => Promise<PortfolioProjectResponse | null>;
 
+  deleteProjectMedia: (
+    projectId: string,
+    slot: "hero_media" | "media_1" | "media_2" | "media_3",
+  ) => Promise<boolean>;
+
   deleteProjects: (params: {
     project_ids?: string[];
     platform_name?: string;
@@ -464,19 +469,32 @@ export const useProjectStore = create<ProjectState>()(
         }));
         try {
           const form = buildUpdateFormData(data);
-          const { data: updated } = await api.put<PortfolioProjectResponse>(
+          const { data: updated } = await api.put<Partial<PortfolioProjectResponse>>(
             `/projects/${projectId}`,
             form,
+            {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+            },
           );
 
-          // Update the project in local state
+          // Merge rather than replace — the update endpoint returns a
+          // narrower shape than the full project response, so a full
+          // overwrite would wipe fields like likes/comments/associations
           set((s) => ({
-            projects: s.projects.map((p) => (p.id === projectId ? updated : p)),
+            projects: s.projects.map((p) =>
+              p.id === projectId ? { ...p, ...updated } : p,
+            ),
             currentProject:
-              s.currentProject?.id === projectId ? updated : s.currentProject,
+              s.currentProject?.id === projectId
+                ? { ...s.currentProject, ...updated }
+                : s.currentProject,
           }));
 
-          return updated;
+          return (get().currentProject?.id === projectId
+            ? get().currentProject
+            : get().projects.find((p) => p.id === projectId)) ?? null;
         } catch (err: unknown) {
           const message =
             err instanceof Error ? err.message : "Failed to update project";
@@ -487,7 +505,42 @@ export const useProjectStore = create<ProjectState>()(
         }
       },
 
-      // ── DELETE /projects/delete/bulk ───────────────────────
+      // ── DELETE /projects/{project_id}/media/{slot} ─────────
+      deleteProjectMedia: async (projectId, slot) => {
+        set((s) => ({
+          loading: { ...s.loading, deleteProjectMedia: true },
+          errors: { ...s.errors, deleteProjectMedia: null },
+        }));
+        try {
+          const { data: updated } = await api.delete<Partial<PortfolioProjectResponse>>(
+            `/projects/${projectId}/media/${slot}`,
+          );
+
+          // Merge — same narrower-response-shape reasoning as updateProject
+          set((s) => ({
+            projects: s.projects.map((p) =>
+              p.id === projectId ? { ...p, ...updated } : p,
+            ),
+            currentProject:
+              s.currentProject?.id === projectId
+                ? { ...s.currentProject, ...updated }
+                : s.currentProject,
+          }));
+
+          return true;
+        } catch (err: unknown) {
+          const message =
+            err instanceof Error ? err.message : "Failed to delete media";
+          set((s) => ({ errors: { ...s.errors, deleteProjectMedia: message } }));
+          return false;
+        } finally {
+          set((s) => ({
+            loading: { ...s.loading, deleteProjectMedia: false },
+          }));
+        }
+      },
+
+
       deleteProjects: async ({ project_ids, platform_name }) => {
         set((s) => ({
           loading: { ...s.loading, deleteProjects: true },

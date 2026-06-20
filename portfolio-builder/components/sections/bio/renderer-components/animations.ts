@@ -1,11 +1,7 @@
-// portfolio-builder/components/sections/bio/renderer-components/animations.ts
-
-import { Variants } from "framer-motion";
+import { Variants, TargetAndTransition, Transition, Easing } from "framer-motion";
 import type { BioAnimations } from "@/portfolio-builder/types/bio";
 
-export function resolveEasing(
-  easing: string,
-): string | [number, number, number, number] {
+export function resolveEasing(easing: string): Easing {
   switch (easing) {
     case "easeOut":
       return [0.0, 0.0, 0.2, 1];
@@ -23,18 +19,17 @@ export function resolveEasing(
       return [0.0, 0.0, 0.2, 1];
   }
 }
-
 export function buildVariants(anim: BioAnimations): Variants {
   const ease = resolveEasing(anim.easing ?? "easeOut");
   const duration = anim.duration ?? 0.6;
   const isSpring = anim.easing === "spring";
 
-  const transition = isSpring
-    ? { type: "spring", stiffness: 260, damping: 20, duration }
+  const transition: Transition = isSpring
+    ? { type: "spring" as const, stiffness: 260, damping: 20, duration }
     : { ease, duration };
 
-  const hidden: Record<string, unknown> = { opacity: 0 };
-  const visible: Record<string, unknown> = { opacity: 1 };
+  const hidden: TargetAndTransition = { opacity: 0 };
+  const visible: TargetAndTransition = { opacity: 1 };
 
   switch (anim.preset) {
     case "slideUp":

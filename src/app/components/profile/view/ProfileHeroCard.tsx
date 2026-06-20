@@ -9,6 +9,7 @@ import type {
     UserUpdateRequest,
 } from "@/lib/stores/user/useUserSettings";
 import MarkdownRenderer from "../../markdown/MarkdownRenderer";
+import { getImageSrc } from "@/lib/utilities/syncFunctions/syncs";
 
 interface ProfileHeroCardProps {
     profile: UserProfileRequest | null;
@@ -34,7 +35,7 @@ export const ProfileHeroCard = ({
                 <div className="relative w-[30vw] h-[30vw] max-w-56 max-h-56 min-w-24 min-h-24 rounded-full overflow-hidden ring-4 ring-(--accent)/20 shadow-lg shrink-0">
                     {userInfo?.profile_picture ? (
                         <Image
-                            src={userInfo?.profile_picture}
+                            src={getImageSrc(userInfo?.profile_picture)}
                             alt={name || "Profile"}
                             fill
                             className="object-cover"
@@ -103,7 +104,7 @@ export const ProfileHeroCard = ({
             )}
 
             {/* Quick stats row */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 gap-3">
                 {profile?.profession && (
                     <StatCard value={profile.profession} label="Profession" icon="briefcase" />
                 )}

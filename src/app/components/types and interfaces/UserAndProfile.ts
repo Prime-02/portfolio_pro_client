@@ -1,4 +1,3 @@
-import { ProfileSettings } from "../theme/ThemeContext ";
 import { ThemeVariant } from "./loaderTypes";
 
 export interface Profile {
@@ -41,7 +40,6 @@ export type UserPreferences = {
   accent: string | null;
   primary_theme_dark: string | null;
   secondary_theme_dark: string | null;
-  layout_style: ProfileSettings;
   loader: string | null;
   owner_id: string;
 };

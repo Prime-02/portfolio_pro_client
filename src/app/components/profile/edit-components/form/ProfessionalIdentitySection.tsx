@@ -61,7 +61,7 @@ export const ProfessionalIdentitySection = ({
                     <Textinput
                         value={profileForm.availability}
                         onChange={(e) => onUpdateProfile("availability", e)}
-                        placeholder="Availability"
+                        label="Availability"
                         desc={professionalInformation.fields[7].description}
                         type={professionalInformation.fields[7].type}
                         maxLength={professionalInformation.fields[7].constraints.max_length}

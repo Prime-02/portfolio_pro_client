@@ -1,5 +1,5 @@
 import { Image as LucideImage, X, FileText } from "lucide-react";
-import { useState, useEffect, ChangeEvent, DragEvent, useRef } from "react";
+import { useState, useEffect, ChangeEvent, DragEvent, useRef, useId } from "react";
 
 // 1. First, define the allowed content types
 const ALLOWED_CONTENT_TYPES = [
@@ -62,6 +62,8 @@ export const FileInput: React.FC<FileInputProps> = ({
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const dragCounter = useRef<number>(0);
+  const uid = useId();
+  const inputId = `file_input_${uid}`;
 
   const hasImagePreview = preview && fileType === "image" && !error && !isLoading;
   const hasPdfSelected = fileType === "application" && fileName.toLowerCase().endsWith(".pdf") && !error && !isLoading;
@@ -287,11 +289,11 @@ export const FileInput: React.FC<FileInputProps> = ({
   return (
     <div className="flex flex-col gap-2">
       {!disabled && (
-        <label className="block text-sm font-medium w-full" htmlFor="file_input" />
+        <label className="block text-sm font-medium w-full" htmlFor={inputId} />
       )}
 
       <input
-        id="file_input"
+        id={inputId}
         type="file"
         onChange={handleFileChange}
         className="hidden"
@@ -350,7 +352,7 @@ export const FileInput: React.FC<FileInputProps> = ({
           {/* Main dropzone content */}
           {!isLoading && (
             <label
-              htmlFor="file_input"
+              htmlFor={inputId}
               className="relative z-10 flex flex-col items-center justify-center gap-2 px-4 py-6 cursor-pointer text-center"
             >
               {hasImagePreview ? (

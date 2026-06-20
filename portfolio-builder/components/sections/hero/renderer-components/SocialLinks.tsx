@@ -61,7 +61,7 @@ export default function SocialLinks({
             y: 0,
             transition: {
                 duration: anim?.duration ?? 0.4,
-                ease: "easeOut",
+                ease: "easeOut" as const,
             },
         },
     };

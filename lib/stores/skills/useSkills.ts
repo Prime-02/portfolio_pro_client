@@ -1,7 +1,6 @@
 // stores/useSkills.ts
 import { create } from "zustand";
 import { api } from "@/lib/client/api";
-import { error } from "console";
 
 // ---------------------------------------------------------------------------
 // Types — matching the backend schemas
@@ -96,6 +95,8 @@ interface SkillsState {
   publicUsername: string | null;
   publicUserId: string | null;
   publicFilters: SkillFilters;
+  categories: string[];
+  subcategories: string[];
 
   // Public loading states
   isLoadingPublic: boolean;
@@ -185,6 +186,26 @@ const buildQueryParams = (filters?: SkillFilters): string => {
   return queryString ? `?${queryString}` : "";
 };
 
+const buildUniqueCategoryLists = (skills: ProfessionalSkill[]) => {
+  const categories = Array.from(
+    new Set(
+      skills
+        .map((skill) => skill.category?.trim())
+        .filter((category): category is string => Boolean(category)),
+    ),
+  );
+
+  const subcategories = Array.from(
+    new Set(
+      skills
+        .map((skill) => skill.subcategory?.trim())
+        .filter((subcategory): subcategory is string => Boolean(subcategory)),
+    ),
+  );
+
+  return { categories, subcategories };
+};
+
 // ---------------------------------------------------------------------------
 // Store
 // ---------------------------------------------------------------------------
@@ -206,6 +227,8 @@ export const useSkills = create<SkillsState>()((set, get) => ({
   publicUsername: null,
   publicUserId: null,
   publicFilters: {},
+  categories: [],
+  subcategories: [],
 
   isLoadingPublic: false,
   isLoadingPublicByUsername: false,
@@ -237,9 +260,15 @@ export const useSkills = create<SkillsState>()((set, get) => ({
     try {
       const response = await api.get<ProfessionalSkill[]>("/skills/");
       const skills = response.data;
+      const { categories, subcategories } = buildUniqueCategoryLists(
+        skills || [],
+      );
+
       set({
         skills: skills || [],
         totalUserSkills: skills?.length || 0,
+        categories,
+        subcategories,
         isLoading: false,
       });
       return skills;
@@ -294,11 +323,19 @@ export const useSkills = create<SkillsState>()((set, get) => ({
 
       const newSkill = response.data;
 
-      set((state) => ({
-        skills: [...state.skills, newSkill],
-        totalUserSkills: state.totalUserSkills + 1,
-        isCreating: false,
-      }));
+      set((state) => {
+        const updatedSkills = [...state.skills, newSkill];
+        const { categories, subcategories } =
+          buildUniqueCategoryLists(updatedSkills);
+
+        return {
+          skills: updatedSkills,
+          totalUserSkills: state.totalUserSkills + 1,
+          categories,
+          subcategories,
+          isCreating: false,
+        };
+      });
 
       return newSkill;
     } catch (err) {
@@ -338,16 +375,24 @@ export const useSkills = create<SkillsState>()((set, get) => ({
 
       const updatedSkill = response.data;
 
-      set((state) => ({
-        skills: state.skills.map((skill) =>
+      set((state) => {
+        const updatedSkills = state.skills.map((skill) =>
           skill.id === skillId ? { ...skill, ...updatedSkill } : skill,
-        ),
-        selectedSkill:
-          state.selectedSkill?.id === skillId
-            ? { ...state.selectedSkill, ...updatedSkill }
-            : state.selectedSkill,
-        isUpdating: false,
-      }));
+        );
+        const { categories, subcategories } =
+          buildUniqueCategoryLists(updatedSkills);
+
+        return {
+          skills: updatedSkills,
+          selectedSkill:
+            state.selectedSkill?.id === skillId
+              ? { ...state.selectedSkill, ...updatedSkill }
+              : state.selectedSkill,
+          categories,
+          subcategories,
+          isUpdating: false,
+        };
+      });
 
       return updatedSkill;
     } catch (err) {
@@ -366,13 +411,23 @@ export const useSkills = create<SkillsState>()((set, get) => ({
     try {
       const response = await api.delete<DeleteResponse>(`/skills/${skillId}`);
 
-      set((state) => ({
-        skills: state.skills.filter((skill) => skill.id !== skillId),
-        selectedSkill:
-          state.selectedSkill?.id === skillId ? null : state.selectedSkill,
-        totalUserSkills: state.totalUserSkills - 1,
-        isDeleting: false,
-      }));
+      set((state) => {
+        const remainingSkills = state.skills.filter(
+          (skill) => skill.id !== skillId,
+        );
+        const { categories, subcategories } =
+          buildUniqueCategoryLists(remainingSkills);
+
+        return {
+          skills: remainingSkills,
+          selectedSkill:
+            state.selectedSkill?.id === skillId ? null : state.selectedSkill,
+          totalUserSkills: state.totalUserSkills - 1,
+          categories,
+          subcategories,
+          isDeleting: false,
+        };
+      });
 
       return response.data;
     } catch (err) {
@@ -707,6 +762,8 @@ export const useSkills = create<SkillsState>()((set, get) => ({
       publicUsername: null,
       publicUserId: null,
       publicFilters: {},
+      categories: [],
+      subcategories: [],
       isLoadingPublic: false,
       isLoadingPublicByUsername: false,
       isLoadingPublicByUserId: false,

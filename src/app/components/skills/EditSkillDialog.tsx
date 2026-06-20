@@ -10,6 +10,7 @@ import Modal from "../containers/modals/Modal";
 import { DialogHeader, DialogTitle, DialogDescription } from "../ui/Dialog";
 import { FileInput } from "../inputs/FileInput";
 import { difficultyLevels } from "@/lib/utilities/indices/DropDownItems";
+import Dropdown from "../inputs/DynamicDropdown";
 
 interface EditSkillDialogProps {
     skill: ProfessionalSkill;
@@ -24,7 +25,19 @@ const PROFICIENCY_LEVELS = [
 ];
 
 export function EditSkillDialog({ skill, open, onOpenChange }: EditSkillDialogProps) {
-    const { updateSkill, isUpdating } = useSkills();
+    const { updateSkill, isUpdating, categories, subcategories } = useSkills();
+
+
+    const categoryOptions = categories.map((category) => ({
+        id: category,
+        code: category
+    }))
+
+    const subCategoryOptions = subcategories.map((subCategory) => ({
+        id: subCategory,
+        code: subCategory
+    }))
+
 
     const [skillName, setSkillName] = useState(skill.skill_name);
     const [proficiencyLevel, setProficiencyLevel] = useState(skill.proficiency_level);
@@ -133,15 +146,25 @@ export function EditSkillDialog({ skill, open, onOpenChange }: EditSkillDialogPr
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                    <Textinput
+                    <Dropdown
+                        placeholder="Select or enter a new category"
                         label="Category"
+                        type="datalist"
+                        options={categoryOptions}
+                        includeQueryAsOption
+                        emptyMessage="Create at least one category to include here."
                         value={category}
-                        onChange={(e) => setCategory(e)}
+                        onSelect={(e: string | string[]) => setCategory(e as string)}
                     />
-                    <Textinput
+                    <Dropdown
+                        placeholder="Select or enter a new sub category"
                         label="Subcategory"
                         value={subcategory}
-                        onChange={(e) => setSubcategory(e)}
+                        onSelect={(e: string | string[]) => setSubcategory(e as string)}
+                        emptyMessage="Create at least one category to include here."
+                        includeQueryAsOption
+                        options={subCategoryOptions}
+                        type="datalist"
                     />
                 </div>
 

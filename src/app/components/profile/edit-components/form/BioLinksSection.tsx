@@ -48,11 +48,10 @@ export const BioLinksSection = ({
                     showDownload={false}
                 />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+            <div className="grid grid-cols-1 gap-4 pt-2">
                 {[
                     { field: "website_url", label: "Website", placeholder: "https://yoursite.com", type: "url" },
-                    { field: "github_username", label: "GitHub Username", placeholder: "octocat", prefix: "github.com/" },
-                ].map(({ field, label, placeholder, type, prefix }) => (
+                ].map(({ field, label, placeholder, type }) => (
                     <FieldWrapper
                         key={field}
                         status={fieldStatuses[`profile.${field}`]}
@@ -64,7 +63,6 @@ export const BioLinksSection = ({
                             onChange={(v) => onUpdateProfile(field, v)}
                             placeholder={placeholder}
                             type={type as any}
-                            prefix={prefix}
                         />
                     </FieldWrapper>
                 ))}

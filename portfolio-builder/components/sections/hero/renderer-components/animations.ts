@@ -1,14 +1,18 @@
 // portfolio-builder/components/sections/hero/renderer-components/animations.ts
 
-import { Variants, HTMLMotionProps } from "framer-motion";
+import {
+  Variants,
+  HTMLMotionProps,
+  Transition,
+  TargetAndTransition,
+  Easing,
+} from "framer-motion";
 import type {
   HeroAnimations,
   AnimationEasing,
 } from "@/portfolio-builder/types/hero";
 
-export function resolveEasing(
-  easing: AnimationEasing,
-): string | [number, number, number, number] {
+export function resolveEasing(easing: AnimationEasing): Easing {
   switch (easing) {
     case "easeOut":
       return [0.0, 0.0, 0.2, 1];
@@ -26,18 +30,17 @@ export function resolveEasing(
       return [0.0, 0.0, 0.2, 1];
   }
 }
-
 export function buildVariants(anim: HeroAnimations): Variants {
   const ease = resolveEasing(anim.easing ?? "easeOut");
   const duration = anim.duration ?? 0.6;
   const isSpring = anim.easing === "spring";
 
-  const transition = isSpring
+  const transition: Transition = isSpring
     ? { type: "spring", stiffness: 260, damping: 20, duration }
     : { ease, duration };
 
-  const hidden: Record<string, unknown> = { opacity: 0 };
-  const visible: Record<string, unknown> = { opacity: 1 };
+  const hidden: TargetAndTransition = { opacity: 0 };
+  const visible: TargetAndTransition = { opacity: 1 };
 
   switch (anim.preset) {
     case "slideUp":
@@ -112,7 +115,7 @@ export function buildContainerVariants(anim: HeroAnimations): Variants {
       transition: {
         delayChildren: initialDelay,
         staggerChildren: stagger,
-      },
+      } satisfies Transition,
     },
   };
 }
@@ -127,7 +130,11 @@ export function getHoverProps(
       return {
         whileHover: {
           scale: anim.hoverScale ?? 1.03,
-          transition: { type: "spring", stiffness: 300, damping: 20 },
+          transition: {
+            type: "spring",
+            stiffness: 300,
+            damping: 20,
+          } satisfies Transition,
         },
       };
     case "lift":
@@ -136,7 +143,11 @@ export function getHoverProps(
           y: -6,
           scale: anim.hoverScale ?? 1.02,
           boxShadow: "0 20px 40px rgba(0,0,0,0.4)",
-          transition: { type: "spring", stiffness: 300, damping: 20 },
+          transition: {
+            type: "spring",
+            stiffness: 300,
+            damping: 20,
+          } satisfies Transition,
         },
       };
     case "glow":
@@ -147,7 +158,6 @@ export function getHoverProps(
         },
       };
     case "tilt":
-      // Tilt is handled separately via onMouseMove
       return {};
     default:
       return {};

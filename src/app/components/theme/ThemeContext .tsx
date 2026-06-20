@@ -61,6 +61,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setTheme] = useState<Theme>({ background: "#ffffff", foreground: "#171717" });
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [layoutLoaded, setLayoutLoaded] = useState(false);
+  const [loadingText, setLoadingText] = useState("Please wait...");
 
   const [optimisticThemeVariant, setOptimisticThemeVariant] = useState<ThemeVariant | null>(null);
   const [optimisticLightTheme, setOptimisticLightTheme] = useState<Theme | null>(null);
@@ -256,7 +257,10 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     const authenticated = isAuthenticated();
 
     if (!usernameInUrl) {
-      if (authenticated) await store.fetchSettings();
+      if (authenticated) {
+        setLoadingText("Fetching your settings...");
+        await store.fetchSettings();
+      }
       setLayoutLoaded(true);
       return;
     }
@@ -266,14 +270,17 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
       const isOwnProfile = currentUserInfo?.username?.toLowerCase() === usernameInUrl.toLowerCase();
 
       if (isOwnProfile) {
+        setLoadingText("Loading your profile settings...");
         store.clearPublicData();
         await store.fetchSettings();
         setLayoutLoaded(true);
         return;
       }
 
+      setLoadingText(`Checking profile "${usernameInUrl}"...`);
       const { exists } = await checkUsernameAvailability(usernameInUrl);
       if (exists) {
+        setLoadingText("Loading public profile data...");
         await Promise.all([
           store.fetchPublicSettings(usernameInUrl),
           store.fetchPublicUserInfo(usernameInUrl),
@@ -288,8 +295,10 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
+    setLoadingText(`Checking profile "${usernameInUrl}"...`);
     const { exists } = await checkUsernameAvailability(usernameInUrl);
     if (exists) {
+      setLoadingText("Loading public profile data...");
       await Promise.all([
         store.fetchPublicSettings(usernameInUrl),
         store.fetchPublicUserInfo(usernameInUrl),
@@ -309,14 +318,20 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     const init = async () => {
       try {
         if (unprotectedRoutes.some(route => pathname.startsWith(route))) {
+          setLoadingText("Loading theme...");
           setLayoutLoaded(true);
           return;
         }
+        setLoadingText("Preparing your layout...");
         setLayoutLoaded(false);
-        if (isAuthenticated()) await fetchUserInfo();
+        if (isAuthenticated()) {
+          setLoadingText("Fetching user info...");
+          await fetchUserInfo();
+        }
         await getUserSettings();
       } catch (error) {
         console.error("Initialization error:", error);
+        setLoadingText("Loading theme...");
         setLayoutLoaded(true);
       }
     };
@@ -371,7 +386,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
       {!layoutLoaded ? (
         <div className="w-full h-screen flex-col flex items-center justify-center">
           <PortfolioProLogo scale={0.8} />
-          <p>Loading theme...</p>
+          <p>{loadingText}</p>
         </div>
       ) : (
         children

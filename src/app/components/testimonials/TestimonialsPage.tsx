@@ -1,40 +1,52 @@
 // app/(dashboard)/testimonials/page.tsx
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import { useValidation } from "@/lib/hooks/validation/useValidation";
-import { useUserStore } from "@/lib/stores/user/userStore";
-import { useRouting } from "@/lib/hooks/routing/useRouting";
+import { useEffect, useState, useCallback } from "react";
+import { useTestimonialsStore } from "@/lib/stores/testimonials/useTestimonial";
 import { isAuthenticated } from "@/lib/client/api";
 import { useRouter } from "next/navigation";
-import { Testimonial, useTestimonialsStore } from "@/lib/stores/testimonials/useTestimonial";
+import { Testimonial } from "@/lib/stores/testimonials/useTestimonial";
 import { LoadingSkeleton } from "./LoadingSkeleton";
 import { PublicProfileView } from "./PublicProfileView";
 import { OwnProfileView } from "./OwnProfileView";
-import { useUserSettings } from "@/lib/stores/user/useUserSettings";
+import { useTheme } from "../theme/ThemeContext ";
 
-type TestimonialsScenario =
-    | { kind: "public"; username: string }
-    | { kind: "own" }
-    | { kind: "not-found" }
-    | { kind: "user-not-found"; username: string }
-    | { kind: "pending" };
+const PAGE_SIZE = 20;
 
 export default function TestimonialsPage() {
     const {
+        // User testimonials by username (public view)
         userTestimonials,
-        myAuthoredTestimonials,
-        myReceivedTestimonials,
-        userStats,
-        userSummary,
-        myAuthoredTestimonialsLoading,
-        myReceivedTestimonialsLoading,
+        userTestimonialsTotal,
+        userTestimonialsPage,
+        userTestimonialsHasMore,
         userTestimonialsLoading,
+        userTestimonialsError,
+
+        // My received testimonials (own view)
+        myReceivedTestimonials,
+        myReceivedTestimonialsTotal,
+        myReceivedTestimonialsPage,
+        myReceivedTestimonialsHasMore,
+        myReceivedTestimonialsLoading,
+        myReceivedTestimonialsError,
+
+        // My authored testimonials
+        myAuthoredTestimonials,
+        myAuthoredTestimonialsTotal,
+        myAuthoredTestimonialsPage,
+        myAuthoredTestimonialsHasMore,
+        myAuthoredTestimonialsLoading,
+        myAuthoredTestimonialsError,
+
+        // Stats
+        userStats,
         fetchUserTestimonials,
         fetchMyAuthoredTestimonials,
         fetchMyReceivedTestimonials,
         fetchUserTestimonialStats,
-        fetchUserTestimonialSummary,
+
+        // Mutations
         deleteTestimonial: deleteTestimonialAction,
         approveTestimonial,
         deleting,
@@ -44,16 +56,18 @@ export default function TestimonialsPage() {
         deleteError,
         approveError,
     } = useTestimonialsStore();
-    const { checkIfOwnProfile, validateProfileUsername } = useValidation();
-    const { userInfo, fetchUserInfo } = useUserSettings();
-    const { pathname } = useRouting();
+
+    // Get profile context from ThemeContext instead of re-validating
+    const { profileContext } = useTheme();
     const router = useRouter();
 
-    const [scenario, setScenario] = useState<TestimonialsScenario>({ kind: "pending" });
     const [deleteTestimonialState, setDeleteTestimonialState] = useState<Testimonial | null>(null);
     const [localError, setLocalError] = useState<string | null>(null);
+    const [activeTab, setActiveTab] = useState<"received" | "authored">("received");
 
-    const resolveInProgress = useRef(false);
+    // Derived state from profileContext
+    const isOwnProfile = profileContext.kind === "own";
+    const currentUsername = profileContext.username; // Now available in all scenarios
 
     // Combine store errors
     const combinedError = createError || updateError || deleteError || approveError || localError;
@@ -62,73 +76,103 @@ export default function TestimonialsPage() {
         setLocalError(null);
     };
 
+    // ── Initial data fetch (always page 1) ───────────────────────────────
     useEffect(() => {
-        const resolveScenario = async () => {
-            if (resolveInProgress.current) return;
-            resolveInProgress.current = true;
-            try {
-                if (userInfo && !userInfo.username) await fetchUserInfo();
+        if (profileContext.kind === "pending" || profileContext.kind === "unauthenticated" || profileContext.kind === "not-found") {
+            return;
+        }
 
-                const profileCheck = checkIfOwnProfile();
-                const usernameInUrl = profileCheck?.username ?? null;
-                const auth = isAuthenticated();
-
-                if (usernameInUrl) {
-                    const validation = await validateProfileUsername(usernameInUrl);
-                    if (validation.isValid && validation.isOwnProfile) {
-                        setScenario({ kind: "own" });
-                    } else if (validation.isValid && validation.username) {
-                        setScenario({ kind: "public", username: validation.username });
-                    } else if (auth) {
-                        setScenario({ kind: "user-not-found", username: usernameInUrl });
-                    } else {
-                        setScenario({ kind: "not-found" });
-                    }
-                } else if (auth) {
-                    setScenario({ kind: "own" });
-                } else {
-                    setScenario({ kind: "not-found" });
-                }
-            } finally {
-                resolveInProgress.current = false;
-            }
-        };
-        resolveScenario();
-    }, [pathname, userInfo?.username]);
-
-    // Fetch data based on scenario
-    useEffect(() => {
-        if (scenario.kind === "pending") return;
+        if (!currentUsername) return;
 
         const fetchData = async () => {
-            if (scenario.kind === "public") {
-                await fetchUserTestimonials({ username: scenario.username });
-                await fetchUserTestimonialStats(scenario.username);
+            if (profileContext.kind === "public") {
+                // Fetch public testimonials for this user
+                await fetchUserTestimonials({
+                    username: currentUsername,
+                    skip: 0,
+                    limit: PAGE_SIZE
+                });
+                await fetchUserTestimonialStats(currentUsername);
                 // Also fetch my authored testimonials if authenticated (for "Mine" tab)
                 if (isAuthenticated()) {
-                    await fetchMyAuthoredTestimonials();
+                    await fetchMyAuthoredTestimonials({ skip: 0, limit: PAGE_SIZE });
                 }
-            } else if (scenario.kind === "own" || scenario.kind === "user-not-found") {
-                const username = userInfo?.username;
-                if (username) {
-                    // Fetch public testimonials for this user (for sharing/public view)
-                    await fetchUserTestimonials({ username });
-                    // Fetch ALL received testimonials (includes pending) for owner view
-                    await fetchMyReceivedTestimonials();
-                    // Fetch authored testimonials
-                    await fetchMyAuthoredTestimonials();
-                    await fetchUserTestimonialStats(username);
-                }
+            } else if (profileContext.kind === "own") {
+                // Fetch public testimonials for this user (for sharing/public view)
+                await fetchUserTestimonials({
+                    username: currentUsername,
+                    skip: 0,
+                    limit: PAGE_SIZE
+                });
+                // Fetch ALL received testimonials (includes pending) for owner view
+                await fetchMyReceivedTestimonials({ skip: 0, limit: PAGE_SIZE });
+                // Fetch authored testimonials
+                await fetchMyAuthoredTestimonials({ skip: 0, limit: PAGE_SIZE });
+                await fetchUserTestimonialStats(currentUsername);
             }
         };
 
         fetchData();
-    }, [scenario, userInfo?.username]);
+    }, [profileContext.kind, currentUsername]);
 
-    const isOwnProfile = scenario.kind === "own" || scenario.kind === "user-not-found";
-    const currentUsername = isOwnProfile ? userInfo?.username : scenario.kind === "public" ? scenario.username : "";
+    // ── Store error sync ─────────────────────────────────────────────────
+    useEffect(() => {
+        const storeError =
+            userTestimonialsError ||
+            myReceivedTestimonialsError ||
+            myAuthoredTestimonialsError;
+        if (storeError) setLocalError(storeError);
+    }, [userTestimonialsError, myReceivedTestimonialsError, myAuthoredTestimonialsError]);
 
-    const theirTestimonials = currentUsername ? (userTestimonials[currentUsername] || []) : [];
+    // ── Load-more handlers ───────────────────────────────────────────────
+    const handleLoadMoreUserTestimonials = useCallback(async () => {
+        if (!userTestimonialsHasMore || userTestimonialsLoading || !currentUsername) return;
+
+        const nextPage = userTestimonialsPage + 1;
+        const skip = (nextPage - 1) * PAGE_SIZE;
+
+        await fetchUserTestimonials({
+            username: currentUsername,
+            skip,
+            limit: PAGE_SIZE
+        });
+    }, [
+        userTestimonialsHasMore,
+        userTestimonialsLoading,
+        userTestimonialsPage,
+        currentUsername,
+        fetchUserTestimonials
+    ]);
+
+    const handleLoadMoreAuthored = useCallback(async () => {
+        if (!myAuthoredTestimonialsHasMore || myAuthoredTestimonialsLoading) return;
+
+        await fetchMyAuthoredTestimonials({
+            skip: myAuthoredTestimonialsPage * PAGE_SIZE,
+            limit: PAGE_SIZE
+        });
+    }, [
+        myAuthoredTestimonialsHasMore,
+        myAuthoredTestimonialsLoading,
+        myAuthoredTestimonialsPage,
+        fetchMyAuthoredTestimonials
+    ]);
+
+    const handleLoadMoreReceived = useCallback(async () => {
+        if (!myReceivedTestimonialsHasMore || myReceivedTestimonialsLoading) return;
+
+        await fetchMyReceivedTestimonials({
+            skip: myReceivedTestimonialsPage * PAGE_SIZE,
+            limit: PAGE_SIZE
+        });
+    }, [
+        myReceivedTestimonialsHasMore,
+        myReceivedTestimonialsLoading,
+        myReceivedTestimonialsPage,
+        fetchMyReceivedTestimonials
+    ]);
+
+    // ── Actions ──────────────────────────────────────────────────────────
     const stats = currentUsername ? (userStats[currentUsername] || undefined) : undefined;
 
     const handleDelete = async () => {
@@ -151,31 +195,44 @@ export default function TestimonialsPage() {
     };
 
     const handleNavigateToWrite = () => {
-        const targetUsername = isOwnProfile ? "" : scenario.kind === "public" ? scenario.username : "";
-        const query = targetUsername ? `?for=${encodeURIComponent(targetUsername)}` : "";
-        if (!targetUsername) return
-        router.push(`/${targetUsername}/testimonials/write${query}`);
+        if (!currentUsername) return;
+        const query = `?for=${encodeURIComponent(currentUsername)}`;
+        router.push(`/${currentUsername}/testimonials/write${query}`);
     };
 
     const handleNavigateToEdit = (testimonial: Testimonial) => {
-        const targetUsername = isOwnProfile ? "" : scenario.kind === "public" ? scenario.username : "";
-        if (!targetUsername) return
-        router.push(`/${targetUsername}/testimonials/edit/${testimonial.id}`);
+        if (!currentUsername) return;
+        router.push(`/${currentUsername}/testimonials/edit/${testimonial.id}`);
     };
 
-    // UI states
-    if (scenario.kind === "pending") return <LoadingSkeleton />;
-    if (scenario.kind === "not-found") return <div>Profile not found</div>;
+    // ── Loading state ────────────────────────────────────────────────────
+    const isLoading =
+        userTestimonialsLoading ||
+        myReceivedTestimonialsLoading ||
+        myAuthoredTestimonialsLoading;
+
+    // ── Render ───────────────────────────────────────────────────────────
+    if (profileContext.kind === "pending") return <LoadingSkeleton />;
+
+    if (profileContext.kind === "not-found" || profileContext.kind === "unauthenticated") {
+        return <div>Profile not found</div>;
+    }
 
     // Public profile view
-    if (!isOwnProfile && scenario.kind === "public") {
+    if (!isOwnProfile && profileContext.kind === "public") {
         return (
             <PublicProfileView
-                username={scenario.username}
-                theirTestimonials={theirTestimonials}
-                myAuthoredTestimonials={myAuthoredTestimonials}
+                username={currentUsername || ""}
+                theirTestimonials={userTestimonials}
+                totalTestimonials={userTestimonialsTotal}
                 isLoading={userTestimonialsLoading}
+                hasMore={userTestimonialsHasMore}
+                onLoadMore={handleLoadMoreUserTestimonials}
+                myAuthoredTestimonials={myAuthoredTestimonials}
+                myAuthoredTotal={myAuthoredTestimonialsTotal}
                 isLoadingAuthored={myAuthoredTestimonialsLoading}
+                hasMoreAuthored={myAuthoredTestimonialsHasMore}
+                onLoadMoreAuthored={handleLoadMoreAuthored}
                 error={combinedError}
                 onClearError={clearAllErrors}
                 deleteTestimonial={deleteTestimonialState}
@@ -190,13 +247,21 @@ export default function TestimonialsPage() {
         );
     }
 
-    // Own profile view — now passes myReceivedTestimonials for the "Received" tab
+    // Own profile view
     return (
         <OwnProfileView
             receivedTestimonials={myReceivedTestimonials}
-            authoredTestimonials={myAuthoredTestimonials}
+            totalReceived={myReceivedTestimonialsTotal}
             isLoadingReceived={myReceivedTestimonialsLoading}
+            hasMoreReceived={myReceivedTestimonialsHasMore}
+            onLoadMoreReceived={handleLoadMoreReceived}
+            authoredTestimonials={myAuthoredTestimonials}
+            totalAuthored={myAuthoredTestimonialsTotal}
             isLoadingAuthored={myAuthoredTestimonialsLoading}
+            hasMoreAuthored={myAuthoredTestimonialsHasMore}
+            onLoadMoreAuthored={handleLoadMoreAuthored}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
             error={combinedError}
             onClearError={clearAllErrors}
             deleteTestimonial={deleteTestimonialState}

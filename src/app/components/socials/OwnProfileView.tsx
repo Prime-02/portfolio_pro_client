@@ -7,6 +7,7 @@ import { SocialDialogs } from "./SocialDialogs";
 import { ErrorMessage } from "../ui/ErrorMessage";
 import type { SocialLink } from "@/lib/stores/social_links/useSocialLinks";
 import { PageHeader } from "../ui/PageHeader";
+import { handleShareProfile } from "@/lib/utilities/syncFunctions/syncs";
 
 interface OwnProfileViewProps {
     links: SocialLink[];
@@ -44,12 +45,21 @@ export function OwnProfileView({
                 title="My Links"
                 description="Connect your social profiles and share them in one place"
                 action={
-                    <Button
-                        onClick={() => onAddDialogChange(true)}
-                        className="self-start sm:self-auto"
-                        text="Add Link"
-                        icon={<Plus className="w-4 h-4" />}
-                    />
+                    <div className="flex items-center gap-x-2">
+                        <Button
+                            onClick={handleShareProfile}
+                            className="self-start sm:self-auto"
+                            text="Share Your Social Links"
+                            icon={<Share2 className="w-4 h-4" />}
+                            variant="outline"
+                        />
+                        <Button
+                            onClick={() => onAddDialogChange(true)}
+                            className="self-start sm:self-auto"
+                            text="Add Link"
+                            icon={<Plus className="w-4 h-4" />}
+                        />
+                    </div>
                 }
             />
 

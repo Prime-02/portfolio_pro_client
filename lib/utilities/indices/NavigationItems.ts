@@ -36,7 +36,8 @@ export const unprotectedRoutes = [
   "/register",
   "/auth",
   "/public",
-  "/welcome"
+  "/welcome",
+  "test-endpoints",
 ];
 
 export const privateRoutes: Route[] = [

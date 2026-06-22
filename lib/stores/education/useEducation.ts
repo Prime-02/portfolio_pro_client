@@ -68,8 +68,10 @@ export interface EducationFilters {
   institution?: string;
   degree?: string;
   field_of_study?: string;
+  is_current?: boolean;
+  ids?: string[];
+  merge_filters?: boolean;
 }
-
 // ---------------------------------------------------------------------------
 // Store shape
 // ---------------------------------------------------------------------------
@@ -508,15 +510,12 @@ export const useEducation = create<EducationState>()((set) => ({
   // ------------------------------------------------------------------
   // GET /education/public/user/{username} — Fetch user's public educations
   // ------------------------------------------------------------------
-  fetchPublicUserEducations: async (
-    username: string,
-    filters?: EducationFilters,
-  ) => {
+  fetchPublicUserEducations: async (username, filters?) => {
     set({ isLoadingPublicByUsername: true, error: null });
     try {
-      const queryParams = buildQueryParams(filters);
       const response = await api.get<EducationListResponse>(
-        `/education/public/user/${username}${queryParams}`,
+        `/education/public/user/${username}`,
+        { params: filters },
       );
       const data = response.data;
 

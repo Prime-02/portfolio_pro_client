@@ -2,23 +2,27 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { PenLine, Plus, FileText } from "lucide-react";
+import { PenLine, Plus, Share2 } from "lucide-react";
 import { BlogStatsBar } from "./BlogStatsBar";
 import { BlogFilters } from "./BlogFilters";
 import { BlogGrid } from "./BlogGrid";
 import { EmptyBlogsState } from "./EmptyBlogsState";
 import { LoadingSkeletonBlogs } from "./LoadingSkeletonBlogs";
 import { DeleteBlogDialog } from "./DeleteBlogDialog";
+import { InfiniteScrollTrigger } from "./InfiniteScrollTrigger";
 import type { ContentWithAuthor } from "@/lib/stores/contents/types/content.types";
 import { PageHeader } from "../ui/PageHeader";
 import Button from "../buttons/Buttons";
 import { ErrorMessage } from "../ui/ErrorMessage";
 import { useUserSettings } from "@/lib/stores/user/useUserSettings";
+import { handleShareProfile } from "@/lib/utilities/syncFunctions/syncs";
 
 interface OwnBlogsViewProps {
   blogs: ContentWithAuthor[];
   totalBlogs: number;
   isLoading: boolean;
+  hasMore: boolean;
+  onLoadMore: () => void;
   error: string | null;
   onClearError: () => void;
   filterParams: {
@@ -36,6 +40,8 @@ export function OwnBlogsView({
   blogs,
   totalBlogs,
   isLoading,
+  hasMore,
+  onLoadMore,
   error,
   onClearError,
   filterParams,
@@ -44,7 +50,7 @@ export function OwnBlogsView({
   deleting,
 }: OwnBlogsViewProps) {
   const router = useRouter();
-  const { userInfo } = useUserSettings()
+  const { userInfo } = useUserSettings();
   const [deleteBlog, setDeleteBlog] = useState<ContentWithAuthor | null>(null);
 
   const handleEdit = (blog: ContentWithAuthor) => {
@@ -66,12 +72,23 @@ export function OwnBlogsView({
         title="My Posts & Blogs"
         description={`${totalBlogs} post${totalBlogs !== 1 ? "s" : ""} in your collection`}
         action={
-          <Button
-            onClick={() => router.push(`/${userInfo?.username || "users"}/blogs/create`)}
-            className="self-start sm:self-auto"
-            text="New Post"
-            icon={<Plus className="w-4 h-4" />}
-          />
+          <div className="flex items-center gap-x-2">
+            <Button
+              onClick={handleShareProfile}
+              className="self-start sm:self-auto"
+              text="Share Your Posts"
+              variant="outline"
+              icon={<Share2 className="w-4 h-4" />}
+            />
+            <Button
+              onClick={() =>
+                router.push(`/${userInfo?.username || "users"}/blogs/create`)
+              }
+              className="self-start sm:self-auto"
+              text="New Post"
+              icon={<Plus className="w-4 h-4" />}
+            />
+          </div>
         }
       />
 
@@ -85,7 +102,9 @@ export function OwnBlogsView({
         sort={filterParams.sort}
         onSortChange={(sort) => onFilterChange({ ...filterParams, sort })}
         sortDirection={filterParams.sortDirection}
-        onSortDirectionChange={(sortDirection) => onFilterChange({ ...filterParams, sortDirection })}
+        onSortDirectionChange={(sortDirection) =>
+          onFilterChange({ ...filterParams, sortDirection })
+        }
       />
 
       {error && <ErrorMessage message={error} onDismiss={onClearError} />}
@@ -93,13 +112,21 @@ export function OwnBlogsView({
       {blogs.length === 0 && !isLoading ? (
         <EmptyBlogsState isOwner={true} />
       ) : (
-        <BlogGrid
-          blogs={blogs}
-          isLoading={isLoading}
-          isOwner={true}
-          onEdit={handleEdit}
-          onDelete={setDeleteBlog}
-        />
+        <>
+          <BlogGrid
+            blogs={blogs}
+            isLoading={isLoading && blogs.length === 0}
+            isOwner={true}
+            onEdit={handleEdit}
+            onDelete={setDeleteBlog}
+          />
+
+          <InfiniteScrollTrigger
+            hasMore={hasMore}
+            isLoading={isLoading}
+            onLoadMore={onLoadMore}
+          />
+        </>
       )}
 
       <DeleteBlogDialog

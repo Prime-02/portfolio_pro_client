@@ -9,31 +9,31 @@ import {
     ContentTab,
     LayoutTab,
     MediaTab,
-    BackgroundTab,
     CTATab,
-    EffectsTab,
     EditorTabs,
     EditorActions,
     AnimationsTab,
+    EffectsTab,
 } from "./editor-components";
 import HeroRenderer from "./HeroRenderer";
 import SocialLinksTab from "./editor-components/SocialLinksTab";
 import { getDefaultAnimations } from "@/portfolio-builder/types/hero";
 import { ResolvedTheme } from "@/portfolio-builder/hooks/usePortfolioTheme";
+import BackgroundTab from "@/portfolio-builder/components/shared/editor/BackgroundTab";
 
 interface HeroEditorProps {
     initialData: HeroData;
     onSave: (data: HeroData) => void;
     onCancel: () => void;
     theme: ResolvedTheme;
+    setFullScreen: () => void
 }
 
-export default function HeroEditor({ initialData, onSave, onCancel, theme }: HeroEditorProps) {
+export default function HeroEditor({ initialData, onSave, onCancel, theme, setFullScreen }: HeroEditorProps) {
     const [data, setData] = useState<HeroData>(() => structuredClone(initialData));
     const [activeTab, setActiveTab] = useState<
         "content" | "layout" | "media" | "background" | "cta" | "effects" | "animations" | "social"
     >("content");
-    const [isEditorVisible, setIsEditorVisible] = useState(true);
     const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
 
     // ── Stable serialised baseline — only updates after a successful save ─────
@@ -132,7 +132,7 @@ export default function HeroEditor({ initialData, onSave, onCancel, theme }: Her
         }));
     };
 
-    const updateBackground = (value: Partial<HeroData["background"]> & { type?: string }) => {
+    const updateBackground = (value: Partial<HeroData["background"]>) => {
         setData((prev) => ({
             ...prev,
             background: { ...prev.background, type: prev.background?.type || "solid", ...value },
@@ -228,8 +228,6 @@ export default function HeroEditor({ initialData, onSave, onCancel, theme }: Her
         onCancel();
     };
 
-    const toggleEditor = () => setIsEditorVisible((prev) => !prev);
-
     // ── Save status display ───────────────────────────────────────────────────
     const saveStatusText = {
         idle: hasChanges ? "Unsaved changes" : "Saved",
@@ -286,51 +284,36 @@ export default function HeroEditor({ initialData, onSave, onCancel, theme }: Her
             )}
 
             {/* Editor panel */}
-            {isEditorVisible && (
-                <div className="flex-1 flex flex-col min-w-0 border border-[var(--pb-border)] rounded-xl overflow-hidden">
-                    <EditorTabs activeTab={activeTab} onTabChange={setActiveTab} />
+            <div className="flex-1 flex flex-col min-w-0 border border-[var(--pb-border)] rounded-xl overflow-hidden">
+                <EditorTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
-                    <div className="p-6 overflow-y-auto flex-1 space-y-6 bg-[var(--pb-background)]">
-                        {renderTabContent()}
-                    </div>
-
-                    <EditorActions
-                        hasChanges={hasChanges}
-                        isValid={isValidData(data)}
-                        saveStatus={saveStatusText[saveStatus]}
-                        saveStatusColor={saveStatusColor[saveStatus]}
-                        onSave={handleSave}
-                        onCancel={handleCancel}
-                    />
+                <div className="p-6 overflow-y-auto flex-1 space-y-6 bg-[var(--pb-background)]">
+                    {renderTabContent()}
                 </div>
-            )}
+
+                <EditorActions
+                    hasChanges={hasChanges}
+                    isValid={isValidData(data)}
+                    saveStatus={saveStatusText[saveStatus]}
+                    saveStatusColor={saveStatusColor[saveStatus]}
+                    onSave={handleSave}
+                    onCancel={handleCancel}
+                />
+            </div>
 
             {/* Preview panel */}
-            <div className={`${isEditorVisible ? "flex-1" : "flex-[2]"
-                } min-w-0 bg-[var(--pb-background)] border border-[var(--pb-border)] rounded-xl overflow-hidden transition-all duration-300`}>
+            <div className={`flex-1 min-w-0 bg-[var(--pb-background)] border border-[var(--pb-border)] rounded-xl overflow-hidden transition-all duration-300`}>
                 <div className="px-4 py-2 border-b border-[var(--pb-border)] flex items-center justify-between">
                     <span className="text-xs text-[var(--pb-text-muted)] uppercase tracking-wide">Preview</span>
                     <button
-                        onClick={toggleEditor}
+                        onClick={setFullScreen}
                         className="text-xs text-[var(--pb-text-secondary)] hover:text-[var(--pb-text-primary)] transition-colors flex items-center gap-1"
-                        title={isEditorVisible ? "Hide editor for fullscreen preview" : "Show editor"}
+                        title={"Hide editor for fullscreen preview"}
                     >
-                        {isEditorVisible ? (
-                            <>
-                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                                </svg>
-                                Fullscreen
-                            </>
-                        ) : (
-                            <>
-                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 4H4v14h14v-7" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.5 2.5l5 5M8 13l5-5 5 5" />
-                                </svg>
-                                Show Editor
-                            </>
-                        )}
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                        </svg>
+                        Fullscreen
                     </button>
                 </div>
                 <div className="h-[calc(100%-37px)] overflow-y-auto">

@@ -1,6 +1,8 @@
 // components/testimonials/PublicProfileView.tsx
+"use client";
+
 import { useState } from "react";
-import { Quote, PenLine, User } from "lucide-react";
+import { Quote, PenLine } from "lucide-react";
 import Button from "../buttons/Buttons";
 import { Testimonial, TestimonialStats } from "@/lib/stores/testimonials/useTestimonial";
 import { StatsBar } from "./StatsBar";
@@ -8,13 +10,21 @@ import { ErrorMessage } from "../ui/ErrorMessage";
 import { TestimonialsGrid } from "./TestimonialsGrid";
 import { TestimonialDialogs } from "./TestimonialDialogs";
 import { PageHeader } from "../ui/PageHeader";
+import { InfiniteScrollTrigger } from "../blogs/InfiniteScrollTrigger";
+import { LoadingSkeleton } from "./LoadingSkeleton";
 
 interface PublicProfileViewProps {
     username: string;
     theirTestimonials: Testimonial[];
-    myAuthoredTestimonials: Testimonial[];
+    totalTestimonials: number;
     isLoading: boolean;
+    hasMore: boolean;
+    onLoadMore: () => void;
+    myAuthoredTestimonials: Testimonial[];
+    myAuthoredTotal: number;
     isLoadingAuthored: boolean;
+    hasMoreAuthored: boolean;
+    onLoadMoreAuthored: () => void;
     error: string | null;
     onClearError: () => void;
     deleteTestimonial: Testimonial | null;
@@ -32,9 +42,15 @@ type TabType = "their" | "mine";
 export function PublicProfileView({
     username,
     theirTestimonials,
-    myAuthoredTestimonials,
+    totalTestimonials,
     isLoading,
+    hasMore,
+    onLoadMore,
+    myAuthoredTestimonials,
+    myAuthoredTotal,
     isLoadingAuthored,
+    hasMoreAuthored,
+    onLoadMoreAuthored,
     error,
     onClearError,
     deleteTestimonial,
@@ -50,14 +66,26 @@ export function PublicProfileView({
 
     const isTheirTab = activeTab === "their";
     const currentTestimonials = isTheirTab ? theirTestimonials : myAuthoredTestimonials;
+    const currentTotal = isTheirTab ? totalTestimonials : myAuthoredTotal;
     const currentLoading = isTheirTab ? isLoading : isLoadingAuthored;
+    const currentHasMore = isTheirTab ? hasMore : hasMoreAuthored;
+    const currentOnLoadMore = isTheirTab ? onLoadMore : onLoadMoreAuthored;
+
+    // Show loading skeleton only on initial load (no data yet)
+    if (isLoading && theirTestimonials.length === 0 && isTheirTab) {
+        return <LoadingSkeleton />;
+    }
 
     return (
         <div className="min-h-screen p-6 md:p-8 lg:p-10 max-w-6xl mx-auto">
             <PageHeader
                 icon={<Quote className="w-6 h-6 text-[var(--accent)]" />}
                 title={`${username}'s Testimonials`}
-                description={`What people are saying about ${username}`}
+                description={
+                    isTheirTab
+                        ? `${totalTestimonials} testimonial${totalTestimonials !== 1 ? "s" : ""} from the community`
+                        : `${myAuthoredTotal} testimonial${myAuthoredTotal !== 1 ? "s" : ""} you've written`
+                }
                 action={
                     <Button
                         onClick={onNavigateToWrite}
@@ -68,7 +96,7 @@ export function PublicProfileView({
                 }
             />
 
-            {!isLoading && <StatsBar stats={stats} />}
+            {!isLoading && isTheirTab && <StatsBar stats={stats} />}
 
             {error && <ErrorMessage message={error} onDismiss={onClearError} />}
 
@@ -77,54 +105,68 @@ export function PublicProfileView({
                 <button
                     onClick={() => setActiveTab("their")}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${isTheirTab
-                        ? "bg-[var(--background)] text-[var(--foreground)] shadow-sm"
-                        : "text-[var(--foreground)]/50 hover:text-[var(--foreground)]/70"
+                            ? "bg-[var(--background)] text-[var(--foreground)] shadow-sm"
+                            : "text-[var(--foreground)]/50 hover:text-[var(--foreground)]/70"
                         }`}
                 >
-                   {` ${username}'s Testimonials (${theirTestimonials.length})`}
+                    {`${username}'s Testimonials (${totalTestimonials})`}
                 </button>
                 {isAuthenticated && (
                     <button
                         onClick={() => setActiveTab("mine")}
                         className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${!isTheirTab
-                            ? "bg-[var(--background)] text-[var(--foreground)] shadow-sm"
-                            : "text-[var(--foreground)]/50 hover:text-[var(--foreground)]/70"
+                                ? "bg-[var(--background)] text-[var(--foreground)] shadow-sm"
+                                : "text-[var(--foreground)]/50 hover:text-[var(--foreground)]/70"
                             }`}
                     >
-                        My Testimonials ({myAuthoredTestimonials.length})
+                        My Testimonials ({myAuthoredTotal})
                     </button>
                 )}
             </div>
 
+            {/* Testimonials Grid with Infinite Scroll */}
             <TestimonialsGrid
                 testimonials={currentTestimonials}
-                isLoading={currentLoading}
+                isLoading={currentLoading && currentTestimonials.length === 0}
                 onEdit={!isTheirTab ? onNavigateToEdit : undefined}
                 onDelete={!isTheirTab ? onDeleteTestimonialChange : undefined}
                 showApprovalStatus={false}
-                emptyTitle={isTheirTab
-                    ? `No testimonials for ${username} yet`
-                    : "You haven't written any testimonials yet"
+                emptyTitle={
+                    isTheirTab
+                        ? `No testimonials for ${username} yet`
+                        : "You haven't written any testimonials yet"
                 }
-                emptyDescription={isTheirTab
-                    ? "Be the first to share your experience working with them."
-                    : "Write a testimonial for someone you've worked with."
+                emptyDescription={
+                    isTheirTab
+                        ? "Be the first to share your experience working with them."
+                        : "Write a testimonial for someone you've worked with."
                 }
-                emptyAction={isTheirTab && isAuthenticated ? (
-                    <Button
-                        onClick={onNavigateToWrite}
-                        icon={<PenLine className="w-4 h-4" />}
-                        text={`Write a Testimonial for ${username}`}
-                    />
-                ) : !isTheirTab ? (
-                    <Button
-                        onClick={onNavigateToWrite}
-                        icon={<PenLine className="w-4 h-4" />}
-                        text="Write a Testimonial"
-                    />
-                ) : undefined}
+                emptyAction={
+                    isTheirTab && isAuthenticated ? (
+                        <Button
+                            onClick={onNavigateToWrite}
+                            icon={<PenLine className="w-4 h-4" />}
+                            text={`Write a Testimonial for ${username}`}
+                        />
+                    ) : !isTheirTab ? (
+                        <Button
+                            onClick={onNavigateToWrite}
+                            icon={<PenLine className="w-4 h-4" />}
+                            text="Write a Testimonial"
+                        />
+                    ) : undefined
+                }
                 isOwner={!isTheirTab}
             />
+
+            {/* Infinite Scroll Trigger */}
+            {currentTestimonials.length > 0 && (
+                <InfiniteScrollTrigger
+                    hasMore={currentHasMore}
+                    isLoading={currentLoading}
+                    onLoadMore={currentOnLoadMore}
+                />
+            )}
 
             <TestimonialDialogs
                 deleteTestimonial={deleteTestimonial}

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { FolderOpen, Plus } from "lucide-react";
+import { FolderOpen, Plus, Share2 } from "lucide-react";
 import { ProjectStatsBar } from "./ProjectStatsBar";
 import { ProjectFilters } from "./ProjectFilters";
 import { ProjectGrid } from "./ProjectGrid";
@@ -13,12 +13,16 @@ import type { PortfolioProjectResponse, ProjectStats } from "@/lib/stores/projec
 import { PageHeader } from "../ui/PageHeader";
 import Button from "../buttons/Buttons";
 import { ErrorMessage } from "../ui/ErrorMessage";
+import { InfiniteScrollTrigger } from "../blogs/InfiniteScrollTrigger";
+import {  handleShareProfile } from "@/lib/utilities/syncFunctions/syncs";
 
 interface OwnProjectsViewProps {
   projects: PortfolioProjectResponse[];
   totalProjects: number;
   projectStats: ProjectStats | null;
   isLoading: boolean;
+  hasMore: boolean;
+  onLoadMore: () => void;
   error: string | null;
   onClearError: () => void;
   filterParams: {
@@ -37,6 +41,8 @@ export function OwnProjectsView({
   totalProjects,
   projectStats,
   isLoading,
+  hasMore,
+  onLoadMore,
   error,
   onClearError,
   filterParams,
@@ -66,12 +72,21 @@ export function OwnProjectsView({
         title="My Projects"
         description={`${totalProjects} project${totalProjects !== 1 ? "s" : ""} in your portfolio`}
         action={
-          <Button
-            onClick={() => router.push("projects/create")}
-            className="self-start sm:self-auto"
-            text="New Project"
-            icon={<Plus className="w-4 h-4" />}
-          />
+          <div className="flex items-center gap-x-2">
+            <Button
+              onClick={handleShareProfile}
+              className="self-start sm:self-auto"
+              text="Share Your Projects"
+              icon={<Share2 className="w-4 h-4" />}
+              variant="outline"
+            />
+            <Button
+              onClick={() => router.push("projects/create")}
+              className="self-start sm:self-auto"
+              text="New Project"
+              icon={<Plus className="w-4 h-4" />}
+            />
+          </div>
         }
       />
 
@@ -81,11 +96,15 @@ export function OwnProjectsView({
         query={filterParams.query}
         onQueryChange={(query) => onFilterChange({ ...filterParams, query })}
         filterPlatform={filterParams.filterPlatform}
-        onPlatformChange={(filterPlatform) => onFilterChange({ ...filterParams, filterPlatform })}
+        onPlatformChange={(filterPlatform) =>
+          onFilterChange({ ...filterParams, filterPlatform })
+        }
         sort={filterParams.sort}
         onSortChange={(sort) => onFilterChange({ ...filterParams, sort })}
         sortDirection={filterParams.sortDirection}
-        onSortDirectionChange={(sortDirection) => onFilterChange({ ...filterParams, sortDirection })}
+        onSortDirectionChange={(sortDirection) =>
+          onFilterChange({ ...filterParams, sortDirection })
+        }
       />
 
       {error && <ErrorMessage message={error} onDismiss={onClearError} />}
@@ -93,13 +112,21 @@ export function OwnProjectsView({
       {projects.length === 0 && !isLoading ? (
         <EmptyProjectsState isOwner={true} />
       ) : (
-        <ProjectGrid
-          projects={projects}
-          isLoading={isLoading}
-          isOwner={true}
-          onEdit={handleEdit}
-          onDelete={setDeleteProject}
-        />
+        <>
+          <ProjectGrid
+            projects={projects}
+            isLoading={isLoading && projects.length === 0}
+            isOwner={true}
+            onEdit={handleEdit}
+            onDelete={setDeleteProject}
+          />
+
+          <InfiniteScrollTrigger
+            hasMore={hasMore}
+            isLoading={isLoading}
+            onLoadMore={onLoadMore}
+          />
+        </>
       )}
 
       <DeleteProjectDialog

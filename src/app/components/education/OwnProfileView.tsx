@@ -1,5 +1,5 @@
 // components/education/OwnProfileView.tsx
-import { GraduationCap, Plus } from "lucide-react";
+import { GraduationCap, Plus, Share2 } from "lucide-react";
 import Button from "../buttons/Buttons";
 import { StatsBar } from "./StatsBar";
 import { EducationsGrid } from "./EducationsGrid";
@@ -7,6 +7,7 @@ import { EducationDialogs } from "./EducationDialogs";
 import { ErrorMessage } from "../ui/ErrorMessage";
 import type { Education } from "@/lib/stores/education/useEducation";
 import { PageHeader } from "../ui/PageHeader";
+import { handleShareProfile } from "@/lib/utilities/syncFunctions/syncs";
 
 interface OwnProfileViewProps {
     educations: Education[];
@@ -37,6 +38,7 @@ export function OwnProfileView({
     isDeleting,
     onDeleteConfirm,
 }: OwnProfileViewProps) {
+
     return (
         <div className="min-h-screen p-6 md:p-8 lg:p-10 max-w-6xl mx-auto">
             <PageHeader
@@ -44,12 +46,21 @@ export function OwnProfileView({
                 title="My Education"
                 description="Manage your academic background and qualifications"
                 action={
-                    <Button
-                        onClick={() => onAddDialogChange(true)}
-                        className="self-start sm:self-auto"
-                        text="Add Education"
-                        icon={<Plus className="w-4 h-4" />}
-                    />
+                    <div className="flex items-center gap-x-2">
+                        <Button
+                            onClick={handleShareProfile}
+                            className="self-start sm:self-auto"
+                            text="Share Education History"
+                            icon={<Share2 className="w-4 h-4" />}
+                            variant="outline"
+                        />
+                        <Button
+                            onClick={() => onAddDialogChange(true)}
+                            className="self-start sm:self-auto"
+                            text="Add Education"
+                            icon={<Plus className="w-4 h-4" />}
+                        />
+                    </div>
                 }
             />
 

@@ -13,11 +13,7 @@ export type ContentStatus =
 
 export type ReactionType = "LIKE" | "LOVE" | "CELEBRATE" | "INSIGHTFUL";
 
-export type ReportStatus =
-  | "PENDING"
-  | "REVIEWING"
-  | "RESOLVED"
-  | "DISMISSED";
+export type ReportStatus = "PENDING" | "REVIEWING" | "RESOLVED" | "DISMISSED";
 
 export type SortOrder = "asc" | "desc";
 
@@ -127,6 +123,8 @@ export interface ContentFilterParams {
   page_size?: number;
   sort_by?: string;
   sort_order?: SortOrder;
+  ids?: string[];
+  merge_filters?: boolean;
 }
 
 export interface BulkContentUpdate {

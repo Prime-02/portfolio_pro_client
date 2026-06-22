@@ -60,6 +60,7 @@ export default function HeroSectionController({ heroData, onSave, theme }: HeroS
                 onSave={handleSave}
                 onCancel={handleCancel}
                 theme={theme}
+                setFullScreen={()=> setIsEditing(!isEditing)}
             />
         );
     }

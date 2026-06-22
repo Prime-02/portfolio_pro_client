@@ -37,9 +37,15 @@ export interface UpdateCertificationPayload {
   issue_date?: string | null;
   expiration_date?: string | null;
   certificate_external_url?: string | null;
-  certificate_internal_url?: string | null;
+  certificate_internal_url?: File | null; // Changed to File | null for uploads
   certificate_internal_url_id?: string | null;
   is_public?: boolean | null;
+}
+
+export interface PublicCertificationFilters {
+  issuing_organization?: string;
+  ids?: string[];
+  merge_filters?: boolean;
 }
 
 export interface DeleteResponse {
@@ -106,7 +112,10 @@ interface CertificationsState {
   deleteCertification: (certId: string) => Promise<DeleteResponse>;
 
   // Public actions
-  fetchPublicCertifications: (username: string) => Promise<Certification[]>;
+  fetchPublicCertifications: (
+    username: string,
+    filters?: PublicCertificationFilters,
+  ) => Promise<Certification[]>;
 
   // ==================== ADMIN ACTIONS ====================
 
@@ -133,6 +142,35 @@ interface CertificationsState {
   clearAdminError: () => void;
   reset: () => void;
   resetAdmin: () => void;
+}
+
+// ---------------------------------------------------------------------------
+// Helper function to build FormData for certification payloads
+// ---------------------------------------------------------------------------
+
+function buildCertificationFormData(
+  payload: CreateCertificationPayload | UpdateCertificationPayload,
+  isUpdate: boolean = false,
+): FormData {
+  const formData = new FormData();
+  
+  // Separate file from other fields
+  const { certificate_internal_url, ...certData } = payload;
+  
+  // Remove undefined/null values from certData to match exclude_unset behavior
+  const cleanedData = Object.fromEntries(
+    Object.entries(certData).filter(([_, value]) => value !== undefined && value !== null)
+  );
+  
+  // Append JSON data as a string
+  formData.append("cert_data", JSON.stringify(cleanedData));
+  
+  // Append file if provided
+  if (certificate_internal_url instanceof File) {
+    formData.append("certificate_internal_url", certificate_internal_url);
+  }
+  
+  return formData;
 }
 
 // ---------------------------------------------------------------------------
@@ -240,26 +278,11 @@ export const useCertifications = create<CertificationsState>()((set) => ({
   createCertification: async (payload: CreateCertificationPayload) => {
     set({ isCreating: true, error: null });
     try {
-      const { certificate_internal_url, ...certData } = payload;
-
-      let response;
-
-      // If there's a file, send as FormData
-      if (certificate_internal_url) {
-        const formData = new FormData();
-        formData.append("cert_data", JSON.stringify(certData));
-        formData.append("certificate_internal_url", certificate_internal_url);
-
-        response = await api.post<Certification>("/certification/", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-      } else {
-        // No file, send cert_data as form field with JSON string
-        const formData = new FormData();
-        formData.append("cert_data", JSON.stringify(certData));
-
-        response = await api.post<Certification>("/certification/", formData);
-      }
+      const formData = buildCertificationFormData(payload);
+      
+      const response = await api.post<Certification>("/certification/", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
       const newCert = response.data;
 
@@ -286,10 +309,16 @@ export const useCertifications = create<CertificationsState>()((set) => ({
   ) => {
     set({ isUpdating: true, error: null });
     try {
+      const formData = buildCertificationFormData(payload, true);
+      
       const response = await api.put<Certification>(
         `/certification/${certId}`,
-        payload,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        },
       );
+      
       const updatedCert = response.data;
 
       set((state) => ({
@@ -351,11 +380,12 @@ export const useCertifications = create<CertificationsState>()((set) => ({
   // ------------------------------------------------------------------
   // GET /certification/public/{username} — Fetch public certifications
   // ------------------------------------------------------------------
-  fetchPublicCertifications: async (username: string) => {
+  fetchPublicCertifications: async (username, filters = {}) => {
     set({ isLoadingPublic: true, error: null });
     try {
       const response = await api.get<Certification[]>(
         `/certification/public/${username}`,
+        { params: filters },
       );
       const certs = response.data;
       set({
@@ -446,6 +476,8 @@ export const useCertifications = create<CertificationsState>()((set) => ({
 
   // ------------------------------------------------------------------
   // PUT /admin/certification/{cert_id} — Admin: Update certification
+  // Note: The admin update endpoint currently accepts JSON, not FormData.
+  // If you need file upload support for admin, update the backend accordingly.
   // ------------------------------------------------------------------
   adminUpdateCertification: async (
     certId: string,
@@ -453,10 +485,22 @@ export const useCertifications = create<CertificationsState>()((set) => ({
   ) => {
     set({ adminIsUpdating: true, adminError: null });
     try {
+      // Admin update uses JSON (no file upload in current backend)
+      // Remove file field before sending as JSON
+      const { certificate_internal_url, ...jsonPayload } = payload;
+      
+      // Clean up undefined/null values
+      const cleanedPayload = Object.fromEntries(
+        Object.entries(jsonPayload).filter(
+          ([_, value]) => value !== undefined && value !== null,
+        ),
+      );
+      
       const response = await api.put<Certification>(
         `/admin/certification/${certId}`,
-        payload,
+        cleanedPayload,
       );
+      
       const updatedCert = response.data;
 
       set((state) => ({

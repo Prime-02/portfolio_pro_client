@@ -4,6 +4,7 @@ import { BookOpen } from "lucide-react";
 import { BlogGrid } from "./BlogGrid";
 import { EmptyBlogsState } from "./EmptyBlogsState";
 import { LoadingSkeletonBlogs } from "./LoadingSkeletonBlogs";
+import { InfiniteScrollTrigger } from "./InfiniteScrollTrigger";
 import type { ContentWithAuthor } from "@/lib/stores/contents/types/content.types";
 import { PageHeader } from "../ui/PageHeader";
 import { ErrorMessage } from "../ui/ErrorMessage";
@@ -13,6 +14,8 @@ interface PublicBlogsViewProps {
   blogs: ContentWithAuthor[];
   totalBlogs: number;
   isLoading: boolean;
+  hasMore: boolean;
+  onLoadMore: () => void;
   error: string | null;
   onClearError: () => void;
 }
@@ -22,6 +25,8 @@ export function PublicBlogsView({
   blogs,
   totalBlogs,
   isLoading,
+  hasMore,
+  onLoadMore,
   error,
   onClearError,
 }: PublicBlogsViewProps) {
@@ -40,13 +45,21 @@ export function PublicBlogsView({
       {blogs.length === 0 && !isLoading ? (
         <EmptyBlogsState isOwner={false} username={username} />
       ) : (
-        <BlogGrid
-          blogs={blogs}
-          isLoading={isLoading}
-          isOwner={false}
-          onEdit={() => {}}
-          onDelete={() => {}}
-        />
+        <>
+          <BlogGrid
+            blogs={blogs}
+            isLoading={isLoading && blogs.length === 0}
+            isOwner={false}
+            onEdit={() => { }}
+            onDelete={() => { }}
+          />
+
+          <InfiniteScrollTrigger
+            hasMore={hasMore}
+            isLoading={isLoading}
+            onLoadMore={onLoadMore}
+          />
+        </>
       )}
     </div>
   );

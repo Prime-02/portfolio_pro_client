@@ -1,23 +1,16 @@
 // src/app/profile/UserProfilePage.tsx
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { UserResponse, useUserSettings } from "@/lib/stores/user/useUserSettings";
 import { EditProfileForm } from "@/src/app/components/profile/EditProfileForm";
 import { ErrorMessage } from "@/src/app/components/profile/ErrorMessage";
 import { ProfileNotFound } from "@/src/app/components/profile/ProfileNotFound";
 import { EmptyProfile } from "@/src/app/components/profile/EmptyProfile";
 import { UserNotFoundNotice } from "@/src/app/components/profile/UserNotFoundNotice";
-import { useValidation } from "@/lib/hooks/validation/useValidation";
 import { ProfileViewPage } from "./ProfileViewPage";
 import { ProfileSkeleton } from "./view/ProfileSkeleton";
-
-type ProfileScenario =
-    | { kind: "public"; username: string }
-    | { kind: "own" }
-    | { kind: "not-found" }
-    | { kind: "user-not-found"; username: string }
-    | { kind: "pending" };
+import { useTheme } from "../theme/ThemeContext ";
 
 export const UserProfilePage = () => {
     const {
@@ -31,7 +24,6 @@ export const UserProfilePage = () => {
         error,
         fetchSettings,
         fetchProfile,
-        fetchUserInfo,
         fetchPublicSettings,
         fetchPublicProfile,
         fetchPublicUserInfo,
@@ -41,73 +33,46 @@ export const UserProfilePage = () => {
         clearError,
     } = useUserSettings();
 
-    const { checkIfOwnProfile, validateProfileUsername } = useValidation();
+    // Get profile context from ThemeContext instead of re-validating
+    const { profileContext } = useTheme();
 
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
-    const [scenario, setScenario] = useState<ProfileScenario>({ kind: "pending" });
 
-    const resolveInProgress = useRef(false);
+    // Derived state from profileContext
+    const isOwnProfile = profileContext.kind === "own";
+    const isPublicProfile = profileContext.kind === "public";
+    const showUserNotFound = profileContext.kind === "not-found" && !!userInfo?.username;
 
-    useEffect(() => {
-        const resolveScenario = async () => {
-            if (resolveInProgress.current) return;
-            resolveInProgress.current = true;
-            try {
-                if (userInfo && !userInfo.username) await fetchUserInfo();
-
-                const profileCheck = checkIfOwnProfile();
-                const usernameInUrl = profileCheck?.username ?? null;
-                const isAuthenticated = !!userInfo?.username;
-
-                if (usernameInUrl) {
-                    const validation = await validateProfileUsername(usernameInUrl);
-                    if (validation.isValid && validation.isOwnProfile) {
-                        setScenario({ kind: "own" });
-                    } else if (validation.isValid && validation.username) {
-                        setScenario({ kind: "public", username: validation.username });
-                    } else if (isAuthenticated) {
-                        setScenario({ kind: "user-not-found", username: usernameInUrl });
-                    } else {
-                        setScenario({ kind: "not-found" });
-                    }
-                } else if (isAuthenticated) {
-                    setScenario({ kind: "own" });
-                } else {
-                    setScenario({ kind: "not-found" });
-                }
-            } finally {
-                resolveInProgress.current = false;
-            }
-        };
-        resolveScenario();
-    }, [userInfo?.username]);
-
-    // Refetch function that depends on current scenario
+    // Refetch data based on profile context
     const refetchData = async () => {
-        if (scenario.kind === "pending") return;
+        if (profileContext.kind === "pending" || profileContext.kind === "unauthenticated" || profileContext.kind === "not-found") {
+            return; // Nothing to fetch for these states
+        }
 
-        if (scenario.kind === "public") {
+        if (profileContext.kind === "public") {
             await Promise.all([
-                fetchPublicSettings(scenario.username),
-                fetchPublicProfile(scenario.username),
-                fetchPublicUserInfo(scenario.username),
+                fetchPublicSettings(profileContext.username),
+                fetchPublicProfile(profileContext.username),
+                fetchPublicUserInfo(profileContext.username),
             ]);
-        } else if (scenario.kind === "own" || scenario.kind === "user-not-found") {
-            await Promise.all([fetchSettings(), fetchProfile(), fetchUserInfo()]);
+        } else if (profileContext.kind === "own") {
+            await Promise.all([fetchSettings(), fetchProfile()]);
         }
     };
 
+    // Fetch data when profile context changes
     useEffect(() => {
-        if (scenario.kind === "pending") return;
+        if (profileContext.kind === "pending") return;
         refetchData();
-    }, [scenario]);
+    }, [profileContext.kind]);
 
-    const isOwnProfile = scenario.kind === "own" || scenario.kind === "user-not-found";
+    // Determine which data to display
     const displayProfile = isOwnProfile ? profile : publicProfile;
     const displayUserInfo = isOwnProfile ? userInfo : publicUserInfo;
     const displaySettings = isOwnProfile ? settings : publicSettings;
 
+    // ─── Save Handlers ────────────────────────────────────────────────────────
     const handleSaveProfile = async (payload: Parameters<typeof updateProfile>[0]) => {
         setIsSaving(true);
         try {
@@ -132,7 +97,7 @@ export const UserProfilePage = () => {
         setIsSaving(true);
         try {
             await updateSettings(payload);
-            await refetchData()
+            await refetchData();
             setIsEditing(false);
         } finally {
             setIsSaving(false);
@@ -141,41 +106,56 @@ export const UserProfilePage = () => {
 
     const handleCancelEdit = async () => {
         setIsEditing(false);
-        await refetchData(); // Refetch to discard any unsaved changes
+        await refetchData(); // Discard any unsaved changes
     };
 
-    // ─── UI states ───────────────────────────────────────────────────────────
-    if (scenario.kind === "pending") return <ProfileSkeleton message="Loading profile..." />;
+    // ─── Loading State ────────────────────────────────────────────────────────
+    if (profileContext.kind === "pending") {
+        return <ProfileSkeleton message="Loading profile..." />;
+    }
 
-    if (scenario.kind === "not-found") return <ProfileNotFound />;
+    // ─── Not Found (Unauthenticated) ──────────────────────────────────────────
+    if (profileContext.kind === "not-found" && !userInfo?.username) {
+        return <ProfileNotFound />;
+    }
 
-    if (isLoading && !displayProfile && !displayUserInfo) return <ProfileSkeleton message="Loading profile..." />;
+    // ─── Loading Data ─────────────────────────────────────────────────────────
+    if (isLoading && !displayProfile && !displayUserInfo) {
+        return <ProfileSkeleton message="Loading profile data..." />;
+    }
 
+    // ─── Error State ──────────────────────────────────────────────────────────
     if (error && !displayProfile && !displayUserInfo) {
         return (
             <ErrorMessage
                 message={error}
                 onRetry={() => {
                     clearError();
-                    if (isOwnProfile) {
-                        fetchProfile();
-                    } else {
-                        fetchPublicProfile((scenario as any).username);
-                    }
+                    refetchData();
                 }}
             />
         );
     }
 
+    // ─── Empty Profile ────────────────────────────────────────────────────────
     if (!displayProfile && !displayUserInfo && !isLoading) {
-        return <EmptyProfile isOwnProfile={isOwnProfile} onSetupProfile={() => setIsEditing(true)} />;
+        return (
+            <EmptyProfile
+                isOwnProfile={isOwnProfile}
+                onSetupProfile={() => setIsEditing(true)}
+            />
+        );
     }
 
-    // ─── Main render ─────────────────────────────────────────────────────────
+    // ─── Main Render ──────────────────────────────────────────────────────────
     return (
         <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-            {scenario.kind === "user-not-found" && <UserNotFoundNotice username={scenario.username} />}
+            {/* User Not Found Notice for authenticated users viewing missing profiles */}
+            {showUserNotFound && (
+                <UserNotFoundNotice username={userInfo?.username ?? ""} />
+            )}
 
+            {/* Edit mode indicator for own profile */}
             {isOwnProfile && (
                 <div className="flex justify-end mb-6">
                     {isEditing ? (
@@ -186,6 +166,7 @@ export const UserProfilePage = () => {
                 </div>
             )}
 
+            {/* Edit Form or View Mode */}
             {isEditing && isOwnProfile ? (
                 <EditProfileForm
                     profile={profile}
@@ -194,7 +175,7 @@ export const UserProfilePage = () => {
                     onSaveProfile={handleSaveProfile}
                     onSaveUserInfo={handleSaveUserInfo}
                     onSaveSettings={handleSaveSettings}
-                    onCancel={handleCancelEdit} // Updated to use the new refetch handler
+                    onCancel={handleCancelEdit}
                     isSaving={isSaving}
                 />
             ) : (
@@ -204,7 +185,7 @@ export const UserProfilePage = () => {
                     settings={displaySettings}
                     isOwnProfile={isOwnProfile}
                     onEdit={() => setIsEditing(true)}
-                    fetchData={refetchData} // Pass the refetch function
+                    fetchData={refetchData}
                 />
             )}
         </div>

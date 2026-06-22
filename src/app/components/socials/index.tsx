@@ -1,22 +1,13 @@
 // app/(dashboard)/social-links/page.tsx
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useSocialLinks } from "@/lib/stores/social_links/useSocialLinks";
 import type { SocialLink } from "@/lib/stores/social_links/useSocialLinks";
 import { LoadingSkeleton } from "./LoadingSkeleton";
 import { PublicProfileView } from "./PublicProfileView";
 import { OwnProfileView } from "./OwnProfileView";
-import { useValidation } from "@/lib/hooks/validation/useValidation";
-import { useRouting } from "@/lib/hooks/routing/useRouting";
-import { useUserSettings } from "@/lib/stores/user/useUserSettings";
-
-type SocialLinksScenario =
-    | { kind: "public"; username: string }
-    | { kind: "own" }
-    | { kind: "not-found" }
-    | { kind: "user-not-found"; username: string }
-    | { kind: "pending" };
+import { useTheme } from "../theme/ThemeContext ";
 
 export default function SocialLinksPage() {
     const {
@@ -30,67 +21,35 @@ export default function SocialLinksPage() {
         fetchPublicSocialLinks,
         publicSocialLinks,
     } = useSocialLinks();
-    const { checkIfOwnProfile, validateProfileUsername } = useValidation();
-    const { pathname } = useRouting();
 
-    const [scenario, setScenario] = useState<SocialLinksScenario>({ kind: "pending" });
+    // Get profile context from ThemeContext instead of re-validating
+    const { profileContext } = useTheme();
+
     const [addDialogOpen, setAddDialogOpen] = useState(false);
     const [editLink, setEditLink] = useState<SocialLink | null>(null);
     const [deleteLink, setDeleteLink] = useState<SocialLink | null>(null);
-    const {userInfo, fetchUserInfo} = useUserSettings()
 
-    const resolveInProgress = useRef(false);
+    // Derived state from profileContext
+    const isOwnProfile = profileContext.kind === "own";
+    const publicUsername = profileContext.kind === "public" ? profileContext.username : null;
 
+    // Fetch data based on profile context
     useEffect(() => {
-        const resolveScenario = async () => {
-            if (resolveInProgress.current) return;
-            resolveInProgress.current = true;
-            try {
-                if (userInfo && !userInfo.username) await fetchUserInfo();
-
-                const profileCheck = checkIfOwnProfile();
-                const usernameInUrl = profileCheck?.username ?? null;
-                const isAuthenticated = !!userInfo?.username;
-
-                if (usernameInUrl) {
-                    const validation = await validateProfileUsername(usernameInUrl);
-                    if (validation.isValid && validation.isOwnProfile) {
-                        setScenario({ kind: "own" });
-                    } else if (validation.isValid && validation.username) {
-                        setScenario({ kind: "public", username: validation.username });
-                    } else if (isAuthenticated) {
-                        setScenario({ kind: "user-not-found", username: usernameInUrl });
-                    } else {
-                        setScenario({ kind: "not-found" });
-                    }
-                } else if (isAuthenticated) {
-                    setScenario({ kind: "own" });
-                } else {
-                    setScenario({ kind: "not-found" });
-                }
-            } finally {
-                resolveInProgress.current = false;
-            }
-        };
-        resolveScenario();
-    }, [pathname, userInfo?.username]);
-
-    // Fetch data based on scenario
-    useEffect(() => {
-        if (scenario.kind === "pending") return;
+        if (profileContext.kind === "pending" || profileContext.kind === "unauthenticated" || profileContext.kind === "not-found") {
+            return;
+        }
 
         const fetchLinks = async () => {
-            if (scenario.kind === "public") {
-                await fetchPublicSocialLinks(scenario.username);
-            } else if (scenario.kind === "own" || scenario.kind === "user-not-found") {
+            if (profileContext.kind === "public") {
+                await fetchPublicSocialLinks(profileContext.username);
+            } else if (profileContext.kind === "own") {
                 await fetchAllSocialLinks();
             }
         };
 
         fetchLinks();
-    }, [scenario]);
+    }, [profileContext.kind, publicUsername]);
 
-    const isOwnProfile = scenario.kind === "own" || scenario.kind === "user-not-found";
     const displayLinks = isOwnProfile ? socialLinks : publicSocialLinks;
 
     const handleDelete = async () => {
@@ -100,14 +59,17 @@ export default function SocialLinksPage() {
     };
 
     // UI states
-    if (scenario.kind === "pending") return <LoadingSkeleton />;
-    if (scenario.kind === "not-found") return <div>Profile not found</div>;
+    if (profileContext.kind === "pending") return <LoadingSkeleton />;
+
+    if (profileContext.kind === "not-found" || profileContext.kind === "unauthenticated") {
+        return <div>Profile not found</div>;
+    }
 
     // Public profile view
-    if (!isOwnProfile && scenario.kind === "public") {
+    if (publicUsername) {
         return (
             <PublicProfileView
-                username={scenario.username}
+                username={publicUsername}
                 error={error}
                 onClearError={clearError}
             />

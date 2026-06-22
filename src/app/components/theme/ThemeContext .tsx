@@ -26,7 +26,15 @@ import { toast } from "../toastify/Toastify";
 import { usePathname, useRouter } from "next/navigation";
 import { unprotectedRoutes } from "@/lib/utilities/indices/NavigationItems";
 
+// ─── Profile Context Type ───────────────────────────────────────────────────
+export type ProfileContext =
+  | { kind: "own"; username: string }
+  | { kind: "public"; username: string }
+  | { kind: "not-found"; username: string }
+  | { kind: "unauthenticated"; username: null }
+  | { kind: "pending"; username: null };
 
+// ─── Theme Context Type ─────────────────────────────────────────────────────
 export type ThemeContextType = {
   theme: Theme;
   themeVariant: ThemeVariant;
@@ -47,11 +55,10 @@ export type ThemeContextType = {
   layoutLoaded: boolean;
   setLayoutLoaded: (layoutLoaded: boolean) => void;
   getUserSettings: () => void;
+  profileContext: ProfileContext;
 };
 
-
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
-
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const store = useUserSettings();
@@ -62,6 +69,10 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [layoutLoaded, setLayoutLoaded] = useState(false);
   const [loadingText, setLoadingText] = useState("Please wait...");
+  const [profileContext, setProfileContext] = useState<ProfileContext>({
+    kind: "pending",
+    username: null
+  });
 
   const [optimisticThemeVariant, setOptimisticThemeVariant] = useState<ThemeVariant | null>(null);
   const [optimisticLightTheme, setOptimisticLightTheme] = useState<Theme | null>(null);
@@ -98,6 +109,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const accentColor: Accent = optimisticAccentColor ?? storedAccentColor;
   const loader: Loader = optimisticLoader ?? storedLoader;
 
+  // ─── Optimistic state sync ──────────────────────────────────────────────────
   useEffect(() => {
     if (optimisticThemeVariant && storedThemeVariant === optimisticThemeVariant) {
       setOptimisticThemeVariant(null);
@@ -132,7 +144,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [storedLoader, optimisticLoader]);
 
-
+  // ─── Theme Application ──────────────────────────────────────────────────────
   const applyTheme = useCallback((newTheme: Theme, darkMode: boolean) => {
     setTheme(newTheme);
     setIsDarkMode(darkMode);
@@ -172,7 +184,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     return () => mq.removeEventListener("change", handler);
   }, [themeVariant, applyVariant]);
 
-
+  // ─── Persistence ────────────────────────────────────────────────────────────
   const persist = useCallback(async (patch: Partial<UserSettingsBase>) => {
     if (!isAuthenticated() || isSaving.current) return;
     isSaving.current = true;
@@ -187,11 +199,11 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [store, setLoading]);
 
-
+  // ─── Theme Setters ──────────────────────────────────────────────────────────
   const setThemeVariant = useCallback((variant: ThemeVariant) => {
-    setOptimisticThemeVariant(variant); // instant highlight update — no API wait
-    applyVariant(variant);              // instant CSS update
-    persist({ theme: variant });        // async persist in background
+    setOptimisticThemeVariant(variant);
+    applyVariant(variant);
+    persist({ theme: variant });
   }, [applyVariant, persist]);
 
   const toggleThemeVariant = useCallback(() => {
@@ -252,35 +264,46 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     });
   }, [persist, themeVariant, applyTheme]);
 
-
+  // ─── getUserSettings - NOW ALSO SETS profileContext ─────────────────────────
   const getUserSettings = useCallback(async () => {
     const authenticated = isAuthenticated();
 
+    // CASE 1: No username in URL (root or non-profile page)
     if (!usernameInUrl) {
       if (authenticated) {
+        const currentUserInfo = useUserSettings.getState().userInfo;
+        const username = currentUserInfo?.username || "";
         setLoadingText("Fetching your settings...");
+        setProfileContext({ kind: "own", username }); // Authenticated user on their own page
         await store.fetchSettings();
+      } else {
+        setProfileContext({ kind: "unauthenticated", username: null }); // Not logged in
       }
       setLayoutLoaded(true);
       return;
     }
 
+    // CASE 2: Username in URL and user is authenticated
     if (authenticated) {
       const currentUserInfo = useUserSettings.getState().userInfo;
       const isOwnProfile = currentUserInfo?.username?.toLowerCase() === usernameInUrl.toLowerCase();
 
+      // Sub-case 2a: Viewing own profile
       if (isOwnProfile) {
         setLoadingText("Loading your profile settings...");
+        setProfileContext({ kind: "own", username: currentUserInfo?.username || usernameInUrl });
         store.clearPublicData();
         await store.fetchSettings();
         setLayoutLoaded(true);
         return;
       }
 
+      // Sub-case 2b: Viewing someone else's profile
       setLoadingText(`Checking profile "${usernameInUrl}"...`);
       const { exists } = await checkUsernameAvailability(usernameInUrl);
       if (exists) {
         setLoadingText("Loading public profile data...");
+        setProfileContext({ kind: "public", username: usernameInUrl });
         await Promise.all([
           store.fetchPublicSettings(usernameInUrl),
           store.fetchPublicUserInfo(usernameInUrl),
@@ -288,6 +311,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
         ]);
         setLayoutLoaded(true);
       } else {
+        setProfileContext({ kind: "not-found", username: usernameInUrl });
         toast.warning("The profile you attempted to visit does not exist.");
         router.push(`/${currentUserInfo?.username}`);
         setLayoutLoaded(true);
@@ -295,10 +319,12 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
+    // CASE 3: Username in URL and user is NOT authenticated
     setLoadingText(`Checking profile "${usernameInUrl}"...`);
     const { exists } = await checkUsernameAvailability(usernameInUrl);
     if (exists) {
       setLoadingText("Loading public profile data...");
+      setProfileContext({ kind: "public", username: usernameInUrl });
       await Promise.all([
         store.fetchPublicSettings(usernameInUrl),
         store.fetchPublicUserInfo(usernameInUrl),
@@ -306,12 +332,14 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
       ]);
       setLayoutLoaded(true);
     } else {
+      setProfileContext({ kind: "not-found", username: usernameInUrl });
       toast.error("This profile does not exist.");
       router.push("/");
       setLayoutLoaded(true);
     }
   }, [usernameInUrl, checkUsernameAvailability, store, router]);
 
+  // ─── Initialization Effect ──────────────────────────────────────────────────
   useEffect(() => {
     if (userInfo && userInfo.username === usernameInUrl) return;
 
@@ -319,11 +347,14 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
       try {
         if (unprotectedRoutes.some(route => pathname.startsWith(route))) {
           setLoadingText("Loading theme...");
+          setProfileContext({ kind: "unauthenticated", username: null }); // Set context for unprotected routes
           setLayoutLoaded(true);
           return;
         }
         setLoadingText("Preparing your layout...");
         setLayoutLoaded(false);
+        setProfileContext({ kind: "pending", username: null }); // Reset to pending during initialization
+
         if (isAuthenticated()) {
           setLoadingText("Fetching user info...");
           await fetchUserInfo();
@@ -332,6 +363,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
       } catch (error) {
         console.error("Initialization error:", error);
         setLoadingText("Loading theme...");
+        setProfileContext({ kind: "unauthenticated", username: null }); // Fallback on error
         setLayoutLoaded(true);
       }
     };
@@ -339,7 +371,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     init();
   }, [usernameInUrl, pathname]);
 
-
+  // ─── Context Value ──────────────────────────────────────────────────────────
   const contextValue = useMemo<ThemeContextType>(() => ({
     theme,
     themeVariant,
@@ -360,6 +392,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     layoutLoaded,
     setLayoutLoaded,
     getUserSettings,
+    profileContext,
   }), [
     theme,
     themeVariant,
@@ -379,6 +412,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     applyThemePreset,
     layoutLoaded,
     getUserSettings,
+    profileContext,
   ]);
 
   return (
@@ -394,7 +428,6 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     </ThemeContext.Provider>
   );
 };
-
 
 export const useTheme = (): ThemeContextType => {
   const context = useContext(ThemeContext);

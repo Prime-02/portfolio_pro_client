@@ -77,6 +77,16 @@ export interface ExperienceCreate {
   is_featured?: boolean;
 }
 
+export interface PublicExperiencesByUsernameFilters {
+  is_featured?: boolean;
+  is_current?: boolean;
+  employment_type?: EmploymentType;
+  location_type?: LocationType;
+  industry?: string;
+  ids?: string[];
+  merge_filters?: boolean;
+}
+
 export interface ExperienceUpdate extends Partial<ExperienceCreate> {
   supertype?: string;
 }
@@ -149,7 +159,10 @@ interface ExperiencesState {
     company_size?: CompanySize;
     industry?: string;
   }) => Promise<void>;
-  fetchUserExperiencesByUsername: (username: string) => Promise<void>;
+  fetchUserExperiencesByUsername: (
+    username: string,
+    filters?: PublicExperiencesByUsernameFilters,
+  ) => Promise<void>;
   fetchUserExperiencesById: (userId: string) => Promise<void>;
 
   // Authenticated user actions
@@ -262,7 +275,7 @@ export const useExperiencesStore = create<ExperiencesState>((set) => ({
     }
   },
 
-  fetchUserExperiencesByUsername: async (username: string) => {
+  fetchUserExperiencesByUsername: async (username, filters = {}) => {
     set({
       userPublicExperiencesLoading: true,
       userPublicExperiencesError: null,
@@ -270,6 +283,7 @@ export const useExperiencesStore = create<ExperiencesState>((set) => ({
     try {
       const response = await api.get<Experience[]>(
         `/experiences/public/user/${username}`,
+        { params: filters },
       );
       set((state) => ({
         userPublicExperiences: {
@@ -363,13 +377,9 @@ export const useExperiencesStore = create<ExperiencesState>((set) => ({
         formData.append("company_logo", companyLogo);
       }
 
-      const response = await api.post<Experience>(
-        "/experiences/",
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        },
-      );
+      const response = await api.post<Experience>("/experiences/", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
       set((state) => ({
         myExperiences: [...state.myExperiences, response.data],

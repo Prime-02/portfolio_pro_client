@@ -6,19 +6,17 @@ import React, { useRef, useEffect, useState } from "react";
 import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import { HeroData } from "@/portfolio-builder/types/hero";
 import type { HeroAnimations } from "@/portfolio-builder/types/hero";
-import { MeshBackground } from "./renderer-components/MeshBackground";
-import { ParticlesBackground } from "./renderer-components/ParticlesBackground";
 import { AnimatedText } from "./renderer-components/AnimatedText";
 import { MediaDisplay } from "./renderer-components/MediaDisplay";
 import { CTAButtons } from "./renderer-components/CTAButtons";
 import { ScrollIndicator } from "./renderer-components/ScrollIndicator";
 import { MotionContainer, MotionItem } from "./renderer-components/MotionWrappers";
-import { getBackgroundStyle } from "./renderer-components/backgroundUtils";
 import { resolveEasing } from "./renderer-components/animations";
 import SocialLinks from "./renderer-components/SocialLinks";
 import { useTypewriter } from "./renderer-components/useTypewriter";
 import { loadGoogleFont } from "./editor-components/fonts";
 import { ResolvedTheme } from "@/portfolio-builder/hooks/usePortfolioTheme";
+import { SectionBackgroundRenderer } from "@/portfolio-builder/components/shared/SectionBackground";
 
 interface HeroRendererProps {
     data: HeroData;
@@ -143,8 +141,6 @@ export default function HeroRenderer({ data, theme }: HeroRendererProps) {
                 paddingTop: padding?.top != null ? `${padding.top}px` : height === "auto" ? "5rem" : undefined,
                 paddingBottom: padding?.bottom != null ? `${padding.bottom}px` : height === "auto" ? "7rem" : undefined,
             };
-
-    const bgStyle = getBackgroundStyle(background);
 
     const alignClass =
         alignment === "left" ? "text-left items-start" :
@@ -281,64 +277,9 @@ export default function HeroRenderer({ data, theme }: HeroRendererProps) {
         <section
             ref={sectionRef}
             className={`relative flex overflow-hidden ${heightClass} ${verticalAlignClass} ${justifyClass}`}
-            style={{ ...bgStyle, ...paddingStyle }}
+            style={paddingStyle}
         >
-            {/* Background overlay for image/video/mesh */}
-            {(() => {
-                const overlayTypes = ["image", "video", "mesh"];
-                const opacity = background?.overlayOpacity ?? 0;
-                if (!background || !overlayTypes.includes(background.type) || opacity <= 0) return null;
-                return (
-                    <div
-                        className="absolute inset-0 z-[1] pointer-events-none"
-                        style={{
-                            backgroundColor: background.overlayColor || "var(--pb-background)",
-                            opacity: opacity / 100,
-                        }}
-                    />
-                );
-            })()}
-
-            {background?.type === "mesh" && (
-                <MeshBackground
-                    color1={background.meshColor1 || "#7c3aed"}
-                    color2={background.meshColor2 || "#2563eb"}
-                    color3={background.meshColor3 || "#0891b2"}
-                    color4={background.meshColor4 || "var(--pb-background)"}
-                    speed={background.meshSpeed ?? 6}
-                    blur={background.meshBlur ?? 80}
-                    size={background.meshSize ?? 60}
-                    base={background.meshBase || "#050510"}
-                    opacity={background.meshOpacity ?? 1}
-                />
-            )}
-
-            {background?.type === "particles" && (
-                <ParticlesBackground
-                    color={background.particleColor || "var(--pb-foreground)"}
-                    count={background.particleCount ?? 80}
-                    size={background.particleSize ?? 2}
-                    speed={background.particleSpeed ?? 0.5}
-                    opacity={background.particleOpacity ?? 0.6}
-                    lines={background.particleLines ?? true}
-                    lineDist={background.particleLineDist ?? 120}
-                    bgColor={background.particleBg || "var(--pb-background)"}
-                    overlayColor={background.overlayColor || "var(--pb-background)"}
-                    overlayOpacity={background.overlayOpacity ?? 0}
-                />
-            )}
-
-            {background?.type === "video" && background.videoUrl && (
-                <video
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    className="absolute inset-0 w-full h-full object-cover z-0"
-                    style={{ objectPosition: background.backgroundPosition ?? "center" }}
-                    src={background.videoUrl}
-                />
-            )}
+            <SectionBackgroundRenderer background={background} />
 
             {/* Centered Layout */}
             {layout === "centered" && (

@@ -1,23 +1,13 @@
 // app/(dashboard)/skills/page.tsx
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useSkills } from "@/lib/stores/skills/useSkills";
 import type { ProfessionalSkill } from "@/lib/stores/skills/useSkills";
 import { LoadingSkeleton } from "./LoadingSkeleton";
 import { PublicProfileView } from "./PublicProfileView";
 import { OwnProfileView } from "./OwnProfileView";
-import { useValidation } from "@/lib/hooks/validation/useValidation";
-import { useUserStore } from "@/lib/stores/user/userStore";
-import { useRouting } from "@/lib/hooks/routing/useRouting";
-import { useUserSettings } from "@/lib/stores/user/useUserSettings";
-
-type SkillsScenario =
-    | { kind: "public"; username: string }
-    | { kind: "own" }
-    | { kind: "not-found" }
-    | { kind: "user-not-found"; username: string }
-    | { kind: "pending" };
+import { useTheme } from "../theme/ThemeContext ";
 
 export default function SkillsPage() {
     const {
@@ -32,67 +22,35 @@ export default function SkillsPage() {
         publicSkills,
         isLoadingPublicByUsername,
     } = useSkills();
-    const { checkIfOwnProfile, validateProfileUsername } = useValidation();
-    const { userInfo, fetchUserInfo } = useUserSettings();
-    const { pathname } = useRouting();
 
-    const [scenario, setScenario] = useState<SkillsScenario>({ kind: "pending" });
+    // Get profile context from ThemeContext instead of re-validating
+    const { profileContext } = useTheme();
+
     const [addDialogOpen, setAddDialogOpen] = useState(false);
     const [editSkill, setEditSkill] = useState<ProfessionalSkill | null>(null);
     const [deleteSkillState, setDeleteSkillState] = useState<ProfessionalSkill | null>(null);
 
-    const resolveInProgress = useRef(false);
+    // Derived state from profileContext
+    const isOwnProfile = profileContext.kind === "own";
+    const publicUsername = profileContext.kind === "public" ? profileContext.username : null;
 
+    // Fetch data based on profile context
     useEffect(() => {
-        const resolveScenario = async () => {
-            if (resolveInProgress.current) return;
-            resolveInProgress.current = true;
-            try {
-                if (userInfo && !userInfo.username) await fetchUserInfo();
-
-                const profileCheck = checkIfOwnProfile();
-                const usernameInUrl = profileCheck?.username ?? null;
-                const isAuthenticated = !!userInfo?.username;
-
-                if (usernameInUrl) {
-                    const validation = await validateProfileUsername(usernameInUrl);
-                    if (validation.isValid && validation.isOwnProfile) {
-                        setScenario({ kind: "own" });
-                    } else if (validation.isValid && validation.username) {
-                        setScenario({ kind: "public", username: validation.username });
-                    } else if (isAuthenticated) {
-                        setScenario({ kind: "user-not-found", username: usernameInUrl });
-                    } else {
-                        setScenario({ kind: "not-found" });
-                    }
-                } else if (isAuthenticated) {
-                    setScenario({ kind: "own" });
-                } else {
-                    setScenario({ kind: "not-found" });
-                }
-            } finally {
-                resolveInProgress.current = false;
-            }
-        };
-        resolveScenario();
-    }, [pathname, userInfo?.username]);
-
-    // Fetch data based on scenario
-    useEffect(() => {
-        if (scenario.kind === "pending") return;
+        if (profileContext.kind === "pending" || profileContext.kind === "unauthenticated" || profileContext.kind === "not-found") {
+            return;
+        }
 
         const fetchData = async () => {
-            if (scenario.kind === "public") {
-                await fetchPublicSkillsByUsername(scenario.username);
-            } else if (scenario.kind === "own" || scenario.kind === "user-not-found") {
+            if (profileContext.kind === "public") {
+                await fetchPublicSkillsByUsername(profileContext.username);
+            } else if (profileContext.kind === "own") {
                 await fetchAllSkills();
             }
         };
 
         fetchData();
-    }, [scenario]);
+    }, [profileContext.kind, publicUsername]);
 
-    const isOwnProfile = scenario.kind === "own" || scenario.kind === "user-not-found";
     const displaySkills = isOwnProfile ? skills : publicSkills;
     const displayLoading = isOwnProfile ? isLoading : isLoadingPublicByUsername;
 
@@ -103,14 +61,17 @@ export default function SkillsPage() {
     };
 
     // UI states
-    if (scenario.kind === "pending") return <LoadingSkeleton />;
-    if (scenario.kind === "not-found") return <div>Profile not found</div>;
+    if (profileContext.kind === "pending") return <LoadingSkeleton />;
+
+    if (profileContext.kind === "not-found" || profileContext.kind === "unauthenticated") {
+        return <div>Profile not found</div>;
+    }
 
     // Public profile view
-    if (!isOwnProfile && scenario.kind === "public") {
+    if (publicUsername) {
         return (
             <PublicProfileView
-                username={scenario.username}
+                username={publicUsername}
                 skills={displaySkills}
                 isLoading={displayLoading}
                 error={error}

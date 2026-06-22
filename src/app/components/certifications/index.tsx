@@ -1,22 +1,13 @@
 // app/(dashboard)/certifications/page.tsx
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useCertifications } from "@/lib/stores/certifications/useCertifications";
 import type { Certification } from "@/lib/stores/certifications/useCertifications";
 import { LoadingSkeleton } from "./LoadingSkeleton";
 import { PublicProfileView } from "./PublicProfileView";
 import { OwnProfileView } from "./OwnProfileView";
-import { useValidation } from "@/lib/hooks/validation/useValidation";
-import { useUserStore } from "@/lib/stores/user/userStore";
-import { useRouting } from "@/lib/hooks/routing/useRouting";
-
-type CertificationsScenario =
-    | { kind: "public"; username: string }
-    | { kind: "own" }
-    | { kind: "not-found" }
-    | { kind: "user-not-found"; username: string }
-    | { kind: "pending" };
+import { useTheme } from "../theme/ThemeContext ";
 
 export default function CertificationsPage() {
     const {
@@ -31,67 +22,35 @@ export default function CertificationsPage() {
         publicCertifications,
         isLoadingPublic,
     } = useCertifications();
-    const { checkIfOwnProfile, validateProfileUsername } = useValidation();
-    const { userData, fetchUserData } = useUserStore();
-    const { pathname } = useRouting();
 
-    const [scenario, setScenario] = useState<CertificationsScenario>({ kind: "pending" });
+    // Get profile context from ThemeContext instead of re-validating
+    const { profileContext } = useTheme();
+
     const [addDialogOpen, setAddDialogOpen] = useState(false);
     const [editCert, setEditCert] = useState<Certification | null>(null);
     const [deleteCert, setDeleteCert] = useState<Certification | null>(null);
 
-    const resolveInProgress = useRef(false);
+    // Derived state from profileContext
+    const isOwnProfile = profileContext.kind === "own";
+    const publicUsername = profileContext.kind === "public" ? profileContext.username : null;
 
+    // Fetch data based on profile context
     useEffect(() => {
-        const resolveScenario = async () => {
-            if (resolveInProgress.current) return;
-            resolveInProgress.current = true;
-            try {
-                if (userData && !userData.username) await fetchUserData();
-
-                const profileCheck = checkIfOwnProfile();
-                const usernameInUrl = profileCheck?.username ?? null;
-                const isAuthenticated = !!userData?.username;
-
-                if (usernameInUrl) {
-                    const validation = await validateProfileUsername(usernameInUrl);
-                    if (validation.isValid && validation.isOwnProfile) {
-                        setScenario({ kind: "own" });
-                    } else if (validation.isValid && validation.username) {
-                        setScenario({ kind: "public", username: validation.username });
-                    } else if (isAuthenticated) {
-                        setScenario({ kind: "user-not-found", username: usernameInUrl });
-                    } else {
-                        setScenario({ kind: "not-found" });
-                    }
-                } else if (isAuthenticated) {
-                    setScenario({ kind: "own" });
-                } else {
-                    setScenario({ kind: "not-found" });
-                }
-            } finally {
-                resolveInProgress.current = false;
-            }
-        };
-        resolveScenario();
-    }, [pathname, userData?.username]);
-
-    // Fetch data based on scenario
-    useEffect(() => {
-        if (scenario.kind === "pending") return;
+        if (profileContext.kind === "pending" || profileContext.kind === "unauthenticated" || profileContext.kind === "not-found") {
+            return;
+        }
 
         const fetchCerts = async () => {
-            if (scenario.kind === "public") {
-                await fetchPublicCertifications(scenario.username);
-            } else if (scenario.kind === "own" || scenario.kind === "user-not-found") {
+            if (profileContext.kind === "public") {
+                await fetchPublicCertifications(profileContext.username);
+            } else if (profileContext.kind === "own") {
                 await fetchAllCertifications();
             }
         };
 
         fetchCerts();
-    }, [scenario]);
+    }, [profileContext.kind, publicUsername]);
 
-    const isOwnProfile = scenario.kind === "own" || scenario.kind === "user-not-found";
     const displayCerts = isOwnProfile ? certifications : publicCertifications;
     const displayLoading = isOwnProfile ? isLoading : isLoadingPublic;
 
@@ -102,14 +61,17 @@ export default function CertificationsPage() {
     };
 
     // UI states
-    if (scenario.kind === "pending") return <LoadingSkeleton />;
-    if (scenario.kind === "not-found") return <div>Profile not found</div>;
+    if (profileContext.kind === "pending") return <LoadingSkeleton />;
+
+    if (profileContext.kind === "not-found" || profileContext.kind === "unauthenticated") {
+        return <div>Profile not found</div>;
+    }
 
     // Public profile view
-    if (!isOwnProfile && scenario.kind === "public") {
+    if (publicUsername) {
         return (
             <PublicProfileView
-                username={scenario.username}
+                username={publicUsername}
                 certifications={displayCerts}
                 isLoading={displayLoading}
                 error={error}

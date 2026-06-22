@@ -2,7 +2,6 @@
 
 export { default as ContentTab } from "./ContentTab";
 export { default as LayoutTab } from "./LayoutTab";
-export { default as BackgroundTab } from "./BackgroundTab";
 export { default as CTATab } from "./CTATab";
 export { default as AnimationsTab } from "./AnimationsTab";
 export { default as EditorTabs } from "./EditorTabs";

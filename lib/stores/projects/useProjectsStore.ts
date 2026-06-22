@@ -13,7 +13,10 @@ import type {
   ErrorState,
   SortField,
   SortDirection,
+  PublicProjectsByUsernameFilters,
 } from "./types/project.types";
+
+const PAGE_SIZE = 20;
 
 // ============================================================
 // HELPERS
@@ -111,25 +114,39 @@ function buildUpdateFormData(data: PortfolioProjectUpdate): FormData {
   return form;
 }
 
+/** Append incoming items, skipping duplicates by id */
+function dedupeAppend(
+  existing: PortfolioProjectResponse[],
+  incoming: PortfolioProjectResponse[],
+): PortfolioProjectResponse[] {
+  const existingIds = new Set(existing.map((p) => p.id));
+  return [...existing, ...incoming.filter((p) => !existingIds.has(p.id))];
+}
+
 // ============================================================
 // STATE & ACTIONS INTERFACE
 // ============================================================
 
 interface ProjectState {
-  // Data
+  // Authenticated list
   projects: PortfolioProjectResponse[];
-  currentProject: PortfolioProjectResponse | null;
   totalProjects: number;
+  projectsPage: number;
+  projectsHasMore: boolean;
+
+  // Public / filtered list
+  filteredProjects: PortfolioProjectResponse[];
+  totalFilteredProjects: number;
+  filteredPage: number;
+  filteredHasMore: boolean;
+
+  currentProject: PortfolioProjectResponse | null;
 
   recentProjects: PortfolioProjectBase[];
   totalRecentProjects: number;
 
-  filteredProjects: PortfolioProjectResponse[];
-  totalFilteredProjects: number;
-
   projectStats: ProjectStats | null;
 
-  // Loading & error
   loading: LoadingState;
   errors: ErrorState;
 
@@ -148,7 +165,7 @@ interface ProjectState {
 
   fetchProjectsByUser: (
     username: string,
-    params?: { page?: number; size?: number },
+    params?: PublicProjectsByUsernameFilters,
   ) => Promise<void>;
 
   fetchRecentProjects: (params?: {
@@ -198,12 +215,18 @@ export const useProjectStore = create<ProjectState>()(
     (set, get) => ({
       // ── Initial state ──────────────────────────────────────
       projects: [],
-      currentProject: null,
       totalProjects: 0,
-      recentProjects: [],
-      totalRecentProjects: 0,
+      projectsPage: 1,
+      projectsHasMore: false,
+
       filteredProjects: [],
       totalFilteredProjects: 0,
+      filteredPage: 1,
+      filteredHasMore: false,
+
+      currentProject: null,
+      recentProjects: [],
+      totalRecentProjects: 0,
       projectStats: null,
       loading: {},
       errors: {},
@@ -219,12 +242,15 @@ export const useProjectStore = create<ProjectState>()(
           errors: { ...s.errors, fetchProjects: null },
         }));
         try {
+          const page = params.page ?? 1;
+          const size = params.size ?? PAGE_SIZE;
+
           const query = new URLSearchParams();
           if (params.include_public !== undefined)
             query.set("include_public", String(params.include_public));
           if (params.query) query.set("query", params.query);
-          if (params.page) query.set("page", String(params.page));
-          if (params.size) query.set("size", String(params.size));
+          query.set("page", String(page));
+          query.set("size", String(size));
           if (params.sort) query.set("sort", params.sort);
           if (params.sort_direction)
             query.set("sort_direction", params.sort_direction);
@@ -234,7 +260,19 @@ export const useProjectStore = create<ProjectState>()(
           const { data } = await api.get<PaginatedProjects>(
             `/projects/me?${query.toString()}`,
           );
-          set({ projects: data.projects, totalProjects: data.total });
+
+          const incoming = data.projects;
+          const total = data.total;
+
+          set((s) => ({
+            projects: page > 1 ? dedupeAppend(s.projects, incoming) : incoming,
+            totalProjects: total,
+            projectsPage: page,
+            projectsHasMore:
+              page > 1
+                ? s.projects.length + incoming.length < total
+                : incoming.length < total,
+          }));
         } catch (err: unknown) {
           const message =
             err instanceof Error ? err.message : "Failed to fetch projects";
@@ -244,82 +282,70 @@ export const useProjectStore = create<ProjectState>()(
         }
       },
 
-      // ── GET /projects/{project_id} ──────────────────────────────
+      // ── GET /projects/{project_id} ─────────────────────────
       fetchProject: async (projectId: string) => {
         set((s) => ({
-          loading: {
-            ...s.loading,
-            fetchProjectById: true, // ✅ Only set this
-          },
-          errors: {
-            ...s.errors,
-            fetchProjectById: null, // ✅ Clear the correct error
-          },
+          loading: { ...s.loading, fetchProjectById: true },
+          errors: { ...s.errors, fetchProjectById: null },
         }));
-
         try {
           const { data } = await api.get<PortfolioProjectResponse>(
             `/projects/${projectId}`,
           );
-
           set((s) => {
             const existingIndex = s.projects.findIndex(
               (p) => p.id === projectId,
             );
             const updatedProjects = [...s.projects];
-
             if (existingIndex >= 0) {
               updatedProjects[existingIndex] = data;
             } else {
               updatedProjects.push(data);
             }
-
-            return {
-              projects: updatedProjects,
-              currentProject: data,
-            };
+            return { projects: updatedProjects, currentProject: data };
           });
-
           return data;
         } catch (err: unknown) {
           const message =
             err instanceof Error ? err.message : "Failed to fetch project";
-          set((s) => ({
-            errors: {
-              ...s.errors,
-              fetchProjectById: message, // ✅ Set error on correct key
-            },
-          }));
+          set((s) => ({ errors: { ...s.errors, fetchProjectById: message } }));
           throw err;
         } finally {
-          set((s) => ({
-            loading: {
-              ...s.loading,
-              fetchProjectById: false, // ✅ Only clear this
-            },
-          }));
+          set((s) => ({ loading: { ...s.loading, fetchProjectById: false } }));
         }
       },
 
-      // ── GET /projects/users/{username} ──────────────────────
+      // ── GET /projects/users/{username} ─────────────────────
       fetchProjectsByUser: async (username, params = {}) => {
         set((s) => ({
           loading: { ...s.loading, fetchProjectsByUser: true },
           errors: { ...s.errors, fetchProjectsByUser: null },
         }));
         try {
-          const query = new URLSearchParams();
-          if (params.page) query.set("page", String(params.page));
-          if (params.size) query.set("size", String(params.size));
+          // Support page param forwarded through PublicProjectsByUsernameFilters
+          const page = (params as { page?: number }).page ?? 1;
+          const size = (params as { size?: number }).size ?? PAGE_SIZE;
+
+          const mergedParams = { ...params, page, size };
 
           const { data } = await api.get<PaginatedProjects>(
-            `/projects/user/${username}?${query.toString()}`,
+            `/projects/user/${username}`,
+            { params: mergedParams },
           );
-          console.log(JSON.stringify(data, null, 2))
-          set({
-            filteredProjects: data.projects,
-            totalFilteredProjects: data.total,
-          });
+
+          const incoming = data.projects;
+          const total = data.total;
+
+          set((s) => ({
+            filteredProjects:
+              page > 1 ? dedupeAppend(s.filteredProjects, incoming) : incoming,
+            totalFilteredProjects: total,
+            filteredPage: page,
+            filteredHasMore:
+              page > 1
+                ? s.filteredProjects.length + incoming.length < total
+                : incoming.length < total,
+          }));
         } catch (err: unknown) {
           const message =
             err instanceof Error
@@ -442,14 +468,10 @@ export const useProjectStore = create<ProjectState>()(
           const { data: created } = await api.post<PortfolioProjectBase>(
             "/projects/",
             form,
-            {
-              headers: {
-                "Content-Type": "multipart/form-data",
-              },
-            },
+            { headers: { "Content-Type": "multipart/form-data" } },
           );
-          // Refresh the project list after creation
-          await get().fetchMyProjects();
+          // Refresh from page 1 so order and counts are correct
+          await get().fetchMyProjects({ include_public: true });
           return created;
         } catch (err: unknown) {
           const message =
@@ -469,19 +491,12 @@ export const useProjectStore = create<ProjectState>()(
         }));
         try {
           const form = buildUpdateFormData(data);
-          const { data: updated } = await api.put<Partial<PortfolioProjectResponse>>(
-            `/projects/${projectId}`,
-            form,
-            {
-              headers: {
-                "Content-Type": "multipart/form-data",
-              },
-            },
-          );
+          const { data: updated } = await api.put<
+            Partial<PortfolioProjectResponse>
+          >(`/projects/${projectId}`, form, {
+            headers: { "Content-Type": "multipart/form-data" },
+          });
 
-          // Merge rather than replace — the update endpoint returns a
-          // narrower shape than the full project response, so a full
-          // overwrite would wipe fields like likes/comments/associations
           set((s) => ({
             projects: s.projects.map((p) =>
               p.id === projectId ? { ...p, ...updated } : p,
@@ -492,9 +507,11 @@ export const useProjectStore = create<ProjectState>()(
                 : s.currentProject,
           }));
 
-          return (get().currentProject?.id === projectId
-            ? get().currentProject
-            : get().projects.find((p) => p.id === projectId)) ?? null;
+          return (
+            (get().currentProject?.id === projectId
+              ? get().currentProject
+              : get().projects.find((p) => p.id === projectId)) ?? null
+          );
         } catch (err: unknown) {
           const message =
             err instanceof Error ? err.message : "Failed to update project";
@@ -512,11 +529,10 @@ export const useProjectStore = create<ProjectState>()(
           errors: { ...s.errors, deleteProjectMedia: null },
         }));
         try {
-          const { data: updated } = await api.delete<Partial<PortfolioProjectResponse>>(
-            `/projects/${projectId}/media/${slot}`,
-          );
+          const { data: updated } = await api.delete<
+            Partial<PortfolioProjectResponse>
+          >(`/projects/${projectId}/media/${slot}`);
 
-          // Merge — same narrower-response-shape reasoning as updateProject
           set((s) => ({
             projects: s.projects.map((p) =>
               p.id === projectId ? { ...p, ...updated } : p,
@@ -531,7 +547,9 @@ export const useProjectStore = create<ProjectState>()(
         } catch (err: unknown) {
           const message =
             err instanceof Error ? err.message : "Failed to delete media";
-          set((s) => ({ errors: { ...s.errors, deleteProjectMedia: message } }));
+          set((s) => ({
+            errors: { ...s.errors, deleteProjectMedia: message },
+          }));
           return false;
         } finally {
           set((s) => ({
@@ -540,7 +558,7 @@ export const useProjectStore = create<ProjectState>()(
         }
       },
 
-
+      // ── DELETE /projects/delete/bulk ───────────────────────
       deleteProjects: async ({ project_ids, platform_name }) => {
         set((s) => ({
           loading: { ...s.loading, deleteProjects: true },
@@ -554,15 +572,21 @@ export const useProjectStore = create<ProjectState>()(
             data: { project_ids: project_ids ?? [] },
           });
 
-          // Remove deleted projects from local state
           if (project_ids?.length) {
-            set((s) => ({
-              projects: s.projects.filter((p) => !project_ids.includes(p.id)),
-              totalProjects: s.totalProjects - project_ids.length,
-            }));
+            set((s) => {
+              const next = s.projects.filter(
+                (p) => !project_ids.includes(p.id),
+              );
+              return {
+                projects: next,
+                totalProjects: s.totalProjects - project_ids.length,
+                projectsHasMore:
+                  next.length < s.totalProjects - project_ids.length,
+              };
+            });
           } else {
             // Platform deletion — refresh fully
-            await get().fetchMyProjects();
+            await get().fetchMyProjects({ include_public: true });
           }
 
           return true;

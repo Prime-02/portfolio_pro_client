@@ -57,6 +57,7 @@ export default function BioSectionController({ bioData, onSave }: BioSectionCont
         initialData={bioData || getEmptyBioData()}
         onSave={handleSave}
         onCancel={handleCancel}
+        setFullScreen={() => setIsEditing(false)}
       />
     );
   }

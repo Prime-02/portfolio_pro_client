@@ -205,6 +205,18 @@ export interface PortfolioProjectBase {
   created_at: string;
 }
 
+export interface PublicProjectsByUsernameFilters {
+  page?: number;
+  size?: number;
+  is_completed?: boolean;
+  is_concept?: boolean;
+  project_category?: string;
+  project_platform?: string;
+  project_status?: string;
+  ids?: string[];
+  merge_filters?: boolean;
+}
+
 export interface PortfolioProjectResponse extends PortfolioProjectBase {
   other_project_image_url?: MediaSlots;
   user_associations: UserAssociationResponse[];

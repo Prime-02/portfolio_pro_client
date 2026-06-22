@@ -1,7 +1,7 @@
 // components/experience/OwnProfileView.tsx
 "use client";
 
-import { Briefcase, Plus } from "lucide-react";
+import { Briefcase, Plus, Share2 } from "lucide-react";
 import Button from "../buttons/Buttons";
 import { StatsBar } from "./StatsBar";
 import { ExperienceTimeline } from "./ExperienceTimeline";
@@ -12,6 +12,7 @@ import { useSkills } from "@/lib/stores/skills/useSkills";
 import { useEffect } from "react";
 import { isAuthenticated } from "@/lib/client/api";
 import { PageHeader } from "../ui/PageHeader";
+import { handleShareProfile } from "@/lib/utilities/syncFunctions/syncs";
 
 interface OwnProfileViewProps {
     experiences: Experience[];
@@ -48,6 +49,7 @@ export function OwnProfileView({
         if (!isAuthenticated()) return
         fetchAllSkills()
     }, [])
+
     return (
         <div className="min-h-screen p-6 md:p-8 lg:p-10 max-w-4xl mx-auto">
             <PageHeader
@@ -55,12 +57,21 @@ export function OwnProfileView({
                 title="My Experience"
                 description="Your professional journey and career history"
                 action={
-                    <Button
-                        onClick={() => onAddDialogChange(true)}
-                        className="self-start sm:self-auto"
-                        text="Add Role"
-                        icon={<Plus className="w-4 h-4" />}
-                    />
+                    <div className="flex items-center gap-x-2">
+                        <Button
+                            onClick={handleShareProfile}
+                            className="self-start sm:self-auto"
+                            text="Share Your Experience"
+                            icon={<Share2 className="w-4 h-4" />}
+                            variant="outline"
+                        />
+                        <Button
+                            onClick={() => onAddDialogChange(true)}
+                            className="self-start sm:self-auto"
+                            text="Add Role"
+                            icon={<Plus className="w-4 h-4" />}
+                        />
+                    </div>
                 }
             />
 

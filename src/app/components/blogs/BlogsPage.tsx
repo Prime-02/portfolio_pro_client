@@ -1,37 +1,34 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useContentStore } from "@/lib/stores/contents/useContentStore";
-import { useValidation } from "@/lib/hooks/validation/useValidation";
-import { useUserStore } from "@/lib/stores/user/userStore";
-import { useRouting } from "@/lib/hooks/routing/useRouting";
 import { LoadingSkeletonBlogs } from "./LoadingSkeletonBlogs";
 import { OwnBlogsView } from "./OwnBlogsView";
 import { PublicBlogsView } from "./PublicBlogsView";
+import { useTheme } from "../theme/ThemeContext ";
 
-type BlogScenario =
-  | { kind: "public"; username: string }
-  | { kind: "own" }
-  | { kind: "not-found" }
-  | { kind: "user-not-found"; username: string }
-  | { kind: "pending" };
+const PAGE_SIZE = 20;
 
 export default function BlogsPage() {
   const {
     items,
     total,
+    page,
+    has_next,
     isLoading,
     error,
-    fetchUserContent,
     fetchContent,
     deleteContent,
+    publicItems,
+    publicHasNext,
+    publicPage,
+    publicTotal,
+    fetchPublicUserContent,
   } = useContentStore();
 
-  const { checkIfOwnProfile, validateProfileUsername } = useValidation();
-  const { userData, fetchUserData } = useUserStore();
-  const { pathname } = useRouting();
+  // Get profile context from ThemeContext instead of re-validating
+  const { profileContext } = useTheme();
 
-  const [scenario, setScenario] = useState<BlogScenario>({ kind: "pending" });
   const [pageError, setPageError] = useState<string | null>(null);
   const [filterParams, setFilterParams] = useState({
     query: "",
@@ -40,56 +37,25 @@ export default function BlogsPage() {
     sortDirection: "desc" as "asc" | "desc",
   });
 
-  const resolveInProgress = useRef(false);
+  // Derived state from profileContext
+  const isOwnProfile = profileContext.kind === "own";
+  const publicUsername = profileContext.kind === "public" ? profileContext.username : null;
 
-  // Resolve profile scenario
+  // ---------- initial / filter-driven fetch (always page 1) ----------
   useEffect(() => {
-    const resolveScenario = async () => {
-      if (resolveInProgress.current) return;
-      resolveInProgress.current = true;
-      try {
-        if (userData && !userData.username) await fetchUserData();
-
-        const profileCheck = checkIfOwnProfile();
-        const usernameInUrl = profileCheck?.username ?? null;
-        const isAuthenticated = !!userData?.username;
-
-        if (usernameInUrl) {
-          const validation = await validateProfileUsername(usernameInUrl);
-          if (validation.isValid && validation.isOwnProfile) {
-            setScenario({ kind: "own" });
-          } else if (validation.isValid && validation.username) {
-            setScenario({ kind: "public", username: validation.username });
-          } else if (isAuthenticated) {
-            setScenario({ kind: "user-not-found", username: usernameInUrl });
-          } else {
-            setScenario({ kind: "not-found" });
-          }
-        } else if (isAuthenticated) {
-          setScenario({ kind: "own" });
-        } else {
-          setScenario({ kind: "not-found" });
-        }
-      } finally {
-        resolveInProgress.current = false;
-      }
-    };
-    resolveScenario();
-  }, [pathname, userData?.username]);
-
-  // Fetch data based on scenario
-  useEffect(() => {
-    if (scenario.kind === "pending") return;
+    if (profileContext.kind === "pending" || profileContext.kind === "unauthenticated" || profileContext.kind === "not-found") {
+      return;
+    }
 
     const fetchData = async () => {
-      if (scenario.kind === "public") {
-        await fetchUserContent(scenario.username, {
+      if (profileContext.kind === "public") {
+        await fetchPublicUserContent(profileContext.username, {
           content_type: "BLOG",
           status: "PUBLISHED",
           page: 1,
-          page_size: 20,
+          page_size: PAGE_SIZE,
         });
-      } else if (scenario.kind === "own" || scenario.kind === "user-not-found") {
+      } else if (profileContext.kind === "own") {
         await fetchContent({
           content_type: "BLOG",
           search: filterParams.query || undefined,
@@ -97,38 +63,79 @@ export default function BlogsPage() {
           sort_by: filterParams.sort === "date" ? "created_at" : filterParams.sort,
           sort_order: filterParams.sortDirection,
           page: 1,
-          page_size: 20,
+          page_size: PAGE_SIZE,
         });
       }
     };
 
     fetchData();
-  }, [scenario, filterParams.query, filterParams.status, filterParams.sort, filterParams.sortDirection]);
+  }, [
+    profileContext.kind,
+    publicUsername,
+    filterParams.query,
+    filterParams.status,
+    filterParams.sort,
+    filterParams.sortDirection,
+  ]);
 
-  // Handle store errors
+  // ---------- store error ----------
   useEffect(() => {
     if (error) setPageError(error);
   }, [error]);
 
-  const isOwnProfile = scenario.kind === "own" || scenario.kind === "user-not-found";
-  const isLoadingData = isLoading;
+  // ---------- load-more handlers ----------
+  const handleLoadMoreOwn = useCallback(async () => {
+    if (!has_next || isLoading) return;
+    const nextPage = page + 1;
+    await fetchContent({
+      content_type: "BLOG",
+      search: filterParams.query || undefined,
+      status: filterParams.status || undefined,
+      sort_by: filterParams.sort === "date" ? "created_at" : filterParams.sort,
+      sort_order: filterParams.sortDirection,
+      page: nextPage,
+      page_size: PAGE_SIZE,
+    });
+  }, [has_next, isLoading, page, filterParams, fetchContent]);
 
+  const handleLoadMorePublic = useCallback(async () => {
+    if (!publicHasNext || isLoading || !publicUsername) return;
+    const nextPage = publicPage + 1;
+    await fetchPublicUserContent(publicUsername, {
+      content_type: "BLOG",
+      status: "PUBLISHED",
+      page: nextPage,
+      page_size: PAGE_SIZE,
+    });
+  }, [publicHasNext, isLoading, publicPage, publicUsername, fetchPublicUserContent]);
+
+  // ---------- delete ----------
   const handleDelete = async (contentIds: string[]) => {
     for (const id of contentIds) {
       await deleteContent(id, true);
     }
   };
 
-  if (scenario.kind === "pending") return <LoadingSkeletonBlogs />;
-  if (scenario.kind === "not-found") return <div className="p-10 text-center text-[var(--foreground)]/50">Profile not found</div>;
+  // ---------- render ----------
+  if (profileContext.kind === "pending") return <LoadingSkeletonBlogs />;
 
-  if (!isOwnProfile && scenario.kind === "public") {
+  if (profileContext.kind === "not-found" || profileContext.kind === "unauthenticated") {
+    return (
+      <div className="p-10 text-center text-[var(--foreground)]/50">
+        Profile not found
+      </div>
+    );
+  }
+
+  if (publicUsername) {
     return (
       <PublicBlogsView
-        username={scenario.username}
-        blogs={items}
-        totalBlogs={total}
-        isLoading={isLoadingData}
+        username={publicUsername}
+        blogs={publicItems}
+        totalBlogs={publicTotal}
+        isLoading={isLoading}
+        hasMore={publicHasNext}
+        onLoadMore={handleLoadMorePublic}
         error={pageError}
         onClearError={() => setPageError(null)}
       />
@@ -139,7 +146,9 @@ export default function BlogsPage() {
     <OwnBlogsView
       blogs={items}
       totalBlogs={total}
-      isLoading={isLoadingData}
+      isLoading={isLoading}
+      hasMore={has_next}
+      onLoadMore={handleLoadMoreOwn}
       error={pageError}
       onClearError={() => setPageError(null)}
       filterParams={filterParams}

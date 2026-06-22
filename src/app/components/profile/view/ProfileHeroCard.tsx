@@ -9,7 +9,9 @@ import type {
     UserUpdateRequest,
 } from "@/lib/stores/user/useUserSettings";
 import MarkdownRenderer from "../../markdown/MarkdownRenderer";
-import { getImageSrc } from "@/lib/utilities/syncFunctions/syncs";
+import { getImageSrc, handleShareProfile } from "@/lib/utilities/syncFunctions/syncs";
+import Button from "../../buttons/Buttons";
+import { Edit, Share2Icon } from "lucide-react";
 
 interface ProfileHeroCardProps {
     profile: UserProfileRequest | null;
@@ -50,18 +52,23 @@ export const ProfileHeroCard = ({
                 </div>
 
                 {isOwnProfile && onEdit && (
-                    <button
-                        onClick={onEdit}
-                        className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-(--accent)/30 bg-(--accent)/5 text-(--accent) font-league-500 text-sm hover:bg-(--accent) hover:text-(--background) hover:border-(--accent) transition-all duration-200 group shadow-sm"
-                    >
-                        <svg className="w-4 h-4 transition-transform group-hover:rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                        Edit Profile
-                    </button>
+                    <div className="flex items-center gap-x-2">
+                        <Button
+                            text="Share Your Profile"
+                            icon={<Share2Icon className="w-4 h-4 transition-transform group-hover:rotate-12" />}
+                            onClick={handleShareProfile}
+                            variant="outline"
+                        />
+                        <Button
+                            text="Edit Profile"
+                            icon={<Edit className="w-4 h-4 transition-transform group-hover:rotate-12" />}
+                            onClick={onEdit}
+                        />
+                    </div>
                 )}
             </div>
 
+            {/* Rest of the component remains the same... */}
             {/* Name & username */}
             <div className="mb-5">
                 <h1 className="text-2xl sm:text-3xl font-league-700 text-(--foreground) leading-tight">
@@ -73,8 +80,7 @@ export const ProfileHeroCard = ({
             </div>
 
             {/* Badges row */}
-            <div className="flex flex-wrap gap-2 mb-6"
-            >
+            <div className="flex flex-wrap gap-2 mb-6">
                 {profile?.open_to_work && (
                     <Badge active color="accent">
                         <span className="flex items-center gap-1.5">

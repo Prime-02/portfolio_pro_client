@@ -4,11 +4,11 @@
 // Bio Section — Type Definitions
 // ---------------------------------------------------------------------------
 
+import type { SectionBackground } from "./sectionBackground";
+import type { HeroAnimations } from "./hero";
+
 /**
  * Available layout options for the bio section.
- * - standard : Full-width text block with optional sidebar info
- * - compact  : Narrower, more condensed layout
- * - card     : Card-style container with distinct background
  */
 export type BioLayout =
   | "standard"
@@ -19,6 +19,7 @@ export type BioLayout =
   | "minimal"
   | "bento"
   | "showcase";
+
 /**
  * Horizontal alignment of the bio content.
  */
@@ -67,18 +68,12 @@ export interface BioContact {
 }
 
 // ---------------------------------------------------------------------------
-// Background (reuses HeroBackground pattern)
+// Background (uses shared SectionBackground)
 // ---------------------------------------------------------------------------
 
-export type BioBackgroundType = "solid" | "gradient" | "none";
-
-export interface BioBackground {
-  type: BioBackgroundType;
-  color?: string;
-  gradientFrom?: string;
-  gradientTo?: string;
-  gradientAngle?: number;
-}
+/** Re-export for backward compatibility. Prefer SectionBackground in new code. */
+export type BioBackground = SectionBackground;
+export type BioBackgroundType = SectionBackground["type"];
 
 // ---------------------------------------------------------------------------
 // Typography
@@ -119,8 +114,6 @@ export interface BioFonts {
 // ---------------------------------------------------------------------------
 // Animations (reuses HeroAnimations pattern)
 // ---------------------------------------------------------------------------
-
-import type { HeroAnimations } from "./hero";
 
 export type BioAnimations = HeroAnimations;
 
@@ -201,7 +194,8 @@ export interface BioData {
   metadata?: { key: string; value: string }[];
 
   // -- Background --
-  background?: BioBackground;
+  /** Background configuration (uses shared SectionBackground) */
+  background?: SectionBackground;
 
   // -- Typography --
   fonts?: BioFonts;
@@ -234,9 +228,7 @@ export function getEmptyBioData(): BioData {
     languages: [],
     contacts: [],
     metadata: [],
-    background: {
-      type: "none",
-    },
+    background: { type: "none" },
     fonts: {},
     typography: {},
   };
@@ -265,9 +257,7 @@ export function getDefaultBioData(userProfile?: {
     languages: [],
     contacts: [],
     metadata: [],
-    background: {
-      type: "none",
-    },
+    background: { type: "none" },
     fonts: {},
     typography: {},
   };

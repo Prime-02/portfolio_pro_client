@@ -73,6 +73,16 @@ export interface SkillFilters {
   proficiency_level?: string;
 }
 
+export interface PublicSkillsByUsernameFilters {
+  is_major?: boolean;
+  is_trending?: boolean;
+  difficulty_level?: string;
+  subcategory?: string;
+  category?: string;
+  ids?: string[];
+  merge_filters?: boolean;
+}
+
 // ---------------------------------------------------------------------------
 // Store shape
 // ---------------------------------------------------------------------------
@@ -136,6 +146,7 @@ interface SkillsState {
   fetchPublicSkills: (filters?: SkillFilters) => Promise<SkillListResponse>;
   fetchPublicSkillsByUsername: (
     username: string,
+    filters?: PublicSkillsByUsernameFilters,
   ) => Promise<ProfessionalSkill[]>;
   fetchPublicSkillsByUserId: (userId: string) => Promise<ProfessionalSkill[]>;
 
@@ -470,11 +481,12 @@ export const useSkills = create<SkillsState>()((set, get) => ({
   // ------------------------------------------------------------------
   // GET /skills/public/user/{username} — Fetch user's skills by username
   // ------------------------------------------------------------------
-  fetchPublicSkillsByUsername: async (username: string) => {
+  fetchPublicSkillsByUsername: async (username: string, filters = {}) => {
     set({ isLoadingPublicByUsername: true, error: null });
     try {
       const response = await api.get<ProfessionalSkill[]>(
         `/skills/public/user/${username}`,
+        { params: filters },
       );
       const skills = response.data;
 
@@ -493,7 +505,6 @@ export const useSkills = create<SkillsState>()((set, get) => ({
       throw err;
     }
   },
-
   // ------------------------------------------------------------------
   // GET /skills/public/user/id/{user_id} — Fetch user's skills by user ID
   // ------------------------------------------------------------------

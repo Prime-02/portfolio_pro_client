@@ -7,8 +7,6 @@ import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import { BioData } from "@/portfolio-builder/types/bio";
 import type { BioAnimations } from "@/portfolio-builder/types/bio";
 import { MotionContainer, MotionItem } from "./renderer-components/MotionWrappers";
-import { getBackgroundStyle } from "./renderer-components/backgroundUtils";
-import { resolveEasing } from "./renderer-components/animations";
 import { StatusBadge } from "./renderer-components/StatusBadge";
 import { LanguageList } from "./renderer-components/LanguageList";
 import { ContactList } from "./renderer-components/ContactList";
@@ -16,6 +14,7 @@ import { MetadataGrid } from "./renderer-components/MetadataGrid";
 import { CTAButton } from "./renderer-components/CTAButton";
 import { loadGoogleFont } from "../hero/editor-components/fonts";
 import MarkdownRenderer from "@/src/app/components/markdown/MarkdownRenderer";
+import { SectionBackgroundRenderer } from "@/portfolio-builder/components/shared/SectionBackground";
 
 interface BioRendererProps {
   data: BioData;
@@ -40,7 +39,7 @@ export default function BioRenderer({ data }: BioRendererProps) {
     fonts,
     typography,
     animations,
-    ctaButtons, // Changed from cta to ctaButtons
+    ctaButtons,
   } = data;
 
   const anim: BioAnimations = {
@@ -114,9 +113,6 @@ export default function BioRenderer({ data }: BioRendererProps) {
       ? isInView
       : true
     : false;
-
-  // ── Background ───────────────────────────────────────────────────────────
-  const bgStyle = getBackgroundStyle(background);
 
   // ── Alignment helpers ────────────────────────────────────────────────────
   const alignClass = alignment === "center" ? "text-center items-center" : "text-left items-start";
@@ -229,7 +225,7 @@ export default function BioRenderer({ data }: BioRendererProps) {
     </MotionItem>
   ) : null;
 
-  // ── CTA Block — Updated to support multiple buttons with all variants ────
+  // ── CTA Block ────
   const CTABlock = ctaButtons && ctaButtons.length > 0 ? (
     <MotionItem isAnimated={isAnimated} shouldAnimate={shouldAnimate} anim={anim}>
       <div className="flex flex-wrap gap-3 mt-2">
@@ -397,37 +393,31 @@ export default function BioRenderer({ data }: BioRendererProps) {
         {HeadlineBlock}
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5">
-        {/* Bio card — spans 2 columns on large */}
         {BioBlock && (
           <div className="sm:col-span-2 lg:col-span-2 p-5 lg:p-6 rounded-2xl bg-[var(--pb-surface)] border border-[var(--pb-border)]">
             {BioBlock}
           </div>
         )}
-        {/* Location & Experience card */}
         {LocationExpBlock && (
           <div className="p-5 lg:p-6 rounded-2xl bg-[var(--pb-surface)] border border-[var(--pb-border)]">
             {LocationExpBlock}
           </div>
         )}
-        {/* Languages card */}
         {LanguagesBlock && (
           <div className="p-5 lg:p-6 rounded-2xl bg-[var(--pb-surface)] border border-[var(--pb-border)]">
             {LanguagesBlock}
           </div>
         )}
-        {/* Contacts card — spans 2 columns on large */}
         {ContactsBlock && (
           <div className="sm:col-span-2 lg:col-span-2 p-5 lg:p-6 rounded-2xl bg-[var(--pb-surface)] border border-[var(--pb-border)]">
             {ContactsBlock}
           </div>
         )}
-        {/* Metadata card */}
         {MetadataBlock && (
           <div className="p-5 lg:p-6 rounded-2xl bg-[var(--pb-surface)] border border-[var(--pb-border)]">
             {MetadataBlock}
           </div>
         )}
-        {/* CTA card — spans full width if present */}
         {CTABlock && (
           <div className="sm:col-span-2 lg:col-span-3 p-5 lg:p-6 rounded-2xl bg-[var(--pb-surface)] border border-[var(--pb-border)]">
             {CTABlock}
@@ -439,7 +429,6 @@ export default function BioRenderer({ data }: BioRendererProps) {
 
   const renderShowcase = () => (
     <AlignWrap className="flex flex-col">
-      {/* Hero area with extra breathing room */}
       <div className={`mb-10 lg:mb-16 ${spacingClasses[spacing]}`}>
         {StatusBlock}
         <div className={alignment === "center" ? "max-w-4xl mx-auto" : "max-w-4xl"}>
@@ -451,7 +440,6 @@ export default function BioRenderer({ data }: BioRendererProps) {
           </div>
         )}
       </div>
-      {/* Info panels in a wide row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-6">
         {LocationExpBlock && (
           <div className="p-5 lg:p-6 rounded-xl bg-[var(--pb-surface)] border border-[var(--pb-border)] backdrop-blur-sm">
@@ -508,8 +496,10 @@ export default function BioRenderer({ data }: BioRendererProps) {
     <section
       ref={sectionRef}
       className="relative overflow-hidden"
-      style={{ ...bgStyle, ...paddingStyle }}
+      style={paddingStyle}
     >
+      <SectionBackgroundRenderer background={background} />
+
       <MotionContainer
         isAnimated={isAnimated}
         shouldAnimate={shouldAnimate}

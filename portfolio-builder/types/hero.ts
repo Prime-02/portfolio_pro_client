@@ -4,6 +4,8 @@
 // Hero Section — Type Definitions
 // ---------------------------------------------------------------------------
 
+import type { SectionBackground } from "./sectionBackground";
+
 /**
  * Available layout options for the hero section.
  * - centered : Everything in the middle, stacked vertically
@@ -94,33 +96,14 @@ export interface HeroMedia {
 }
 
 // ---------------------------------------------------------------------------
-// Background
+// Background (uses shared SectionBackground)
 // ---------------------------------------------------------------------------
 
-/**
- * The type of background behind the entire hero section.
- */
-export type HeroBackgroundType =
-  | "solid"
-  | "gradient"
-  | "image"
-  | "video"
-  | "particles"
-  | "mesh";
-
-/**
- * Gradient style — linear or radial.
- */
+/** Re-export for backward compatibility. Prefer SectionBackground in new code. */
+export type HeroBackground = SectionBackground;
+export type HeroBackgroundType = SectionBackground["type"];
 export type HeroGradientType = "linear" | "radial";
-
-/**
- * CSS background-size options.
- */
 export type HeroBackgroundSize = "cover" | "contain" | "auto";
-
-/**
- * CSS background-position options.
- */
 export type HeroBackgroundPosition =
   | "center"
   | "top"
@@ -131,82 +114,6 @@ export type HeroBackgroundPosition =
   | "top right"
   | "bottom left"
   | "bottom right";
-
-/**
- * Configuration for the hero's background layer.
- */
-export interface HeroBackground {
-  /** Which type of background to render */
-  type: HeroBackgroundType;
-
-  // ── Solid ──────────────────────────────────────────────────────────────────
-  /** Solid color — CSS value (hex, rgb, etc.) */
-  color?: string;
-
-  // ── Gradient ───────────────────────────────────────────────────────────────
-  /** Linear or radial gradient */
-  gradientType?: HeroGradientType;
-  /** Start color for gradient */
-  gradientFrom?: string;
-  /** End color for gradient */
-  gradientTo?: string;
-  /** Angle in degrees for linear gradient (0–360) */
-  gradientAngle?: number;
-  /** Center position for radial gradient (e.g. "center", "top left") */
-  radialPosition?: HeroBackgroundPosition;
-
-  // ── Image ──────────────────────────────────────────────────────────────────
-  /** URL for background image */
-  imageUrl?: string;
-  /** CSS background-size */
-  backgroundSize?: HeroBackgroundSize;
-  /** CSS background-position */
-  backgroundPosition?: HeroBackgroundPosition;
-  /** Whether to tile/repeat the background image */
-  backgroundRepeat?: boolean;
-
-  // ── Video ──────────────────────────────────────────────────────────────────
-  /** URL for background video */
-  videoUrl?: string;
-
-  // ── Overlay (image, video, mesh, particles) ────────────────────────────────
-  /** Overlay opacity — 0 to 100 */
-  overlayOpacity?: number;
-  /** Overlay color — defaults to black */
-  overlayColor?: string;
-
-  // ── Mesh ───────────────────────────────────────────────────────────────────
-  meshColor1?: string;
-  meshColor2?: string;
-  meshColor3?: string;
-  meshColor4?: string;
-  /** Animation cycle duration in seconds */
-  meshSpeed?: number;
-  /** Blur amount in px */
-  meshBlur?: number;
-  /** Orb size as a percentage of the container */
-  meshSize?: number;
-  /** Global opacity multiplier for all orbs (0–1) */
-  meshOpacity?: number;
-  /** Base background color behind the orbs */
-  meshBase?: string;
-
-  // ── Particles ──────────────────────────────────────────────────────────────
-  particleColor?: string;
-  particleCount?: number;
-  /** Particle radius in px */
-  particleSize?: number;
-  /** Speed multiplier */
-  particleSpeed?: number;
-  /** Particle opacity (0–1) */
-  particleOpacity?: number;
-  /** Draw connecting lines between nearby particles */
-  particleLines?: boolean;
-  /** Max distance in px for connection lines */
-  particleLineDist?: number;
-  /** Canvas background color */
-  particleBg?: string;
-}
 
 // ---------------------------------------------------------------------------
 // CTA Buttons
@@ -285,7 +192,9 @@ export interface HeroFonts {
   title?: string;
 }
 
-// ── Add to portfolio-builder/types/hero.ts ─────────────────────────────────
+// ---------------------------------------------------------------------------
+// Typography
+// ---------------------------------------------------------------------------
 
 export interface HeroTypography {
   /** Font size in pixels (e.g. 48) */
@@ -307,141 +216,10 @@ export interface HeroFieldTypography {
   title?: HeroTypography;
   cta?: HeroTypography;
 }
-// ---------------------------------------------------------------------------
-// The Main Hero Data Shape
-// ---------------------------------------------------------------------------
-
-/**
- * Complete data shape for a hero section.
- * Every field is optional except `layout` — the renderer handles
- * missing fields gracefully with sensible defaults.
- */
-export interface HeroData {
-  // -- Layout --
-  /** How the hero is structured */
-  layout: HeroLayout;
-  /** Horizontal alignment of text content */
-  alignment?: HeroAlignment;
-  /** Vertical alignment of content within the section */
-  verticalAlignment?: HeroVerticalAlignment;
-  /** Overall height of the section */
-  height?: HeroHeight;
-  /** Position of media in split layout (left or right of text) */
-  mediaPosition?: HeroMediaPosition;
-  /** Top/bottom padding for the section in pixels */
-  padding?: HeroPadding;
-
-  // -- Content --
-  /** The person's name (or main headline) */
-  name?: string;
-  /** A short greeting shown above the name */
-  greeting?: string;
-  /** Role, tagline, or short descriptor */
-  title?: string;
-  // -- Media --
-  /** Visual media (profile image, animation, video) */
-  media?: HeroMedia;
-
-  // -- Buttons --
-  /** One or more call-to-action buttons */
-  ctaButtons?: HeroCTA[];
-
-  // -- Background --
-  /** Background configuration */
-  background?: HeroBackground;
-
-  // -- Effects --
-  /** Visual effects and optional elements */
-  effects?: HeroEffects;
-
-  // -- Animations --
-  /** Entrance, scroll, parallax, and hover animation configuration */
-  animations?: HeroAnimations;
-
-  socialLinks?: SocialLink[];
-
-  // -- Fonts --
-  fonts?: HeroFonts;
-  // -- Typography --
-  typography?: HeroFieldTypography;
-}
 
 // ---------------------------------------------------------------------------
-// Defaults Factory
+// Animations
 // ---------------------------------------------------------------------------
-
-/**
- * Returns a minimal hero data object with sensible defaults.
- * Used when creating a brand new portfolio from scratch (no user data to seed).
- */
-export function getEmptyHeroData(): HeroData {
-  return {
-    layout: "centered",
-    alignment: "center",
-    verticalAlignment: "center",
-    height: "screen",
-    mediaPosition: "right",
-    padding: { top: 0, bottom: 0 },
-    name: "",
-    title: "",
-    background: {
-      type: "solid",
-      color: "#0a0a0a",
-      overlayOpacity: 40,
-      overlayColor: "#000000",
-    },
-    effects: {
-      typewriter: false,
-      typewriterSpeed: 50,
-      scrollIndicator: true,
-    },
-    animations: getDefaultAnimations(),
-  };
-}
-
-/**
- * Seeds a hero data object from a user's profile.
- * The store data is copied once — no live binding.
- *
- * @param userProfile - The user object from your user/social store
- * @returns A populated HeroData object ready for the editor
- */
-export function getDefaultHeroData(userProfile?: {
-  name?: string | null;
-  headline?: string | null;
-  bio?: string | null;
-  avatar?: string | null;
-}): HeroData {
-  return {
-    layout: "centered",
-    alignment: "center",
-    height: "screen",
-    name: userProfile?.name ?? "",
-    title: userProfile?.headline ?? "",
-    media: userProfile?.avatar
-      ? {
-          type: "image",
-          imageUrl: userProfile.avatar,
-          imageAlt: userProfile?.name ?? "Profile photo",
-        }
-      : { type: "none" },
-    background: {
-      type: "solid",
-      color: "#0a0a0a",
-      overlayOpacity: 40,
-      overlayColor: "#000000",
-    },
-    effects: {
-      typewriter: false,
-      typewriterSpeed: 50,
-      scrollIndicator: true,
-    },
-  };
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// ADD THESE TYPES TO: portfolio-builder/types/hero.ts
-// ─────────────────────────────────────────────────────────────────────────────
 
 export type AnimationPreset =
   | "none"
@@ -495,7 +273,72 @@ export interface HeroAnimations {
   textRevealDelay: number; // extra delay before text reveals
 }
 
-// Default factory – add this to your getEmptyHeroData() return value too
+// ---------------------------------------------------------------------------
+// The Main Hero Data Shape
+// ---------------------------------------------------------------------------
+
+/**
+ * Complete data shape for a hero section.
+ * Every field is optional except `layout` — the renderer handles
+ * missing fields gracefully with sensible defaults.
+ */
+export interface HeroData {
+  // -- Layout --
+  /** How the hero is structured */
+  layout: HeroLayout;
+  /** Horizontal alignment of text content */
+  alignment?: HeroAlignment;
+  /** Vertical alignment of content within the section */
+  verticalAlignment?: HeroVerticalAlignment;
+  /** Overall height of the section */
+  height?: HeroHeight;
+  /** Position of media in split layout (left or right of text) */
+  mediaPosition?: HeroMediaPosition;
+  /** Top/bottom padding for the section in pixels */
+  padding?: HeroPadding;
+
+  // -- Content --
+  /** The person's name (or main headline) */
+  name?: string;
+  /** A short greeting shown above the name */
+  greeting?: string;
+  /** Role, tagline, or short descriptor */
+  title?: string;
+
+  // -- Media --
+  /** Visual media (profile image, animation, video) */
+  media?: HeroMedia;
+
+  // -- Buttons --
+  /** One or more call-to-action buttons */
+  ctaButtons?: HeroCTA[];
+
+  // -- Background --
+  /** Background configuration (uses shared SectionBackground) */
+  background?: SectionBackground;
+
+  // -- Effects --
+  /** Visual effects and optional elements */
+  effects?: HeroEffects;
+
+  // -- Animations --
+  /** Entrance, scroll, parallax, and hover animation configuration */
+  animations?: HeroAnimations;
+
+  // -- Social --
+  socialLinks?: SocialLink[];
+
+  // -- Fonts --
+  fonts?: HeroFonts;
+
+  // -- Typography --
+  typography?: HeroFieldTypography;
+}
+
+// ---------------------------------------------------------------------------
+// Defaults Factory
+// ---------------------------------------------------------------------------
+
 export function getDefaultAnimations(): HeroAnimations {
   return {
     preset: "fadeIn",
@@ -512,5 +355,70 @@ export function getDefaultAnimations(): HeroAnimations {
     hoverScale: 1.03,
     textReveal: false,
     textRevealDelay: 0.2,
+  };
+}
+
+/**
+ * Returns a minimal hero data object with sensible defaults.
+ * Used when creating a brand new portfolio from scratch (no user data to seed).
+ */
+export function getEmptyHeroData(): HeroData {
+  return {
+    layout: "centered",
+    alignment: "center",
+    verticalAlignment: "center",
+    height: "screen",
+    mediaPosition: "right",
+    padding: { top: 0, bottom: 0 },
+    name: "",
+    title: "",
+    background: {
+      type: "solid",
+      color: "#0a0a0a",
+    },
+    effects: {
+      typewriter: false,
+      typewriterSpeed: 50,
+      scrollIndicator: true,
+    },
+    animations: getDefaultAnimations(),
+  };
+}
+
+/**
+ * Seeds a hero data object from a user's profile.
+ * The store data is copied once — no live binding.
+ *
+ * @param userProfile - The user object from your user/social store
+ * @returns A populated HeroData object ready for the editor
+ */
+export function getDefaultHeroData(userProfile?: {
+  name?: string | null;
+  headline?: string | null;
+  bio?: string | null;
+  avatar?: string | null;
+}): HeroData {
+  return {
+    layout: "centered",
+    alignment: "center",
+    height: "screen",
+    name: userProfile?.name ?? "",
+    title: userProfile?.headline ?? "",
+    media: userProfile?.avatar
+      ? {
+          type: "image",
+          imageUrl: userProfile.avatar,
+          imageAlt: userProfile?.name ?? "Profile photo",
+        }
+      : { type: "none" },
+    background: {
+      type: "solid",
+      color: "#0a0a0a",
+    },
+    effects: {
+      typewriter: false,
+      typewriterSpeed: 50,
+      scrollIndicator: true,
+    },
   };
 }

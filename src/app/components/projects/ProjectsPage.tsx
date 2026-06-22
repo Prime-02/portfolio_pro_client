@@ -1,29 +1,26 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useProjectStore } from "@/lib/stores/projects/useProjectsStore";
-import { useValidation } from "@/lib/hooks/validation/useValidation";
-import { useUserStore } from "@/lib/stores/user/userStore";
-import { useRouting } from "@/lib/hooks/routing/useRouting";
 import { LoadingSkeleton } from "./LoadingSkeleton";
 import { OwnProjectsView } from "./OwnProjectsView";
 import { PublicProjectsView } from "./PublicProjectsView";
+import { useTheme } from "../theme/ThemeContext ";
 
-type ProjectScenario =
-  | { kind: "public"; username: string }
-  | { kind: "own" }
-  | { kind: "not-found" }
-  | { kind: "user-not-found"; username: string }
-  | { kind: "pending" };
+const PAGE_SIZE = 20;
 
 export default function ProjectsPage() {
   const {
     projects,
     totalProjects,
+    projectsPage,
+    projectsHasMore,
     loading,
     errors,
-    filteredProjects,       
-    totalFilteredProjects,  
+    filteredProjects,
+    totalFilteredProjects,
+    filteredPage,
+    filteredHasMore,
     fetchMyProjects,
     fetchProjectsByUser,
     fetchProjectStats,
@@ -31,11 +28,9 @@ export default function ProjectsPage() {
     deleteProjects,
   } = useProjectStore();
 
-  const { checkIfOwnProfile, validateProfileUsername } = useValidation();
-  const { userData, fetchUserData } = useUserStore();
-  const { pathname } = useRouting();
+  // Get profile context from ThemeContext instead of re-validating
+  const { profileContext } = useTheme();
 
-  const [scenario, setScenario] = useState<ProjectScenario>({ kind: "pending" });
   const [error, setError] = useState<string | null>(null);
   const [filterParams, setFilterParams] = useState({
     query: "",
@@ -44,100 +39,111 @@ export default function ProjectsPage() {
     sortDirection: "desc" as "asc" | "desc",
   });
 
-  const resolveInProgress = useRef(false);
+  // Derived state from profileContext
+  const isOwnProfile = profileContext.kind === "own";
+  const publicUsername = profileContext.kind === "public" ? profileContext.username : null;
 
-  // Resolve profile scenario
+  // ── Initial / filter-change fetch (always page 1) ───────────────────
   useEffect(() => {
-    const resolveScenario = async () => {
-      if (resolveInProgress.current) return;
-      resolveInProgress.current = true;
-      try {
-        if (userData && !userData.username) await fetchUserData();
-
-        const profileCheck = checkIfOwnProfile();
-        const usernameInUrl = profileCheck?.username ?? null;
-        const isAuthenticated = !!userData?.username;
-
-        if (usernameInUrl) {
-          const validation = await validateProfileUsername(usernameInUrl);
-          if (validation.isValid && validation.isOwnProfile) {
-            setScenario({ kind: "own" });
-          } else if (validation.isValid && validation.username) {
-            setScenario({ kind: "public", username: validation.username });
-          } else if (isAuthenticated) {
-            setScenario({ kind: "user-not-found", username: usernameInUrl });
-          } else {
-            setScenario({ kind: "not-found" });
-          }
-        } else if (isAuthenticated) {
-          setScenario({ kind: "own" });
-        } else {
-          setScenario({ kind: "not-found" });
-        }
-      } finally {
-        resolveInProgress.current = false;
-      }
-    };
-    resolveScenario();
-  }, [pathname, userData?.username]);
-
-  // Fetch data based on scenario
-  useEffect(() => {
-    if (scenario.kind === "pending") return;
+    if (profileContext.kind === "pending" || profileContext.kind === "unauthenticated" || profileContext.kind === "not-found") {
+      return;
+    }
 
     const fetchData = async () => {
-      if (scenario.kind === "public") {
-        await fetchProjectsByUser(scenario.username);
-      } else if (scenario.kind === "own" || scenario.kind === "user-not-found") {
+      if (profileContext.kind === "public") {
+        await fetchProjectsByUser(profileContext.username, { page: 1, size: PAGE_SIZE } as never);
+      } else if (profileContext.kind === "own") {
         await fetchMyProjects({
           include_public: true,
           query: filterParams.query || undefined,
           filter_platform: filterParams.filterPlatform || undefined,
           sort: filterParams.sort,
           sort_direction: filterParams.sortDirection,
+          page: 1,
+          size: PAGE_SIZE,
         });
         await fetchProjectStats();
       }
     };
 
     fetchData();
-  }, [scenario, filterParams.query, filterParams.filterPlatform, filterParams.sort, filterParams.sortDirection]);
+  }, [
+    profileContext.kind,
+    publicUsername,
+    filterParams.query,
+    filterParams.filterPlatform,
+    filterParams.sort,
+    filterParams.sortDirection,
+  ]);
 
-  // Handle store errors
+  // ── Store error sync ─────────────────────────────────────────────────
   useEffect(() => {
     const storeError = errors.fetchProjects || errors.fetchProjectsByUser;
     if (storeError) setError(storeError);
   }, [errors]);
 
-  const isOwnProfile = scenario.kind === "own" || scenario.kind === "user-not-found";
-  const isLoading = loading.fetchProjects || loading.fetchProjectsByUser || loading.fetchProjectStats;
+  // ── Load-more handlers ───────────────────────────────────────────────
+  const handleLoadMoreOwn = useCallback(async () => {
+    if (!projectsHasMore || loading.fetchProjects) return;
+    await fetchMyProjects({
+      include_public: true,
+      query: filterParams.query || undefined,
+      filter_platform: filterParams.filterPlatform || undefined,
+      sort: filterParams.sort,
+      sort_direction: filterParams.sortDirection,
+      page: projectsPage + 1,
+      size: PAGE_SIZE,
+    });
+  }, [projectsHasMore, loading.fetchProjects, projectsPage, filterParams, fetchMyProjects]);
 
+  const handleLoadMorePublic = useCallback(async () => {
+    if (!filteredHasMore || loading.fetchProjectsByUser || !publicUsername) return;
+    await fetchProjectsByUser(publicUsername, {
+      page: filteredPage + 1,
+      size: PAGE_SIZE,
+    } as never);
+  }, [filteredHasMore, loading.fetchProjectsByUser, filteredPage, publicUsername, fetchProjectsByUser]);
+
+  // ── Delete ───────────────────────────────────────────────────────────
   const handleDelete = async (projectIds: string[]) => {
     await deleteProjects({ project_ids: projectIds });
   };
 
-  if (scenario.kind === "pending") return <LoadingSkeleton />;
-  if (scenario.kind === "not-found") return <div>Profile not found</div>;
+  // ── Render ───────────────────────────────────────────────────────────
+  const isLoading =
+    loading.fetchProjects || loading.fetchProjectsByUser || loading.fetchProjectStats;
 
-  if (!isOwnProfile && scenario.kind === "public") {
+  if (profileContext.kind === "pending") return <LoadingSkeleton />;
+
+  if (profileContext.kind === "not-found" || profileContext.kind === "unauthenticated") {
+    return <div>Profile not found</div>;
+  }
+
+  // Public profile view
+  if (!isOwnProfile && publicUsername) {
     return (
       <PublicProjectsView
-        username={scenario.username}
-        projects={filteredProjects}         
+        username={publicUsername}
+        projects={filteredProjects}
         totalProjects={totalFilteredProjects}
         isLoading={isLoading || false}
+        hasMore={filteredHasMore}
+        onLoadMore={handleLoadMorePublic}
         error={error}
         onClearError={() => setError(null)}
       />
     );
   }
 
+  // Own profile view
   return (
     <OwnProjectsView
       projects={projects}
       totalProjects={totalProjects}
       projectStats={projectStats}
       isLoading={isLoading || false}
+      hasMore={projectsHasMore}
+      onLoadMore={handleLoadMoreOwn}
       error={error}
       onClearError={() => setError(null)}
       filterParams={filterParams}

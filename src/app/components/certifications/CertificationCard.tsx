@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
     Pencil, Trash2, ExternalLink, Award, Building2,
-    Calendar, Clock, CheckCircle2, AlertCircle, Globe, ChevronDown, Lock
+    Calendar, Clock, CheckCircle2, AlertCircle, Globe, ChevronDown, Lock,
+    Eye, EyeOff, Maximize2, FileText, Image, Loader2
 } from "lucide-react";
 import type { Certification } from "@/lib/stores/certifications/useCertifications";
 
@@ -31,8 +32,23 @@ function getExpiryStatus(expirationDate: string | null | undefined): "active" | 
     return "active";
 }
 
+function getFileTypeFromUrl(url: string): string {
+    const extension = url.split('.').pop()?.toLowerCase() || '';
+    const imageTypes = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
+    const pdfTypes = ['pdf'];
+
+    if (imageTypes.includes(extension)) return 'image';
+    if (pdfTypes.includes(extension)) return 'pdf';
+    return 'other';
+}
+
 export function CertificationCard({ certification, onEdit, onDelete, isOwner = false }: CertificationCardProps) {
     const [expanded, setExpanded] = useState(false);
+    const [showFilePreview, setShowFilePreview] = useState(false);
+    const [iframeLoading, setIframeLoading] = useState(true);
+    const [naturalDimensions, setNaturalDimensions] = useState<{ width: number; height: number } | null>(null);
+    const iframeRef = useRef<HTMLIFrameElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
     const expiryStatus = getExpiryStatus(certification.expiration_date);
 
     const statusConfig = {
@@ -50,6 +66,87 @@ export function CertificationCard({ certification, onEdit, onDelete, isOwner = f
         : expiryStatus === "expiring-soon"
             ? "#f59e0b"
             : "var(--accent)";
+
+    const fileType = certification.certificate_internal_url
+        ? getFileTypeFromUrl(certification.certificate_internal_url)
+        : null;
+
+    const getFileNameFromUrl = (url: string) => {
+        const parts = url.split("/");
+        const fullName = parts[parts.length - 1] || "certificate-file";
+        return fullName.split('?')[0];
+    };
+
+    // Handle iframe load event to get natural dimensions for images
+    useEffect(() => {
+        if (!showFilePreview || !certification.certificate_internal_url || fileType !== 'image') {
+            setNaturalDimensions(null);
+            return;
+        }
+
+        setIframeLoading(true);
+
+        // For images, we can try to get natural dimensions
+        const img = new window.Image();
+        img.onload = () => {
+            const maxWidth = containerRef.current?.clientWidth || 500;
+            const maxHeight = 600; // Maximum height for the preview
+
+            let width = img.naturalWidth;
+            let height = img.naturalHeight;
+
+            // Scale down if image is larger than container
+            if (width > maxWidth) {
+                const ratio = maxWidth / width;
+                width = maxWidth;
+                height = height * ratio;
+            }
+
+            // If still too tall, scale down further
+            if (height > maxHeight) {
+                const ratio = maxHeight / height;
+                height = maxHeight;
+                width = width * ratio;
+            }
+
+            setNaturalDimensions({ width, height });
+            setIframeLoading(false);
+        };
+
+        img.onerror = () => {
+            setIframeLoading(false);
+        };
+
+        img.src = certification.certificate_internal_url;
+    }, [showFilePreview, certification.certificate_internal_url, fileType]);
+
+    // Set iframe loading to false for non-image files after a timeout
+    useEffect(() => {
+        if (showFilePreview && fileType !== 'image') {
+            const timer = setTimeout(() => {
+                setIframeLoading(false);
+            }, 2000); // Give PDFs 2 seconds to load
+
+            return () => clearTimeout(timer);
+        }
+    }, [showFilePreview, fileType]);
+
+    const getIframeHeight = () => {
+        if (fileType === 'image' && naturalDimensions) {
+            return naturalDimensions.height;
+        }
+        if (fileType === 'pdf') {
+            return 500; // Fixed height for PDFs
+        }
+        return 400; // Default height for other files
+    };
+
+    const getIframeWidth = () => {
+        if (fileType === 'image' && naturalDimensions) {
+            return naturalDimensions.width;
+        }
+        return '100%';
+    };
 
     return (
         <motion.div
@@ -136,7 +233,7 @@ export function CertificationCard({ certification, onEdit, onDelete, isOwner = f
                 </div>
 
                 {/* Links */}
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2 mb-3">
                     {certification.certificate_external_url && (
                         <a
                             href={certification.certificate_external_url}
@@ -152,20 +249,141 @@ export function CertificationCard({ certification, onEdit, onDelete, isOwner = f
                         </a>
                     )}
                     {certification.certificate_internal_url && (
-                        <a
-                            href={certification.certificate_internal_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                        <button
+                            onClick={() => setShowFilePreview(!showFilePreview)}
                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs
                                        bg-[var(--accent)]/10 hover:bg-[var(--accent)]/15 
                                        transition-colors text-[var(--accent)]"
                         >
-                            <Lock className="w-3 h-3" />
-                            File
-                            <ExternalLink className="w-3 h-3 opacity-50" />
-                        </a>
+                            {showFilePreview ? (
+                                <>
+                                    <EyeOff className="w-3 h-3" />
+                                    Hide File
+                                </>
+                            ) : (
+                                <>
+                                    {fileType === 'image' ? (
+                                        <Image className="w-3 h-3" />
+                                    ) : fileType === 'pdf' ? (
+                                        <FileText className="w-3 h-3" />
+                                    ) : (
+                                        <Eye className="w-3 h-3" />
+                                    )}
+                                    Preview File
+                                    <Maximize2 className="w-3 h-3 opacity-50" />
+                                </>
+                            )}
+                        </button>
                     )}
                 </div>
+
+                {/* File Preview — expands within the card */}
+                <AnimatePresence>
+                    {showFilePreview && certification.certificate_internal_url && (
+                        <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.3, ease: "easeInOut" }}
+                            className="overflow-hidden"
+                        >
+                            <div className="pt-3 border-t border-[var(--foreground)]/10">
+                                {/* File info bar */}
+                                <div className="flex items-center justify-between mb-3 px-3 py-2 bg-[var(--foreground)]/5 rounded-lg">
+                                    <div className="flex items-center gap-2 min-w-0">
+                                        {fileType === 'image' ? (
+                                            <Image className="w-4 h-4 text-green-500 flex-shrink-0" />
+                                        ) : fileType === 'pdf' ? (
+                                            <FileText className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                                        ) : (
+                                            <FileText className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                                        )}
+                                        <span className="text-xs text-[var(--foreground)]/70 truncate">
+                                            {getFileNameFromUrl(certification.certificate_internal_url)}
+                                        </span>
+                                    </div>
+                                    <a
+                                        href={certification.certificate_internal_url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-1 px-2 py-1 rounded-md text-xs
+                                                   hover:bg-[var(--foreground)]/10 transition-colors
+                                                   text-[var(--foreground)]/50 hover:text-[var(--foreground)]/70 flex-shrink-0"
+                                        title="Open in new tab"
+                                    >
+                                        <ExternalLink className="w-3 h-3" />
+                                        <span>Open</span>
+                                    </a>
+                                </div>
+
+                                {/* Iframe container with dynamic dimensions */}
+                                <div
+                                    ref={containerRef}
+                                    className="relative mx-auto rounded-xl overflow-hidden border border-[var(--foreground)]/10 bg-white"
+                                    style={{
+                                        width: fileType === 'image' && naturalDimensions
+                                            ? `${naturalDimensions.width}px`
+                                            : '100%',
+                                        maxWidth: '100%',
+                                    }}
+                                >
+                                    {/* Loading state */}
+                                    {iframeLoading && (
+                                        <div
+                                            className="absolute inset-0 flex items-center justify-center bg-[var(--foreground)]/5 z-10"
+                                            style={{
+                                                height: getIframeHeight(),
+                                            }}
+                                        >
+                                            <div className="flex flex-col items-center gap-2">
+                                                <Loader2 className="w-6 h-6 animate-spin text-[var(--accent)]" />
+                                                <span className="text-xs text-[var(--foreground)]/50">
+                                                    Loading preview...
+                                                </span>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <iframe
+                                        ref={iframeRef}
+                                        src={certification.certificate_internal_url}
+                                        className="w-full block"
+                                        style={{
+                                            height: getIframeHeight(),
+                                            border: 'none',
+                                            opacity: iframeLoading ? 0 : 1,
+                                            transition: 'opacity 0.3s ease',
+                                        }}
+                                        title={`Preview of ${certification.certification_name}`}
+                                        sandbox="allow-scripts allow-same-origin"
+                                        onLoad={() => {
+                                            if (fileType !== 'image') {
+                                                setIframeLoading(false);
+                                            }
+                                        }}
+                                    />
+
+                                    {/* Subtle gradient overlay for scroll indication (PDFs only) */}
+                                    {fileType === 'pdf' && !iframeLoading && (
+                                        <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-white/10 to-transparent pointer-events-none" />
+                                    )}
+                                </div>
+
+                                {/* Preview info */}
+                                {fileType === 'image' && naturalDimensions && (
+                                    <p className="text-[10px] text-[var(--foreground)]/30 text-center mt-2">
+                                        {naturalDimensions.width.toFixed(0)} × {naturalDimensions.height.toFixed(0)}px
+                                    </p>
+                                )}
+                                {fileType === 'pdf' && (
+                                    <p className="text-[10px] text-[var(--foreground)]/30 text-center mt-2">
+                                        Scroll to view full document
+                                    </p>
+                                )}
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
                 {/* Visibility indicator — only for owner */}
                 {isOwner && certification.is_public === false && (

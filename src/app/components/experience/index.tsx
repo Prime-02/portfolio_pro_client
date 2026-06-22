@@ -1,22 +1,13 @@
 // app/(dashboard)/experience/page.tsx
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useExperiencesStore } from "@/lib/stores/experiences/useExperience";
 import type { Experience } from "@/lib/stores/experiences/useExperience";
 import { LoadingSkeleton } from "./LoadingSkeleton";
 import { PublicProfileView } from "./PublicProfileView";
 import { OwnProfileView } from "./OwnProfileView";
-import { useValidation } from "@/lib/hooks/validation/useValidation";
-import { useUserStore } from "@/lib/stores/user/userStore";
-import { useRouting } from "@/lib/hooks/routing/useRouting";
-
-type ExperienceScenario =
-    | { kind: "public"; username: string }
-    | { kind: "own" }
-    | { kind: "not-found" }
-    | { kind: "user-not-found"; username: string }
-    | { kind: "pending" };
+import { useTheme } from "../theme/ThemeContext ";
 
 export default function ExperiencePage() {
     const {
@@ -32,70 +23,36 @@ export default function ExperiencePage() {
         fetchUserExperiencesByUsername,
     } = useExperiencesStore();
 
-    const { checkIfOwnProfile, validateProfileUsername } = useValidation();
-    const { userData, fetchUserData } = useUserStore();
-    const { pathname } = useRouting();
+    // Get profile context from ThemeContext instead of re-validating
+    const { profileContext } = useTheme();
 
-    const [scenario, setScenario] = useState<ExperienceScenario>({ kind: "pending" });
     const [addDialogOpen, setAddDialogOpen] = useState(false);
     const [editExperience, setEditExperience] = useState<Experience | null>(null);
     const [deleteExperienceState, setDeleteExperienceState] = useState<Experience | null>(null);
     const [error, setError] = useState<string | null>(null);
 
-    const resolveInProgress = useRef(false);
+    // Derived state from profileContext
+    const isOwnProfile = profileContext.kind === "own";
+    const publicUsername = profileContext.kind === "public" ? profileContext.username : "";
 
+    // Fetch data based on profile context
     useEffect(() => {
-        const resolveScenario = async () => {
-            if (resolveInProgress.current) return;
-            resolveInProgress.current = true;
-            try {
-                if (userData && !userData.username) await fetchUserData();
-
-                const profileCheck = checkIfOwnProfile();
-                const usernameInUrl = profileCheck?.username ?? null;
-                const isAuthenticated = !!userData?.username;
-
-                if (usernameInUrl) {
-                    const validation = await validateProfileUsername(usernameInUrl);
-                    if (validation.isValid && validation.isOwnProfile) {
-                        setScenario({ kind: "own" });
-                    } else if (validation.isValid && validation.username) {
-                        setScenario({ kind: "public", username: validation.username });
-                    } else if (isAuthenticated) {
-                        setScenario({ kind: "user-not-found", username: usernameInUrl });
-                    } else {
-                        setScenario({ kind: "not-found" });
-                    }
-                } else if (isAuthenticated) {
-                    setScenario({ kind: "own" });
-                } else {
-                    setScenario({ kind: "not-found" });
-                }
-            } finally {
-                resolveInProgress.current = false;
-            }
-        };
-        resolveScenario();
-    }, [pathname, userData?.username]);
-
-    useEffect(() => {
-        if (scenario.kind === "pending") return;
+        if (profileContext.kind === "pending" || profileContext.kind === "unauthenticated" || profileContext.kind === "not-found") {
+            return;
+        }
 
         const fetchData = async () => {
-            if (scenario.kind === "public") {
-                await fetchUserExperiencesByUsername(scenario.username);
-            } else if (scenario.kind === "own" || scenario.kind === "user-not-found") {
+            if (profileContext.kind === "public") {
+                await fetchUserExperiencesByUsername(profileContext.username);
+            } else if (profileContext.kind === "own") {
                 await fetchMyExperiences();
             }
         };
 
         fetchData();
-    }, [scenario]);
+    }, [profileContext.kind, publicUsername]);
 
-    const isOwnProfile = scenario.kind === "own" || scenario.kind === "user-not-found";
-
-    // Derive display data and loading/error state based on scenario
-    const publicUsername = scenario.kind === "public" ? scenario.username : "";
+    // Derive display data and loading/error state based on profile context
     const displayExperiences = isOwnProfile
         ? myExperiences
         : (userPublicExperiences[publicUsername] ?? []);
@@ -112,13 +69,18 @@ export default function ExperiencePage() {
         setDeleteExperienceState(null);
     };
 
-    if (scenario.kind === "pending") return <LoadingSkeleton />;
-    if (scenario.kind === "not-found") return <div>Profile not found</div>;
+    // UI states
+    if (profileContext.kind === "pending") return <LoadingSkeleton />;
 
-    if (!isOwnProfile && scenario.kind === "public") {
+    if (profileContext.kind === "not-found" || profileContext.kind === "unauthenticated") {
+        return <div>Profile not found</div>;
+    }
+
+    // Public profile view
+    if (!isOwnProfile && publicUsername) {
         return (
             <PublicProfileView
-                username={scenario.username}
+                username={publicUsername}
                 experiences={displayExperiences}
                 isLoading={isLoading}
                 error={error}
@@ -127,6 +89,7 @@ export default function ExperiencePage() {
         );
     }
 
+    // Own profile view
     return (
         <OwnProfileView
             experiences={displayExperiences}

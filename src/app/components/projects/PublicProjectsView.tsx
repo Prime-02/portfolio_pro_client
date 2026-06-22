@@ -7,12 +7,15 @@ import { LoadingSkeleton } from "./LoadingSkeleton";
 import type { PortfolioProjectResponse } from "@/lib/stores/projects/types/project.types";
 import { PageHeader } from "../ui/PageHeader";
 import { ErrorMessage } from "../ui/ErrorMessage";
+import { InfiniteScrollTrigger } from "../blogs/InfiniteScrollTrigger";
 
 interface PublicProjectsViewProps {
   username: string;
   projects: PortfolioProjectResponse[];
   totalProjects: number;
   isLoading: boolean;
+  hasMore: boolean;
+  onLoadMore: () => void;
   error: string | null;
   onClearError: () => void;
 }
@@ -22,6 +25,8 @@ export function PublicProjectsView({
   projects,
   totalProjects,
   isLoading,
+  hasMore,
+  onLoadMore,
   error,
   onClearError,
 }: PublicProjectsViewProps) {
@@ -40,13 +45,21 @@ export function PublicProjectsView({
       {projects.length === 0 && !isLoading ? (
         <EmptyProjectsState isOwner={false} username={username} />
       ) : (
-        <ProjectGrid
-          projects={projects}
-          isLoading={isLoading}
-          isOwner={false}
-          onEdit={() => {}}
-          onDelete={() => {}}
-        />
+        <>
+          <ProjectGrid
+            projects={projects}
+            isLoading={isLoading && projects.length === 0}
+            isOwner={false}
+            onEdit={() => { }}
+            onDelete={() => { }}
+          />
+
+          <InfiniteScrollTrigger
+            hasMore={hasMore}
+            isLoading={isLoading}
+            onLoadMore={onLoadMore}
+          />
+        </>
       )}
     </div>
   );

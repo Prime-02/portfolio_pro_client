@@ -1,6 +1,10 @@
-// portfolio-builder/components/sections/hero/renderer-components/backgroundUtils.ts
+// portfolio-builder/lib/sectionBackground.ts
 
-import type { HeroData } from "@/portfolio-builder/types/hero";
+import type {
+  SectionBackground,
+  GradientType,
+  SectionBackgroundType,
+} from "@/portfolio-builder/types/sectionBackground";
 
 /**
  * Safely resolves gradientAngle to a number.
@@ -12,8 +16,15 @@ function resolveAngle(raw: number | string | undefined): number {
   return isNaN(n) ? 135 : n;
 }
 
+/**
+ * Builds CSS background styles from a SectionBackground config.
+ * Returns an object suitable for spreading into a style prop.
+ *
+ * For animated backgrounds (mesh, particles, video), returns an empty object
+ * since those are rendered by dedicated components.
+ */
 export function getBackgroundStyle(
-  bg?: HeroData["background"],
+  bg?: SectionBackground,
 ): React.CSSProperties {
   if (!bg) return {};
 
@@ -46,9 +57,39 @@ export function getBackgroundStyle(
     case "mesh":
     case "particles":
     case "video":
-      return {};
-
+    case "none":
     default:
       return {};
   }
+}
+
+/**
+ * Determines if a background type supports an overlay.
+ */
+export function supportsOverlay(type: SectionBackgroundType): boolean {
+  return ["image", "video", "mesh", "particles"].includes(type);
+}
+
+/**
+ * Builds overlay CSS styles if applicable.
+ */
+export function getOverlayStyle(
+  bg?: SectionBackground,
+): React.CSSProperties | null {
+  if (!bg || !supportsOverlay(bg.type)) return null;
+
+  const opacity = bg.overlayOpacity ?? 0;
+  if (opacity <= 0) return null;
+
+  return {
+    backgroundColor: bg.overlayColor || "var(--pb-background)",
+    opacity: opacity / 100,
+  };
+}
+
+/**
+ * Type guard: checks if background type requires a dedicated component.
+ */
+export function needsDedicatedBackground(type: SectionBackgroundType): boolean {
+  return ["mesh", "particles", "video"].includes(type);
 }

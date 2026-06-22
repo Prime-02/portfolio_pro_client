@@ -3,32 +3,32 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
-import { BioData, } from "@/portfolio-builder/types/bio";
-import { getDefaultAnimations, } from "@/portfolio-builder/types/hero";
+import { BioData } from "@/portfolio-builder/types/bio";
+import { getDefaultAnimations } from "@/portfolio-builder/types/hero";
 import type { BioAnimations } from "@/portfolio-builder/types/bio";
 import {
   ContentTab,
   LayoutTab,
-  BackgroundTab,
   CTATab,
   EditorTabs,
   EditorActions,
   AnimationsTab,
 } from "./editor-components";
 import BioRenderer from "./BioRenderer";
+import BackgroundTab from "@/portfolio-builder/components/shared/editor/BackgroundTab";
 
 interface BioEditorProps {
   initialData: BioData;
   onSave: (data: BioData) => void;
   onCancel: () => void;
+  setFullScreen: () => void;
 }
 
-export default function BioEditor({ initialData, onSave, onCancel }: BioEditorProps) {
+export default function BioEditor({ initialData, onSave, onCancel, setFullScreen }: BioEditorProps) {
   const [data, setData] = useState<BioData>(() => structuredClone(initialData));
   const [activeTab, setActiveTab] = useState<
     "content" | "layout" | "background" | "cta" | "animations"
   >("content");
-  const [isEditorVisible, setIsEditorVisible] = useState(true);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
 
   // ── Stable serialised baseline ───────────────────────────────────────────
@@ -174,8 +174,6 @@ export default function BioEditor({ initialData, onSave, onCancel }: BioEditorPr
     onCancel();
   };
 
-  const toggleEditor = () => setIsEditorVisible((prev) => !prev);
-
   // ── Save status display ──────────────────────────────────────────────────
   const saveStatusText = {
     idle: hasChanges ? "Unsaved changes" : "Saved",
@@ -199,7 +197,13 @@ export default function BioEditor({ initialData, onSave, onCancel }: BioEditorPr
       case "layout":
         return <LayoutTab data={data} onChange={updateField} />;
       case "background":
-        return <BackgroundTab data={data} onUpdate={updateBackground} />;
+        return (
+          <BackgroundTab
+            data={data}
+            onUpdate={updateBackground}
+            allowedTypes={["none", "solid", "gradient"]}
+          />
+        );
       case "cta":
         return <CTATab data={data} onChange={updateField} />;
       case "animations":
@@ -241,58 +245,41 @@ export default function BioEditor({ initialData, onSave, onCancel }: BioEditorPr
       )}
 
       {/* Editor panel */}
-      {isEditorVisible && (
-        <div className="flex-1 flex flex-col min-w-0 border border-[var(--pb-border)] rounded-xl overflow-hidden bg-[var(--pb-surface)]">
-          <EditorTabs activeTab={activeTab} onTabChange={setActiveTab} />
+      <div className="flex-1 flex flex-col min-w-0 border border-[var(--pb-border)] rounded-xl overflow-hidden bg-[var(--pb-surface)]">
+        <EditorTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
-          <div className="p-6 overflow-y-auto flex-1 space-y-6 bg-[var(--pb-background)]">
-            {renderTabContent()}
-          </div>
-
-          <EditorActions
-            hasChanges={hasChanges}
-            isValid={isValidData(data)}
-            saveStatus={saveStatusText[saveStatus]}
-            saveStatusColor={saveStatusColor[saveStatus]}
-            onSave={handleSave}
-            onCancel={handleCancel}
-          />
+        <div className="p-6 overflow-y-auto flex-1 space-y-6 bg-[var(--pb-background)]">
+          {renderTabContent()}
         </div>
-      )}
+
+        <EditorActions
+          hasChanges={hasChanges}
+          isValid={isValidData(data)}
+          saveStatus={saveStatusText[saveStatus]}
+          saveStatusColor={saveStatusColor[saveStatus]}
+          onSave={handleSave}
+          onCancel={handleCancel}
+        />
+      </div>
 
       {/* Preview panel */}
-      <div
-        className={`${isEditorVisible ? "flex-1" : "flex-[2]"
-          } min-w-0 bg-[var(--pb-background)] border border-[var(--pb-border)] rounded-xl overflow-hidden transition-all duration-300`}
-      >
+      <div className="flex-1 min-w-0 bg-[var(--pb-background)] border border-[var(--pb-border)] rounded-xl overflow-hidden transition-all duration-300">
         <div className="px-4 py-2 border-b border-[var(--pb-border)] flex items-center justify-between">
           <span className="text-xs text-[var(--pb-text-muted)] uppercase tracking-wide">Preview</span>
           <button
-            onClick={toggleEditor}
+            onClick={setFullScreen}
             className="text-xs text-[var(--pb-text-secondary)] hover:text-[var(--pb-text-primary)] transition-colors flex items-center gap-1"
-            title={isEditorVisible ? "Hide editor for fullscreen preview" : "Show editor"}
+            title="Hide editor for fullscreen preview"
           >
-            {isEditorVisible ? (
-              <>
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
-                  />
-                </svg>
-                Fullscreen
-              </>
-            ) : (
-              <>
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 4H4v14h14v-7" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.5 2.5l5 5M8 13l5-5 5 5" />
-                </svg>
-                Show Editor
-              </>
-            )}
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
+              />
+            </svg>
+            Fullscreen
           </button>
         </div>
         <div className="h-[calc(100%-37px)] overflow-y-auto">

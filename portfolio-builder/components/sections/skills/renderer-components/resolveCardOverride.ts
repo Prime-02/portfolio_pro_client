@@ -38,7 +38,7 @@ export function resolveCardOverride(
       matches = true;
     if (
       target.difficulty_level &&
-      skill.difficulty_level === target.difficulty_level
+      target.difficulty_level.includes(skill.difficulty_level as string)
     )
       matches = true;
 

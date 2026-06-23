@@ -13,17 +13,16 @@ interface PublicTestimonialsProfileProps {
 export function PublicTestimonialsProfile({ username }: PublicTestimonialsProfileProps) {
     const {
         userTestimonials,
+        userTestimonialsUsername,
+        userTestimonialsLoading,
         fetchUserTestimonials,
-        userTestimonialsLoading
     } = useTestimonialsStore();
 
-    const testimonials = userTestimonials[username] || [];
-
     useEffect(() => {
-        if (username && !userTestimonials[username]) {
+        if (username && userTestimonialsUsername !== username) {
             fetchUserTestimonials({ username });
         }
-    }, [username, userTestimonials, fetchUserTestimonials]);
+    }, [username, userTestimonialsUsername, fetchUserTestimonials]);
 
     if (userTestimonialsLoading) {
         return (
@@ -33,7 +32,7 @@ export function PublicTestimonialsProfile({ username }: PublicTestimonialsProfil
         );
     }
 
-    if (testimonials.length === 0) {
+    if (userTestimonials.length === 0) {
         return (
             <div className="text-center py-12">
                 <p className="text-[var(--foreground)]/50">No testimonials yet</p>
@@ -43,7 +42,7 @@ export function PublicTestimonialsProfile({ username }: PublicTestimonialsProfil
 
     return (
         <div className="space-y-4">
-            {testimonials.map((testimonial, index) => (
+            {userTestimonials.map((testimonial, index) => (
                 <motion.div
                     key={testimonial.id}
                     initial={{ opacity: 0, y: 10 }}

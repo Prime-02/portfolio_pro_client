@@ -3,6 +3,7 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
+import { AlertTriangle, Loader2, Maximize } from "lucide-react";
 import { HeroData, HeroCTA } from "@/portfolio-builder/types/hero";
 import type { HeroAnimations, SocialLink } from "@/portfolio-builder/types/hero";
 import {
@@ -264,17 +265,14 @@ export default function HeroEditor({ initialData, onSave, onCancel, theme, setFu
             {/* Save status banner */}
             {(saveStatus === "saving" || saveStatus === "error") && (
                 <div className={`fixed bottom-4 right-4 z-50 px-4 py-2 rounded-lg shadow-lg ${saveStatus === "saving"
-                    ? "bg-[var(--pb-info-bg)] text-[var(--pb-info)] border border-[var(--pb-info-border)]"
-                    : "bg-[var(--pb-error-bg)] text-[var(--pb-error)] border border-[var(--pb-error-border)]"
+                        ? "bg-[var(--pb-info-bg)] text-[var(--pb-info)] border border-[var(--pb-info-border)]"
+                        : "bg-[var(--pb-error-bg)] text-[var(--pb-error)] border border-[var(--pb-error-border)]"
                     }`}>
                     <div className="flex items-center gap-2">
                         {saveStatus === "saving" ? (
-                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-[var(--pb-info)] border-t-transparent" />
+                            <Loader2 className="w-4 h-4 animate-spin" />
                         ) : (
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                            </svg>
+                            <AlertTriangle className="w-4 h-4" />
                         )}
                         <span className="text-sm font-medium">
                             {saveStatus === "saving" ? "Saving..." : "Save failed! Don't close the page"}
@@ -307,12 +305,11 @@ export default function HeroEditor({ initialData, onSave, onCancel, theme, setFu
                     <span className="text-xs text-[var(--pb-text-muted)] uppercase tracking-wide">Preview</span>
                     <button
                         onClick={setFullScreen}
-                        className="text-xs text-[var(--pb-text-secondary)] hover:text-[var(--pb-text-primary)] transition-colors flex items-center gap-1"
-                        title={"Hide editor for fullscreen preview"}
+                        disabled={saveStatus === "saving"}
+                        className="text-xs text-[var(--pb-text-secondary)] hover:text-[var(--pb-text-primary)] transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-[var(--pb-text-secondary)]"
+                        title={saveStatus === "saving" ? "Cannot open fullscreen while saving" : "Hide editor for fullscreen preview"}
                     >
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                        </svg>
+                        <Maximize className="w-3.5 h-3.5" />
                         Fullscreen
                     </button>
                 </div>

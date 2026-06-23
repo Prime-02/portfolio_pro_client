@@ -42,7 +42,7 @@ export default function BioRenderer({ data }: BioRendererProps) {
     ctaButtons,
   } = data;
 
-  const anim: BioAnimations = {
+  const defaultAnim: BioAnimations = {
     preset: "fadeIn",
     duration: 0.6,
     delay: 0.1,
@@ -57,7 +57,11 @@ export default function BioRenderer({ data }: BioRendererProps) {
     hoverScale: 1.03,
     textReveal: false,
     textRevealDelay: 0.2,
-    ...animations,
+  };
+
+  const anim: BioAnimations = {
+    ...defaultAnim,
+    ...(animations ?? {}),
   };
 
   const fontsConfig = fonts ?? {};

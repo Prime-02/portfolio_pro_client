@@ -4,6 +4,7 @@ import axios, {
   AxiosError,
   InternalAxiosRequestConfig,
 } from "axios";
+import qs from "qs";
 import {
   removeEmptyStringValues,
   handleAxiosError,
@@ -330,8 +331,9 @@ const api: AxiosInstance = axios.create({
   headers: {
     "Content-Type": "application/json",
     "ngrok-skip-browser-warning": "true",
-    "X_Api_Key": getApiKey(),
+    X_Api_Key: getApiKey(),
   },
+  paramsSerializer: (params) => qs.stringify(params, { arrayFormat: "repeat" }),
 });
 
 // ---------------------------------------------------------------------------

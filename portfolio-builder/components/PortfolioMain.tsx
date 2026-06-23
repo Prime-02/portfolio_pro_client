@@ -12,6 +12,9 @@ import { BioData } from "@/portfolio-builder/types/bio";
 import { usePortfolioTheme, PortfolioThemeData } from "@/portfolio-builder/hooks/usePortfolioTheme";
 // 👇 Import the portfolio-builder theme CSS once at the top level
 import "@/portfolio-builder/styles/portfolio-theme.css";
+import { SkillsSectionController } from "./sections/skills";
+import { SkillsData } from "../types/skills";
+import { useTheme } from "@/src/app/components/theme/ThemeContext ";
 
 // ---------------------------------------------------------------------------
 // Props
@@ -83,6 +86,7 @@ function setSectionData<T>(
 export default function PortfolioMain({ portfolioId }: PortfolioMainProps) {
   const { currentPortfolio, isLoading, error, fetchPortfolioById, updatePortfolio } =
     usePortfolioStore();
+  const { profileContext } = useTheme()
 
   // Fetch the portfolio on mount (or when portfolioId changes)
   useEffect(() => {
@@ -121,9 +125,17 @@ export default function PortfolioMain({ portfolioId }: PortfolioMainProps) {
     );
   }
 
+  const currentUsername = profileContext.username;
+
   // ---- Build mode — render sections ----------------------------------------
   const heroData = getSectionData<HeroData>(currentPortfolio.layout, "hero");
   const bioData = getSectionData<BioData>(currentPortfolio.layout, "bio");
+  const skillsData = getSectionData<SkillsData>(currentPortfolio.layout, "skills");
+  const handleSkillsSave = async (updated: SkillsData) => {
+    const newLayout = setSectionData(currentPortfolio.layout, "skills", updated);
+    await updatePortfolio(portfolioId, { layout: newLayout });
+  };
+
 
   const handleHeroSave = async (updatedHeroData: HeroData) => {
     const newLayout = setSectionData(currentPortfolio.layout, "hero", updatedHeroData);
@@ -139,10 +151,10 @@ export default function PortfolioMain({ portfolioId }: PortfolioMainProps) {
     <div className="min-h-screen bg-[var(--pb-background)]">
       <HeroSectionController heroData={heroData} onSave={handleHeroSave} theme={resolvedTheme} />
       <BioSectionController bioData={bioData} onSave={handleBioSave} />
+      <SkillsSectionController skillsData={skillsData} onSave={handleSkillsSave} username={currentUsername || ""} />
 
       {/*
         Future sections:
-        <SkillsSectionController portfolioId={...} layout={...} />
         <ExperienceSectionController portfolioId={...} layout={...} />
         <ProjectsSectionController portfolioId={...} layout={...} />
       */}

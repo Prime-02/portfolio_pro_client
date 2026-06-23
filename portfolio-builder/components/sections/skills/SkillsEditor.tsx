@@ -1,36 +1,46 @@
-// portfolio-builder/components/sections/bio/BioEditor.tsx
+// portfolio-builder/components/sections/skills/SkillsEditor.tsx
 
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
-import { AlertTriangle, Loader2, Maximize } from "lucide-react";
-import { BioData } from "@/portfolio-builder/types/bio";
-import { getDefaultAnimations } from "@/portfolio-builder/types/hero";
+import { AlertTriangle, RefreshCw, Maximize, Loader2 } from "lucide-react";
+import { SkillsData, getEmptySkillsData } from "@/portfolio-builder/types/skills";
 import type { BioAnimations } from "@/portfolio-builder/types/bio";
 import {
-  ContentTab,
-  LayoutTab,
-  CTATab,
-  EditorTabs,
-  EditorActions,
-  AnimationsTab,
+  CardLayoutTab,
+  SkillsLayoutTab,
+  SkillsBackgroundTab,
+  SkillsAnimationsTab,
+  SkillsCTATab,
+  SkillsFilterTab,
+  SkillsEditorTabs,
+  SkillsEditorActions,
 } from "./editor-components";
-import BioRenderer from "./BioRenderer";
-import BackgroundTab from "@/portfolio-builder/components/shared/editor/BackgroundTab";
+import SkillsRenderer from "./SkillsRenderer";
 
-interface BioEditorProps {
-  initialData: BioData;
-  onSave: (data: BioData) => void;
+interface SkillsEditorProps {
+  initialData: SkillsData;
+  onSave: (data: SkillsData) => void;
   onCancel: () => void;
   setFullScreen: () => void;
+  username: string;
 }
 
-export default function BioEditor({ initialData, onSave, onCancel, setFullScreen }: BioEditorProps) {
-  const [data, setData] = useState<BioData>(() => structuredClone(initialData));
+export default function SkillsEditor({
+  initialData,
+  onSave,
+  onCancel,
+  setFullScreen,
+  username,
+}: SkillsEditorProps) {
+  const [data, setData] = useState<SkillsData>(() => structuredClone(initialData));
   const [activeTab, setActiveTab] = useState<
-    "content" | "layout" | "background" | "cta" | "animations"
-  >("content");
+    "filters" | "card-layout" | "layout" | "background" | "animations" | "cta"
+  >("filters");
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+
+  // ── Animation replay counter ───────────────────────────────────────────────
+  const [animationKey, setAnimationKey] = useState(0);
 
   // ── Stable serialised baseline ───────────────────────────────────────────
   const savedSnapshotRef = useRef(JSON.stringify(initialData));
@@ -39,18 +49,16 @@ export default function BioEditor({ initialData, onSave, onCancel, setFullScreen
   // ── Save orchestration refs ──────────────────────────────────────────────
   const isSavingRef = useRef(false);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pendingSaveRef = useRef<BioData | null>(null);
+  const pendingSaveRef = useRef<SkillsData | null>(null);
   const savedStatusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ── Core save executor ───────────────────────────────────────────────────
   const executeSave = useCallback(
-    (nextData: BioData) => {
+    (nextData: SkillsData) => {
       if (isSavingRef.current) {
         pendingSaveRef.current = nextData;
         return;
       }
-
-      if (!isValidData(nextData)) return;
 
       isSavingRef.current = true;
       setSaveStatus("saving");
@@ -82,7 +90,7 @@ export default function BioEditor({ initialData, onSave, onCancel, setFullScreen
 
   // ── Debounced auto-save ──────────────────────────────────────────────────
   const scheduleSave = useCallback(
-    (nextData: BioData) => {
+    (nextData: SkillsData) => {
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
       saveTimerRef.current = setTimeout(() => executeSave(nextData), 800);
     },
@@ -121,32 +129,30 @@ export default function BioEditor({ initialData, onSave, onCancel, setFullScreen
   }, [hasChanges, saveStatus]);
 
   // ── Field updaters ───────────────────────────────────────────────────────
-  const updateField = <K extends keyof BioData>(key: K, value: BioData[K]) => {
+  const updateField = <K extends keyof SkillsData>(key: K, value: SkillsData[K]) => {
     setData((prev) => ({ ...prev, [key]: value }));
   };
 
-  const updateBackground = (value: Partial<BioData["background"]>) => {
+  const updateFilters = (value: Partial<SkillsData["filters"]>) => {
     setData((prev) => ({
       ...prev,
-      background: { ...prev.background, type: prev.background?.type || "none", ...value },
+      filters: { ...prev.filters, ...value },
+    }));
+  };
+
+  const updateBackground = (value: Partial<SkillsData["background"]>) => {
+    setData((prev) => ({
+      ...prev,
+      background: { ...prev.background, ...value },
     }));
   };
 
   const updateAnimations = (value: Partial<BioAnimations>) => {
     setData((prev) => ({
       ...prev,
-      animations: {
-        ...getDefaultAnimations(),
-        ...prev.animations,
-        ...value,
-      },
+      animations: { ...prev.animations, ...value },
     }));
-  };
-
-  // ── Validation ───────────────────────────────────────────────────────────
-  const isValidData = (d: BioData): boolean => {
-    if (!d.bio?.trim()) return false;
-    return true;
+    setAnimationKey((k) => k + 1);
   };
 
   // ── Manual save ──────────────────────────────────────────────────────────
@@ -193,22 +199,24 @@ export default function BioEditor({ initialData, onSave, onCancel, setFullScreen
   // ── Tab content ──────────────────────────────────────────────────────────
   const renderTabContent = () => {
     switch (activeTab) {
-      case "content":
-        return <ContentTab data={data} onChange={updateField} />;
+      case "filters":
+        return <SkillsFilterTab data={data} onUpdate={updateFilters} />;
+      case "card-layout":
+        return <CardLayoutTab data={data} onChange={updateField} />;
       case "layout":
-        return <LayoutTab data={data} onChange={updateField} />;
+        return <SkillsLayoutTab data={data} onChange={updateField} />;
       case "background":
         return (
-          <BackgroundTab
+          <SkillsBackgroundTab
             data={data}
             onUpdate={updateBackground}
             allowedTypes={["none", "solid", "gradient"]}
           />
         );
-      case "cta":
-        return <CTATab data={data} onChange={updateField} />;
       case "animations":
-        return <AnimationsTab data={data} onUpdate={updateAnimations} />;
+        return <SkillsAnimationsTab data={data} onUpdate={updateAnimations} />;
+      case "cta":
+        return <SkillsCTATab data={data} onChange={updateField} />;
       default:
         return null;
     }
@@ -240,15 +248,14 @@ export default function BioEditor({ initialData, onSave, onCancel, setFullScreen
 
       {/* Editor panel */}
       <div className="flex-1 flex flex-col min-w-0 border border-[var(--pb-border)] rounded-xl overflow-hidden bg-[var(--pb-surface)]">
-        <EditorTabs activeTab={activeTab} onTabChange={setActiveTab} />
+        <SkillsEditorTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
         <div className="p-6 overflow-y-auto flex-1 space-y-6 bg-[var(--pb-background)]">
           {renderTabContent()}
         </div>
 
-        <EditorActions
+        <SkillsEditorActions
           hasChanges={hasChanges}
-          isValid={isValidData(data)}
           saveStatus={saveStatusText[saveStatus]}
           saveStatusColor={saveStatusColor[saveStatus]}
           onSave={handleSave}
@@ -260,18 +267,32 @@ export default function BioEditor({ initialData, onSave, onCancel, setFullScreen
       <div className="flex-1 min-w-0 bg-[var(--pb-background)] border border-[var(--pb-border)] rounded-xl overflow-hidden transition-all duration-300">
         <div className="px-4 py-2 border-b border-[var(--pb-border)] flex items-center justify-between">
           <span className="text-xs text-[var(--pb-text-muted)] uppercase tracking-wide">Preview</span>
-          <button
-            onClick={setFullScreen}
-            disabled={saveStatus === "saving"}
-            className="text-xs text-[var(--pb-text-secondary)] hover:text-[var(--pb-text-primary)] transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-[var(--pb-text-secondary)]"
-            title={saveStatus === "saving" ? "Cannot open fullscreen while saving" : "Hide editor for fullscreen preview"}
-          >
-            <Maximize className="w-3.5 h-3.5" />
-            Fullscreen
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setAnimationKey((k) => k + 1)}
+              className="text-xs text-[var(--pb-text-secondary)] hover:text-[var(--pb-text-primary)] transition-colors flex items-center gap-1 px-2 py-1 rounded-md hover:bg-[var(--pb-surface-hover)]"
+              title="Replay animation"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              Replay
+            </button>
+            <button
+              onClick={setFullScreen}
+              disabled={saveStatus === "saving"}
+              className="text-xs text-[var(--pb-text-secondary)] hover:text-[var(--pb-text-primary)] transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-[var(--pb-text-secondary)]"
+              title={saveStatus === "saving" ? "Cannot open fullscreen while saving" : "Hide editor for fullscreen preview"}
+            >
+              <Maximize className="w-3.5 h-3.5" />
+              Fullscreen
+            </button>
+          </div>
         </div>
         <div className="h-[calc(100%-37px)] overflow-y-auto">
-          <BioRenderer data={data} />
+          <SkillsRenderer
+            data={data}
+            username={username}
+            animationKey={animationKey}
+          />
         </div>
       </div>
     </div>

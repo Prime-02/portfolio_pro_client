@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import HeroRenderer from "@/portfolio-builder/components/sections/hero/HeroRenderer";
 import HeroEditor from "@/portfolio-builder/components/sections/hero/HeroEditor";
 import { HeroData, getEmptyHeroData } from "@/portfolio-builder/types/hero";
@@ -25,18 +25,32 @@ interface HeroSectionControllerProps {
 export default function HeroSectionController({ heroData, onSave, theme }: HeroSectionControllerProps) {
     const [isEditing, setIsEditing] = useState(false);
 
+    // ── Optimistic local state ─────────────────────────────────────────────
+    const [localData, setLocalData] = useState<HeroData | null>(heroData);
+    useEffect(() => {
+        if (heroData) setLocalData(heroData);
+    }, [heroData]);
+
     // ---- Save ----------------------------------------------------------------
     const handleSave = async (updatedHeroData: HeroData) => {
+        setLocalData(updatedHeroData);   // optimistic
         await onSave(updatedHeroData);
     };
 
     // ---- Cancel --------------------------------------------------------------
     const handleCancel = () => {
+        setLocalData(heroData);            // rollback
+        setIsEditing(false);
+    };
+
+    // ---- Fullscreen ----------------------------------------------------------
+    const handleSetFullscreen = (latestData: HeroData) => {
+        setLocalData(latestData);
         setIsEditing(false);
     };
 
     // ---- No hero data, not editing — show placeholder ------------------------
-    if (!heroData && !isEditing) {
+    if (!localData && !isEditing) {
         return (
             <div className="flex items-center justify-center min-h-[60vh]">
                 <div className="text-center">
@@ -56,11 +70,11 @@ export default function HeroSectionController({ heroData, onSave, theme }: HeroS
     if (isEditing) {
         return (
             <HeroEditor
-                initialData={heroData || getEmptyHeroData()}
+                initialData={localData || getEmptyHeroData()}
                 onSave={handleSave}
                 onCancel={handleCancel}
                 theme={theme}
-                setFullScreen={()=> setIsEditing(!isEditing)}
+                setFullScreen={handleSetFullscreen}
             />
         );
     }
@@ -68,7 +82,7 @@ export default function HeroSectionController({ heroData, onSave, theme }: HeroS
     // ---- Viewing — show renderer ---------------------------------------------
     return (
         <div className="relative">
-            <HeroRenderer data={heroData!} theme={theme} />
+            <HeroRenderer data={localData!} theme={theme} />
 
             {/* Edit button */}
             <button

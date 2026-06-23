@@ -30,6 +30,14 @@ export default function SkillsSectionController({
   const [isEditing, setIsEditing] = useState(false);
   const { fetchPublicSkillsByUsername } = useSkills();
 
+  // ── Optimistic local state ────────────────────────────────────────────────
+  // The renderer always reads from here so we never show stale data after
+  // the editor unmounts.  Sync with the prop whenever it changes from above.
+  const [localData, setLocalData] = useState<SkillsData | null>(skillsData);
+  useEffect(() => {
+    if (skillsData) setLocalData(skillsData);
+  }, [skillsData]);
+
   // Prefetch with the real filter config as soon as both username and
   // skillsData are available. This starts the fetch one render cycle earlier
   // than waiting for SkillsRenderer to mount, so the renderer finds the
@@ -50,16 +58,28 @@ export default function SkillsSectionController({
 
   // ---- Save ----------------------------------------------------------------
   const handleSave = async (updatedSkillsData: SkillsData) => {
-    await onSave(updatedSkillsData);
+    setLocalData(updatedSkillsData);   // optimistic — renderer sees it immediately
+    await onSave(updatedSkillsData);   // persist
   };
 
   // ---- Cancel --------------------------------------------------------------
   const handleCancel = () => {
+    setLocalData(skillsData);          // rollback to last known server state
+    setIsEditing(false);
+  };
+
+  // ---- Fullscreen ----------------------------------------------------------
+  // The editor calls this with its latest in-memory data.  We update our
+  // optimistic state so the renderer shows the freshest config immediately.
+  // We do NOT call onSave here — the editor's pending auto-save will flush
+  // naturally, or the user can hit "Save Now" manually.
+  const handleSetFullscreen = (latestData: SkillsData) => {
+    setLocalData(latestData);
     setIsEditing(false);
   };
 
   // ---- No skills data, not editing — show placeholder ----------------------
-  if (!skillsData && !isEditing) {
+  if (!localData && !isEditing) {
     return (
       <div className="flex items-center justify-center min-h-[40vh]">
         <div className="text-center">
@@ -79,10 +99,10 @@ export default function SkillsSectionController({
   if (isEditing) {
     return (
       <SkillsEditor
-        initialData={skillsData || getEmptySkillsData()}
+        initialData={localData || getEmptySkillsData()}
         onSave={handleSave}
         onCancel={handleCancel}
-        setFullScreen={() => setIsEditing(false)}
+        setFullScreen={handleSetFullscreen}
         username={username}
       />
     );
@@ -91,7 +111,7 @@ export default function SkillsSectionController({
   // ---- Viewing — show renderer ---------------------------------------------
   return (
     <div className="relative">
-      <SkillsRenderer data={skillsData!} username={username} />
+      <SkillsRenderer data={localData!} username={username} />
 
       {/* Edit button */}
       <button

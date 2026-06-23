@@ -106,14 +106,14 @@ export function SkillBadge({ skill, onEdit, onDelete, index, isOwner = false }: 
                 <div className="flex items-center gap-3">
                     <div className="relative">
                         <div
-                            className="w-12 h-12 rounded-xl flex items-center justify-center"
+                            className="w-12 h-12 overflow-clip rounded-xl flex items-center justify-center"
                             style={{ backgroundColor: `${prof.color}15` }}
                         >
                             {skill.skill_logo_url ? (
                                 <img
                                     src={skill.skill_logo_url}
                                     alt={skill.skill_name}
-                                    className="w-6 h-6 object-contain"
+                                    className="object-cover"
                                 />
                             ) : (
                                 <ProfIcon className="w-6 h-6" style={{ color: prof.color }} />

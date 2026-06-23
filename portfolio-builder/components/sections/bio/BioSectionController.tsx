@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import BioRenderer from "@/portfolio-builder/components/sections/bio/BioRenderer";
 import BioEditor from "@/portfolio-builder/components/sections/bio/BioEditor";
 import { BioData, getEmptyBioData } from "@/portfolio-builder/types/bio";
@@ -23,18 +23,32 @@ interface BioSectionControllerProps {
 export default function BioSectionController({ bioData, onSave }: BioSectionControllerProps) {
   const [isEditing, setIsEditing] = useState(false);
 
+  // ── Optimistic local state ─────────────────────────────────────────────
+  const [localData, setLocalData] = useState<BioData | null>(bioData);
+  useEffect(() => {
+    if (bioData) setLocalData(bioData);
+  }, [bioData]);
+
   // ---- Save ----------------------------------------------------------------
   const handleSave = async (updatedBioData: BioData) => {
+    setLocalData(updatedBioData);   // optimistic
     await onSave(updatedBioData);
   };
 
   // ---- Cancel --------------------------------------------------------------
   const handleCancel = () => {
+    setLocalData(bioData);          // rollback
+    setIsEditing(false);
+  };
+
+  // ---- Fullscreen ----------------------------------------------------------
+  const handleSetFullscreen = (latestData: BioData) => {
+    setLocalData(latestData);
     setIsEditing(false);
   };
 
   // ---- No bio data, not editing — show placeholder -------------------------
-  if (!bioData && !isEditing) {
+  if (!localData && !isEditing) {
     return (
       <div className="flex items-center justify-center min-h-[40vh]">
         <div className="text-center">
@@ -54,10 +68,10 @@ export default function BioSectionController({ bioData, onSave }: BioSectionCont
   if (isEditing) {
     return (
       <BioEditor
-        initialData={bioData || getEmptyBioData()}
+        initialData={localData || getEmptyBioData()}
         onSave={handleSave}
         onCancel={handleCancel}
-        setFullScreen={() => setIsEditing(false)}
+        setFullScreen={handleSetFullscreen}
       />
     );
   }
@@ -65,7 +79,7 @@ export default function BioSectionController({ bioData, onSave }: BioSectionCont
   // ---- Viewing — show renderer ---------------------------------------------
   return (
     <div className="relative">
-      <BioRenderer data={bioData!} />
+      <BioRenderer data={localData!} />
 
       {/* Edit button */}
       <button

@@ -20,9 +20,9 @@ import SkillsRenderer from "./SkillsRenderer";
 
 interface SkillsEditorProps {
   initialData: SkillsData;
-  onSave: (data: SkillsData) => void;
+  onSave: (data: SkillsData) => Promise<void>;
   onCancel: () => void;
-  setFullScreen: () => void;
+  setFullScreen: (latestData: SkillsData) => void;
   username: string;
 }
 
@@ -39,7 +39,7 @@ export default function SkillsEditor({
   >("filters");
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
 
-  // ── Animation replay counter ───────────────────────────────────────────────
+  // ── Animation replay counter ─────────────────────────────────────────────
   const [animationKey, setAnimationKey] = useState(0);
 
   // ── Stable serialised baseline ───────────────────────────────────────────
@@ -181,6 +181,13 @@ export default function SkillsEditor({
     onCancel();
   };
 
+  // ── Fullscreen ───────────────────────────────────────────────────────────
+  // Pass current editor data to the controller so it can update its optimistic
+  // state.  We do NOT call onSave here — preview is not persistence.
+  const handleFullscreen = () => {
+    setFullScreen(data);
+  };
+
   // ── Save status display ──────────────────────────────────────────────────
   const saveStatusText = {
     idle: hasChanges ? "Unsaved changes" : "Saved",
@@ -229,8 +236,8 @@ export default function SkillsEditor({
       {(saveStatus === "saving" || saveStatus === "error") && (
         <div
           className={`fixed bottom-4 right-4 z-50 px-4 py-2 rounded-lg shadow-lg ${saveStatus === "saving"
-              ? "bg-[var(--pb-info-bg)] text-[var(--pb-info)] border border-[var(--pb-info-border)]"
-              : "bg-[var(--pb-error-bg)] text-[var(--pb-error)] border border-[var(--pb-error-border)]"
+            ? "bg-[var(--pb-info-bg)] text-[var(--pb-info)] border border-[var(--pb-info-border)]"
+            : "bg-[var(--pb-error-bg)] text-[var(--pb-error)] border border-[var(--pb-error-border)]"
             }`}
         >
           <div className="flex items-center gap-2">
@@ -277,7 +284,7 @@ export default function SkillsEditor({
               Replay
             </button>
             <button
-              onClick={setFullScreen}
+              onClick={handleFullscreen}
               disabled={saveStatus === "saving"}
               className="text-xs text-[var(--pb-text-secondary)] hover:text-[var(--pb-text-primary)] transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-[var(--pb-text-secondary)]"
               title={saveStatus === "saving" ? "Cannot open fullscreen while saving" : "Hide editor for fullscreen preview"}

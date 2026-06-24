@@ -11,6 +11,7 @@ const GAP_SIZE = { small: "12px", medium: "16px", large: "24px" } as const;
 
 const MANUAL_SCROLL_STEP = 300;
 const SCROLL_SPEED = 0.05;
+const MIN_CARDS_FOR_AUTOPLAY = 3; // Minimum cards required for auto-scroll
 
 export default function HorizontalScrollLayout({
     skills,
@@ -38,9 +39,28 @@ export default function HorizontalScrollLayout({
     const velocityRef = useRef(0);
     const lastTimestampRef = useRef<number | null>(null);
 
-    const [isPlaying, setIsPlaying] = useState(true);
+    const [isPlaying, setIsPlaying] = useState(false); // Changed to false initially
     const [canScrollLeft, setCanScrollLeft] = useState(false);
     const [canScrollRight, setCanScrollRight] = useState(false);
+    const [canAutoPlay, setCanAutoPlay] = useState(false); // New state to track if we can auto-play
+
+    // ── Check if auto-play is possible (more than MIN_CARDS_FOR_AUTOPLAY visible) ──
+    const checkAutoPlayEligibility = useCallback(() => {
+        const el = scrollRef.current;
+        if (!el) return false;
+
+        // Get the width of a single card + gap
+        const cardWidthPx = el.querySelector('[class*="shrink-0"]')?.clientWidth || 0;
+
+        if (cardWidthPx === 0) return false;
+
+        // Calculate how many full cards can fit in the visible area
+        const visibleCards = Math.floor(el.clientWidth / cardWidthPx);
+
+        const eligible = skills.length > MIN_CARDS_FOR_AUTOPLAY && visibleCards < skills.length;
+        setCanAutoPlay(eligible);
+        return eligible;
+    }, [skills.length]);
 
     // ── Arrow visibility ──────────────────────────────────────────────────────
     const updateArrows = useCallback(() => {
@@ -54,11 +74,18 @@ export default function HorizontalScrollLayout({
         const el = scrollRef.current;
         if (!el) return;
         updateArrows();
+        checkAutoPlayEligibility(); // Check on mount
         el.addEventListener("scroll", updateArrows, { passive: true });
-        const ro = new ResizeObserver(updateArrows);
+        const ro = new ResizeObserver(() => {
+            updateArrows();
+            checkAutoPlayEligibility(); // Recheck on resize
+        });
         ro.observe(el);
-        return () => { el.removeEventListener("scroll", updateArrows); ro.disconnect(); };
-    }, [updateArrows]);
+        return () => {
+            el.removeEventListener("scroll", updateArrows);
+            ro.disconnect();
+        };
+    }, [updateArrows, checkAutoPlayEligibility]);
 
     // ── Continuous loop animation ─────────────────────────────────────────────
     const stopAnim = useCallback(() => {
@@ -79,8 +106,6 @@ export default function HorizontalScrollLayout({
 
             if (lastTimestampRef.current !== null) {
                 const delta = timestamp - lastTimestampRef.current;
-                // Read fresh on every frame so stale closures can't cause
-                // early/late resets if layout settles after animate() is called
                 const halfWidth = el.scrollWidth / 2;
 
                 el.scrollLeft += velocityRef.current * delta;
@@ -102,13 +127,16 @@ export default function HorizontalScrollLayout({
     }, []);
 
     const startAnim = useCallback(() => {
+        // Only start if auto-play is allowed
+        if (!canAutoPlay) return;
+
         stopAnim();
         setIsPlaying(true);
         const timeoutId = setTimeout(() => {
             animate();
         }, 50);
         return () => clearTimeout(timeoutId);
-    }, [stopAnim, animate]);
+    }, [stopAnim, animate, canAutoPlay]);
 
     const pauseAnim = useCallback(() => {
         stopAnim();
@@ -117,19 +145,21 @@ export default function HorizontalScrollLayout({
 
     useEffect(() => () => stopAnim(), [stopAnim]);
 
-    // ── Auto-start animation on mount ─────────────────────────────────────────
+    // ── Auto-start animation on mount (only if eligible) ──────────────────────
     useEffect(() => {
         const el = scrollRef.current;
         if (!el) return;
 
+        // Wait for layout to settle, then check eligibility
         const timeoutId = setTimeout(() => {
-            if (el.scrollWidth <= el.clientWidth * 2) return;
-            animate();
-            setIsPlaying(true);
+            if (checkAutoPlayEligibility()) {
+                animate();
+                setIsPlaying(true);
+            }
         }, 100);
 
         return () => clearTimeout(timeoutId);
-    }, [animate]);
+    }, [animate, checkAutoPlayEligibility]);
 
     // ── Manual scroll (cancels auto-scroll) ───────────────────────────────────
     const manualScroll = useCallback((direction: "left" | "right") => {
@@ -191,13 +221,16 @@ export default function HorizontalScrollLayout({
         color: isPlaying
             ? "var(--pb-accent)"
             : "var(--pb-text-secondary)",
-        cursor: "pointer",
+        cursor: canAutoPlay ? "pointer" : "not-allowed", // Disable if can't auto-play
+        opacity: canAutoPlay ? 1 : 0.3, // Dim if can't auto-play
         transition: "background 150ms, color 150ms, border-color 150ms, transform 150ms",
         backdropFilter: "blur(8px)",
         flexShrink: 0,
     };
 
-    const duplicatedSkills = [...skills, ...skills];
+    // Only duplicate if there are enough skills to warrant it
+    const shouldDuplicate = skills.length > MIN_CARDS_FOR_AUTOPLAY;
+    const duplicatedSkills = shouldDuplicate ? [...skills, ...skills] : skills;
 
     return (
         <div className="relative select-none w-full">
@@ -238,38 +271,40 @@ export default function HorizontalScrollLayout({
 
             {/* ── Controls row ─────────────────────────────────────────── */}
             <div className="flex items-center justify-between mt-3 px-1">
-                {/* Left group: Play/Pause */}
-                <button
-                    aria-label={isPlaying ? "Pause auto-scroll" : "Start auto-scroll"}
-                    onClick={() => isPlaying ? pauseAnim() : startAnim()}
-                    style={playPauseStyle}
-                    onMouseEnter={e => {
-                        if (isPlaying) {
-                            (e.currentTarget as HTMLButtonElement).style.background = "var(--pb-accent-20)";
-                        } else {
-                            (e.currentTarget as HTMLButtonElement).style.background = "var(--pb-surface-hover)";
-                            (e.currentTarget as HTMLButtonElement).style.color = "var(--pb-text-primary)";
+                {/* Left group: Play/Pause - only show if auto-play is possible */}
+                {canAutoPlay && (
+                    <button
+                        aria-label={isPlaying ? "Pause auto-scroll" : "Start auto-scroll"}
+                        onClick={() => isPlaying ? pauseAnim() : startAnim()}
+                        style={playPauseStyle}
+                        onMouseEnter={e => {
+                            if (isPlaying) {
+                                (e.currentTarget as HTMLButtonElement).style.background = "var(--pb-accent-20)";
+                            } else {
+                                (e.currentTarget as HTMLButtonElement).style.background = "var(--pb-surface-hover)";
+                                (e.currentTarget as HTMLButtonElement).style.color = "var(--pb-text-primary)";
+                            }
+                            (e.currentTarget as HTMLButtonElement).style.transform = "scale(1.05)";
+                        }}
+                        onMouseLeave={e => {
+                            (e.currentTarget as HTMLButtonElement).style.background = isPlaying
+                                ? "var(--pb-accent-10)"
+                                : "var(--pb-surface-elevated)";
+                            (e.currentTarget as HTMLButtonElement).style.color = isPlaying
+                                ? "var(--pb-accent)"
+                                : "var(--pb-text-secondary)";
+                            (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)";
+                        }}
+                    >
+                        {isPlaying
+                            ? <Pause size={13} style={{ fill: "currentColor" }} />
+                            : <Play size={13} style={{ fill: "currentColor", transform: "translateX(1px)" }} />
                         }
-                        (e.currentTarget as HTMLButtonElement).style.transform = "scale(1.05)";
-                    }}
-                    onMouseLeave={e => {
-                        (e.currentTarget as HTMLButtonElement).style.background = isPlaying
-                            ? "var(--pb-accent-10)"
-                            : "var(--pb-surface-elevated)";
-                        (e.currentTarget as HTMLButtonElement).style.color = isPlaying
-                            ? "var(--pb-accent)"
-                            : "var(--pb-text-secondary)";
-                        (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)";
-                    }}
-                >
-                    {isPlaying
-                        ? <Pause size={13} style={{ fill: "currentColor" }} />
-                        : <Play size={13} style={{ fill: "currentColor", transform: "translateX(1px)" }} />
-                    }
-                </button>
+                    </button>
+                )}
 
                 {/* Right group: Left + Right chevrons */}
-                <div className="flex items-center gap-2">
+                <div className={`flex items-center gap-2 ${!canAutoPlay ? 'ml-auto' : ''}`}>
                     <button
                         aria-label="Scroll left"
                         onClick={() => manualScroll("left")}

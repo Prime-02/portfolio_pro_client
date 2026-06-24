@@ -13,6 +13,8 @@ import { SkillsSectionController } from "./sections/skills";
 import { SkillsData } from "../types/skills";
 import { ExperienceSectionController } from "./sections/experience";
 import { ExperienceData } from "../types/experience";
+import { EducationSectionController } from "./sections/education";
+import { EducationData } from "../types/education";
 import { useTheme } from "@/src/app/components/theme/ThemeContext ";
 
 interface PortfolioMainProps {
@@ -86,6 +88,7 @@ export default function PortfolioMain({ portfolioId }: PortfolioMainProps) {
   const bioData = useMemo(() => getSectionData<BioData>(layout, "bio"), [layout]);
   const skillsData = useMemo(() => getSectionData<SkillsData>(layout, "skills"), [layout]);
   const experienceData = useMemo(() => getSectionData<ExperienceData>(layout, "experience"), [layout]);
+  const educationData = useMemo(() => getSectionData<EducationData>(layout, "education"), [layout]);
 
   // ── Stable handlers — only change when their dependencies change ──────────
   const handleHeroSave = useCallback(async (updatedHeroData: HeroData) => {
@@ -105,6 +108,11 @@ export default function PortfolioMain({ portfolioId }: PortfolioMainProps) {
 
   const handleExperienceSave = useCallback(async (updated: ExperienceData) => {
     const newLayout = setSectionData(layout, "experience", updated);
+    await updatePortfolio(portfolioId, { layout: newLayout });
+  }, [layout, portfolioId, updatePortfolio]);
+
+  const handleEducationSave = useCallback(async (updated: EducationData) => {
+    const newLayout = setSectionData(layout, "education", updated);
     await updatePortfolio(portfolioId, { layout: newLayout });
   }, [layout, portfolioId, updatePortfolio]);
 
@@ -148,6 +156,11 @@ export default function PortfolioMain({ portfolioId }: PortfolioMainProps) {
       <ExperienceSectionController
         experienceData={experienceData}
         onSave={handleExperienceSave}
+        username={currentUsername || ""}
+      />
+      <EducationSectionController
+        educationData={educationData}
+        onSave={handleEducationSave}
         username={currentUsername || ""}
       />
     </div>

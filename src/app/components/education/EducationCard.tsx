@@ -49,17 +49,17 @@ export function EducationCard({ education, onEdit, onDelete, isOwner = false }: 
                 <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-3 flex-1 min-w-0">
                         <div
-                            className="p-2.5 rounded-xl flex-shrink-0"
+                            className="p-3 rounded-xl flex-shrink-0"
                             style={{ backgroundColor: `${accentColor}20` }}
                         >
                             {education.institution_logo_url ? (
                                 <img
                                     src={education.institution_logo_url}
                                     alt={education.institution}
-                                    className="w-5 h-5 object-contain"
+                                    className="w-8 h-8 object-contain"
                                 />
                             ) : (
-                                <GraduationCap className="w-5 h-5" style={{ color: accentColor }} />
+                                <GraduationCap className="w-8 h-8" style={{ color: accentColor }} />
                             )}
                         </div>
                         <div className="min-w-0">

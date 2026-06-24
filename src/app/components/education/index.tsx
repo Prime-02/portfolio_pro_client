@@ -27,8 +27,14 @@ export default function EducationPage() {
     const { profileContext } = useTheme();
 
     const [addDialogOpen, setAddDialogOpen] = useState(false);
-    const [editEdu, setEditEdu] = useState<Education | null>(null);
-    const [deleteEdu, setDeleteEdu] = useState<Education | null>(null);
+
+    // Store IDs only — derive live objects from the store so they're
+    // always fresh after an update, never a stale snapshot.
+    const [editEduId, setEditEduId] = useState<string | null>(null);
+    const [deleteEduId, setDeleteEduId] = useState<string | null>(null);
+
+    const editEdu = educations.find((e) => e.id === editEduId) ?? null;
+    const deleteEdu = educations.find((e) => e.id === deleteEduId) ?? null;
 
     // Derived state from profileContext
     const isOwnProfile = profileContext.kind === "own";
@@ -36,7 +42,11 @@ export default function EducationPage() {
 
     // Fetch data based on profile context
     useEffect(() => {
-        if (profileContext.kind === "pending" || profileContext.kind === "unauthenticated" || profileContext.kind === "not-found") {
+        if (
+            profileContext.kind === "pending" ||
+            profileContext.kind === "unauthenticated" ||
+            profileContext.kind === "not-found"
+        ) {
             return;
         }
 
@@ -54,10 +64,20 @@ export default function EducationPage() {
     const displayEducations = isOwnProfile ? educations : publicEducations;
     const displayLoading = isOwnProfile ? isLoading : isLoadingPublicByUsername;
 
+    // Adapters — OwnProfileView/EducationDialogs still pass Education | null,
+    // so we unwrap to ID here at the boundary.
+    const handleEditEduChange = (edu: Education | null) => {
+        setEditEduId(edu?.id ?? null);
+    };
+
+    const handleDeleteEduChange = (edu: Education | null) => {
+        setDeleteEduId(edu?.id ?? null);
+    };
+
     const handleDelete = async () => {
-        if (!deleteEdu?.id) return;
-        await deleteEducation(deleteEdu.id);
-        setDeleteEdu(null);
+        if (!deleteEduId) return;
+        await deleteEducation(deleteEduId);
+        setDeleteEduId(null);
     };
 
     // UI states
@@ -90,9 +110,9 @@ export default function EducationPage() {
             addDialogOpen={addDialogOpen}
             onAddDialogChange={setAddDialogOpen}
             editEdu={editEdu}
-            onEditEduChange={setEditEdu}
+            onEditEduChange={handleEditEduChange}
             deleteEdu={deleteEdu}
-            onDeleteEduChange={setDeleteEdu}
+            onDeleteEduChange={handleDeleteEduChange}
             isDeleting={isDeleting}
             onDeleteConfirm={handleDelete}
         />

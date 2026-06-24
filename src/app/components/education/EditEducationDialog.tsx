@@ -153,7 +153,7 @@ export function EditEducationDialog({ education, open, onOpenChange }: EditEduca
                         Institution Logo (optional)
                     </label>
                     <FileInput
-                        value={institutionLogo}
+                        value={institutionLogo || education.institution_logo_url || ""}
                         onChange={(file) => setInstitutionLogo(file)}
                     />
                 </div>

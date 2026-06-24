@@ -254,7 +254,7 @@ export default function SkillsEditor({
       )}
 
       {/* Editor panel */}
-      <div className="flex-1 flex flex-col min-w-0 border border-[var(--pb-border)] rounded-xl overflow-hidden bg-[var(--pb-surface)]">
+      <div className="h-fit flex-1 flex flex-col min-w-0 border border-[var(--pb-border)] rounded-xl overflow-hidden bg-[var(--pb-surface)]">
         <SkillsEditorTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
         <div className="p-6 overflow-y-auto flex-1 space-y-6 bg-[var(--pb-background)]">

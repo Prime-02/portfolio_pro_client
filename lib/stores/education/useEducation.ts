@@ -72,6 +72,7 @@ export interface EducationFilters {
   ids?: string[];
   merge_filters?: boolean;
 }
+
 // ---------------------------------------------------------------------------
 // Store shape
 // ---------------------------------------------------------------------------
@@ -201,6 +202,26 @@ const buildQueryParams = (filters?: EducationFilters): string => {
 };
 
 // ---------------------------------------------------------------------------
+// Helper: build a FormData payload for create/update requests.
+// Always sets Content-Type explicitly so axios includes the multipart
+// boundary and FastAPI can parse the form field correctly — without this
+// the education_data field silently falls back to the "{}" default and
+// the update loop runs zero iterations, writing nothing to the DB.
+// ---------------------------------------------------------------------------
+
+const MULTIPART_HEADERS = { "Content-Type": "multipart/form-data" } as const;
+
+const buildEducationFormData = (
+  data: Record<string, unknown>,
+  logo?: File | null,
+): FormData => {
+  const formData = new FormData();
+  formData.append("education_data", JSON.stringify(data));
+  if (logo) formData.append("institution_logo", logo);
+  return formData;
+};
+
+// ---------------------------------------------------------------------------
 // Store
 // ---------------------------------------------------------------------------
 
@@ -326,24 +347,12 @@ export const useEducation = create<EducationState>()((set) => ({
     try {
       const { institution_logo, ...educationData } = payload;
 
-      let response;
-
-      // If there's a file, send as FormData
-      if (institution_logo) {
-        const formData = new FormData();
-        formData.append("education_data", JSON.stringify(educationData));
-        formData.append("institution_logo", institution_logo);
-
-        response = await api.post<Education>("/education/", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-      } else {
-        // No file, send education_data as form field with JSON string
-        const formData = new FormData();
-        formData.append("education_data", JSON.stringify(educationData));
-
-        response = await api.post<Education>("/education/", formData);
-      }
+      // FIX: always pass Content-Type header so axios sets the multipart
+      // boundary and FastAPI can parse the education_data form field.
+      const formData = buildEducationFormData(educationData, institution_logo);
+      const response = await api.post<Education>("/education/", formData, {
+        headers: MULTIPART_HEADERS,
+      });
 
       const newEducation = response.data;
 
@@ -373,31 +382,14 @@ export const useEducation = create<EducationState>()((set) => ({
     try {
       const { institution_logo, ...educationData } = payload;
 
-      let response;
-
-      // If there's a file, send as FormData
-      if (institution_logo) {
-        const formData = new FormData();
-        formData.append("education_data", JSON.stringify(educationData));
-        formData.append("institution_logo", institution_logo);
-
-        response = await api.put<Education>(
-          `/education/${educationId}`,
-          formData,
-          {
-            headers: { "Content-Type": "multipart/form-data" },
-          },
-        );
-      } else {
-        // No file, send education_data as form field with JSON string
-        const formData = new FormData();
-        formData.append("education_data", JSON.stringify(educationData));
-
-        response = await api.put<Education>(
-          `/education/${educationId}`,
-          formData,
-        );
-      }
+      // FIX: always pass Content-Type header so axios sets the multipart
+      // boundary and FastAPI can parse the education_data form field.
+      const formData = buildEducationFormData(educationData, institution_logo);
+      const response = await api.put<Education>(
+        `/education/${educationId}`,
+        formData,
+        { headers: MULTIPART_HEADERS },
+      );
 
       const updatedEducation = response.data;
 
@@ -630,30 +622,14 @@ export const useEducation = create<EducationState>()((set) => ({
     try {
       const { institution_logo, ...educationData } = payload;
 
-      let response;
-
-      // If there's a file, send as FormData
-      if (institution_logo) {
-        const formData = new FormData();
-        formData.append("education_data", JSON.stringify(educationData));
-        formData.append("institution_logo", institution_logo);
-
-        response = await api.put<Education>(
-          `/admin/education/${educationId}`,
-          formData,
-          {
-            headers: { "Content-Type": "multipart/form-data" },
-          },
-        );
-      } else {
-        const formData = new FormData();
-        formData.append("education_data", JSON.stringify(educationData));
-
-        response = await api.put<Education>(
-          `/admin/education/${educationId}`,
-          formData,
-        );
-      }
+      // FIX: always pass Content-Type header so axios sets the multipart
+      // boundary and FastAPI can parse the education_data form field.
+      const formData = buildEducationFormData(educationData, institution_logo);
+      const response = await api.put<Education>(
+        `/admin/education/${educationId}`,
+        formData,
+        { headers: MULTIPART_HEADERS },
+      );
 
       const updatedEducation = response.data;
 

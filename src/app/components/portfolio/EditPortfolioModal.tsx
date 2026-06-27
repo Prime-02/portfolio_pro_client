@@ -124,10 +124,10 @@ const EditPortfolioModal = ({
             name: name.trim(),
             description: description.trim() || undefined,
             is_public: isPublic,
-            layout: buildLayout(),
+            layout: { ...portfolio.layout, ...buildLayout() },
         }
 
-        onSubmit(portfolio.id, updateData)
+        onSubmit(portfolio.slug, updateData)
     }
 
     const resetToCurrentTheme = () => {

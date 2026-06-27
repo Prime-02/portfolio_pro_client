@@ -89,7 +89,7 @@ export function MotionItem({
   const hoverProps = isAnimated ? getHoverProps(anim) : {};
 
   if (!isAnimated) {
-    return <div className={`w-fit ${className}`}>{children}</div>;
+    return <div className={className}>{children}</div>;
   }
 
   return (
@@ -98,7 +98,7 @@ export function MotionItem({
       variants={itemVariants}
       initial="hidden"
       animate={shouldAnimate ? "visible" : "hidden"}
-      className={`w-fit ${className}`}
+      className={className}
       {...hoverProps}
     >
       {children}

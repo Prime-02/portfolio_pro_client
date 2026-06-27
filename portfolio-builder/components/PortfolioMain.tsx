@@ -15,6 +15,8 @@ import { ExperienceSectionController } from "./sections/experience";
 import { ExperienceData } from "../types/experience";
 import { EducationSectionController } from "./sections/education";
 import { EducationData } from "../types/education";
+import { CertificationSectionController } from "./sections/certification";
+import { CertificationData } from "../types/certification";
 import { useTheme } from "@/src/app/components/theme/ThemeContext ";
 
 interface PortfolioMainProps {
@@ -89,6 +91,7 @@ export default function PortfolioMain({ portfolioId }: PortfolioMainProps) {
   const skillsData = useMemo(() => getSectionData<SkillsData>(layout, "skills"), [layout]);
   const experienceData = useMemo(() => getSectionData<ExperienceData>(layout, "experience"), [layout]);
   const educationData = useMemo(() => getSectionData<EducationData>(layout, "education"), [layout]);
+  const certificationData = useMemo(() => getSectionData<CertificationData>(layout, "certification"), [layout]);
 
   // ── Stable handlers — only change when their dependencies change ──────────
   const handleHeroSave = useCallback(async (updatedHeroData: HeroData) => {
@@ -116,8 +119,13 @@ export default function PortfolioMain({ portfolioId }: PortfolioMainProps) {
     await updatePortfolio(portfolioId, { layout: newLayout });
   }, [layout, portfolioId, updatePortfolio]);
 
-  const currentUsername = profileContext.username;
+  const handleCertificationSave = useCallback(async (updated: CertificationData) => {
+    const newLayout = setSectionData(layout, "certification", updated);
+    await updatePortfolio(portfolioId, { layout: newLayout });
+  }, [layout, portfolioId, updatePortfolio]);
 
+  const currentUsername = profileContext.username;
+      
   if (isLoading || !currentPortfolio) {
     return (
       <div className="flex items-center flex-col justify-center min-h-screen bg-[var(--pb-background)]">
@@ -161,6 +169,11 @@ export default function PortfolioMain({ portfolioId }: PortfolioMainProps) {
       <EducationSectionController
         educationData={educationData}
         onSave={handleEducationSave}
+        username={currentUsername || ""}
+      />
+      <CertificationSectionController
+        certificationData={certificationData}
+        onSave={handleCertificationSave}
         username={currentUsername || ""}
       />
     </div>

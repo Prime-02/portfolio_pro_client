@@ -1,6 +1,5 @@
 // lib/stores/testimonials.store.ts
 import { create } from "zustand";
-import { devtools } from "zustand/middleware";
 import { api } from "@/lib/client/api";
 
 // Types
@@ -278,7 +277,7 @@ interface TestimonialsState {
     limit?: number;
     is_approved?: boolean;
   }) => Promise<void>;
-  fetchAdminUserTestimonials: (params?: {
+  fetchAdminUserTestimonials: (params: {
     userId: string;
     skip?: number;
     limit?: number;
@@ -404,766 +403,731 @@ const initialState = {
   adminDeleteUserTestimonialsError: null,
 };
 
-export const useTestimonialsStore = create<TestimonialsState>()(
-  devtools(
-    (set, get) => ({
-      ...initialState,
-
-      // ==================== PUBLIC ACTIONS ====================
-
-      fetchPublicTestimonials: async (params = {}) => {
-        set({ publicTestimonialsLoading: true, publicTestimonialsError: null });
-        try {
-          const skip = params.skip ?? 0;
-          const limit = params.limit ?? DEFAULT_PAGE_SIZE;
-          const page = Math.floor(skip / limit) + 1;
-
-          const queryParams = new URLSearchParams();
-          queryParams.append("skip", skip.toString());
-          queryParams.append("limit", limit.toString());
-          if (params.min_rating !== undefined) {
-            queryParams.append("min_rating", params.min_rating.toString());
-          }
-
-          const response = await api.get<PaginatedTestimonials>(
-            `/testimonials/?${queryParams.toString()}`,
-          );
-
-          const incoming = response.data.testimonials || [];
-          const total = response.data.total || 0;
-
-          set((s) => ({
-            publicTestimonials:
-              page > 1
-                ? dedupeAppend(s.publicTestimonials, incoming)
-                : incoming,
-            publicTestimonialsTotal: total,
-            publicTestimonialsPage: page,
-            publicTestimonialsHasMore:
-              page > 1
-                ? s.publicTestimonials.length + incoming.length < total
-                : incoming.length < total,
-            publicTestimonialsLoading: false,
-          }));
-        } catch (error: any) {
-          set({
-            publicTestimonialsError:
-              error.response?.data?.detail || "Failed to fetch testimonials",
-            publicTestimonialsLoading: false,
-          });
-        }
-      },
-
-      searchTestimonials: async (params) => {
-        set({ searchLoading: true, searchError: null });
-        try {
-          const skip = params.skip ?? 0;
-          const limit = params.limit ?? DEFAULT_PAGE_SIZE;
-          const page = Math.floor(skip / limit) + 1;
-
-          const queryParams = new URLSearchParams();
-          queryParams.append("q", params.q);
-          queryParams.append("skip", skip.toString());
-          queryParams.append("limit", limit.toString());
-
-          const response = await api.get<PaginatedTestimonials>(
-            `/testimonials/search?${queryParams.toString()}`,
-          );
-
-          const incoming = response.data.testimonials || [];
-          const total = response.data.total || 0;
-
-          set((s) => ({
-            searchResults:
-              page > 1 ? dedupeAppend(s.searchResults, incoming) : incoming,
-            searchTotal: total,
-            searchPage: page,
-            searchHasMore:
-              page > 1
-                ? s.searchResults.length + incoming.length < total
-                : incoming.length < total,
-            searchLoading: false,
-          }));
-        } catch (error: any) {
-          set({
-            searchError:
-              error.response?.data?.detail || "Failed to search testimonials",
-            searchLoading: false,
-          });
-        }
-      },
-
-      fetchUserTestimonials: async ({ username, ...filters }) => {
-        const currentState = get();
-        // Reset if username changed
-        if (currentState.userTestimonialsUsername !== username) {
-          set({
-            userTestimonials: [],
-            userTestimonialsTotal: 0,
-            userTestimonialsPage: 1,
-            userTestimonialsHasMore: false,
-            userTestimonialsUsername: username,
-          });
-        }
-
-        set({ userTestimonialsLoading: true, userTestimonialsError: null });
-        try {
-          const skip = filters.skip ?? 0;
-          const limit = filters.limit ?? DEFAULT_PAGE_SIZE;
-          const page = Math.floor(skip / limit) + 1;
-
-          const response = await api.get<PaginatedTestimonials>(
-            `/testimonials/user/${username}`,
-            { params: { ...filters, skip, limit } },
-          );
-
-          const incoming = response.data.testimonials || [];
-          const total = response.data.total || 0;
-
-          set((s) => ({
-            userTestimonials:
-              page > 1 ? dedupeAppend(s.userTestimonials, incoming) : incoming,
-            userTestimonialsTotal: total,
-            userTestimonialsPage: page,
-            userTestimonialsHasMore:
-              page > 1
-                ? s.userTestimonials.length + incoming.length < total
-                : incoming.length < total,
-            userTestimonialsLoading: false,
-          }));
-        } catch (error: any) {
-          set({
-            userTestimonialsError:
-              error.response?.data?.detail ||
-              "Failed to fetch user testimonials",
-            userTestimonialsLoading: false,
-          });
-        }
-      },
-
-      fetchUserTestimonialsById: async ({
-        userId,
-        skip = 0,
-        limit = DEFAULT_PAGE_SIZE,
-      }) => {
-        const currentState = get();
-        // Reset if userId changed
-        if (currentState.userTestimonialsByIdUserId !== userId) {
-          set({
-            userTestimonialsById: [],
-            userTestimonialsByIdTotal: 0,
-            userTestimonialsByIdPage: 1,
-            userTestimonialsByIdHasMore: false,
-            userTestimonialsByIdUserId: userId,
-          });
-        }
-
-        set({
-          userTestimonialsByIdLoading: true,
-          userTestimonialsByIdError: null,
-        });
-        try {
-          const page = Math.floor(skip / limit) + 1;
-
-          const queryParams = new URLSearchParams();
-          queryParams.append("skip", skip.toString());
-          queryParams.append("limit", limit.toString());
-
-          const response = await api.get<PaginatedTestimonials>(
-            `/testimonials/user/id/${userId}?${queryParams.toString()}`,
-          );
-
-          const incoming = response.data.testimonials || [];
-          const total = response.data.total || 0;
-
-          set((s) => ({
-            userTestimonialsById:
-              page > 1
-                ? dedupeAppend(s.userTestimonialsById, incoming)
-                : incoming,
-            userTestimonialsByIdTotal: total,
-            userTestimonialsByIdPage: page,
-            userTestimonialsByIdHasMore:
-              page > 1
-                ? s.userTestimonialsById.length + incoming.length < total
-                : incoming.length < total,
-            userTestimonialsByIdLoading: false,
-          }));
-        } catch (error: any) {
-          set({
-            userTestimonialsByIdError:
-              error.response?.data?.detail ||
-              "Failed to fetch user testimonials by ID",
-            userTestimonialsByIdLoading: false,
-          });
-        }
-      },
-
-      fetchUserTestimonialStats: async (username: string) => {
-        set({ userStatsLoading: true, userStatsError: null });
-        try {
-          const response = await api.get<TestimonialStats>(
-            `/testimonials/user/${username}/stats`,
-          );
-          set((state) => ({
-            userStats: {
-              ...state.userStats,
-              [username]: response.data,
-            },
-            userStatsLoading: false,
-          }));
-        } catch (error: any) {
-          set({
-            userStatsError:
-              error.response?.data?.detail ||
-              "Failed to fetch testimonial stats",
-            userStatsLoading: false,
-          });
-        }
-      },
-
-      fetchUserTestimonialSummary: async (username: string) => {
-        set({ userSummaryLoading: true, userSummaryError: null });
-        try {
-          const response = await api.get<TestimonialSummary>(
-            `/testimonials/user/${username}/summary`,
-          );
-          set((state) => ({
-            userSummary: {
-              ...state.userSummary,
-              [username]: response.data,
-            },
-            userSummaryLoading: false,
-          }));
-        } catch (error: any) {
-          set({
-            userSummaryError:
-              error.response?.data?.detail ||
-              "Failed to fetch testimonial summary",
-            userSummaryLoading: false,
-          });
-        }
-      },
-
-      fetchTestimonial: async (testimonialId: string) => {
-        set({
-          currentTestimonialLoading: true,
-          currentTestimonialError: null,
-        });
-        try {
-          const response = await api.get<Testimonial>(
-            `/testimonials/${testimonialId}`,
-          );
-          set({
-            currentTestimonial: response.data,
-            currentTestimonialLoading: false,
-          });
-        } catch (error: any) {
-          set({
-            currentTestimonialError:
-              error.response?.data?.detail || "Failed to fetch testimonial",
-            currentTestimonialLoading: false,
-          });
-        }
-      },
-
-      // ==================== AUTHENTICATED USER ACTIONS ====================
-
-      fetchMyAuthoredTestimonials: async (params = {}) => {
-        set({
-          myAuthoredTestimonialsLoading: true,
-          myAuthoredTestimonialsError: null,
-        });
-        try {
-          const skip = params.skip ?? 0;
-          const limit = params.limit ?? DEFAULT_PAGE_SIZE;
-          const page = Math.floor(skip / limit) + 1;
-
-          const queryParams = new URLSearchParams();
-          queryParams.append("skip", skip.toString());
-          queryParams.append("limit", limit.toString());
-
-          const response = await api.get<PaginatedTestimonials>(
-            `/testimonials/my-authored?${queryParams.toString()}`,
-          );
-
-          const incoming = response.data.testimonials || [];
-          const total = response.data.total || 0;
-
-          set((s) => ({
-            myAuthoredTestimonials:
-              page > 1
-                ? dedupeAppend(s.myAuthoredTestimonials, incoming)
-                : incoming,
-            myAuthoredTestimonialsTotal: total,
-            myAuthoredTestimonialsPage: page,
-            myAuthoredTestimonialsHasMore:
-              page > 1
-                ? s.myAuthoredTestimonials.length + incoming.length < total
-                : incoming.length < total,
-            myAuthoredTestimonialsLoading: false,
-          }));
-        } catch (error: any) {
-          set({
-            myAuthoredTestimonialsError:
-              error.response?.data?.detail ||
-              "Failed to fetch authored testimonials",
-            myAuthoredTestimonialsLoading: false,
-          });
-        }
-      },
-
-      fetchMyReceivedTestimonials: async (params = {}) => {
-        set({
-          myReceivedTestimonialsLoading: true,
-          myReceivedTestimonialsError: null,
-        });
-        try {
-          const skip = params.skip ?? 0;
-          const limit = params.limit ?? DEFAULT_PAGE_SIZE;
-          const page = Math.floor(skip / limit) + 1;
-
-          const queryParams = new URLSearchParams();
-          queryParams.append("skip", skip.toString());
-          queryParams.append("limit", limit.toString());
-
-          const response = await api.get<PaginatedTestimonials>(
-            `/testimonials/my-received?${queryParams.toString()}`,
-          );
-
-          const incoming = response.data.testimonials || [];
-          const total = response.data.total || 0;
-
-          set((s) => ({
-            myReceivedTestimonials:
-              page > 1
-                ? dedupeAppend(s.myReceivedTestimonials, incoming)
-                : incoming,
-            myReceivedTestimonialsTotal: total,
-            myReceivedTestimonialsPage: page,
-            myReceivedTestimonialsHasMore:
-              page > 1
-                ? s.myReceivedTestimonials.length + incoming.length < total
-                : incoming.length < total,
-            myReceivedTestimonialsLoading: false,
-          }));
-        } catch (error: any) {
-          set({
-            myReceivedTestimonialsError:
-              error.response?.data?.detail ||
-              "Failed to fetch received testimonials",
-            myReceivedTestimonialsLoading: false,
-          });
-        }
-      },
-
-      createTestimonial: async (testimonialData, authorAvatar) => {
-        set({ creating: true, createError: null });
-        try {
-          const formData = buildTestimonialFormData(
-            testimonialData,
-            authorAvatar,
-          );
-
-          const response = await api.post<Testimonial>(
-            "/testimonials/",
-            formData,
-            {
-              headers: { "Content-Type": "multipart/form-data" },
-            },
-          );
-
-          set((state) => ({
-            myAuthoredTestimonials: [
-              response.data,
-              ...state.myAuthoredTestimonials,
-            ],
-            myAuthoredTestimonialsTotal: state.myAuthoredTestimonialsTotal + 1,
-            creating: false,
-          }));
-
-          return response.data;
-        } catch (error: any) {
-          set({
-            createError:
-              error.response?.data?.detail || "Failed to create testimonial",
-            creating: false,
-          });
-          return undefined;
-        }
-      },
-
-      updateTestimonial: async (
-        testimonialId,
-        testimonialData,
-        authorAvatar,
-      ) => {
-        set({ updating: true, updateError: null });
-        try {
-          const formData = buildTestimonialFormData(
-            testimonialData,
-            authorAvatar,
-          );
-
-          const response = await api.put<Testimonial>(
-            `/testimonials/${testimonialId}`,
-            formData,
-            {
-              headers: { "Content-Type": "multipart/form-data" },
-            },
-          );
-
-          set((state) => ({
-            myAuthoredTestimonials: state.myAuthoredTestimonials.map((t) =>
-              t.id === testimonialId ? response.data : t,
-            ),
-            myReceivedTestimonials: state.myReceivedTestimonials.map((t) =>
-              t.id === testimonialId ? response.data : t,
-            ),
-            currentTestimonial:
-              state.currentTestimonial?.id === testimonialId
-                ? response.data
-                : state.currentTestimonial,
-            updating: false,
-          }));
-        } catch (error: any) {
-          set({
-            updateError:
-              error.response?.data?.detail || "Failed to update testimonial",
-            updating: false,
-          });
-        }
-      },
-
-      deleteTestimonial: async (testimonialId: string) => {
-        set({ deleting: true, deleteError: null });
-        try {
-          await api.delete<DeleteResponse>(`/testimonials/${testimonialId}`);
-
-          set((state) => ({
-            myAuthoredTestimonials: state.myAuthoredTestimonials.filter(
-              (t) => t.id !== testimonialId,
-            ),
-            myAuthoredTestimonialsTotal: state.myAuthoredTestimonialsTotal - 1,
-            myReceivedTestimonials: state.myReceivedTestimonials.filter(
-              (t) => t.id !== testimonialId,
-            ),
-            myReceivedTestimonialsTotal: state.myReceivedTestimonialsTotal - 1,
-            currentTestimonial:
-              state.currentTestimonial?.id === testimonialId
-                ? null
-                : state.currentTestimonial,
-            deleting: false,
-          }));
-        } catch (error: any) {
-          set({
-            deleteError:
-              error.response?.data?.detail || "Failed to delete testimonial",
-            deleting: false,
-          });
-        }
-      },
-
-      approveTestimonial: async (testimonialId: string) => {
-        set({ approving: true, approveError: null });
-        try {
-          const response = await api.post<Testimonial>(
-            `/testimonials/${testimonialId}/approve`,
-          );
-
-          set((state) => ({
-            currentTestimonial:
-              state.currentTestimonial?.id === testimonialId
-                ? response.data
-                : state.currentTestimonial,
-            myReceivedTestimonials: state.myReceivedTestimonials.map((t) =>
-              t.id === testimonialId ? response.data : t,
-            ),
-            userTestimonials: state.userTestimonials.map((t) =>
-              t.id === testimonialId ? response.data : t,
-            ),
-            userTestimonialsById: state.userTestimonialsById.map((t) =>
-              t.id === testimonialId ? response.data : t,
-            ),
-            approving: false,
-          }));
-        } catch (error: any) {
-          set({
-            approveError:
-              error.response?.data?.detail || "Failed to approve testimonial",
-            approving: false,
-          });
-        }
-      },
-
-      // ==================== ADMIN ACTIONS ====================
-
-      fetchAdminTestimonials: async (params = {}) => {
-        set({
-          adminTestimonialsLoading: true,
-          adminTestimonialsError: null,
-        });
-        try {
-          const skip = params.skip ?? 0;
-          const limit = params.limit ?? DEFAULT_PAGE_SIZE;
-          const page = Math.floor(skip / limit) + 1;
-
-          const queryParams = new URLSearchParams();
-          queryParams.append("skip", skip.toString());
-          queryParams.append("limit", limit.toString());
-          if (params.is_approved !== undefined) {
-            queryParams.append("is_approved", params.is_approved.toString());
-          }
-
-          const response = await api.get<PaginatedTestimonials>(
-            `/admin/testimonials/?${queryParams.toString()}`,
-          );
-
-          const incoming = response.data.testimonials || [];
-          const total = response.data.total || 0;
-
-          set((s) => ({
-            adminTestimonials:
-              page > 1 ? dedupeAppend(s.adminTestimonials, incoming) : incoming,
-            adminTestimonialsTotal: total,
-            adminTestimonialsPage: page,
-            adminTestimonialsHasMore:
-              page > 1
-                ? s.adminTestimonials.length + incoming.length < total
-                : incoming.length < total,
-            adminTestimonialsLoading: false,
-          }));
-        } catch (error: any) {
-          set({
-            adminTestimonialsError:
-              error.response?.data?.detail ||
-              "Failed to fetch admin testimonials",
-            adminTestimonialsLoading: false,
-          });
-        }
-      },
-
-      fetchAdminUserTestimonials: async ({
-        userId,
-        skip = 0,
-        limit = DEFAULT_PAGE_SIZE,
-      }: { userId: string; skip?: number; limit?: number }) => {
-        const currentState = get();
-        // Reset if userId changed
-        if (currentState.adminUserTestimonialsUserId !== userId) {
-          set({
-            adminUserTestimonials: [],
-            adminUserTestimonialsTotal: 0,
-            adminUserTestimonialsPage: 1,
-            adminUserTestimonialsHasMore: false,
-            adminUserTestimonialsUserId: userId,
-          });
-        }
-
-        set({
-          adminUserTestimonialsLoading: true,
-          adminUserTestimonialsError: null,
-        });
-        try {
-          const page = Math.floor(skip / limit) + 1;
-
-          const queryParams = new URLSearchParams();
-          queryParams.append("skip", skip.toString());
-          queryParams.append("limit", limit.toString());
-
-          const response = await api.get<PaginatedTestimonials>(
-            `/admin/testimonials/user/${userId}?${queryParams.toString()}`,
-          );
-
-          const incoming = response.data.testimonials || [];
-          const total = response.data.total || 0;
-
-          set((s) => ({
-            adminUserTestimonials:
-              page > 1
-                ? dedupeAppend(s.adminUserTestimonials, incoming)
-                : incoming,
-            adminUserTestimonialsTotal: total,
-            adminUserTestimonialsPage: page,
-            adminUserTestimonialsHasMore:
-              page > 1
-                ? s.adminUserTestimonials.length + incoming.length < total
-                : incoming.length < total,
-            adminUserTestimonialsLoading: false,
-          }));
-        } catch (error: any) {
-          set({
-            adminUserTestimonialsError:
-              error.response?.data?.detail ||
-              "Failed to fetch user testimonials",
-            adminUserTestimonialsLoading: false,
-          });
-        }
-      },
-
-      fetchAdminTestimonial: async (testimonialId: string) => {
-        set({
-          adminCurrentTestimonialLoading: true,
-          adminCurrentTestimonialError: null,
-        });
-        try {
-          const response = await api.get<Testimonial>(
-            `/admin/testimonials/${testimonialId}`,
-          );
-          set({
-            adminCurrentTestimonial: response.data,
-            adminCurrentTestimonialLoading: false,
-          });
-        } catch (error: any) {
-          set({
-            adminCurrentTestimonialError:
-              error.response?.data?.detail || "Failed to fetch testimonial",
-            adminCurrentTestimonialLoading: false,
-          });
-        }
-      },
-
-      updateAdminTestimonial: async (
-        testimonialId,
-        testimonialData,
-        authorAvatar,
-      ) => {
-        set({ adminUpdating: true, adminUpdateError: null });
-        try {
-          const formData = buildTestimonialFormData(
-            testimonialData,
-            authorAvatar,
-          );
-
-          const response = await api.put<Testimonial>(
-            `/admin/testimonials/${testimonialId}`,
-            formData,
-            {
-              headers: { "Content-Type": "multipart/form-data" },
-            },
-          );
-
-          set((state) => ({
-            adminTestimonials: state.adminTestimonials.map((t) =>
-              t.id === testimonialId ? response.data : t,
-            ),
-            adminUserTestimonials: state.adminUserTestimonials.map((t) =>
-              t.id === testimonialId ? response.data : t,
-            ),
-            adminCurrentTestimonial:
-              state.adminCurrentTestimonial?.id === testimonialId
-                ? response.data
-                : state.adminCurrentTestimonial,
-            adminUpdating: false,
-          }));
-        } catch (error: any) {
-          set({
-            adminUpdateError:
-              error.response?.data?.detail || "Failed to update testimonial",
-            adminUpdating: false,
-          });
-        }
-      },
-
-      approveAdminTestimonial: async (testimonialId: string) => {
-        set({ adminApproving: true, adminApproveError: null });
-        try {
-          const response = await api.post<Testimonial>(
-            `/admin/testimonials/${testimonialId}/approve`,
-          );
-
-          set((state) => ({
-            adminTestimonials: state.adminTestimonials.map((t) =>
-              t.id === testimonialId ? response.data : t,
-            ),
-            adminUserTestimonials: state.adminUserTestimonials.map((t) =>
-              t.id === testimonialId ? response.data : t,
-            ),
-            adminCurrentTestimonial:
-              state.adminCurrentTestimonial?.id === testimonialId
-                ? response.data
-                : state.adminCurrentTestimonial,
-            adminApproving: false,
-          }));
-        } catch (error: any) {
-          set({
-            adminApproveError:
-              error.response?.data?.detail || "Failed to approve testimonial",
-            adminApproving: false,
-          });
-        }
-      },
-
-      deleteAdminTestimonial: async (testimonialId: string) => {
-        set({ adminDeleting: true, adminDeleteError: null });
-        try {
-          await api.delete<DeleteResponse>(
-            `/admin/testimonials/${testimonialId}`,
-          );
-
-          set((state) => ({
-            adminTestimonials: state.adminTestimonials.filter(
-              (t) => t.id !== testimonialId,
-            ),
-            adminTestimonialsTotal: state.adminTestimonialsTotal - 1,
-            adminUserTestimonials: state.adminUserTestimonials.filter(
-              (t) => t.id !== testimonialId,
-            ),
-            adminUserTestimonialsTotal: state.adminUserTestimonialsTotal - 1,
-            adminCurrentTestimonial:
-              state.adminCurrentTestimonial?.id === testimonialId
-                ? null
-                : state.adminCurrentTestimonial,
-            adminDeleting: false,
-          }));
-        } catch (error: any) {
-          set({
-            adminDeleteError:
-              error.response?.data?.detail || "Failed to delete testimonial",
-            adminDeleting: false,
-          });
-        }
-      },
-
-      deleteAdminUserTestimonials: async (userId: string) => {
-        set({
-          adminDeletingUserTestimonials: true,
-          adminDeleteUserTestimonialsError: null,
-        });
-        try {
-          await api.delete<DeleteResponse>(
-            `/admin/testimonials/user/${userId}`,
-          );
-
-          set((state) => {
-            const deletedCount = state.adminUserTestimonials.length;
-            return {
-              adminTestimonials: state.adminTestimonials.filter(
-                (t) => t.user_id !== userId,
-              ),
-              adminTestimonialsTotal:
-                state.adminTestimonialsTotal - deletedCount,
-              adminUserTestimonials: [],
-              adminUserTestimonialsTotal: 0,
-              adminDeletingUserTestimonials: false,
-            };
-          });
-        } catch (error: any) {
-          set({
-            adminDeleteUserTestimonialsError:
-              error.response?.data?.detail ||
-              "Failed to delete user testimonials",
-            adminDeletingUserTestimonials: false,
-          });
-        }
-      },
-
-      // ==================== UTILITY ====================
-
-      reset: () => {
-        set(initialState);
-      },
-    }),
-    { name: "TestimonialsStore" },
-  ),
-);
+export const useTestimonialsStore = create<TestimonialsState>()((set, get) => ({
+  ...initialState,
+
+  // ==================== PUBLIC ACTIONS ====================
+
+  fetchPublicTestimonials: async (params = {}) => {
+    set({ publicTestimonialsLoading: true, publicTestimonialsError: null });
+    try {
+      const skip = params.skip ?? 0;
+      const limit = params.limit ?? DEFAULT_PAGE_SIZE;
+      const page = Math.floor(skip / limit) + 1;
+
+      const queryParams = new URLSearchParams();
+      queryParams.append("skip", skip.toString());
+      queryParams.append("limit", limit.toString());
+      if (params.min_rating !== undefined) {
+        queryParams.append("min_rating", params.min_rating.toString());
+      }
+
+      const response = await api.get<PaginatedTestimonials>(
+        `/testimonials/?${queryParams.toString()}`,
+      );
+
+      const incoming = response.data.testimonials || [];
+      const total = response.data.total || 0;
+
+      set((s) => ({
+        publicTestimonials:
+          page > 1 ? dedupeAppend(s.publicTestimonials, incoming) : incoming,
+        publicTestimonialsTotal: total,
+        publicTestimonialsPage: page,
+        publicTestimonialsHasMore:
+          page > 1
+            ? s.publicTestimonials.length + incoming.length < total
+            : incoming.length < total,
+        publicTestimonialsLoading: false,
+      }));
+    } catch (error: any) {
+      set({
+        publicTestimonialsError:
+          error.response?.data?.detail || "Failed to fetch testimonials",
+        publicTestimonialsLoading: false,
+      });
+    }
+  },
+
+  searchTestimonials: async (params) => {
+    set({ searchLoading: true, searchError: null });
+    try {
+      const skip = params.skip ?? 0;
+      const limit = params.limit ?? DEFAULT_PAGE_SIZE;
+      const page = Math.floor(skip / limit) + 1;
+
+      const queryParams = new URLSearchParams();
+      queryParams.append("q", params.q);
+      queryParams.append("skip", skip.toString());
+      queryParams.append("limit", limit.toString());
+
+      const response = await api.get<PaginatedTestimonials>(
+        `/testimonials/search?${queryParams.toString()}`,
+      );
+
+      const incoming = response.data.testimonials || [];
+      const total = response.data.total || 0;
+
+      set((s) => ({
+        searchResults:
+          page > 1 ? dedupeAppend(s.searchResults, incoming) : incoming,
+        searchTotal: total,
+        searchPage: page,
+        searchHasMore:
+          page > 1
+            ? s.searchResults.length + incoming.length < total
+            : incoming.length < total,
+        searchLoading: false,
+      }));
+    } catch (error: any) {
+      set({
+        searchError:
+          error.response?.data?.detail || "Failed to search testimonials",
+        searchLoading: false,
+      });
+    }
+  },
+
+  fetchUserTestimonials: async ({ username, ...filters }) => {
+    const currentState = get();
+    // Reset if username changed
+    if (currentState.userTestimonialsUsername !== username) {
+      set({
+        userTestimonials: [],
+        userTestimonialsTotal: 0,
+        userTestimonialsPage: 1,
+        userTestimonialsHasMore: false,
+        userTestimonialsUsername: username,
+      });
+    }
+
+    set({ userTestimonialsLoading: true, userTestimonialsError: null });
+    try {
+      const skip = filters.skip ?? 0;
+      const limit = filters.limit ?? DEFAULT_PAGE_SIZE;
+      const page = Math.floor(skip / limit) + 1;
+
+      const response = await api.get<PaginatedTestimonials>(
+        `/testimonials/user/${username}`,
+        { params: { ...filters, skip, limit } },
+      );
+
+      const incoming = response.data.testimonials || [];
+      const total = response.data.total || 0;
+
+      set((s) => ({
+        userTestimonials:
+          page > 1 ? dedupeAppend(s.userTestimonials, incoming) : incoming,
+        userTestimonialsTotal: total,
+        userTestimonialsPage: page,
+        userTestimonialsHasMore:
+          page > 1
+            ? s.userTestimonials.length + incoming.length < total
+            : incoming.length < total,
+        userTestimonialsLoading: false,
+      }));
+    } catch (error: any) {
+      set({
+        userTestimonialsError:
+          error.response?.data?.detail || "Failed to fetch user testimonials",
+        userTestimonialsLoading: false,
+      });
+    }
+  },
+
+  fetchUserTestimonialsById: async ({
+    userId,
+    skip = 0,
+    limit = DEFAULT_PAGE_SIZE,
+  }) => {
+    const currentState = get();
+    // Reset if userId changed
+    if (currentState.userTestimonialsByIdUserId !== userId) {
+      set({
+        userTestimonialsById: [],
+        userTestimonialsByIdTotal: 0,
+        userTestimonialsByIdPage: 1,
+        userTestimonialsByIdHasMore: false,
+        userTestimonialsByIdUserId: userId,
+      });
+    }
+
+    set({
+      userTestimonialsByIdLoading: true,
+      userTestimonialsByIdError: null,
+    });
+    try {
+      const page = Math.floor(skip / limit) + 1;
+
+      const queryParams = new URLSearchParams();
+      queryParams.append("skip", skip.toString());
+      queryParams.append("limit", limit.toString());
+
+      const response = await api.get<PaginatedTestimonials>(
+        `/testimonials/user/id/${userId}?${queryParams.toString()}`,
+      );
+
+      const incoming = response.data.testimonials || [];
+      const total = response.data.total || 0;
+
+      set((s) => ({
+        userTestimonialsById:
+          page > 1 ? dedupeAppend(s.userTestimonialsById, incoming) : incoming,
+        userTestimonialsByIdTotal: total,
+        userTestimonialsByIdPage: page,
+        userTestimonialsByIdHasMore:
+          page > 1
+            ? s.userTestimonialsById.length + incoming.length < total
+            : incoming.length < total,
+        userTestimonialsByIdLoading: false,
+      }));
+    } catch (error: any) {
+      set({
+        userTestimonialsByIdError:
+          error.response?.data?.detail ||
+          "Failed to fetch user testimonials by ID",
+        userTestimonialsByIdLoading: false,
+      });
+    }
+  },
+
+  fetchUserTestimonialStats: async (username: string) => {
+    set({ userStatsLoading: true, userStatsError: null });
+    try {
+      const response = await api.get<TestimonialStats>(
+        `/testimonials/user/${username}/stats`,
+      );
+      set((state) => ({
+        userStats: {
+          ...state.userStats,
+          [username]: response.data,
+        },
+        userStatsLoading: false,
+      }));
+    } catch (error: any) {
+      set({
+        userStatsError:
+          error.response?.data?.detail || "Failed to fetch testimonial stats",
+        userStatsLoading: false,
+      });
+    }
+  },
+
+  fetchUserTestimonialSummary: async (username: string) => {
+    set({ userSummaryLoading: true, userSummaryError: null });
+    try {
+      const response = await api.get<TestimonialSummary>(
+        `/testimonials/user/${username}/summary`,
+      );
+      set((state) => ({
+        userSummary: {
+          ...state.userSummary,
+          [username]: response.data,
+        },
+        userSummaryLoading: false,
+      }));
+    } catch (error: any) {
+      set({
+        userSummaryError:
+          error.response?.data?.detail || "Failed to fetch testimonial summary",
+        userSummaryLoading: false,
+      });
+    }
+  },
+
+  fetchTestimonial: async (testimonialId: string) => {
+    set({
+      currentTestimonialLoading: true,
+      currentTestimonialError: null,
+    });
+    try {
+      const response = await api.get<Testimonial>(
+        `/testimonials/${testimonialId}`,
+      );
+      set({
+        currentTestimonial: response.data,
+        currentTestimonialLoading: false,
+      });
+    } catch (error: any) {
+      set({
+        currentTestimonialError:
+          error.response?.data?.detail || "Failed to fetch testimonial",
+        currentTestimonialLoading: false,
+      });
+    }
+  },
+
+  // ==================== AUTHENTICATED USER ACTIONS ====================
+
+  fetchMyAuthoredTestimonials: async (params = {}) => {
+    set({
+      myAuthoredTestimonialsLoading: true,
+      myAuthoredTestimonialsError: null,
+    });
+    try {
+      const skip = params.skip ?? 0;
+      const limit = params.limit ?? DEFAULT_PAGE_SIZE;
+      const page = Math.floor(skip / limit) + 1;
+
+      const queryParams = new URLSearchParams();
+      queryParams.append("skip", skip.toString());
+      queryParams.append("limit", limit.toString());
+
+      const response = await api.get<PaginatedTestimonials>(
+        `/testimonials/my-authored?${queryParams.toString()}`,
+      );
+
+      const incoming = response.data.testimonials || [];
+      const total = response.data.total || 0;
+
+      set((s) => ({
+        myAuthoredTestimonials:
+          page > 1
+            ? dedupeAppend(s.myAuthoredTestimonials, incoming)
+            : incoming,
+        myAuthoredTestimonialsTotal: total,
+        myAuthoredTestimonialsPage: page,
+        myAuthoredTestimonialsHasMore:
+          page > 1
+            ? s.myAuthoredTestimonials.length + incoming.length < total
+            : incoming.length < total,
+        myAuthoredTestimonialsLoading: false,
+      }));
+    } catch (error: any) {
+      set({
+        myAuthoredTestimonialsError:
+          error.response?.data?.detail ||
+          "Failed to fetch authored testimonials",
+        myAuthoredTestimonialsLoading: false,
+      });
+    }
+  },
+
+  fetchMyReceivedTestimonials: async (params = {}) => {
+    set({
+      myReceivedTestimonialsLoading: true,
+      myReceivedTestimonialsError: null,
+    });
+    try {
+      const skip = params.skip ?? 0;
+      const limit = params.limit ?? DEFAULT_PAGE_SIZE;
+      const page = Math.floor(skip / limit) + 1;
+
+      const queryParams = new URLSearchParams();
+      queryParams.append("skip", skip.toString());
+      queryParams.append("limit", limit.toString());
+
+      const response = await api.get<PaginatedTestimonials>(
+        `/testimonials/my-received?${queryParams.toString()}`,
+      );
+
+      const incoming = response.data.testimonials || [];
+      const total = response.data.total || 0;
+
+      set((s) => ({
+        myReceivedTestimonials:
+          page > 1
+            ? dedupeAppend(s.myReceivedTestimonials, incoming)
+            : incoming,
+        myReceivedTestimonialsTotal: total,
+        myReceivedTestimonialsPage: page,
+        myReceivedTestimonialsHasMore:
+          page > 1
+            ? s.myReceivedTestimonials.length + incoming.length < total
+            : incoming.length < total,
+        myReceivedTestimonialsLoading: false,
+      }));
+    } catch (error: any) {
+      set({
+        myReceivedTestimonialsError:
+          error.response?.data?.detail ||
+          "Failed to fetch received testimonials",
+        myReceivedTestimonialsLoading: false,
+      });
+    }
+  },
+
+  createTestimonial: async (testimonialData, authorAvatar) => {
+    set({ creating: true, createError: null });
+    try {
+      const formData = buildTestimonialFormData(testimonialData, authorAvatar);
+
+      const response = await api.post<Testimonial>("/testimonials/", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      set((state) => ({
+        myAuthoredTestimonials: [
+          response.data,
+          ...state.myAuthoredTestimonials,
+        ],
+        myAuthoredTestimonialsTotal: state.myAuthoredTestimonialsTotal + 1,
+        creating: false,
+      }));
+
+      return response.data;
+    } catch (error: any) {
+      set({
+        createError:
+          error.response?.data?.detail || "Failed to create testimonial",
+        creating: false,
+      });
+      return undefined;
+    }
+  },
+
+  updateTestimonial: async (testimonialId, testimonialData, authorAvatar) => {
+    set({ updating: true, updateError: null });
+    try {
+      const formData = buildTestimonialFormData(testimonialData, authorAvatar);
+
+      const response = await api.put<Testimonial>(
+        `/testimonials/${testimonialId}`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        },
+      );
+
+      set((state) => ({
+        myAuthoredTestimonials: state.myAuthoredTestimonials.map((t) =>
+          t.id === testimonialId ? response.data : t,
+        ),
+        myReceivedTestimonials: state.myReceivedTestimonials.map((t) =>
+          t.id === testimonialId ? response.data : t,
+        ),
+        currentTestimonial:
+          state.currentTestimonial?.id === testimonialId
+            ? response.data
+            : state.currentTestimonial,
+        updating: false,
+      }));
+    } catch (error: any) {
+      set({
+        updateError:
+          error.response?.data?.detail || "Failed to update testimonial",
+        updating: false,
+      });
+    }
+  },
+
+  deleteTestimonial: async (testimonialId: string) => {
+    set({ deleting: true, deleteError: null });
+    try {
+      await api.delete<DeleteResponse>(`/testimonials/${testimonialId}`);
+
+      set((state) => ({
+        myAuthoredTestimonials: state.myAuthoredTestimonials.filter(
+          (t) => t.id !== testimonialId,
+        ),
+        myAuthoredTestimonialsTotal: state.myAuthoredTestimonialsTotal - 1,
+        myReceivedTestimonials: state.myReceivedTestimonials.filter(
+          (t) => t.id !== testimonialId,
+        ),
+        myReceivedTestimonialsTotal: state.myReceivedTestimonialsTotal - 1,
+        currentTestimonial:
+          state.currentTestimonial?.id === testimonialId
+            ? null
+            : state.currentTestimonial,
+        deleting: false,
+      }));
+    } catch (error: any) {
+      set({
+        deleteError:
+          error.response?.data?.detail || "Failed to delete testimonial",
+        deleting: false,
+      });
+    }
+  },
+
+  approveTestimonial: async (testimonialId: string) => {
+    set({ approving: true, approveError: null });
+    try {
+      const response = await api.post<Testimonial>(
+        `/testimonials/${testimonialId}/approve`,
+      );
+
+      set((state) => ({
+        currentTestimonial:
+          state.currentTestimonial?.id === testimonialId
+            ? response.data
+            : state.currentTestimonial,
+        myReceivedTestimonials: state.myReceivedTestimonials.map((t) =>
+          t.id === testimonialId ? response.data : t,
+        ),
+        userTestimonials: state.userTestimonials.map((t) =>
+          t.id === testimonialId ? response.data : t,
+        ),
+        userTestimonialsById: state.userTestimonialsById.map((t) =>
+          t.id === testimonialId ? response.data : t,
+        ),
+        approving: false,
+      }));
+    } catch (error: any) {
+      set({
+        approveError:
+          error.response?.data?.detail || "Failed to approve testimonial",
+        approving: false,
+      });
+    }
+  },
+
+  // ==================== ADMIN ACTIONS ====================
+
+  fetchAdminTestimonials: async (params = {}) => {
+    set({
+      adminTestimonialsLoading: true,
+      adminTestimonialsError: null,
+    });
+    try {
+      const skip = params.skip ?? 0;
+      const limit = params.limit ?? DEFAULT_PAGE_SIZE;
+      const page = Math.floor(skip / limit) + 1;
+
+      const queryParams = new URLSearchParams();
+      queryParams.append("skip", skip.toString());
+      queryParams.append("limit", limit.toString());
+      if (params.is_approved !== undefined) {
+        queryParams.append("is_approved", params.is_approved.toString());
+      }
+
+      const response = await api.get<PaginatedTestimonials>(
+        `/admin/testimonials/?${queryParams.toString()}`,
+      );
+
+      const incoming = response.data.testimonials || [];
+      const total = response.data.total || 0;
+
+      set((s) => ({
+        adminTestimonials:
+          page > 1 ? dedupeAppend(s.adminTestimonials, incoming) : incoming,
+        adminTestimonialsTotal: total,
+        adminTestimonialsPage: page,
+        adminTestimonialsHasMore:
+          page > 1
+            ? s.adminTestimonials.length + incoming.length < total
+            : incoming.length < total,
+        adminTestimonialsLoading: false,
+      }));
+    } catch (error: any) {
+      set({
+        adminTestimonialsError:
+          error.response?.data?.detail || "Failed to fetch admin testimonials",
+        adminTestimonialsLoading: false,
+      });
+    }
+  },
+
+  fetchAdminUserTestimonials: async ({
+    userId,
+    skip = 0,
+    limit = DEFAULT_PAGE_SIZE,
+  }: {
+    userId: string;
+    skip?: number;
+    limit?: number;
+  }) => {
+    const currentState = get();
+    // Reset if userId changed
+    if (currentState.adminUserTestimonialsUserId !== userId) {
+      set({
+        adminUserTestimonials: [],
+        adminUserTestimonialsTotal: 0,
+        adminUserTestimonialsPage: 1,
+        adminUserTestimonialsHasMore: false,
+        adminUserTestimonialsUserId: userId,
+      });
+    }
+
+    set({
+      adminUserTestimonialsLoading: true,
+      adminUserTestimonialsError: null,
+    });
+    try {
+      const page = Math.floor(skip / limit) + 1;
+
+      const queryParams = new URLSearchParams();
+      queryParams.append("skip", skip.toString());
+      queryParams.append("limit", limit.toString());
+
+      const response = await api.get<PaginatedTestimonials>(
+        `/admin/testimonials/user/${userId}?${queryParams.toString()}`,
+      );
+
+      const incoming = response.data.testimonials || [];
+      const total = response.data.total || 0;
+
+      set((s) => ({
+        adminUserTestimonials:
+          page > 1 ? dedupeAppend(s.adminUserTestimonials, incoming) : incoming,
+        adminUserTestimonialsTotal: total,
+        adminUserTestimonialsPage: page,
+        adminUserTestimonialsHasMore:
+          page > 1
+            ? s.adminUserTestimonials.length + incoming.length < total
+            : incoming.length < total,
+        adminUserTestimonialsLoading: false,
+      }));
+    } catch (error: any) {
+      set({
+        adminUserTestimonialsError:
+          error.response?.data?.detail || "Failed to fetch user testimonials",
+        adminUserTestimonialsLoading: false,
+      });
+    }
+  },
+
+  fetchAdminTestimonial: async (testimonialId: string) => {
+    set({
+      adminCurrentTestimonialLoading: true,
+      adminCurrentTestimonialError: null,
+    });
+    try {
+      const response = await api.get<Testimonial>(
+        `/admin/testimonials/${testimonialId}`,
+      );
+      set({
+        adminCurrentTestimonial: response.data,
+        adminCurrentTestimonialLoading: false,
+      });
+    } catch (error: any) {
+      set({
+        adminCurrentTestimonialError:
+          error.response?.data?.detail || "Failed to fetch testimonial",
+        adminCurrentTestimonialLoading: false,
+      });
+    }
+  },
+
+  updateAdminTestimonial: async (
+    testimonialId,
+    testimonialData,
+    authorAvatar,
+  ) => {
+    set({ adminUpdating: true, adminUpdateError: null });
+    try {
+      const formData = buildTestimonialFormData(testimonialData, authorAvatar);
+
+      const response = await api.put<Testimonial>(
+        `/admin/testimonials/${testimonialId}`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        },
+      );
+
+      set((state) => ({
+        adminTestimonials: state.adminTestimonials.map((t) =>
+          t.id === testimonialId ? response.data : t,
+        ),
+        adminUserTestimonials: state.adminUserTestimonials.map((t) =>
+          t.id === testimonialId ? response.data : t,
+        ),
+        adminCurrentTestimonial:
+          state.adminCurrentTestimonial?.id === testimonialId
+            ? response.data
+            : state.adminCurrentTestimonial,
+        adminUpdating: false,
+      }));
+    } catch (error: any) {
+      set({
+        adminUpdateError:
+          error.response?.data?.detail || "Failed to update testimonial",
+        adminUpdating: false,
+      });
+    }
+  },
+
+  approveAdminTestimonial: async (testimonialId: string) => {
+    set({ adminApproving: true, adminApproveError: null });
+    try {
+      const response = await api.post<Testimonial>(
+        `/admin/testimonials/${testimonialId}/approve`,
+      );
+
+      set((state) => ({
+        adminTestimonials: state.adminTestimonials.map((t) =>
+          t.id === testimonialId ? response.data : t,
+        ),
+        adminUserTestimonials: state.adminUserTestimonials.map((t) =>
+          t.id === testimonialId ? response.data : t,
+        ),
+        adminCurrentTestimonial:
+          state.adminCurrentTestimonial?.id === testimonialId
+            ? response.data
+            : state.adminCurrentTestimonial,
+        adminApproving: false,
+      }));
+    } catch (error: any) {
+      set({
+        adminApproveError:
+          error.response?.data?.detail || "Failed to approve testimonial",
+        adminApproving: false,
+      });
+    }
+  },
+
+  deleteAdminTestimonial: async (testimonialId: string) => {
+    set({ adminDeleting: true, adminDeleteError: null });
+    try {
+      await api.delete<DeleteResponse>(`/admin/testimonials/${testimonialId}`);
+
+      set((state) => ({
+        adminTestimonials: state.adminTestimonials.filter(
+          (t) => t.id !== testimonialId,
+        ),
+        adminTestimonialsTotal: state.adminTestimonialsTotal - 1,
+        adminUserTestimonials: state.adminUserTestimonials.filter(
+          (t) => t.id !== testimonialId,
+        ),
+        adminUserTestimonialsTotal: state.adminUserTestimonialsTotal - 1,
+        adminCurrentTestimonial:
+          state.adminCurrentTestimonial?.id === testimonialId
+            ? null
+            : state.adminCurrentTestimonial,
+        adminDeleting: false,
+      }));
+    } catch (error: any) {
+      set({
+        adminDeleteError:
+          error.response?.data?.detail || "Failed to delete testimonial",
+        adminDeleting: false,
+      });
+    }
+  },
+
+  deleteAdminUserTestimonials: async (userId: string) => {
+    set({
+      adminDeletingUserTestimonials: true,
+      adminDeleteUserTestimonialsError: null,
+    });
+    try {
+      await api.delete<DeleteResponse>(`/admin/testimonials/user/${userId}`);
+
+      set((state) => {
+        const deletedCount = state.adminUserTestimonials.length;
+        return {
+          adminTestimonials: state.adminTestimonials.filter(
+            (t) => t.user_id !== userId,
+          ),
+          adminTestimonialsTotal: state.adminTestimonialsTotal - deletedCount,
+          adminUserTestimonials: [],
+          adminUserTestimonialsTotal: 0,
+          adminDeletingUserTestimonials: false,
+        };
+      });
+    } catch (error: any) {
+      set({
+        adminDeleteUserTestimonialsError:
+          error.response?.data?.detail || "Failed to delete user testimonials",
+        adminDeletingUserTestimonials: false,
+      });
+    }
+  },
+
+  // ==================== UTILITY ====================
+
+  reset: () => {
+    set(initialState);
+  },
+}));

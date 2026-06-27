@@ -22,6 +22,8 @@ import { ProjectsData } from "../types/projects";
 import { ProjectsSectionController } from "./sections/projects";
 import { BlogsData } from "../types/blogs";
 import { BlogsSectionController } from "./sections/blogs";
+import { TestimonialsData } from "../types/testimonials";
+import { TestimonialsSectionController } from "./sections/testimonials";
 
 interface PortfolioMainProps {
   portfolioId: string;
@@ -98,6 +100,7 @@ export default function PortfolioMain({ portfolioId }: PortfolioMainProps) {
   const certificationData = useMemo(() => getSectionData<CertificationData>(layout, "certification"), [layout]);
   const projectsData = useMemo(() => getSectionData<ProjectsData>(layout, "projects"), [layout]);
   const blogsData = useMemo(() => getSectionData<BlogsData>(layout, "blogs"), [layout]);
+  const testimonialsData = useMemo(() => getSectionData<TestimonialsData>(layout, "testimonials"), [layout]);
 
   // ── Stable handlers ───────────────────────────────────────────────────────
   const handleHeroSave = useCallback(async (updatedHeroData: HeroData) => {
@@ -137,6 +140,11 @@ export default function PortfolioMain({ portfolioId }: PortfolioMainProps) {
 
   const handleBlogsSave = useCallback(async (updated: BlogsData) => {
     const newLayout = setSectionData(layout, "blogs", updated);
+    await updatePortfolio(portfolioId, { layout: newLayout });
+  }, [layout, portfolioId, updatePortfolio]);
+
+  const handleTestimonialsSave = useCallback(async (updated: TestimonialsData) => {
+    const newLayout = setSectionData(layout, "testimonials", updated);
     await updatePortfolio(portfolioId, { layout: newLayout });
   }, [layout, portfolioId, updatePortfolio]);
 
@@ -200,6 +208,11 @@ export default function PortfolioMain({ portfolioId }: PortfolioMainProps) {
       <BlogsSectionController
         blogsData={blogsData}
         onSave={handleBlogsSave}
+        username={currentUsername || ""}
+      />
+      <TestimonialsSectionController
+        testimonialsData={testimonialsData}
+        onSave={handleTestimonialsSave}
         username={currentUsername || ""}
       />
     </div>

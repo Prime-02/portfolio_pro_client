@@ -67,7 +67,7 @@ export default function TestimonialsPage() {
 
     // Derived state from profileContext
     const isOwnProfile = profileContext.kind === "own";
-    const currentUsername = profileContext.username; // Now available in all scenarios
+    const currentUsername = profileContext.username;
 
     // Combine store errors
     const combinedError = createError || updateError || deleteError || approveError || localError;
@@ -78,7 +78,11 @@ export default function TestimonialsPage() {
 
     // ── Initial data fetch (always page 1) ───────────────────────────────
     useEffect(() => {
-        if (profileContext.kind === "pending" || profileContext.kind === "unauthenticated" || profileContext.kind === "not-found") {
+        if (
+            profileContext.kind === "pending" ||
+            profileContext.kind === "unauthenticated" ||
+            profileContext.kind === "not-found"
+        ) {
             return;
         }
 
@@ -86,34 +90,35 @@ export default function TestimonialsPage() {
 
         const fetchData = async () => {
             if (profileContext.kind === "public") {
-                // Fetch public testimonials for this user
-                await fetchUserTestimonials({
-                    username: currentUsername,
-                    skip: 0,
-                    limit: PAGE_SIZE
-                });
-                await fetchUserTestimonialStats(currentUsername);
-                // Also fetch my authored testimonials if authenticated (for "Mine" tab)
-                if (isAuthenticated()) {
-                    await fetchMyAuthoredTestimonials({ skip: 0, limit: PAGE_SIZE });
-                }
+                await Promise.all([
+                    fetchUserTestimonials({ username: currentUsername, skip: 0, limit: PAGE_SIZE }),
+                    fetchUserTestimonialStats(currentUsername),
+                    ...(isAuthenticated()
+                        ? [fetchMyAuthoredTestimonials({ skip: 0, limit: PAGE_SIZE })]
+                        : []
+                    ),
+                ]);
             } else if (profileContext.kind === "own") {
-                // Fetch public testimonials for this user (for sharing/public view)
-                await fetchUserTestimonials({
-                    username: currentUsername,
-                    skip: 0,
-                    limit: PAGE_SIZE
-                });
-                // Fetch ALL received testimonials (includes pending) for owner view
-                await fetchMyReceivedTestimonials({ skip: 0, limit: PAGE_SIZE });
-                // Fetch authored testimonials
-                await fetchMyAuthoredTestimonials({ skip: 0, limit: PAGE_SIZE });
-                await fetchUserTestimonialStats(currentUsername);
+                // Don't call fetchUserTestimonials here — own view uses myReceivedTestimonials,
+                // not userTestimonials. Running it sequentially before the others was causing
+                // the received/authored fetches to miss their window in production.
+                await Promise.all([
+                    fetchMyReceivedTestimonials({ skip: 0, limit: PAGE_SIZE }),
+                    fetchMyAuthoredTestimonials({ skip: 0, limit: PAGE_SIZE }),
+                    fetchUserTestimonialStats(currentUsername),
+                ]);
             }
         };
 
         fetchData();
-    }, [profileContext.kind, currentUsername]);
+    }, [
+        profileContext.kind,
+        currentUsername,
+        fetchUserTestimonials,
+        fetchMyAuthoredTestimonials,
+        fetchMyReceivedTestimonials,
+        fetchUserTestimonialStats,
+    ]);
 
     // ── Store error sync ─────────────────────────────────────────────────
     useEffect(() => {
@@ -134,14 +139,14 @@ export default function TestimonialsPage() {
         await fetchUserTestimonials({
             username: currentUsername,
             skip,
-            limit: PAGE_SIZE
+            limit: PAGE_SIZE,
         });
     }, [
         userTestimonialsHasMore,
         userTestimonialsLoading,
         userTestimonialsPage,
         currentUsername,
-        fetchUserTestimonials
+        fetchUserTestimonials,
     ]);
 
     const handleLoadMoreAuthored = useCallback(async () => {
@@ -149,13 +154,13 @@ export default function TestimonialsPage() {
 
         await fetchMyAuthoredTestimonials({
             skip: myAuthoredTestimonialsPage * PAGE_SIZE,
-            limit: PAGE_SIZE
+            limit: PAGE_SIZE,
         });
     }, [
         myAuthoredTestimonialsHasMore,
         myAuthoredTestimonialsLoading,
         myAuthoredTestimonialsPage,
-        fetchMyAuthoredTestimonials
+        fetchMyAuthoredTestimonials,
     ]);
 
     const handleLoadMoreReceived = useCallback(async () => {
@@ -163,13 +168,13 @@ export default function TestimonialsPage() {
 
         await fetchMyReceivedTestimonials({
             skip: myReceivedTestimonialsPage * PAGE_SIZE,
-            limit: PAGE_SIZE
+            limit: PAGE_SIZE,
         });
     }, [
         myReceivedTestimonialsHasMore,
         myReceivedTestimonialsLoading,
         myReceivedTestimonialsPage,
-        fetchMyReceivedTestimonials
+        fetchMyReceivedTestimonials,
     ]);
 
     // ── Actions ──────────────────────────────────────────────────────────

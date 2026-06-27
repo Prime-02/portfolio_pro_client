@@ -20,6 +20,7 @@
     "cloudinary": "^2.7.0",
     "country-state-city": "^3.2.1",
     "framer-motion": "^12.23.3",
+    "gcm-agent": "^1.0.4",
     "lodash": "^4.17.21",
     "lottie-web": "^5.13.0",
     "lucide": "^0.555.0",

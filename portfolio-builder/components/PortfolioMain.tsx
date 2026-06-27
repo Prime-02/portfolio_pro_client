@@ -18,6 +18,8 @@ import { EducationData } from "../types/education";
 import { CertificationSectionController } from "./sections/certification";
 import { CertificationData } from "../types/certification";
 import { useTheme } from "@/src/app/components/theme/ThemeContext ";
+import { ProjectsData } from "../types/projects";
+import { ProjectsSectionController } from "./sections/projects";
 
 interface PortfolioMainProps {
   portfolioId: string;
@@ -92,6 +94,7 @@ export default function PortfolioMain({ portfolioId }: PortfolioMainProps) {
   const experienceData = useMemo(() => getSectionData<ExperienceData>(layout, "experience"), [layout]);
   const educationData = useMemo(() => getSectionData<EducationData>(layout, "education"), [layout]);
   const certificationData = useMemo(() => getSectionData<CertificationData>(layout, "certification"), [layout]);
+  const projectsData = useMemo(() => getSectionData<ProjectsData>(layout, "projects"), [layout]);
 
   // ── Stable handlers — only change when their dependencies change ──────────
   const handleHeroSave = useCallback(async (updatedHeroData: HeroData) => {
@@ -124,8 +127,15 @@ export default function PortfolioMain({ portfolioId }: PortfolioMainProps) {
     await updatePortfolio(portfolioId, { layout: newLayout });
   }, [layout, portfolioId, updatePortfolio]);
 
+  const handleProjectsSave = useCallback(async (updated: ProjectsData) => {
+    // const newLayout = setSectionData(layout, "projects", updated);
+    // await updatePortfolio(portfolioId, { layout: newLayout });
+  }, [layout, portfolioId, updatePortfolio]);
+
+
+
   const currentUsername = profileContext.username;
-      
+
   if (isLoading || !currentPortfolio) {
     return (
       <div className="flex items-center flex-col justify-center min-h-screen bg-[var(--pb-background)]">
@@ -174,6 +184,11 @@ export default function PortfolioMain({ portfolioId }: PortfolioMainProps) {
       <CertificationSectionController
         certificationData={certificationData}
         onSave={handleCertificationSave}
+        username={currentUsername || ""}
+      />
+      <ProjectsSectionController
+        projectsData={projectsData}
+        onSave={handleProjectsSave}
         username={currentUsername || ""}
       />
     </div>

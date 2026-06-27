@@ -14,14 +14,20 @@ Requirements:
 
 4. Public Filters
    - Implement filter controls for public users using the following ProjectFilters interface exactly:
-     export interface PublicProjectFilters {
-     issuing_organization?: string;
+     interface PublicProjectsByUsernameFilters {
+     page?: number;
+     size?: number;
+     is_completed?: boolean;
+     is_concept?: boolean;
+     project_category?: string;
+     project_platform?: string;
+     project_status?: string;
      ids?: string[];
      merge_filters?: boolean;
      }
 
 5. Card Override Support
-   - Project must continue to support card-level overrides, following the same override pattern used in the Skills section.
+   - Project must continue to support card-level overrides, following the simillar override pattern used in the Skills section.
 
 6. Animations, Background & CTA
    - Implement Animations, Background, and CTA for Project exactly as they were done in the Skills section — same behavior, same integration points.

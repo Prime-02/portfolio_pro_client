@@ -128,8 +128,8 @@ export default function PortfolioMain({ portfolioId }: PortfolioMainProps) {
   }, [layout, portfolioId, updatePortfolio]);
 
   const handleProjectsSave = useCallback(async (updated: ProjectsData) => {
-    // const newLayout = setSectionData(layout, "projects", updated);
-    // await updatePortfolio(portfolioId, { layout: newLayout });
+    const newLayout = setSectionData(layout, "projects", updated);
+    await updatePortfolio(portfolioId, { layout: newLayout });
   }, [layout, portfolioId, updatePortfolio]);
 
 

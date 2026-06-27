@@ -3,6 +3,7 @@
 import { PortfolioProjectResponse } from "@/lib/stores/projects/types/project.types";
 import type { CardConfig } from "./resolveCardOverride";
 import { ExternalLink, Calendar, DollarSign, User, Layers, GitBranch } from "lucide-react";
+import MarkdownText from "@/src/app/components/markdown/MarkdownText";
 
 interface ProjectCardProps {
     project: PortfolioProjectResponse;
@@ -163,7 +164,7 @@ export default function ProjectCard({ project, config, cardSize, fullWidth = tru
                         {project.project_name}
                     </p>
                     {showDescription && project.project_description && (
-                        <p className="text-xs text-[var(--pb-text-muted)] truncate">{project.project_description}</p>
+                        <MarkdownText className="text-xs text-[var(--pb-text-muted)] truncate">{project.project_description}</MarkdownText>
                     )}
                     <div className="flex items-center gap-2 mt-1 flex-wrap">
                         {showCategory && <CategoryBadge category={project.project_category || undefined} display={categoryDisplay} accentColor={accentColor} />}
@@ -224,9 +225,9 @@ export default function ProjectCard({ project, config, cardSize, fullWidth = tru
                 )}
                 <div className={pad}>
                     {showDescription && project.project_description && (
-                        <p className="text-sm text-[var(--pb-text-secondary)] leading-relaxed line-clamp-3 mb-3">
+                        <MarkdownText className="text-sm text-[var(--pb-text-secondary)] leading-relaxed line-clamp-3 mb-3">
                             {project.project_description}
-                        </p>
+                        </MarkdownText>
                     )}
                     <div className="flex flex-wrap items-center gap-2">
                         {showDates && project.start_date && (
@@ -310,9 +311,9 @@ export default function ProjectCard({ project, config, cardSize, fullWidth = tru
                 </div>
 
                 {showDescription && project.project_description && (
-                    <p className="text-sm text-[var(--pb-text-secondary)] leading-relaxed line-clamp-3">
+                    <MarkdownText className="text-sm text-[var(--pb-text-secondary)] leading-relaxed line-clamp-3">
                         {project.project_description}
-                    </p>
+                    </MarkdownText>
                 )}
 
                 {showContribution && project.user_associations?.[0]?.contribution_description && (
@@ -397,7 +398,7 @@ export default function ProjectCard({ project, config, cardSize, fullWidth = tru
             </div>
 
             {showDescription && project.project_description && (
-                <p className="text-sm text-[var(--pb-text-secondary)] line-clamp-2">{project.project_description}</p>
+                <MarkdownText className="text-sm text-[var(--pb-text-secondary)] line-clamp-2">{project.project_description}</MarkdownText>
             )}
 
             <div className="flex items-center justify-between pt-1 gap-2">

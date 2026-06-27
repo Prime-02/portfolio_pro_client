@@ -200,7 +200,7 @@ export const usePortfolioStore = create<PortfolioState>()((set, get) => ({
   // PUT /portfolios/{portfolio_id}
   // ------------------------------------------------------------------
   updatePortfolio: async (portfolioId: string, data: PortfolioUpdate) => {
-    set({ error: null });
+    set({ isLoading: true, error: null });
     try {
       const response = await api.put<PortfolioResponse>(
         `/portfolios/${portfolioId}`,
@@ -215,12 +215,13 @@ export const usePortfolioStore = create<PortfolioState>()((set, get) => ({
           state.currentPortfolio?.id === portfolioId
             ? updated
             : state.currentPortfolio,
+        isLoading: false,
       }));
       return updated;
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to update portfolio";
-      set({ error: message });
+      set({ isLoading: false, error: message });
       throw err;
     }
   },

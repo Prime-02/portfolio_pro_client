@@ -66,16 +66,22 @@ function setSectionData<T>(
   const currentLayout = layout ? (layout as unknown as PortfolioLayout) : { sections: [] };
   const sections = [...(currentLayout.sections || [])];
   const sectionIndex = sections.findIndex((s) => s.type === sectionType);
+
   if (sectionIndex >= 0) {
     sections[sectionIndex] = { type: sectionType, data: sectionData as unknown as Record<string, unknown> };
   } else {
     sections.push({ type: sectionType, data: sectionData as unknown as Record<string, unknown> });
   }
-  return { sections };
+
+  // Preserve all existing top-level properties and only update sections
+  return {
+    ...layout,
+    sections
+  };
 }
 
 export default function PortfolioMain({ portfolioId }: PortfolioMainProps) {
-  const { currentPortfolio, isLoading, error, fetchPortfolioById, updatePortfolio } =
+  const { currentPortfolio, error, fetchPortfolioById, updatePortfolio } =
     usePortfolioStore();
   const { profileContext } = useTheme();
 
@@ -150,7 +156,7 @@ export default function PortfolioMain({ portfolioId }: PortfolioMainProps) {
 
   const currentUsername = profileContext.username;
 
-  if (isLoading || !currentPortfolio) {
+  if (!currentPortfolio) {
     return (
       <div className="flex items-center flex-col justify-center min-h-screen bg-[var(--pb-background)]">
         <PortfolioProLogo scale={0.7} />

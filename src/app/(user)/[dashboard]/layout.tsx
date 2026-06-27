@@ -20,7 +20,7 @@ const UsersLayout = ({
     <div className="flex h-screen overflow-hidden">
       <div className="flex-1 overflow-auto custom-scrollbar">
         <motion.div
-          className="flex items-start justify-center min-h-full w-full mx-auto py-5 px-2"
+          className="flex items-start justify-center min-h-full w-full mx-auto"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{

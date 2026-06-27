@@ -1,43 +1,43 @@
-Task: Build the Project section of the portfolio, following the same architectural patterns, conventions, and feature set used in the Skills section (core files provided). The Project store file is also provided as a starting point.
+Task: Build the Blogs section of the portfolio, following the same architectural patterns, conventions, and feature set used in the Projects section (core files provided). The Blogs store file is also provided as a starting point.
 
 Requirements:
 
 1. Card UI Styles & Configurations
-   - Project cards must support multiple distinct style variants and configuration options, ensuring the portfolio showcases a mix of design flavors rather than uniform cards.
+   - Blogs cards must support multiple distinct style variants and configuration options, ensuring the portfolio showcases a mix of design flavors rather than uniform cards.
 
 2. Field-Level Toggle
-   - Every individual piece of information within an Project entry must be independently toggleable (show/hide).
+   - Every individual piece of information within an Blogs entry must be independently toggleable (show/hide).
 
 3. Layout Types
-   - Provide layout types specifically designed for displaying Project in a professional standard.
-   - These layouts must be visually and structurally distinct from the layouts used in the Skills section.
+   - Provide layout types specifically designed for displaying Blogs in a professional standard.
+   - These layouts must be visually and structurally distinct from the layouts used in the Projects section.
 
 4. Public Filters
-   - Implement filter controls for public users using the following ProjectFilters interface exactly:
-     interface PublicProjectsByUsernameFilters {
+   - Implement filter controls for public users using the following BlogsFilters interface exactly:
+     interface PublicBlogssByUsernameFilters {
      page?: number;
      size?: number;
      is_completed?: boolean;
      is_concept?: boolean;
-     project_category?: string;
-     project_platform?: string;
-     project_status?: string;
+     Blogs_category?: string;
+     Blogs_platform?: string;
+     Blogs_status?: string;
      ids?: string[];
      merge_filters?: boolean;
      }
 
 5. Card Override Support
-   - Project must continue to support card-level overrides, following the simillar override pattern used in the Skills section.
+   - Blogs must continue to support card-level overrides, following the simillar override pattern used in the Projects section.
 
 6. Animations, Background & CTA
-   - Implement Animations, Background, and CTA for Project exactly as they were done in the Skills section — same behavior, same integration points.
+   - Implement Animations, Background, and CTA for Blogs exactly as they were done in the Projects section — same behavior, same integration points.
 
 7. File Naming Conventions
-   - Follow the same file naming conventions established in the Skills section to ensure consistency and ease of debugging.
+   - Follow the same file naming conventions established in the Projects section to ensure consistency and ease of debugging.
 
 8. Type Definitions
-   - Project must have its own dedicated type file.
-   - Types may be inherited/reused from other type files where applicable, but the Project-specific type file must still exist and own its domain types.
+   - Blogs must have its own dedicated type file.
+   - Types may be inherited/reused from other type files where applicable, but the Blogs-specific type file must still exist and own its domain types.
 
 Deliverable: Assemble all created files into a .zip file and present it.
 

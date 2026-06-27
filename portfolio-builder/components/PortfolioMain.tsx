@@ -20,6 +20,8 @@ import { CertificationData } from "../types/certification";
 import { useTheme } from "@/src/app/components/theme/ThemeContext ";
 import { ProjectsData } from "../types/projects";
 import { ProjectsSectionController } from "./sections/projects";
+import { BlogsData } from "../types/blogs";
+import { BlogsSectionController } from "./sections/blogs";
 
 interface PortfolioMainProps {
   portfolioId: string;
@@ -87,7 +89,7 @@ export default function PortfolioMain({ portfolioId }: PortfolioMainProps) {
   );
   const resolvedTheme = usePortfolioTheme(themeData);
 
-  // ── Stable section data — only changes when layout actually changes ───────
+  // ── Stable section data ───────────────────────────────────────────────────
   const heroData = useMemo(() => getSectionData<HeroData>(layout, "hero"), [layout]);
   const bioData = useMemo(() => getSectionData<BioData>(layout, "bio"), [layout]);
   const skillsData = useMemo(() => getSectionData<SkillsData>(layout, "skills"), [layout]);
@@ -95,8 +97,9 @@ export default function PortfolioMain({ portfolioId }: PortfolioMainProps) {
   const educationData = useMemo(() => getSectionData<EducationData>(layout, "education"), [layout]);
   const certificationData = useMemo(() => getSectionData<CertificationData>(layout, "certification"), [layout]);
   const projectsData = useMemo(() => getSectionData<ProjectsData>(layout, "projects"), [layout]);
+  const blogsData = useMemo(() => getSectionData<BlogsData>(layout, "blogs"), [layout]);
 
-  // ── Stable handlers — only change when their dependencies change ──────────
+  // ── Stable handlers ───────────────────────────────────────────────────────
   const handleHeroSave = useCallback(async (updatedHeroData: HeroData) => {
     const newLayout = setSectionData(layout, "hero", updatedHeroData);
     await updatePortfolio(portfolioId, { layout: newLayout });
@@ -132,7 +135,10 @@ export default function PortfolioMain({ portfolioId }: PortfolioMainProps) {
     await updatePortfolio(portfolioId, { layout: newLayout });
   }, [layout, portfolioId, updatePortfolio]);
 
-
+  const handleBlogsSave = useCallback(async (updated: BlogsData) => {
+    const newLayout = setSectionData(layout, "blogs", updated);
+    await updatePortfolio(portfolioId, { layout: newLayout });
+  }, [layout, portfolioId, updatePortfolio]);
 
   const currentUsername = profileContext.username;
 
@@ -189,6 +195,11 @@ export default function PortfolioMain({ portfolioId }: PortfolioMainProps) {
       <ProjectsSectionController
         projectsData={projectsData}
         onSave={handleProjectsSave}
+        username={currentUsername || ""}
+      />
+      <BlogsSectionController
+        blogsData={blogsData}
+        onSave={handleBlogsSave}
         username={currentUsername || ""}
       />
     </div>

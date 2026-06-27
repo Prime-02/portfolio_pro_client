@@ -14,14 +14,21 @@ Requirements:
 
 4. Public Filters
    - Implement filter controls for public users using the following BlogsFilters interface exactly:
-     interface PublicBlogssByUsernameFilters {
+     export interface ContentFilterParams {
+     content_type?: ContentType;
+     status?: ContentStatus;
+     category?: string;
+     tags?: string[];
+     is_public?: boolean;
+     is_featured?: boolean;
+     username?: string;
+     search?: string;
+     date_from?: string;
+     date_to?: string;
      page?: number;
-     size?: number;
-     is_completed?: boolean;
-     is_concept?: boolean;
-     Blogs_category?: string;
-     Blogs_platform?: string;
-     Blogs_status?: string;
+     page_size?: number;
+     sort_by?: string;
+     sort_order?: SortOrder;
      ids?: string[];
      merge_filters?: boolean;
      }

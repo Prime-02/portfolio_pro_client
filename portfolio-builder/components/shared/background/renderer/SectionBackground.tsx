@@ -1,82 +1,80 @@
-// portfolio-builder/components/shared/SectionBackground.tsx
+// portfolio-builder/components/shared/background/renderer/SectionBackground.tsx
 
 "use client";
 
-import { getBackgroundStyle, getOverlayStyle, needsDedicatedBackground } from "@/portfolio-builder/lib/sectionBackground";
-import { MeshBackground } from "@/portfolio-builder/components/shared/background/background_components/MeshBackground";
-import { ParticlesBackground } from "@/portfolio-builder/components/shared/background/background_components/ParticlesBackground";
-import type { SectionBackground } from "@/portfolio-builder/types/sectionBackground";
+import {
+  getBackgroundModule,
+  getBackgroundStyle,
+  supportsOverlay,
+} from "../editor/BackgroundRegistry";
+
+// ── Import all background modules to trigger registration ─────────────────
+import "../backgrounds/none";
+import "../backgrounds/solid";
+import "../backgrounds/gradient";
+import "../backgrounds/image";
+import "../backgrounds/video";
+import "../backgrounds/mesh";
+import "../backgrounds/particles";
+import "../backgrounds/aurora";
+import "../backgrounds/balatro";
+import "../backgrounds/ballpit";
+import "../backgrounds/beams";
+import "../backgrounds/colorBends";
+import "../backgrounds/darkVeil";
+import "../backgrounds/dither";
+import "../backgrounds/dotField";
+import "../backgrounds/dotGrid";
+import "../backgrounds/antigravity"
+
+import type { SectionBackground } from "../types/sectionBackground";
 
 interface SectionBackgroundProps {
-    background?: SectionBackground;
-    className?: string;
+  background?: SectionBackground;
+  className?: string;
 }
 
 /**
  * Unified background renderer for all portfolio sections.
- * Handles: none, solid, gradient, image, video, mesh, particles
- * with automatic overlay support for image/video/mesh/particles.
+ * Uses the background registry to resolve the correct renderer and styles
+ * for any registered background type — no hardcoded types.
  */
 export function SectionBackgroundRenderer({ background, className = "" }: SectionBackgroundProps) {
-    
-    if (!background || background.type === "none") {
-        return null;
-    }
+  if (!background || background.type === "none") {
+    return null;
+  }
 
-    const bgStyle = getBackgroundStyle(background);
-    const overlayStyle = getOverlayStyle(background);
+  const module = getBackgroundModule(background.type);
+  if (!module) {
+    // Fallback: unknown type, render nothing
+    console.warn(`[SectionBackgroundRenderer] Unknown background type: ${background.type}`);
+    return null;
+  }
 
-    return (
-        <div className={`absolute inset-0 z-0 ${className}`} style={bgStyle}>
-            {/* Dedicated animated backgrounds */}
-            {background.type === "mesh" && (
-                <MeshBackground
-                    color1={background.meshColor1 || "#7c3aed"}
-                    color2={background.meshColor2 || "#2563eb"}
-                    color3={background.meshColor3 || "#0891b2"}
-                    color4={background.meshColor4 || "var(--pb-background)"}
-                    speed={background.meshSpeed ?? 6}
-                    blur={background.meshBlur ?? 80}
-                    size={background.meshSize ?? 60}
-                    base={background.meshBase || "#050510"}
-                    opacity={background.meshOpacity ?? 1}
-                />
-            )}
+  // Resolve CSS styles (for solid, gradient, image)
+  const cssStyle = module.getStyle ? module.getStyle(background) : {};
 
-            {background.type === "particles" && (
-                <ParticlesBackground
-                    color={background.particleColor || "var(--pb-foreground)"}
-                    count={background.particleCount ?? 80}
-                    size={background.particleSize ?? 2}
-                    speed={background.particleSpeed ?? 0.5}
-                    opacity={background.particleOpacity ?? 0.6}
-                    lines={background.particleLines ?? true}
-                    lineDist={background.particleLineDist ?? 120}
-                    bgColor={background.particleBg || "var(--pb-background)"}
-                    overlayColor={background.overlayColor || "var(--pb-background)"}
-                    overlayOpacity={background.overlayOpacity ?? 0}
-                />
-            )}
+  // Resolve overlay
+  const overlayOpacity = background.overlayOpacity ?? 0;
+  const showOverlay = module.supportsOverlay && overlayOpacity > 0;
 
-            {background.type === "video" && background.videoUrl && (
-                <video
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    className="absolute inset-0 w-full h-full object-cover"
-                    style={{ objectPosition: background.backgroundPosition ?? "center" }}
-                    src={background.videoUrl}
-                />
-            )}
-
-            {/* Overlay layer — rendered last so it sits above background but below content */}
-            {overlayStyle && (
-                <div
-                    className="absolute inset-0 z-[1] pointer-events-none"
-                    style={overlayStyle}
-                />
-            )}
+  return (
+    <div className={`absolute inset-0 w-full h-full z-0 ${className}`} style={cssStyle}>
+      {module.renderer && (
+        <div className="absolute inset-0 w-full h-full">
+          <module.renderer background={background} />
         </div>
-    );
+      )}
+
+      {showOverlay && (
+        <div
+          className="absolute inset-0 z-[1] pointer-events-none"
+          style={{
+            backgroundColor: background.overlayColor || "var(--pb-background)",
+            opacity: overlayOpacity / 100,
+          }}
+        />
+      )}
+    </div>
+  );
 }

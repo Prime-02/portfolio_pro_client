@@ -1,5 +1,6 @@
 // portfolio-builder/types/certification.ts
 
+import { SectionBackgroundType } from "../components/shared/background";
 import type { BioAnimations } from "./bio";
 import type { BioCTA } from "./bio";
 
@@ -140,14 +141,7 @@ export interface CertificationData {
 
   // ── Background ──
   background: {
-    type:
-      | "none"
-      | "solid"
-      | "gradient"
-      | "image"
-      | "video"
-      | "mesh"
-      | "particles";
+    type: SectionBackgroundType;
     color?: string;
     gradientType?: "linear" | "radial";
     gradientFrom?: string;

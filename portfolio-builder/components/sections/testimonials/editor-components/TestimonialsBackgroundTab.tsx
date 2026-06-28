@@ -2,7 +2,7 @@
 
 import { TestimonialsData } from "@/portfolio-builder/types/testimonials";
 import BackgroundTab from "@/portfolio-builder/components/shared/background/editor/BackgroundTab";
-import { SectionBackgroundType } from "@/portfolio-builder/types/sectionBackground";
+import { SectionBackgroundType } from "@/portfolio-builder/components/shared/background/types/sectionBackground";
 
 interface TestimonialsBackgroundTabProps {
   data: TestimonialsData;

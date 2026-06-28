@@ -1,5 +1,6 @@
 // portfolio-builder/types/blogs.ts
 
+import { SectionBackgroundType } from "../components/shared/background";
 import type { BioAnimations } from "./bio";
 import type { BioCTA } from "./bio";
 import type { ContentFilterParams } from "@/lib/stores/contents/types/content.types";
@@ -145,14 +146,7 @@ export interface BlogsData {
 
   // ── Background ──
   background: {
-    type:
-      | "none"
-      | "solid"
-      | "gradient"
-      | "image"
-      | "video"
-      | "mesh"
-      | "particles";
+    type: SectionBackgroundType
     color?: string;
     gradientType?: "linear" | "radial";
     gradientFrom?: string;

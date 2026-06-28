@@ -4,7 +4,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { NavbarData } from "@/portfolio-builder/types/layout";
-import { getBackgroundStyle } from "@/portfolio-builder/lib/sectionBackground";
+import { getBackgroundStyle } from "@/portfolio-builder/components/shared/background/lib/sectionBackground";
 import { CTAButton } from "@/portfolio-builder/components/sections/bio/renderer-components/CTAButton";
 import { BioCTA } from "@/portfolio-builder/types/bio";
 import ThemeToggle from "@/portfolio-builder/components/shared/ui/ThemeToggle";

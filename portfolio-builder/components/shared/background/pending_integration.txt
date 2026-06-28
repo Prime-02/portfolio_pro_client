@@ -1,0 +1,124 @@
+<div style={{ width: '1080px', height: '1080px', position: 'relative' }}>
+  <Aurora
+    colorStops={["#5227FF","#7cff67","#5227FF"]}
+    amplitude={1.6}
+    blend={1}
+  />
+</div>
+
+<div style={{ width: '1080px', height: '1080px', position: 'relative' }}>
+  <Balatro
+    spinRotation={-2}
+    spinSpeed={7}
+    color1="#DE443B"
+    color2="#006BB4"
+    color3="#162325"
+    contrast={3.5}
+    lighting={0.4}
+    spinAmount={0.25}
+    pixelFilter={700}
+  />
+</div>
+
+<div style={{ width: '1080px', height: '1080px', position: 'relative' }}>
+  <Ballpit
+    count={100}
+    gravity={0.5}
+    friction={0.9975}
+    wallBounce={0.95}
+    followCursor
+    colors={["#5227FF","#7cff67","#ff6b6b"]}
+  />
+</div>
+
+
+<div style={{ width: '1080px', height: '1080px', position: 'relative' }}>
+  <Beams
+    beamWidth={2}
+    beamHeight={15}
+    beamNumber={12}
+    lightColor="#ffffff"
+    speed={2}
+    noiseIntensity={1.75}
+    scale={0.2}
+    rotation={0}
+  />
+</div>
+
+<div style={{ width: '1080px', height: '1080px', position: 'relative' }}>
+  <ColorBends
+    rotation={90}
+    speed={0.2}
+    colors={["#5227FF","#FF9FFC","#7cff67"]}
+    transparent
+    autoRotate={0}
+    scale={1}
+    frequency={1}
+    warpStrength={1}
+    mouseInfluence={1}
+    parallax={0.5}
+    noise={0.15}
+    iterations={1}
+    intensity={1.5}
+    bandWidth={6}
+  />
+</div>
+
+<div style={{ width: '1080px', height: '1080px', position: 'relative' }}>
+  <DarkVeil
+    hueShift={0}
+    noiseIntensity={0}
+    scanlineIntensity={0}
+    speed={0.5}
+    scanlineFrequency={0}
+    warpAmount={0}
+    resolutionScale={1}
+  />
+</div>
+
+<div style={{ width: '1080px', height: '1080px', position: 'relative' }}>
+  <Dither
+    waveColor={[0.32,0.15,1]}
+    disableAnimation={false}
+    enableMouseInteraction
+    mouseRadius={1}
+    colorNum={4}
+    pixelSize={2}
+    waveAmplitude={0.3}
+    waveFrequency={3}
+    waveSpeed={0.05}
+  />
+</div>
+
+<div style={{ width: '1080px', height: '1080px', position: 'relative' }}>
+  <DotField
+    dotRadius={1.5}
+    dotSpacing={14}
+    cursorRadius={500}
+    cursorForce={0.1}
+    bulgeOnly
+    bulgeStrength={67}
+    glowRadius={160}
+    sparkle={false}
+    waveAmplitude={0}
+    gradientFrom="rgba(168, 85, 247, 0.35)"
+    gradientTo="rgba(180, 151, 207, 0.25)"
+    glowColor="#120F17"
+  />
+</div>
+
+<div style={{ width: '1080px', height: '1080px', position: 'relative' }}>
+  <DotGrid
+    dotSize={16}
+    gap={32}
+    baseColor="#5227FF"
+    activeColor="#5227FF"
+    proximity={150}
+    speedTrigger={100}
+    shockRadius={250}
+    shockStrength={5}
+    maxSpeed={5000}
+    resistance={750}
+    returnDuration={1.5}
+  />
+</div>

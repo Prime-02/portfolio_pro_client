@@ -4,7 +4,7 @@
 
 import { PageBackgroundData } from "@/portfolio-builder/types/layout";
 import BackgroundTab from "@/portfolio-builder/components/shared/background/editor/BackgroundTab";
-import { SectionBackground } from "@/portfolio-builder/types/sectionBackground";
+import { SectionBackground } from "@/portfolio-builder/components/shared/background/types/sectionBackground";
 
 interface PageBackgroundTabProps {
     data: PageBackgroundData;

@@ -1,5 +1,6 @@
 // portfolio-builder/types/testimonials.ts
 
+import { SectionBackgroundType } from "../components/shared/background";
 import type { BioAnimations } from "./bio";
 import type { BioCTA } from "./bio";
 
@@ -114,7 +115,6 @@ export interface TestimonialsFilterConfig {
 // Testimonials data — saved in portfolio layout
 // ---------------------------------------------------------------------------
 
-
 export interface TestimonialsData {
   // ── Filters ──
   filters: TestimonialsFilterConfig;
@@ -150,14 +150,7 @@ export interface TestimonialsData {
 
   // ── Background ──
   background: {
-    type:
-      | "none"
-      | "solid"
-      | "gradient"
-      | "image"
-      | "video"
-      | "mesh"
-      | "particles";
+    type: SectionBackgroundType;
     color?: string;
     gradientType?: "linear" | "radial";
     gradientFrom?: string;

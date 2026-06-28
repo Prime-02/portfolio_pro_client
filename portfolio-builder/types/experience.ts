@@ -6,6 +6,7 @@ import {
 } from "@/lib/stores/experiences/useExperience";
 import type { BioAnimations } from "./bio";
 import type { BioCTA } from "./bio";
+import { SectionBackgroundType } from "../components/shared/background";
 
 // ---------------------------------------------------------------------------
 // Employment & Location types
@@ -143,14 +144,7 @@ export interface ExperienceData {
 
   // ── Background ──
   background: {
-    type:
-      | "none"
-      | "solid"
-      | "gradient"
-      | "image"
-      | "video"
-      | "mesh"
-      | "particles";
+    type: SectionBackgroundType;
     color?: string;
     gradientType?: "linear" | "radial";
     gradientFrom?: string;

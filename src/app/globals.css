@@ -154,3 +154,7 @@ h6 {
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+.transparent-overlay {
+  pointer-events: none;
+}

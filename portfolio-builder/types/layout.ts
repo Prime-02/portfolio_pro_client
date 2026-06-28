@@ -6,7 +6,7 @@
 // ---------------------------------------------------------------------------
 
 import { PortfolioThemeData } from "../hooks/usePortfolioTheme";
-import type { SectionBackground } from "./sectionBackground";
+import type { SectionBackground } from "../components/shared/background/types/sectionBackground";
 
 // ---------------------------------------------------------------------------
 // Shared Section Links (Navbar + Footer)

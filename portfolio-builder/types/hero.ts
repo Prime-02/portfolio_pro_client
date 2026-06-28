@@ -4,7 +4,7 @@
 // Hero Section — Type Definitions
 // ---------------------------------------------------------------------------
 
-import type { SectionBackground } from "./sectionBackground";
+import type { SectionBackground } from "../components/shared/background/types/sectionBackground";
 
 /**
  * Available layout options for the hero section.

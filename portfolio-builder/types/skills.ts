@@ -1,5 +1,6 @@
 // portfolio-builder/types/skills.ts
 
+import { SectionBackgroundType } from "../components/shared/background";
 import type { BioAnimations } from "./bio";
 import type { BioCTA } from "./bio";
 
@@ -118,14 +119,7 @@ export interface SkillsData {
 
   // ── Background ──
   background: {
-    type:
-      | "none"
-      | "solid"
-      | "gradient"
-      | "image"
-      | "video"
-      | "mesh"
-      | "particles";
+    type: SectionBackgroundType;
     color?: string;
     gradientType?: "linear" | "radial";
     gradientFrom?: string;

@@ -14,13 +14,10 @@ export default function PageBackground({ data }: PageBackgroundProps) {
 
     return (
         <div
-            className="fixed inset-0 z-0 pointer-events-none"
+            className="fixed inset-0 z-0"
             aria-hidden="true"
-            style={{
-                pointerEvents: "none",
-            }}
         >
             <SectionBackgroundRenderer background={data.background} />
         </div>
     );
-}           
+}

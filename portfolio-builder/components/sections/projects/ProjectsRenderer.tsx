@@ -6,7 +6,7 @@ import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import type { ProjectsData } from "@/portfolio-builder/types/projects";
 import type { BioAnimations } from "@/portfolio-builder/types/bio";
 import { MotionContainer, MotionItem } from "../bio/renderer-components/MotionWrappers";
-import { SectionBackgroundRenderer } from "@/portfolio-builder/components/shared/SectionBackground";
+import { SectionBackgroundRenderer } from "@/portfolio-builder/components/shared/background/renderer/SectionBackground";
 import { CTAButton } from "../bio/renderer-components/CTAButton";
 import {
   GridLayout,

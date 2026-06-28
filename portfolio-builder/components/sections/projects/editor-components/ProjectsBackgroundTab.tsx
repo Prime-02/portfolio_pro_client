@@ -1,7 +1,7 @@
 // portfolio-builder/components/sections/projects/editor-components/ProjectsBackgroundTab.tsx
 
 import { ProjectsData } from "@/portfolio-builder/types/projects";
-import BackgroundTab from "@/portfolio-builder/components/shared/editor/BackgroundTab";
+import BackgroundTab from "@/portfolio-builder/components/shared/background/editor/BackgroundTab";
 import { SectionBackgroundType } from "@/portfolio-builder/types/sectionBackground";
 
 interface ProjectsBackgroundTabProps {

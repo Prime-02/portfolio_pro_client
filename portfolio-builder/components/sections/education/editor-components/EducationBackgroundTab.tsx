@@ -1,7 +1,7 @@
 // portfolio-builder/components/sections/education/editor-components/EducationBackgroundTab.tsx
 
 import { EducationData } from "@/portfolio-builder/types/education";
-import BackgroundTab from "@/portfolio-builder/components/shared/editor/BackgroundTab";
+import BackgroundTab from "@/portfolio-builder/components/shared/background/editor/BackgroundTab";
 import { SectionBackgroundType } from "@/portfolio-builder/types/sectionBackground";
 
 interface EducationBackgroundTabProps {

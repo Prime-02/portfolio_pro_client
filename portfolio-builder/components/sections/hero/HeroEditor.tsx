@@ -20,7 +20,7 @@ import HeroRenderer from "./HeroRenderer";
 import SocialLinksTab from "./editor-components/SocialLinksTab";
 import { getDefaultAnimations } from "@/portfolio-builder/types/hero";
 import { ResolvedTheme } from "@/portfolio-builder/hooks/usePortfolioTheme";
-import BackgroundTab from "@/portfolio-builder/components/shared/editor/BackgroundTab";
+import BackgroundTab from "@/portfolio-builder/components/shared/background/editor/BackgroundTab";
 
 interface HeroEditorProps {
     initialData: HeroData;

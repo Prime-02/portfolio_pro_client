@@ -3,8 +3,8 @@
 "use client";
 
 import { getBackgroundStyle, getOverlayStyle, needsDedicatedBackground } from "@/portfolio-builder/lib/sectionBackground";
-import { MeshBackground } from "@/portfolio-builder/components/shared/MeshBackground";
-import { ParticlesBackground } from "@/portfolio-builder/components/shared/ParticlesBackground";
+import { MeshBackground } from "@/portfolio-builder/components/shared/background/background_components/MeshBackground";
+import { ParticlesBackground } from "@/portfolio-builder/components/shared/background/background_components/ParticlesBackground";
 import type { SectionBackground } from "@/portfolio-builder/types/sectionBackground";
 
 interface SectionBackgroundProps {

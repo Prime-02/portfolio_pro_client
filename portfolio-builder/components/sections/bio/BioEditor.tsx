@@ -16,7 +16,7 @@ import {
   AnimationsTab,
 } from "./editor-components";
 import BioRenderer from "./BioRenderer";
-import BackgroundTab from "@/portfolio-builder/components/shared/editor/BackgroundTab";
+import BackgroundTab from "@/portfolio-builder/components/shared/background/editor/BackgroundTab";
 
 interface BioEditorProps {
   initialData: BioData;

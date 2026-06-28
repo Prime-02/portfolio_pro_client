@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { SectionBackground, SectionBackgroundType, GradientType } from "@/portfolio-builder/types/sectionBackground";
 import { getBackgroundStyle } from "@/portfolio-builder/lib/sectionBackground";
-import { PBDropdown } from "../ui/inputs";
+import { PBDropdown } from "../../ui/inputs";
 import ColorPicker from "@/src/app/components/inputs/ColorPicker";
 
 

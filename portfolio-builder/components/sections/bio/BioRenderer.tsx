@@ -14,7 +14,7 @@ import { MetadataGrid } from "./renderer-components/MetadataGrid";
 import { CTAButton } from "./renderer-components/CTAButton";
 import { loadGoogleFont } from "../hero/editor-components/fonts";
 import MarkdownRenderer from "@/src/app/components/markdown/MarkdownRenderer";
-import { SectionBackgroundRenderer } from "@/portfolio-builder/components/shared/SectionBackground";
+import { SectionBackgroundRenderer } from "@/portfolio-builder/components/shared/background/renderer/SectionBackground";
 
 interface BioRendererProps {
   data: BioData;

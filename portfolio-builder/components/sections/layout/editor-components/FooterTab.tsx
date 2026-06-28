@@ -4,7 +4,7 @@
 
 import { useEffect } from "react";
 import { FooterData, FooterColumn, FooterSocialLink, SectionLink } from "@/portfolio-builder/types/layout";
-import BackgroundTab from "@/portfolio-builder/components/shared/editor/BackgroundTab";
+import BackgroundTab from "@/portfolio-builder/components/shared/background/editor/BackgroundTab";
 import { PBDropdown, PBTextInput } from "@/portfolio-builder/components/shared/ui/inputs";
 import { SectionDivider } from "./NavbarTab";
 import { useSocialLinks, SocialLink as UserSocialLink } from "@/lib/stores/social_links/useSocialLinks";
@@ -547,33 +547,6 @@ export default function FooterTab({ data, onChange, sectionLinks, onSectionLinks
                         checked={data.showYear ?? true}
                         onChange={(v) => update({ showYear: v })}
                     />
-
-                    <SectionDivider label="Navigation Links" />
-
-                    <div className="space-y-2">
-                        <p className="text-xs text-[var(--pb-text-muted)]">
-                            {visibleCount} of {sectionLinks.length} sections visible
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                            {sectionLinks.map((link) => (
-                                <button
-                                    key={link.sectionType}
-                                    onClick={() => {
-                                        const updated = sectionLinks.map((l) =>
-                                            l.sectionType === link.sectionType ? { ...l, visible: !l.visible } : l
-                                        );
-                                        onSectionLinksChange(updated);
-                                    }}
-                                    className={`px-2.5 py-1 text-xs rounded-lg border transition-all ${link.visible
-                                        ? "bg-[var(--pb-foreground-10)] text-[var(--pb-text-primary)] border-[var(--pb-foreground-30)]"
-                                        : "text-[var(--pb-text-muted)] border-[var(--pb-border)] hover:border-[var(--pb-border-hover)]"
-                                        }`}
-                                >
-                                    {link.label}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
 
                     <SectionDivider label="Visual" />
 

@@ -2,7 +2,7 @@
 
 "use client";
 
-import { SectionBackgroundRenderer } from "@/portfolio-builder/components/shared/SectionBackground";
+import { SectionBackgroundRenderer } from "@/portfolio-builder/components/shared/background/renderer/SectionBackground";
 import { PageBackgroundData } from "@/portfolio-builder/types/layout";
 
 interface PageBackgroundProps {

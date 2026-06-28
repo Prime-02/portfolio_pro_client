@@ -4,7 +4,7 @@
 
 import { useState } from "react";
 import { NavbarData, getEmptyNavbarData, SectionLink } from "@/portfolio-builder/types/layout";
-import BackgroundTab from "@/portfolio-builder/components/shared/editor/BackgroundTab";
+import BackgroundTab from "@/portfolio-builder/components/shared/background/editor/BackgroundTab";
 import { BioCTA } from "@/portfolio-builder/types/bio";
 import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 import { PBDropdown, PBTextInput } from "@/portfolio-builder/components/shared/ui/inputs";

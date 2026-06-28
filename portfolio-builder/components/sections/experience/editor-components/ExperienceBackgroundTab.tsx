@@ -1,7 +1,7 @@
 // portfolio-builder/components/sections/experience/editor-components/ExperienceBackgroundTab.tsx
 
 import { ExperienceData } from "@/portfolio-builder/types/experience";
-import BackgroundTab from "@/portfolio-builder/components/shared/editor/BackgroundTab";
+import BackgroundTab from "@/portfolio-builder/components/shared/background/editor/BackgroundTab";
 import { SectionBackgroundType } from "@/portfolio-builder/types/sectionBackground";
 
 interface ExperienceBackgroundTabProps {

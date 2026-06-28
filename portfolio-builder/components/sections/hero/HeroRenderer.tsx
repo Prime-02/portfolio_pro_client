@@ -16,7 +16,7 @@ import SocialLinks from "./renderer-components/SocialLinks";
 import { useTypewriter } from "./renderer-components/useTypewriter";
 import { loadGoogleFont } from "./editor-components/fonts";
 import { ResolvedTheme } from "@/portfolio-builder/hooks/usePortfolioTheme";
-import { SectionBackgroundRenderer } from "@/portfolio-builder/components/shared/SectionBackground";
+import { SectionBackgroundRenderer } from "@/portfolio-builder/components/shared/background/renderer/SectionBackground";
 
 interface HeroRendererProps {
     data: HeroData;

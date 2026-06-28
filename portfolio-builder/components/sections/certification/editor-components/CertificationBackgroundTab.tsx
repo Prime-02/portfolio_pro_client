@@ -1,7 +1,7 @@
 "use client";
 
 import { CertificationData } from "@/portfolio-builder/types/certification";
-import BackgroundTab from "@/portfolio-builder/components/shared/editor/BackgroundTab";
+import BackgroundTab from "@/portfolio-builder/components/shared/background/editor/BackgroundTab";
 import { SectionBackgroundType } from "@/portfolio-builder/types/sectionBackground";
 
 interface CertificationBackgroundTabProps {

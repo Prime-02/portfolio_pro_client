@@ -21,7 +21,7 @@ export default function LayoutEditorActions({
                 disabled={isSaving}
                 className="px-4 py-2 text-sm text-[var(--pb-text-secondary)] border border-[var(--pb-border)] rounded-lg hover:border-[var(--pb-border-hover)] hover:bg-[var(--pb-surface-hover)] hover:text-[var(--pb-text-primary)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-                Cancel
+                Preview
             </button>
             <button
                 type="button"

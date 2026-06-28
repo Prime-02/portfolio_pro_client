@@ -39,17 +39,12 @@ export default function LayoutController({
         return populated;
     }, [availableSections]);
 
-    // Local draft — seeded once from props on first open, then owned here.
-    // No reseed on prop changes: the editor is the source of truth while open,
-    // and closing without saving simply discards the unsaved draft.
     const [draftData, setDraftData] = useState<LayoutData>(() =>
         populateLayoutData(layoutData, sectionLinks)
     );
     const seededRef = useRef(false);
 
     const handleOpen = useCallback(() => {
-        // Reseed from the latest props each time the panel opens so the draft
-        // always starts from whatever is currently saved.
         setDraftData(populateLayoutData(layoutData, sectionLinks));
         seededRef.current = true;
         setIsEditing(true);
@@ -66,7 +61,6 @@ export default function LayoutController({
 
     const handleClose = useCallback(() => {
         setIsEditing(false);
-        // Draft is intentionally left as-is — no rollback.
     }, []);
 
     const orderedVisibleLinks = useMemo(() => {

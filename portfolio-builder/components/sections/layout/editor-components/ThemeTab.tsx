@@ -1,56 +1,49 @@
 import { useCallback, useMemo } from "react";
 import PortfolioThemePicker, { PortfolioThemeValues } from "@/src/app/components/portfolio/PortfolioThemePicker";
-import {
-    injectThemeCSS,
-    resolveTheme,
-    PortfolioThemeData,
-} from "@/portfolio-builder/hooks/usePortfolioTheme";
-import { LayoutData } from "@/portfolio-builder/types/layout";
+import { PortfolioThemeData } from "@/portfolio-builder/hooks/usePortfolioTheme";
+import { usePortfolioStore } from "@/portfolio-builder/store/usePortfolioStore";
 
-interface ThemeTabProps {
-    data: LayoutData;
-    onChange: (updated: LayoutData) => void;
-}
+interface ThemeTabProps { }
 
-export default function ThemeTab({ data, onChange }: ThemeTabProps) {
+export default function ThemeTab({ }: ThemeTabProps) {
+    const portfolioSlug = usePortfolioStore((s) => s.currentPortfolio?.slug);
+    const themeData = usePortfolioStore(
+        (s) => s.currentPortfolio?.layout?.theme as PortfolioThemeData | undefined,
+    );
+    const updateThemeLocally = usePortfolioStore((s) => s.updateThemeLocally);
+
     const themeValues = useMemo((): PortfolioThemeValues => ({
-        themeVariant: data.theme?.themeVariant ?? "system",
-        lightBg: data.theme?.lightTheme?.background ?? "#ffffff",
-        lightFg: data.theme?.lightTheme?.foreground ?? "#0a0a0a",
-        darkBg: data.theme?.darkTheme?.background ?? "#0a0a0a",
-        darkFg: data.theme?.darkTheme?.foreground ?? "#ededed",
-        accent: data.theme?.accent ?? "#737373",
-    }), [data.theme]);
+        themeVariant: themeData?.themeVariant ?? "system",
+        lightBg: themeData?.lightTheme?.background ?? "#ffffff",
+        lightFg: themeData?.lightTheme?.foreground ?? "#0a0a0a",
+        darkBg: themeData?.darkTheme?.background ?? "#0a0a0a",
+        darkFg: themeData?.darkTheme?.foreground ?? "#ededed",
+        accent: themeData?.accent ?? "#737373",
+    }), [themeData]);
 
-    const handleThemeChange = useCallback((theme: PortfolioThemeValues) => {
-        const themeData: PortfolioThemeData = {
-            themeVariant: theme.themeVariant,
-            lightTheme: { background: theme.lightBg, foreground: theme.lightFg },
-            darkTheme: { background: theme.darkBg, foreground: theme.darkFg },
-            accent: theme.accent,
-        };
-        // Inject CSS immediately for a live preview — onChange persists to store
-        // (debounced at the LayoutController level).
-        injectThemeCSS(resolveTheme(themeData));
-        onChange({ ...data, theme: themeData });
-    }, [data, onChange]);
-
-    const handleResetToDefaults = useCallback(() => {
-        const defaults: PortfolioThemeData = {
-            themeVariant: "system",
-            lightTheme: { background: "#ffffff", foreground: "#0a0a0a" },
-            darkTheme: { background: "#0a0a0a", foreground: "#ededed" },
-            accent: "#737373",
-        };
-        injectThemeCSS(resolveTheme(defaults));
-        onChange({ ...data, theme: defaults });
-    }, [data, onChange]);
+    // PortfolioThemePicker always calls onChange with the full PortfolioThemeValues
+    // object (via `onChange({ ...values, [key]: value })`), so we can map all
+    // fields directly — no partial merging or fallback store reads needed.
+    const handleThemeChange = useCallback((values: PortfolioThemeValues) => {
+        if (!portfolioSlug) return;
+        updateThemeLocally(portfolioSlug, {
+            themeVariant: values.themeVariant,
+            lightTheme: {
+                background: values.lightBg,
+                foreground: values.lightFg,
+            },
+            darkTheme: {
+                background: values.darkBg,
+                foreground: values.darkFg,
+            },
+            accent: values.accent,
+        });
+    }, [portfolioSlug, updateThemeLocally]);
 
     return (
         <PortfolioThemePicker
             values={themeValues}
             onChange={handleThemeChange}
-            onResetToCurrent={handleResetToDefaults}
             description="Customize the colors and mode of your portfolio."
         />
     );

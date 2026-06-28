@@ -15,7 +15,6 @@ interface ColorPickerProps {
 const hexToRgb = (hex: string): { r: number; g: number; b: number } => {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   if (!result) return { r: 255, g: 0, b: 0 };
-
   return {
     r: parseInt(result[1], 16),
     g: parseInt(result[2], 16),
@@ -69,13 +68,18 @@ const hsvToHex = (h: number, s: number, v: number): string => {
   else if (h < 300) { r = x; b = c; }
   else { r = c; b = x; }
 
-  const toHex = (n: number) => Math.round((n + m) * 255).toString(16).padStart(2, '0');
+  const toHex = (n: number) => Math.round((n + m) * 255).toString(16).padStart(2, "0");
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 };
 
 // Get pure hue color (max saturation and value)
-const getPureHueColor = (hue: number): string => {
-  return hsvToHex(hue, 1, 1);
+const getPureHueColor = (hue: number): string => hsvToHex(hue, 1, 1);
+
+// Apply a new color to all internal state atomically. Used by preset click,
+// hex input, and external value sync so the logic lives in one place.
+const applyColorToHsv = (hex: string) => {
+  const rgb = hexToRgb(hex);
+  return rgbToHsv(rgb.r, rgb.g, rgb.b);
 };
 
 const ColorPicker: React.FC<ColorPickerProps> = ({
@@ -94,10 +98,7 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [currentColor, setCurrentColor] = useState(value);
 
-  // Initialize HSV from the initial value
-  const initialRgb = hexToRgb(value);
-  const initialHsv = rgbToHsv(initialRgb.r, initialRgb.g, initialRgb.b);
-
+  const initialHsv = applyColorToHsv(value);
   const [hue, setHue] = useState(initialHsv.h);
   const [saturation, setSaturation] = useState(initialHsv.s);
   const [brightness, setBrightness] = useState(initialHsv.v);
@@ -109,34 +110,19 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
   const hueBarRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Store current HSV values in refs to avoid stale closures
   const saturationRef = useRef(saturation);
   const brightnessRef = useRef(brightness);
   const hueRef = useRef(hue);
 
-  // Tracks the most recent color *this component* emitted via onChange.
-  // When the `value` prop round-trips back to us after going through the
-  // parent (and possibly several components above it), we can tell it's
-  // an echo of our own edit rather than a genuine external change (e.g. a
-  // preset picked elsewhere, or an undo) — and skip resyncing HSV from it.
-  // This matters because hex -> HSV -> hex is lossy (rounding, and hue is
-  // ill-defined at zero saturation/brightness), so resyncing from our own
-  // echoed value can snap the hue/saturation slider to a slightly
-  // different position mid-drag, even though the color itself is unchanged.
+  // Tracks the most recent color this component emitted via onChange so we
+  // can distinguish our own echoed value from a genuine external change.
+  // CRITICAL: must be set synchronously before calling onChange, not after,
+  // so the useEffect sync guard sees it on the very next render.
   const lastEmittedRef = useRef(value);
 
-  // Update refs when state changes
-  useEffect(() => {
-    saturationRef.current = saturation;
-  }, [saturation]);
-
-  useEffect(() => {
-    brightnessRef.current = brightness;
-  }, [brightness]);
-
-  useEffect(() => {
-    hueRef.current = hue;
-  }, [hue]);
+  useEffect(() => { saturationRef.current = saturation; }, [saturation]);
+  useEffect(() => { brightnessRef.current = brightness; }, [brightness]);
+  useEffect(() => { hueRef.current = hue; }, [hue]);
 
   const sizeClasses = {
     sm: "w-8 h-8",
@@ -144,26 +130,21 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
     lg: "w-12 h-12",
   };
 
-  // Update color when value prop changes from outside.
-  // Skip while actively dragging — onChange fires on every mousemove, which
-  // round-trips back here as a new `value` prop; resyncing HSV from that
-  // echo mid-drag fights the user's own cursor (hex<->HSV is lossy, so the
-  // recomputed hue/saturation can differ slightly and snap the slider).
-  // Also skip if the incoming value is just an echo of what we last emitted
-  // ourselves (covers the moment right after a drag/keystroke ends, before
-  // the next genuinely external value arrives).
+  // Sync external value changes into internal HSV state.
+  // Skipped while dragging (onChange round-trips back here on every mousemove)
+  // and when the incoming value is just an echo of what we last emitted.
   useEffect(() => {
     if (isDragging) return;
     if (value === currentColor) return;
     if (value === lastEmittedRef.current) {
-      // Our own edit echoed back unchanged — just reconcile currentColor,
-      // no need to recompute (and potentially perturb) hue/saturation.
+      // Our own edit echoed back unchanged — reconcile currentColor only,
+      // no HSV recompute (hex->HSV is lossy so it can perturb hue mid-drag).
       setCurrentColor(value);
       return;
     }
+    // Genuine external change (e.g. theme preset selected in parent).
     setCurrentColor(value);
-    const rgb = hexToRgb(value);
-    const hsv = rgbToHsv(rgb.r, rgb.g, rgb.b);
+    const hsv = applyColorToHsv(value);
     setHue(hsv.h);
     setSaturation(hsv.s);
     setBrightness(hsv.v);
@@ -183,57 +164,54 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Shared emit helper — always set lastEmittedRef BEFORE calling onChange
+  // so any synchronous re-render triggered by onChange sees the guard value.
+  const emit = useCallback((color: string, complete = false) => {
+    lastEmittedRef.current = color;
+    onChange?.(color);
+    if (complete) onChangeComplete?.(color);
+  }, [onChange, onChangeComplete]);
+
+  const updateSaturation = useCallback((e: React.MouseEvent | MouseEvent) => {
+    if (!colorAreaRef.current) return;
+    const rect = colorAreaRef.current.getBoundingClientRect();
+    const s = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    const v = Math.max(0, Math.min(1, 1 - (e.clientY - rect.top) / rect.height));
+    setSaturation(s);
+    setBrightness(v);
+    saturationRef.current = s;
+    brightnessRef.current = v;
+    const newColor = hsvToHex(hueRef.current, s, v);
+    setCurrentColor(newColor);
+    emit(newColor);
+  }, [emit]);
+
+  const updateHue = useCallback((e: React.MouseEvent | MouseEvent) => {
+    if (!hueBarRef.current) return;
+    const rect = hueBarRef.current.getBoundingClientRect();
+    const x = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    const newHue = x * 360;
+    setHue(newHue);
+    hueRef.current = newHue;
+    const newColor = hsvToHex(newHue, saturationRef.current, brightnessRef.current);
+    setCurrentColor(newColor);
+    emit(newColor);
+  }, [emit]);
+
   const handleSaturationMouseDown = useCallback((e: React.MouseEvent) => {
     if (disabled) return;
     setIsDragging(true);
     setDragType("saturation");
     updateSaturation(e);
-  }, [disabled]);
-
-  const updateSaturation = useCallback((e: React.MouseEvent | MouseEvent) => {
-    if (!colorAreaRef.current) return;
-
-    const rect = colorAreaRef.current.getBoundingClientRect();
-    const s = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    const v = Math.max(0, Math.min(1, 1 - (e.clientY - rect.top) / rect.height));
-
-    setSaturation(s);
-    setBrightness(v);
-    saturationRef.current = s;
-    brightnessRef.current = v;
-
-    // Use ref to get current hue value
-    const newColor = hsvToHex(hueRef.current, s, v);
-    setCurrentColor(newColor);
-    lastEmittedRef.current = newColor;
-    onChange?.(newColor);
-  }, [onChange]);
+  }, [disabled, updateSaturation]);
 
   const handleHueMouseDown = useCallback((e: React.MouseEvent) => {
     if (disabled) return;
     setIsDragging(true);
     setDragType("hue");
     updateHue(e);
-  }, [disabled]);
+  }, [disabled, updateHue]);
 
-  const updateHue = useCallback((e: React.MouseEvent | MouseEvent) => {
-    if (!hueBarRef.current) return;
-
-    const rect = hueBarRef.current.getBoundingClientRect();
-    const x = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    const newHue = x * 360;
-
-    setHue(newHue);
-    hueRef.current = newHue;
-
-    // Use refs to get current saturation and brightness values
-    const newColor = hsvToHex(newHue, saturationRef.current, brightnessRef.current);
-    setCurrentColor(newColor);
-    lastEmittedRef.current = newColor;
-    onChange?.(newColor);
-  }, [onChange]);
-
-  // Mouse move and up handlers
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!isDragging) return;
@@ -260,6 +238,20 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
     };
   }, [isDragging, dragType, updateSaturation, updateHue, onChangeComplete, currentColor]);
 
+  // Apply a fully-resolved color to all internal state and emit it.
+  // Used by preset swatches and hex input to avoid duplicating this logic.
+  const applyColor = useCallback((hex: string, complete = false) => {
+    const hsv = applyColorToHsv(hex);
+    setCurrentColor(hex);
+    setHue(hsv.h);
+    setSaturation(hsv.s);
+    setBrightness(hsv.v);
+    hueRef.current = hsv.h;
+    saturationRef.current = hsv.s;
+    brightnessRef.current = hsv.v;
+    emit(hex, complete);
+  }, [emit]);
+
   return (
     <div className={`relative inline-block ${className}`} ref={dropdownRef}>
       {/* Color Preview Button */}
@@ -279,9 +271,7 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
           <div
             ref={colorAreaRef}
             className="relative w-full h-32 mb-3 cursor-crosshair rounded border border-[var(--foreground)]"
-            style={{
-              backgroundColor: getPureHueColor(hue),
-            }}
+            style={{ backgroundColor: getPureHueColor(hue) }}
             onMouseDown={handleSaturationMouseDown}
           >
             <div className="absolute inset-0 bg-gradient-to-r from-white to-transparent" />
@@ -317,33 +307,18 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
             onChange={(e) => {
               const val = e.target.value;
               if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
-                setCurrentColor(val);
-                const rgb = hexToRgb(val);
-                const hsv = rgbToHsv(rgb.r, rgb.g, rgb.b);
-                setHue(hsv.h);
-                setSaturation(hsv.s);
-                setBrightness(hsv.v);
-                hueRef.current = hsv.h;
-                saturationRef.current = hsv.s;
-                brightnessRef.current = hsv.v;
-                lastEmittedRef.current = val;
-                onChange?.(val);
+                applyColor(val);
               } else {
-                setCurrentColor(val); // Allow typing incomplete values
+                // Allow typing incomplete values without emitting
+                setCurrentColor(val);
               }
             }}
             onBlur={() => {
-              // Ensure valid hex on blur
               if (!/^#[0-9A-Fa-f]{6}$/.test(currentColor)) {
-                setCurrentColor("#ff0000");
-                setHue(0);
-                setSaturation(1);
-                setBrightness(1);
-                hueRef.current = 0;
-                saturationRef.current = 1;
-                brightnessRef.current = 1;
+                applyColor("#ff0000", true);
+              } else {
+                onChangeComplete?.(currentColor);
               }
-              onChangeComplete?.(currentColor);
             }}
             className="w-full px-3 py-2 border border-[var(--foreground)] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] mb-3"
             placeholder="#000000"
@@ -355,20 +330,7 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
               {presets.map((preset, index) => (
                 <button
                   key={index}
-                  onClick={() => {
-                    setCurrentColor(preset);
-                    const rgb = hexToRgb(preset);
-                    const hsv = rgbToHsv(rgb.r, rgb.g, rgb.b);
-                    setHue(hsv.h);
-                    setSaturation(hsv.s);
-                    setBrightness(hsv.v);
-                    hueRef.current = hsv.h;
-                    saturationRef.current = hsv.s;
-                    brightnessRef.current = hsv.v;
-                    lastEmittedRef.current = preset;
-                    onChange?.(preset);
-                    onChangeComplete?.(preset);
-                  }}
+                  onClick={() => applyColor(preset, true)}
                   className="w-6 h-6 border border-[var(--foreground)] rounded hover:scale-110 transition-transform focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
                   style={{ backgroundColor: preset }}
                 >

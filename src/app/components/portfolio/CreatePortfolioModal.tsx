@@ -112,11 +112,24 @@ const CreatePortfolioModal = ({
           />
         </div>
 
-        <PortfolioThemePicker
-          values={theme}
-          onChange={setTheme}
-          onResetToCurrent={() => setTheme(defaultTheme())}
-        />
+        {/* Theme section with reset sitting outside PortfolioThemePicker */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-[var(--foreground)]/80">Theme</span>
+            <button
+              type="button"
+              onClick={() => setTheme(defaultTheme())}
+              className="text-xs text-[var(--foreground)]/50 hover:text-[var(--foreground)]/80 transition-colors"
+            >
+              Reset to current theme
+            </button>
+          </div>
+          <PortfolioThemePicker
+            values={theme}
+            onChange={setTheme}
+            description="Customize the colors and mode of your portfolio."
+          />
+        </div>
 
         <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--foreground)]/10">
           <div>

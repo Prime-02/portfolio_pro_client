@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useCallback, useState, useRef } from "react";
+import { useEffect, useMemo, useCallback } from "react";
 import { usePortfolioStore } from "@/portfolio-builder/store/usePortfolioStore";
 import HeroSectionController from "@/portfolio-builder/components/sections/hero/HeroSectionController";
 import BioSectionController from "@/portfolio-builder/components/sections/bio/BioSectionController";
@@ -26,7 +26,6 @@ import { BlogsSectionController } from "./sections/blogs";
 import { TestimonialsData } from "../types/testimonials";
 import { TestimonialsSectionController } from "./sections/testimonials";
 import { LayoutController } from "./sections/layout";
-import { ThemeToggleProvider } from "./shared/ui/ThemeToggle";
 
 interface PortfolioMainProps {
   portfolioId: string;
@@ -101,50 +100,18 @@ export default function PortfolioMain({ portfolioId }: PortfolioMainProps) {
     fetchPortfolioById(portfolioId);
   }, [portfolioId]);
 
+  // usePortfolioTheme now reads from the store itself — no args needed.
+  // It handles CSS injection whenever currentPortfolio.layout.theme changes,
+  // whether from ThemeToggle, ThemeTab, or a fresh fetch.
+  const resolvedTheme = usePortfolioTheme();
+
   const layout = currentPortfolio?.layout ?? null;
 
-  const savedTheme = useMemo(
-    () => getTopLevelData<PortfolioThemeData>(layout, "theme"),
+  // ── Layout data ───────────────────────────────────────────────────────────
+  const layoutData = useMemo(
+    () => getTopLevelData<LayoutData>(layout, "layout"),
     [layout]
   );
-
-  // ── ThemeToggle variant state ─────────────────────────────────────────────
-  // Tracks the active themeVariant locally so the toggle icon stays responsive
-  // without waiting for a store round-trip. Seeded once from savedTheme, then
-  // updated by the toggle and by the layout editor (via handleLayoutSave).
-  const [liveVariant, setLiveVariant] = useState<"light" | "dark" | "system">(
-    () => (savedTheme?.themeVariant ?? "system") as "light" | "dark" | "system"
-  );
-
-  const themeSeededRef = useRef(false);
-  const seededPortfolioIdRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    if (seededPortfolioIdRef.current !== portfolioId) {
-      seededPortfolioIdRef.current = portfolioId;
-      themeSeededRef.current = false;
-    }
-    if (themeSeededRef.current) return;
-    if (!savedTheme) return;
-    themeSeededRef.current = true;
-    setLiveVariant((savedTheme.themeVariant ?? "system") as "light" | "dark" | "system");
-  }, [savedTheme, portfolioId]);
-
-  // Build the full theme object for CSS injection — always from the store
-  // (the layout editor writes directly to the store, so it's always current).
-  const themeData = useMemo(
-    () => savedTheme ? { ...savedTheme, themeVariant: liveVariant } : null,
-    [savedTheme, liveVariant]
-  );
-
-  const resolvedTheme = usePortfolioTheme(themeData);
-
-  // ── Layout data ───────────────────────────────────────────────────────────
-  const layoutData = useMemo(() => {
-    const ld = getTopLevelData<LayoutData>(layout, "layout");
-    if (!savedTheme) return ld;
-    return { ...(ld ?? {}), theme: savedTheme } as LayoutData;
-  }, [layout, savedTheme]);
 
   // ── Available sections ────────────────────────────────────────────────────
   const availableSections = useMemo(() => {
@@ -209,36 +176,19 @@ export default function PortfolioMain({ portfolioId }: PortfolioMainProps) {
   }, [layout, portfolioId, updatePortfolio]);
 
   // ── Layout save ───────────────────────────────────────────────────────────
-  // Called on every change from the layout editor (debounced at the controller
-  // level). Theme is hoisted to layout.theme (top-level). liveVariant is kept
-  // in sync so the ThemeToggle icon reflects the latest picked variant.
+  // Persists the layout structure (navbar, footer, etc.) alongside whatever
+  // theme is currently in the store (from local toggle/tab changes).
+  // Theme is stored top-level at layout.theme, layout structure at layout.layout.
   const handleLayoutSave = useCallback(async (updated: LayoutData) => {
-    const { theme, ...layoutWithoutTheme } = updated;
-    if (theme?.themeVariant) {
-      setLiveVariant(theme.themeVariant as "light" | "dark" | "system");
-    }
+    const currentTheme = (layout?.theme ?? {}) as PortfolioThemeData;
     await updatePortfolio(portfolioId, {
       layout: {
         ...layout,
-        layout: layoutWithoutTheme,
-        ...(theme ? { theme } : {}),
+        layout: updated,        // persist the navbar/footer/background draft
+        theme: currentTheme,    // persist whatever theme is in the store right now
       },
     });
   }, [layout, portfolioId, updatePortfolio]);
-
-  // ── ThemeToggle variant change ────────────────────────────────────────────
-  const handleThemeVariantChange = useCallback(async (variant: "light" | "dark" | "system") => {
-    setLiveVariant(variant);
-    await updatePortfolio(portfolioId, {
-      layout: {
-        ...layout,
-        theme: {
-          ...(savedTheme ?? {}),
-          themeVariant: variant,
-        },
-      },
-    });
-  }, [layout, portfolioId, savedTheme, updatePortfolio]);
 
   const currentUsername = profileContext.username;
 
@@ -330,18 +280,13 @@ export default function PortfolioMain({ portfolioId }: PortfolioMainProps) {
   };
 
   return (
-    <ThemeToggleProvider
-      themeVariant={liveVariant}
-      setThemeVariant={handleThemeVariantChange}
+    <LayoutController
+      layoutData={layoutData}
+      onSave={handleLayoutSave}
+      availableSections={availableSections}
+      sectionLinks={sectionLinks}
     >
-      <LayoutController
-        layoutData={layoutData}
-        onSave={handleLayoutSave}
-        availableSections={availableSections}
-        sectionLinks={sectionLinks}
-      >
-        {ALL_SECTION_TYPES.map((sectionType) => renderSection(sectionType))}
-      </LayoutController>
-    </ThemeToggleProvider>
+      {ALL_SECTION_TYPES.map((sectionType) => renderSection(sectionType))}
+    </LayoutController>
   );
 }

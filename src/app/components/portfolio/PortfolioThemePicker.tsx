@@ -16,17 +16,13 @@ export interface PortfolioThemeValues {
 
 interface PortfolioThemePickerProps {
   values: PortfolioThemeValues;
-  onChange: (values: PortfolioThemeValues) => void;
-  onResetToCurrent: () => void;
-  onResetToSaved?: () => void;
+  onChange: (values: PortfolioThemeValues) => void; // always full object
   description?: string;
 }
 
 const PortfolioThemePicker = ({
   values,
   onChange,
-  onResetToCurrent,
-  onResetToSaved,
   description = "Customize the appearance of your portfolio. Defaults to your current theme settings.",
 }: PortfolioThemePickerProps) => {
   // Detect system dark mode for "system" variant
@@ -49,14 +45,11 @@ const PortfolioThemePicker = ({
   const chromeFg = isDark ? values.darkFg : values.lightFg;
   const chromeAccent = values.accent;
 
-  // Derived style helpers
-  const fgStyle = (opacity = 1) => ({
-    color: chromeFg,
-    opacity,
-  });
   const borderColor = (opacity = 0.15) =>
     `rgba(${hexToRgb(chromeFg)}, ${opacity})`;
 
+  // Always spreads the full current values so every onChange call carries
+  // the complete object — ThemeTab can map fields directly without merging.
   const set = (key: keyof PortfolioThemeValues) => (value: string) =>
     onChange({ ...values, [key]: value });
 
@@ -81,9 +74,6 @@ const PortfolioThemePicker = ({
 
   const activePresetName = themePresets.find((preset: ThemePreset) => {
     const p = preset as ThemePreset & { themeVariant?: ThemeVariant };
-    // Mirror handlePresetSelect's fallback: if the preset doesn't pin a
-    // themeVariant, it matches whatever variant is currently selected,
-    // rather than only matching when the variant happens to be "system".
     return (
       (p.themeVariant ?? values.themeVariant) === values.themeVariant &&
       preset.accent === values.accent &&
@@ -260,7 +250,7 @@ const PortfolioThemePicker = ({
         </div>
       </div>
 
-      {/* Live Preview — unchanged, already uses values.* */}
+      {/* Live Preview */}
       <div>
         <h4 className="text-xs font-medium mb-2" style={{ color: chromeFg, opacity: 0.7 }}>
           Live Preview
@@ -325,27 +315,6 @@ const PortfolioThemePicker = ({
         </div>
       </div>
 
-      {/* Reset buttons */}
-      <div className="flex gap-2">
-        <button
-          type="button"
-          onClick={onResetToCurrent}
-          className="text-xs hover:underline"
-          style={{ color: chromeAccent }}
-        >
-          {onResetToSaved ? "Use current theme" : "Reset to current theme defaults"}
-        </button>
-        {onResetToSaved && (
-          <button
-            type="button"
-            onClick={onResetToSaved}
-            className="text-xs hover:underline"
-            style={{ color: chromeAccent }}
-          >
-            Reset to saved
-          </button>
-        )}
-      </div>
     </div>
   );
 };

@@ -2,7 +2,8 @@
 
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useEffect, useCallback } from "react";
+import { usePortfolioStore } from "@/portfolio-builder/store/usePortfolioStore";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -65,11 +66,10 @@ export function clearThemeCSS() {
 /**
  * Resolves a PortfolioThemeData object into a flat ResolvedTheme,
  * respecting the themeVariant and system preference.
- * Exported so other modules (e.g. LayoutEditor) can inject CSS directly.
+ * Exported so other modules (e.g. ThemeTab) can inject CSS directly.
  */
 export function resolveTheme(data: PortfolioThemeData | null): ResolvedTheme {
   if (!data) {
-    // Default dark fallback
     return {
       background: "#0a0a0a",
       foreground: "#ededed",
@@ -110,33 +110,37 @@ export function resolveTheme(data: PortfolioThemeData | null): ResolvedTheme {
 }
 
 // ---------------------------------------------------------------------------
-// Hook
+// Hook — reads directly from the store, no props needed.
+// CSS is injected whenever the store's theme changes, including local-only
+// updates from ThemeToggle / ThemeTab before the user hits "Save Layout".
 // ---------------------------------------------------------------------------
 
-export function usePortfolioTheme(
-  themeData: PortfolioThemeData | null,
-): ResolvedTheme {
-  const [resolved, setResolved] = useState<ResolvedTheme>(() =>
-    resolveTheme(themeData),
+export function usePortfolioTheme(): ResolvedTheme {
+  // Granular selector — only re-renders when layout.theme actually changes.
+  const themeData = usePortfolioStore(
+    (s) =>
+      (s.currentPortfolio?.layout?.theme as PortfolioThemeData | undefined) ??
+      null,
   );
 
-  const updateTheme = useCallback(() => {
-    const next = resolveTheme(themeData);
-    setResolved(next);
-    injectThemeCSS(next);
+  const injectAndResolve = useCallback(() => {
+    const resolved = resolveTheme(themeData);
+    injectThemeCSS(resolved);
+    return resolved;
   }, [themeData]);
 
+  // Re-inject whenever themeData changes (covers toggle + tab changes).
   useEffect(() => {
-    updateTheme();
+    injectAndResolve();
 
-    // Listen for system preference changes when in "system" mode
+    // Keep CSS in sync when the OS switches light/dark while variant === "system"
     if (themeData?.themeVariant === "system" && typeof window !== "undefined") {
       const mql = window.matchMedia("(prefers-color-scheme: light)");
-      const handler = () => updateTheme();
+      const handler = () => injectAndResolve();
       mql.addEventListener("change", handler);
       return () => mql.removeEventListener("change", handler);
     }
-  }, [themeData, updateTheme]);
+  }, [themeData, injectAndResolve]);
 
-  return resolved;
+  return resolveTheme(themeData);
 }

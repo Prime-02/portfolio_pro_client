@@ -1,61 +1,14 @@
 "use client";
 
-import { useState, useEffect, useRef, useContext, createContext } from "react";
+import { useState, useEffect, useRef } from "react";
+import { usePortfolioStore } from "@/portfolio-builder/store/usePortfolioStore";
+import { PortfolioThemeData } from "@/portfolio-builder/hooks/usePortfolioTheme";
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
 type ThemeMode = "light" | "dark" | "system";
-
-// ---------------------------------------------------------------------------
-// Context — the toggle is a pure UI control; it owns no theme state.
-// The provider receives the current value and a setter from PortfolioMainInner
-// so ThemeToggle stays in sync with ThemeTab (and any other editor) automatically.
-// ---------------------------------------------------------------------------
-
-interface ThemeToggleContextValue {
-    themeVariant: ThemeMode;
-    setThemeVariant: (mode: ThemeMode) => void;
-}
-
-const ThemeToggleContext = createContext<ThemeToggleContextValue | null>(null);
-
-interface ThemeToggleProviderProps {
-    themeVariant: ThemeMode;
-    setThemeVariant: (mode: ThemeMode) => void;
-    children: React.ReactNode;
-}
-
-/**
- * Wrap the portfolio root with this provider.
- * Pass the current themeVariant (from saved layout data) and the setter
- * (which should persist the change, e.g. via handleLayoutSave).
- * The toggle will always reflect whatever themeVariant is passed in.
- */
-export function ThemeToggleProvider({
-    themeVariant,
-    setThemeVariant,
-    children,
-}: ThemeToggleProviderProps) {
-    return (
-        <ThemeToggleContext.Provider value={{ themeVariant, setThemeVariant }}>
-            {children}
-        </ThemeToggleContext.Provider>
-    );
-}
-
-// ---------------------------------------------------------------------------
-// Hook — must be used inside ThemeToggleProvider
-// ---------------------------------------------------------------------------
-
-export function useThemeToggle(): ThemeToggleContextValue {
-    const ctx = useContext(ThemeToggleContext);
-    if (!ctx) {
-        throw new Error("useThemeToggle must be used within a ThemeToggleProvider");
-    }
-    return ctx;
-}
 
 // ---------------------------------------------------------------------------
 // Icons
@@ -141,8 +94,10 @@ const MODE_LABELS: Record<ThemeMode, string> = {
 };
 
 // ---------------------------------------------------------------------------
-// Component — pure controlled UI; icon and active state always reflect the
-// themeVariant passed down from PortfolioMainInner via context.
+// Component
+// Reads themeVariant directly from the store — always in sync with ThemeTab
+// and any other editor. Writes via updateThemeLocally (no API call); the
+// change is persisted when the user clicks "Save Layout".
 // ---------------------------------------------------------------------------
 
 interface ThemeToggleProps {
@@ -157,7 +112,15 @@ const SIZE_CLASSES: Record<string, { btn: string; icon: string; menu: string }> 
 };
 
 export default function ThemeToggle({ size = "md", className = "" }: ThemeToggleProps) {
-    const { themeVariant, setThemeVariant } = useThemeToggle();
+    // Read themeVariant directly from the store — no context, no local state.
+    const portfolioSlug = usePortfolioStore((s) => s.currentPortfolio?.slug);
+    const themeVariant = usePortfolioStore(
+        (s) =>
+            ((s.currentPortfolio?.layout?.theme as PortfolioThemeData | undefined)
+                ?.themeVariant ?? "system") as ThemeMode,
+    );
+    const updateThemeLocally = usePortfolioStore((s) => s.updateThemeLocally);
+
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
 
@@ -172,6 +135,12 @@ export default function ThemeToggle({ size = "md", className = "" }: ThemeToggle
         return () => document.removeEventListener("mousedown", handler);
     }, [menuOpen]);
 
+    const handleSelect = (mode: ThemeMode) => {
+        if (!portfolioSlug) return;
+        updateThemeLocally(portfolioSlug, { themeVariant: mode });
+        setMenuOpen(false);
+    };
+
     const sizeClass = SIZE_CLASSES[size] ?? SIZE_CLASSES.md;
     const CurrentIcon = MODE_ICONS[themeVariant];
 
@@ -181,16 +150,16 @@ export default function ThemeToggle({ size = "md", className = "" }: ThemeToggle
                 type="button"
                 onClick={() => setMenuOpen((o) => !o)}
                 className={`
-                    ${sizeClass.btn} rounded-lg
-                    flex items-center justify-center
-                    transition-all duration-200
-                    hover:scale-105 active:scale-95
-                    focus:outline-none focus:ring-2 focus:ring-[var(--pb-accent)] focus:ring-offset-1
-                    focus:ring-offset-[var(--pb-background)]
-                    text-[var(--pb-text-secondary)]
-                    hover:text-[var(--pb-text-primary)]
-                    hover:bg-[var(--pb-surface-hover)]
-                `}
+          ${sizeClass.btn} rounded-lg
+          flex items-center justify-center
+          transition-all duration-200
+          hover:scale-105 active:scale-95
+          focus:outline-none focus:ring-2 focus:ring-[var(--pb-accent)] focus:ring-offset-1
+          focus:ring-offset-[var(--pb-background)]
+          text-[var(--pb-text-secondary)]
+          hover:text-[var(--pb-text-primary)]
+          hover:bg-[var(--pb-surface-hover)]
+        `}
                 aria-label={`Current theme: ${MODE_LABELS[themeVariant]}. Click to change.`}
                 aria-expanded={menuOpen}
                 aria-haspopup="menu"
@@ -201,15 +170,15 @@ export default function ThemeToggle({ size = "md", className = "" }: ThemeToggle
             {menuOpen && (
                 <div
                     className={`
-                        absolute top-full mt-2 right-0
-                        ${sizeClass.menu}
-                        bg-[var(--pb-background)]
-                        border border-[var(--pb-border)]
-                        rounded-xl shadow-xl
-                        py-1.5 px-1
-                        flex flex-col gap-0.5
-                        z-50
-                    `}
+            absolute top-full mt-2 right-0
+            ${sizeClass.menu}
+            bg-[var(--pb-background)]
+            border border-[var(--pb-border)]
+            rounded-xl shadow-xl
+            py-1.5 px-1
+            flex flex-col gap-0.5
+            z-50
+          `}
                     role="menu"
                 >
                     {(["light", "dark", "system"] as ThemeMode[]).map((m) => {
@@ -220,18 +189,15 @@ export default function ThemeToggle({ size = "md", className = "" }: ThemeToggle
                                 key={m}
                                 type="button"
                                 role="menuitem"
-                                onClick={() => {
-                                    setThemeVariant(m);
-                                    setMenuOpen(false);
-                                }}
+                                onClick={() => handleSelect(m)}
                                 className={`
-                                    flex items-center gap-2.5 w-full px-3 py-2 rounded-lg
-                                    text-sm transition-colors
-                                    ${isActive
+                  flex items-center gap-2.5 w-full px-3 py-2 rounded-lg
+                  text-sm transition-colors
+                  ${isActive
                                         ? "bg-[var(--pb-foreground-10)] text-[var(--pb-text-primary)] font-medium"
                                         : "text-[var(--pb-text-secondary)] hover:bg-[var(--pb-surface-hover)]"
                                     }
-                                `}
+                `}
                             >
                                 <Icon className="w-4 h-4 shrink-0" />
                                 <span>{MODE_LABELS[m]}</span>

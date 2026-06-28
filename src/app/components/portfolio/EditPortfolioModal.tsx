@@ -63,8 +63,6 @@ const EditPortfolioModal = ({
         accent: accentColor.color,
     })
 
-    const [theme, setTheme] = useState<PortfolioThemeValues>(currentTheme)
-
     const savedTheme = (): PortfolioThemeValues | null => {
         if (!portfolio?.layout) return null
         const layout = parseLayout(portfolio.layout)
@@ -78,6 +76,8 @@ const EditPortfolioModal = ({
             accent: layout.accent,
         }
     }
+
+    const [theme, setTheme] = useState<PortfolioThemeValues>(currentTheme)
 
     useEffect(() => {
         if (portfolio) {
@@ -107,6 +107,8 @@ const EditPortfolioModal = ({
         })
     }
 
+    const hasSavedTheme = !!portfolio?.layout && !!parseLayout(portfolio.layout)
+
     return (
         <Modal title="Edit Portfolio" isOpen={isOpen} onClose={onClose}>
             <div className="space-y-4 mt-4">
@@ -124,13 +126,35 @@ const EditPortfolioModal = ({
                     <TextArea value={description} onChange={(e) => setDescription(e)} />
                 </div>
 
-                <PortfolioThemePicker
-                    values={theme}
-                    onChange={setTheme}
-                    onResetToCurrent={() => setTheme(currentTheme())}
-                    onResetToSaved={portfolio?.layout ? () => setTheme(savedTheme() ?? currentTheme()) : undefined}
-                    description="Customize the appearance of your portfolio. Changes will only affect this portfolio."
-                />
+                {/* Theme section with reset buttons sitting outside PortfolioThemePicker */}
+                <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-[var(--foreground)]/80">Theme</span>
+                        <div className="flex items-center gap-3">
+                            {hasSavedTheme && (
+                                <button
+                                    type="button"
+                                    onClick={() => setTheme(savedTheme() ?? currentTheme())}
+                                    className="text-xs text-[var(--foreground)]/50 hover:text-[var(--foreground)]/80 transition-colors"
+                                >
+                                    Reset to saved
+                                </button>
+                            )}
+                            <button
+                                type="button"
+                                onClick={() => setTheme(currentTheme())}
+                                className="text-xs text-[var(--foreground)]/50 hover:text-[var(--foreground)]/80 transition-colors"
+                            >
+                                Reset to current theme
+                            </button>
+                        </div>
+                    </div>
+                    <PortfolioThemePicker
+                        values={theme}
+                        onChange={setTheme}
+                        description="Customize the appearance of your portfolio. Changes will only affect this portfolio."
+                    />
+                </div>
 
                 <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--foreground)]/10">
                     <div>

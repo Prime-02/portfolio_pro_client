@@ -3,6 +3,7 @@
 import { create } from "zustand";
 import { api } from "@/lib/client/api";
 import { UserResponse } from "@/lib/stores/user/useUserSettings";
+import { PortfolioThemeData } from "@/portfolio-builder/hooks/usePortfolioTheme";
 
 // ---------------------------------------------------------------------------
 // Types — derived from schemas.py
@@ -75,6 +76,17 @@ interface PortfolioState {
     data: PortfolioUpdate,
   ) => Promise<PortfolioResponse>;
   deletePortfolio: (portfolioId: string) => Promise<void>;
+
+  /**
+   * Synchronously updates layout.theme inside currentPortfolio (and the
+   * matching entry in portfolios[]) without touching the API. Use this for
+   * live-preview changes (ThemeTab color picker, ThemeToggle variant switch)
+   * that should be held locally until the user clicks "Save Layout".
+   */
+  updateThemeLocally: (
+    portfolioSlug: string,
+    theme: Partial<PortfolioThemeData>,
+  ) => void;
 
   // Helpers
   clearError: () => void;
@@ -266,6 +278,37 @@ export const usePortfolioStore = create<PortfolioState>()((set, get) => ({
       set({ isLoading: false, error: message });
       throw err;
     }
+  },
+
+  // ------------------------------------------------------------------
+  // updateThemeLocally — no API call, no loading flag.
+  // Deep-merges `theme` into layout.theme of the matching portfolio so
+  // ThemeToggle and ThemeTab stay in sync through the store without an
+  // extra round-trip. The caller is responsible for persisting via
+  // updatePortfolio (triggered by "Save Layout").
+  // ------------------------------------------------------------------
+  updateThemeLocally: (portfolioSlug, theme) => {
+    const mergeTheme = (portfolio: PortfolioResponse): PortfolioResponse => {
+      const currentTheme =
+        (portfolio.layout?.theme as PortfolioThemeData | undefined) ?? {};
+      return {
+        ...portfolio,
+        layout: {
+          ...portfolio.layout,
+          theme: { ...currentTheme, ...theme },
+        },
+      };
+    };
+
+    set((state) => ({
+      portfolios: state.portfolios.map((p) =>
+        p.slug === portfolioSlug ? mergeTheme(p) : p,
+      ),
+      currentPortfolio:
+        state.currentPortfolio?.slug === portfolioSlug
+          ? mergeTheme(state.currentPortfolio)
+          : state.currentPortfolio,
+    }));
   },
 
   // ------------------------------------------------------------------

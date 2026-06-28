@@ -268,7 +268,7 @@ export default function HeroEditor({ initialData, onSave, onCancel, theme, setFu
 
     // ── Render ───────────────────────────────────────────────────────────────
     return (
-        <div className="flex flex-col lg:flex-row gap-6 h-full bg-[var(--pb-background)]">
+        <div className="flex flex-col lg:flex-row gap-6 h-full ">
             {/* Save status banner */}
             {(saveStatus === "saving" || saveStatus === "error") && (
                 <div className={`fixed bottom-4 right-4 z-50 px-4 py-2 rounded-lg shadow-lg ${saveStatus === "saving"
@@ -289,10 +289,10 @@ export default function HeroEditor({ initialData, onSave, onCancel, theme, setFu
             )}
 
             {/* Editor panel */}
-            <div className="flex-1 flex flex-col min-w-0 border border-[var(--pb-border)] rounded-xl overflow-hidden">
+            <div className="flex-1 flex flex-col min-w-0 border bg-[var(--pb-background)] border-[var(--pb-border)] rounded-xl overflow-hidden">
                 <EditorTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
-                <div className="p-6 overflow-y-auto flex-1 space-y-6 bg-[var(--pb-background)]">
+                <div className="p-6 overflow-y-auto flex-1 space-y-6 ">
                     {renderTabContent()}
                 </div>
 
@@ -307,7 +307,7 @@ export default function HeroEditor({ initialData, onSave, onCancel, theme, setFu
             </div>
 
             {/* Preview panel */}
-            <div className={`flex-1 min-w-0 bg-[var(--pb-background)] border border-[var(--pb-border)] rounded-xl overflow-hidden transition-all duration-300`}>
+            <div className={`flex-1 min-w-0  border border-[var(--pb-border)] rounded-xl overflow-hidden transition-all duration-300`}>
                 <div className="px-4 py-2 border-b border-[var(--pb-border)] flex items-center justify-between">
                     <span className="text-xs text-[var(--pb-text-muted)] uppercase tracking-wide">Preview</span>
                     <button

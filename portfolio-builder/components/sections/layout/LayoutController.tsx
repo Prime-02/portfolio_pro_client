@@ -42,14 +42,11 @@ export default function LayoutController({
     const [draftData, setDraftData] = useState<LayoutData>(() =>
         populateLayoutData(layoutData, sectionLinks)
     );
-    const seededRef = useRef(false);
 
-    const handleOpen = useCallback(() => {
-        setDraftData(populateLayoutData(layoutData, sectionLinks));
-        seededRef.current = true;
+    const handleOpen = () => {
         setIsEditing(true);
-    }, [layoutData, sectionLinks, populateLayoutData]);
-
+    }
+    
     const handleEditorChange = useCallback((updated: LayoutData) => {
         setDraftData(updated);
     }, []);

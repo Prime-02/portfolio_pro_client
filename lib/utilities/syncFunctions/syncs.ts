@@ -1753,3 +1753,17 @@ export const handleShareProfile = () => {
   const fullUrl = window.location.href;
   copyToClipboard(fullUrl);
 };
+
+
+export function hexToRgb(hex: string): string {
+  const h = hex.replace("#", "");
+  const full =
+    h.length === 3
+      ? h
+          .split("")
+          .map((c) => c + c)
+          .join("")
+      : h;
+  const n = parseInt(full, 16);
+  return `${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}`;
+}

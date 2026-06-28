@@ -62,7 +62,12 @@ export function clearThemeCSS() {
 // Resolution Logic
 // ---------------------------------------------------------------------------
 
-function resolveTheme(data: PortfolioThemeData | null): ResolvedTheme {
+/**
+ * Resolves a PortfolioThemeData object into a flat ResolvedTheme,
+ * respecting the themeVariant and system preference.
+ * Exported so other modules (e.g. LayoutEditor) can inject CSS directly.
+ */
+export function resolveTheme(data: PortfolioThemeData | null): ResolvedTheme {
   if (!data) {
     // Default dark fallback
     return {

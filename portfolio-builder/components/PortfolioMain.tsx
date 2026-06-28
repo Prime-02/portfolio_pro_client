@@ -7,6 +7,7 @@ import BioSectionController from "@/portfolio-builder/components/sections/bio/Bi
 import PortfolioProLogo from "@/src/app/components/logo/PortfolioProTextLogo";
 import { HeroData } from "@/portfolio-builder/types/hero";
 import { BioData } from "@/portfolio-builder/types/bio";
+import { LayoutData, SectionLink, syncSectionLinks } from "@/portfolio-builder/types/layout";
 import { usePortfolioTheme, PortfolioThemeData } from "@/portfolio-builder/hooks/usePortfolioTheme";
 import "@/portfolio-builder/styles/portfolio-theme.css";
 import { SkillsSectionController } from "./sections/skills";
@@ -24,6 +25,8 @@ import { BlogsData } from "../types/blogs";
 import { BlogsSectionController } from "./sections/blogs";
 import { TestimonialsData } from "../types/testimonials";
 import { TestimonialsSectionController } from "./sections/testimonials";
+import { LayoutController } from "./sections/layout";
+import { useThemeToggle } from "./shared/ui/ThemeToggle";
 
 interface PortfolioMainProps {
   portfolioId: string;
@@ -37,6 +40,19 @@ interface PortfolioSection {
 interface PortfolioLayout {
   sections: PortfolioSection[];
 }
+
+/** All known section types in default order */
+const ALL_SECTION_TYPES = [
+  "hero",
+  "bio",
+  "skills",
+  "experience",
+  "education",
+  "certification",
+  "projects",
+  "blogs",
+  "testimonials",
+];
 
 function getSectionData<T>(
   layout: Record<string, unknown> | null,
@@ -73,7 +89,6 @@ function setSectionData<T>(
     sections.push({ type: sectionType, data: sectionData as unknown as Record<string, unknown> });
   }
 
-  // Preserve all existing top-level properties and only update sections
   return {
     ...layout,
     sections
@@ -85,19 +100,45 @@ export default function PortfolioMain({ portfolioId }: PortfolioMainProps) {
     usePortfolioStore();
   const { profileContext } = useTheme();
 
+  // Single source of truth for theme variant — toggle owns the mode,
+  // PortfolioMain owns the CSS injection via usePortfolioTheme
+  const { mode: themeVariant } = useThemeToggle();
+
   useEffect(() => {
     fetchPortfolioById(portfolioId);
   }, [portfolioId]);
 
   const layout = currentPortfolio?.layout ?? null;
 
-  const themeData = useMemo(
-    () => getTopLevelData<PortfolioThemeData>(layout, "theme"),
-    [layout]
-  );
+  const themeData = useMemo(() => {
+    const saved = getTopLevelData<PortfolioThemeData>(layout, "theme");
+    if (!saved) return null;
+    return { ...saved, themeVariant };
+  }, [layout, themeVariant]);
+
   const resolvedTheme = usePortfolioTheme(themeData);
 
-  // ── Stable section data ───────────────────────────────────────────────────
+  // ── Layout data (top-level key, not inside sections[]) ───────────────────
+  const layoutData = useMemo(
+    () => getTopLevelData<LayoutData>(layout, "layout"),
+    [layout]
+  );
+
+  // ── Available sections from the layout data ─────────────────────────────
+  const availableSections = useMemo(() => {
+    if (!layout) return ALL_SECTION_TYPES;
+    const sections = (layout as unknown as PortfolioLayout).sections ?? [];
+    const types = sections.map((s) => s.type);
+    return ALL_SECTION_TYPES.filter((t) => types.includes(t));
+  }, [layout]);
+
+  // ── Sync section links with available sections ──────────────────────────
+  const sectionLinks = useMemo(() => {
+    const navLinks = layoutData?.navbar?.sectionLinks ?? [];
+    return syncSectionLinks(navLinks, availableSections);
+  }, [layoutData, availableSections]);
+
+  // ── Section data ──────────────────────────────────────────────────────────
   const heroData = useMemo(() => getSectionData<HeroData>(layout, "hero"), [layout]);
   const bioData = useMemo(() => getSectionData<BioData>(layout, "bio"), [layout]);
   const skillsData = useMemo(() => getSectionData<SkillsData>(layout, "skills"), [layout]);
@@ -108,50 +149,48 @@ export default function PortfolioMain({ portfolioId }: PortfolioMainProps) {
   const blogsData = useMemo(() => getSectionData<BlogsData>(layout, "blogs"), [layout]);
   const testimonialsData = useMemo(() => getSectionData<TestimonialsData>(layout, "testimonials"), [layout]);
 
-  // ── Stable handlers ───────────────────────────────────────────────────────
-  const handleHeroSave = useCallback(async (updatedHeroData: HeroData) => {
-    const newLayout = setSectionData(layout, "hero", updatedHeroData);
-    await updatePortfolio(portfolioId, { layout: newLayout });
+  // ── Save handlers ─────────────────────────────────────────────────────────
+  const handleHeroSave = useCallback(async (updated: HeroData) => {
+    await updatePortfolio(portfolioId, { layout: setSectionData(layout, "hero", updated) });
   }, [layout, portfolioId, updatePortfolio]);
 
-  const handleBioSave = useCallback(async (updatedBioData: BioData) => {
-    const newLayout = setSectionData(layout, "bio", updatedBioData);
-    await updatePortfolio(portfolioId, { layout: newLayout });
+  const handleBioSave = useCallback(async (updated: BioData) => {
+    await updatePortfolio(portfolioId, { layout: setSectionData(layout, "bio", updated) });
   }, [layout, portfolioId, updatePortfolio]);
 
   const handleSkillsSave = useCallback(async (updated: SkillsData) => {
-    const newLayout = setSectionData(layout, "skills", updated);
-    await updatePortfolio(portfolioId, { layout: newLayout });
+    await updatePortfolio(portfolioId, { layout: setSectionData(layout, "skills", updated) });
   }, [layout, portfolioId, updatePortfolio]);
 
   const handleExperienceSave = useCallback(async (updated: ExperienceData) => {
-    const newLayout = setSectionData(layout, "experience", updated);
-    await updatePortfolio(portfolioId, { layout: newLayout });
+    await updatePortfolio(portfolioId, { layout: setSectionData(layout, "experience", updated) });
   }, [layout, portfolioId, updatePortfolio]);
 
   const handleEducationSave = useCallback(async (updated: EducationData) => {
-    const newLayout = setSectionData(layout, "education", updated);
-    await updatePortfolio(portfolioId, { layout: newLayout });
+    await updatePortfolio(portfolioId, { layout: setSectionData(layout, "education", updated) });
   }, [layout, portfolioId, updatePortfolio]);
 
   const handleCertificationSave = useCallback(async (updated: CertificationData) => {
-    const newLayout = setSectionData(layout, "certification", updated);
-    await updatePortfolio(portfolioId, { layout: newLayout });
+    await updatePortfolio(portfolioId, { layout: setSectionData(layout, "certification", updated) });
   }, [layout, portfolioId, updatePortfolio]);
 
   const handleProjectsSave = useCallback(async (updated: ProjectsData) => {
-    const newLayout = setSectionData(layout, "projects", updated);
-    await updatePortfolio(portfolioId, { layout: newLayout });
+    await updatePortfolio(portfolioId, { layout: setSectionData(layout, "projects", updated) });
   }, [layout, portfolioId, updatePortfolio]);
 
   const handleBlogsSave = useCallback(async (updated: BlogsData) => {
-    const newLayout = setSectionData(layout, "blogs", updated);
-    await updatePortfolio(portfolioId, { layout: newLayout });
+    await updatePortfolio(portfolioId, { layout: setSectionData(layout, "blogs", updated) });
   }, [layout, portfolioId, updatePortfolio]);
 
   const handleTestimonialsSave = useCallback(async (updated: TestimonialsData) => {
-    const newLayout = setSectionData(layout, "testimonials", updated);
-    await updatePortfolio(portfolioId, { layout: newLayout });
+    await updatePortfolio(portfolioId, { layout: setSectionData(layout, "testimonials", updated) });
+  }, [layout, portfolioId, updatePortfolio]);
+
+  // ── Layout save — stored as top-level key to avoid conflating with sections
+  const handleLayoutSave = useCallback(async (updated: LayoutData) => {
+    await updatePortfolio(portfolioId, {
+      layout: { ...layout, layout: updated },
+    });
   }, [layout, portfolioId, updatePortfolio]);
 
   const currentUsername = profileContext.username;
@@ -182,45 +221,112 @@ export default function PortfolioMain({ portfolioId }: PortfolioMainProps) {
     );
   }
 
+  // ── Render ALL sections, each wrapped with id={sectionType} for anchor scrolling
+  // Visibility is handled by the LayoutController/LayoutRenderer reading from sectionLinks
+  const renderSection = (sectionType: string) => {
+    switch (sectionType) {
+      case "hero":
+        return (
+          <section id="hero" key="hero">
+            <HeroSectionController
+              heroData={heroData}
+              onSave={handleHeroSave}
+              theme={resolvedTheme}
+            />
+          </section>
+        );
+      case "bio":
+        return (
+          <section id="bio" key="bio">
+            <BioSectionController
+              bioData={bioData}
+              onSave={handleBioSave}
+            />
+          </section>
+        );
+      case "skills":
+        return (
+          <section id="skills" key="skills">
+            <SkillsSectionController
+              skillsData={skillsData}
+              onSave={handleSkillsSave}
+              username={currentUsername || ""}
+            />
+          </section>
+        );
+      case "experience":
+        return (
+          <section id="experience" key="experience">
+            <ExperienceSectionController
+              experienceData={experienceData}
+              onSave={handleExperienceSave}
+              username={currentUsername || ""}
+            />
+          </section>
+        );
+      case "education":
+        return (
+          <section id="education" key="education">
+            <EducationSectionController
+              educationData={educationData}
+              onSave={handleEducationSave}
+              username={currentUsername || ""}
+            />
+          </section>
+        );
+      case "certification":
+        return (
+          <section id="certification" key="certification">
+            <CertificationSectionController
+              certificationData={certificationData}
+              onSave={handleCertificationSave}
+              username={currentUsername || ""}
+            />
+          </section>
+        );
+      case "projects":
+        return (
+          <section id="projects" key="projects">
+            <ProjectsSectionController
+              projectsData={projectsData}
+              onSave={handleProjectsSave}
+              username={currentUsername || ""}
+            />
+          </section>
+        );
+      case "blogs":
+        return (
+          <section id="blogs" key="blogs">
+            <BlogsSectionController
+              blogsData={blogsData}
+              onSave={handleBlogsSave}
+              username={currentUsername || ""}
+            />
+          </section>
+        );
+      case "testimonials":
+        return (
+          <section id="testimonials" key="testimonials">
+            <TestimonialsSectionController
+              testimonialsData={testimonialsData}
+              onSave={handleTestimonialsSave}
+              username={currentUsername || ""}
+            />
+          </section>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-[var(--pb-background)]">
-      <HeroSectionController heroData={heroData} onSave={handleHeroSave} theme={resolvedTheme} />
-      <BioSectionController bioData={bioData} onSave={handleBioSave} />
-      <SkillsSectionController
-        skillsData={skillsData}
-        onSave={handleSkillsSave}
-        username={currentUsername || ""}
-      />
-      <ExperienceSectionController
-        experienceData={experienceData}
-        onSave={handleExperienceSave}
-        username={currentUsername || ""}
-      />
-      <EducationSectionController
-        educationData={educationData}
-        onSave={handleEducationSave}
-        username={currentUsername || ""}
-      />
-      <CertificationSectionController
-        certificationData={certificationData}
-        onSave={handleCertificationSave}
-        username={currentUsername || ""}
-      />
-      <ProjectsSectionController
-        projectsData={projectsData}
-        onSave={handleProjectsSave}
-        username={currentUsername || ""}
-      />
-      <BlogsSectionController
-        blogsData={blogsData}
-        onSave={handleBlogsSave}
-        username={currentUsername || ""}
-      />
-      <TestimonialsSectionController
-        testimonialsData={testimonialsData}
-        onSave={handleTestimonialsSave}
-        username={currentUsername || ""}
-      />
-    </div>
+    <LayoutController
+      layoutData={layoutData}
+      onSave={handleLayoutSave}
+      availableSections={availableSections}
+      sectionLinks={sectionLinks}
+    >
+      {ALL_SECTION_TYPES.map((sectionType) => renderSection(sectionType))}
+    </LayoutController>
   );
 }

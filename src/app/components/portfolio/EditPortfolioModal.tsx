@@ -55,6 +55,7 @@ const EditPortfolioModal = ({
     const [isPublic, setIsPublic] = useState(true)
 
     const currentTheme = (): PortfolioThemeValues => ({
+        themeVariant,
         lightBg: lightTheme.background,
         lightFg: lightTheme.foreground,
         darkBg: darkTheme.background,
@@ -69,6 +70,7 @@ const EditPortfolioModal = ({
         const layout = parseLayout(portfolio.layout)
         if (!layout) return null
         return {
+            themeVariant: layout.themeVariant as "light" | "dark" | "system",
             lightBg: layout.lightTheme.background,
             lightFg: layout.lightTheme.foreground,
             darkBg: layout.darkTheme.background,
@@ -96,7 +98,7 @@ const EditPortfolioModal = ({
             layout: {
                 ...portfolio.layout,
                 theme: {
-                    themeVariant,
+                    themeVariant: theme.themeVariant,
                     lightTheme: { background: theme.lightBg, foreground: theme.lightFg },
                     darkTheme: { background: theme.darkBg, foreground: theme.darkFg },
                     accent: theme.accent,

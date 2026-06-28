@@ -181,7 +181,14 @@ export default function BioRenderer({ data }: BioRendererProps) {
 
   const BioBlock = bio ? (
     <MotionItem isAnimated={isAnimated} shouldAnimate={shouldAnimate} anim={anim}>
-      <div className="text-base md:text-lg text-[var(--pb-foreground-80)]" style={getTextStyle("bio")}>
+      <div
+        className="text-base md:text-lg"
+        style={{
+          ...getTextStyle("bio"),
+          // Remap --foreground so all .mdr child rules inherit the pb color
+          ["--foreground" as string]: "var(--pb-foreground-80)",
+        }}
+      >
         <MarkdownRenderer markdown={bio} />
       </div>
     </MotionItem>

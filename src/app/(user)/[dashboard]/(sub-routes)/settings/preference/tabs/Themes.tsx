@@ -4,6 +4,7 @@ import { useCallback } from "react";
 import { themePresets } from "@/lib/utilities/indices/Themes";
 import { Moon, Sun } from "lucide-react";
 import Button from "@/src/app/components/buttons/Buttons";
+import { ThemeVariant } from "@/src/app/components/types and interfaces/loaderTypes";
 
 
 export interface ThemeColors {
@@ -11,11 +12,13 @@ export interface ThemeColors {
   foreground: string;
 }
 
-interface ThemePreset {
+export interface ThemePreset {
   name: string;
   light: ThemeColors;
   dark: ThemeColors;
   accent: string;
+  themeVariant?: ThemeVariant; 
+
 }
 
 

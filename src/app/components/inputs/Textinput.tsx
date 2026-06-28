@@ -4,7 +4,7 @@ import PhoneInputComponent from "./PhoneInput";
 import { Eye, EyeOff, XCircle } from "lucide-react";
 import { BsInfoCircle } from "react-icons/bs";
 
-interface TextInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'type'> {
+export interface TextInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'type'> {
   label?: string;
   type?: string;
   value?: string | number;
@@ -160,24 +160,25 @@ export const Textinput: React.FC<TextInputProps> = ({
           placeholder={inputProps.placeholder || label || " "}
         />
 
-        {/* Floating label */}
+        {/* Floating label - UPDATED */}
         {label && (
           <label
             htmlFor={id}
             className={`
-              absolute left-3
-              transition-all duration-200 pointer-events-none
-              select-none
-              ${icon ? 'left-10' : ''}
-              ${isFocused || hasValue
+      absolute left-3
+      transition-all duration-200 pointer-events-none
+      select-none
+      ${icon ? 'left-10' : ''}
+      ${isFocused || hasValue
                 ? `text-xs -translate-y-2.5 px-1
-                     bg-[var(--background)] text-[var(--accent)]`
+           bg-[var(--background)] text-[var(--accent)]`
                 : 'text-sm top-2.5 text-[var(--foreground)]'
               }
-              ${error ? 'text-red-500' : ''}
-              ${isFocused && error ? 'text-red-500' : ''}
-              ${hasValue && !isFocused && !error ? 'text-[var(--foreground)] ' : ''}
-            `}
+      ${error ? 'text-red-500' : ''}
+      ${isFocused && error ? 'text-red-500' : ''}
+      ${hasValue && !isFocused && !error ? 'text-[var(--foreground)] ' : ''}
+      ${labelStyle}  // ← ADD THIS LINE
+    `}
           >
             {label}
             {required && <span className="text-red-500 ml-0.5">*</span>}

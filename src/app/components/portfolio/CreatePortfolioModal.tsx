@@ -24,6 +24,7 @@ const CreatePortfolioModal = ({
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   const defaultTheme = (): PortfolioThemeValues => ({
+    themeVariant,
     lightBg: lightTheme.background,
     lightFg: lightTheme.foreground,
     darkBg: darkTheme.background,
@@ -65,7 +66,7 @@ const CreatePortfolioModal = ({
       is_public: isPublic,
       layout: {
         theme: {
-          themeVariant,
+          themeVariant: theme.themeVariant,
           lightTheme: { background: theme.lightBg, foreground: theme.lightFg },
           darkTheme: { background: theme.darkBg, foreground: theme.darkFg },
           accent: theme.accent,

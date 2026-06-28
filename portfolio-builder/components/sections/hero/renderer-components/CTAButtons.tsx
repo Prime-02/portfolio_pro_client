@@ -35,16 +35,16 @@ function getCTAButtonClass(variant?: string): string {
 
     switch (variant) {
         case "secondary":
-            return `${base} bg-[var(--pb-foreground-20)] text-[var(--pb-foreground)] hover:bg-[var(--pb-foreground-30)]`;
+            return `${base} bg-[var(--pb-accent-10)] text-[var(--pb-accent)] hover:bg-[var(--pb-accent-20)]`;
         case "outline":
-            return `${base} border border-[var(--pb-foreground-40)] text-[var(--pb-foreground)] hover:bg-[var(--pb-foreground-10)]`;
+            return `${base} border border-[var(--pb-accent-30)] text-[var(--pb-accent)] hover:bg-[var(--pb-accent-10)]`;
         case "ghost":
-            return `${base} text-[var(--pb-foreground-70)] hover:text-[var(--pb-foreground)] hover:bg-[var(--pb-foreground-10)]`;
+            return `${base} text-[var(--pb-accent)] hover:bg-[var(--pb-accent-10)]`;
         case "link":
-            return `${base} text-[var(--pb-foreground-70)] hover:text-[var(--pb-foreground)] underline underline-offset-4`;
+            return `${base} text-[var(--pb-accent)] hover:underline underline-offset-4 px-0 py-0`;
         case "primary":
         default:
-            return `${base} bg-[var(--pb-foreground)] text-[var(--pb-background)] hover:opacity-90`;
+            return `${base} bg-[var(--pb-accent)] text-white hover:opacity-90`;
     }
 }
 

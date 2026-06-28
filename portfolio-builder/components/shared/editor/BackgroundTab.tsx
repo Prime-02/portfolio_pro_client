@@ -3,6 +3,9 @@
 import { useState } from "react";
 import type { SectionBackground, SectionBackgroundType, GradientType } from "@/portfolio-builder/types/sectionBackground";
 import { getBackgroundStyle } from "@/portfolio-builder/lib/sectionBackground";
+import { PBDropdown } from "../ui/inputs";
+import ColorPicker from "@/src/app/components/inputs/ColorPicker";
+
 
 // --- Reusable sub-components (can be extracted further) ---
 
@@ -35,33 +38,31 @@ export default function BackgroundTab<T extends { background?: SectionBackground
         ? ALL_BACKGROUND_TYPES.filter((t) => allowedTypes.includes(t.value))
         : ALL_BACKGROUND_TYPES;
 
-    const handleTypeChange = (newType: SectionBackgroundType) => {
-        // Preserve common fields when switching types
-        onUpdate({ type: newType });
+    const handleTypeChange = (selectedValue: string | string[]) => {
+        const newType = Array.isArray(selectedValue) ? selectedValue[0] : selectedValue;
+        if (newType) {
+            onUpdate({ type: newType as SectionBackgroundType });
+        }
     };
 
     return (
         <div className="flex flex-col gap-5">
-            {/* Type selector */}
+            {/* Type selector - using PBDropdown */}
             <div>
-                <label className="block text-sm font-medium text-[var(--pb-text-secondary)] mb-1.5">
-                    Background Type
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                    {availableTypes.map(({ value, label }) => (
-                        <button
-                            key={value}
-                            type="button"
-                            onClick={() => handleTypeChange(value)}
-                            className={`px-3 py-2 rounded-lg text-sm border transition-colors ${type === value
-                                    ? "border-[var(--pb-foreground)] bg-[var(--pb-foreground-10)] text-[var(--pb-text-primary)]"
-                                    : "border-[var(--pb-border)] text-[var(--pb-text-secondary)] hover:border-[var(--pb-foreground-40)]"
-                                }`}
-                        >
-                            {label}
-                        </button>
-                    ))}
-                </div>
+                <PBDropdown
+                    options={availableTypes.map(type => ({
+                        id: type.value,
+                        code: type.label
+                    }))}
+                    onSelect={handleTypeChange}
+                    value={type}
+                    placeholder="Background Type"
+                    valueKey="id"
+                    displayKey="code"
+                    size="md"
+                    variant="outlined"
+                    className="w-full"
+                />
             </div>
 
             {/* ── SOLID ── */}
@@ -124,8 +125,8 @@ function GradientFields({ bg, onUpdate }: { bg: SectionBackground; onUpdate: (v:
                             onUpdate({ gradientType: t });
                         }}
                         className={`flex-1 px-3 py-1.5 rounded-md text-xs border capitalize ${gradientType === t
-                                ? "border-[var(--pb-foreground)] bg-[var(--pb-foreground-10)]"
-                                : "border-[var(--pb-border)] text-[var(--pb-text-muted)]"
+                            ? "border-[var(--pb-foreground)] bg-[var(--pb-foreground-10)]"
+                            : "border-[var(--pb-border)] text-[var(--pb-text-muted)]"
                             }`}
                     >
                         {t}
@@ -181,15 +182,17 @@ function ImageFields({ bg, onUpdate }: { bg: SectionBackground; onUpdate: (v: Pa
             <div className="grid grid-cols-2 gap-3">
                 <div>
                     <label className="block text-xs text-[var(--pb-text-muted)] mb-1">Size</label>
-                    <select
+                    <PBDropdown
+                        options={[
+                            { id: "cover", code: "Cover" },
+                            { id: "contain", code: "Contain" },
+                            { id: "auto", code: "Auto" }
+                        ]}
+                        onSelect={(v) => onUpdate({ backgroundSize: v as string })}
                         value={bg.backgroundSize || "cover"}
-                        onChange={(e) => onUpdate({ backgroundSize: e.target.value })}
-                        className="w-full bg-[var(--pb-input-bg)] border border-[var(--pb-input-border)] rounded-lg px-3 py-2 text-sm"
-                    >
-                        <option value="cover">Cover</option>
-                        <option value="contain">Contain</option>
-                        <option value="auto">Auto</option>
-                    </select>
+                        size="sm"
+                        variant="outlined"
+                    />
                 </div>
                 <div>
                     <label className="block text-xs text-[var(--pb-text-muted)] mb-1">Position</label>
@@ -304,17 +307,9 @@ function ColorField({ label, value, onChange }: { label: string; value: string; 
         <div>
             <label className="block text-xs text-[var(--pb-text-muted)] mb-1">{label}</label>
             <div className="flex gap-2">
-                <input
-                    type="color"
+                <ColorPicker
                     value={value}
-                    onChange={(e) => onChange(e.target.value)}
-                    className="w-10 h-10 rounded cursor-pointer border border-[var(--pb-border)]"
-                />
-                <input
-                    type="text"
-                    value={value}
-                    onChange={(e) => onChange(e.target.value)}
-                    className="flex-1 bg-[var(--pb-input-bg)] border border-[var(--pb-input-border)] rounded-lg px-3 py-2 text-sm"
+                    onChange={(e) => onChange(e)}
                 />
             </div>
         </div>

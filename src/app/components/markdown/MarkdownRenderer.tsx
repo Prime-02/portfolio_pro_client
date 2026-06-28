@@ -106,7 +106,6 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({
                 ref={rootRef}
                 className={`mdr ${className}`.trim()}
                 style={{
-                    color: "var(--text-muted, #9ca3af)",
                     fontStyle: "italic",
                     fontFamily: "'Lora', Georgia, serif",
                     ...style,

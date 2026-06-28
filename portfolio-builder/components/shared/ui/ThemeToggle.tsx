@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useContext, createContext } from "react";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -9,46 +9,52 @@ import { useState, useEffect, useRef, useCallback } from "react";
 type ThemeMode = "light" | "dark" | "system";
 
 // ---------------------------------------------------------------------------
-// Constants
+// Context — the toggle is a pure UI control; it owns no theme state.
+// The provider receives the current value and a setter from PortfolioMainInner
+// so ThemeToggle stays in sync with ThemeTab (and any other editor) automatically.
 // ---------------------------------------------------------------------------
 
-const STORAGE_KEY = "portfolio-theme-mode";
+interface ThemeToggleContextValue {
+    themeVariant: ThemeMode;
+    setThemeVariant: (mode: ThemeMode) => void;
+}
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
+const ThemeToggleContext = createContext<ThemeToggleContextValue | null>(null);
 
-function getInitialMode(): ThemeMode {
-    if (typeof window === "undefined") return "system";
-    try {
-        const stored = localStorage.getItem(STORAGE_KEY) as ThemeMode | null;
-        if (stored && ["light", "dark", "system"].includes(stored)) return stored;
-    } catch { }
-    return "system";
+interface ThemeToggleProviderProps {
+    themeVariant: ThemeMode;
+    setThemeVariant: (mode: ThemeMode) => void;
+    children: React.ReactNode;
+}
+
+/**
+ * Wrap the portfolio root with this provider.
+ * Pass the current themeVariant (from saved layout data) and the setter
+ * (which should persist the change, e.g. via handleLayoutSave).
+ * The toggle will always reflect whatever themeVariant is passed in.
+ */
+export function ThemeToggleProvider({
+    themeVariant,
+    setThemeVariant,
+    children,
+}: ThemeToggleProviderProps) {
+    return (
+        <ThemeToggleContext.Provider value={{ themeVariant, setThemeVariant }}>
+            {children}
+        </ThemeToggleContext.Provider>
+    );
 }
 
 // ---------------------------------------------------------------------------
-// Hook — manages mode state only; CSS injection is owned by PortfolioMain
+// Hook — must be used inside ThemeToggleProvider
 // ---------------------------------------------------------------------------
 
-export function useThemeToggle() {
-    const [mode, setModeState] = useState<ThemeMode>(getInitialMode);
-
-    const setMode = useCallback((next: ThemeMode) => {
-        setModeState(next);
-        try { localStorage.setItem(STORAGE_KEY, next); } catch { }
-    }, []);
-
-    const cycleMode = useCallback(() => {
-        const order: ThemeMode[] = ["light", "dark", "system"];
-        setModeState((prev) => {
-            const next = order[(order.indexOf(prev) + 1) % order.length];
-            try { localStorage.setItem(STORAGE_KEY, next); } catch { }
-            return next;
-        });
-    }, []);
-
-    return { mode, setMode, cycleMode };
+export function useThemeToggle(): ThemeToggleContextValue {
+    const ctx = useContext(ThemeToggleContext);
+    if (!ctx) {
+        throw new Error("useThemeToggle must be used within a ThemeToggleProvider");
+    }
+    return ctx;
 }
 
 // ---------------------------------------------------------------------------
@@ -135,7 +141,8 @@ const MODE_LABELS: Record<ThemeMode, string> = {
 };
 
 // ---------------------------------------------------------------------------
-// Component
+// Component — pure controlled UI; icon and active state always reflect the
+// themeVariant passed down from PortfolioMainInner via context.
 // ---------------------------------------------------------------------------
 
 interface ThemeToggleProps {
@@ -150,7 +157,7 @@ const SIZE_CLASSES: Record<string, { btn: string; icon: string; menu: string }> 
 };
 
 export default function ThemeToggle({ size = "md", className = "" }: ThemeToggleProps) {
-    const { mode, setMode } = useThemeToggle();
+    const { themeVariant, setThemeVariant } = useThemeToggle();
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
 
@@ -166,7 +173,7 @@ export default function ThemeToggle({ size = "md", className = "" }: ThemeToggle
     }, [menuOpen]);
 
     const sizeClass = SIZE_CLASSES[size] ?? SIZE_CLASSES.md;
-    const CurrentIcon = MODE_ICONS[mode];
+    const CurrentIcon = MODE_ICONS[themeVariant];
 
     return (
         <div className={`relative inline-block ${className}`} ref={menuRef}>
@@ -184,7 +191,7 @@ export default function ThemeToggle({ size = "md", className = "" }: ThemeToggle
                     hover:text-[var(--pb-text-primary)]
                     hover:bg-[var(--pb-surface-hover)]
                 `}
-                aria-label={`Current theme: ${MODE_LABELS[mode]}. Click to change.`}
+                aria-label={`Current theme: ${MODE_LABELS[themeVariant]}. Click to change.`}
                 aria-expanded={menuOpen}
                 aria-haspopup="menu"
             >
@@ -207,14 +214,14 @@ export default function ThemeToggle({ size = "md", className = "" }: ThemeToggle
                 >
                     {(["light", "dark", "system"] as ThemeMode[]).map((m) => {
                         const Icon = MODE_ICONS[m];
-                        const isActive = mode === m;
+                        const isActive = themeVariant === m;
                         return (
                             <button
                                 key={m}
                                 type="button"
                                 role="menuitem"
                                 onClick={() => {
-                                    setMode(m);
+                                    setThemeVariant(m);
                                     setMenuOpen(false);
                                 }}
                                 className={`

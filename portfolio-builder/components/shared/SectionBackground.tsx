@@ -18,10 +18,8 @@ interface SectionBackgroundProps {
  * with automatic overlay support for image/video/mesh/particles.
  */
 export function SectionBackgroundRenderer({ background, className = "" }: SectionBackgroundProps) {
-    console.log("SectionBackgroundRenderer received:", JSON.stringify(background, null, 2));
-
+    
     if (!background || background.type === "none") {
-        console.log("SectionBackgroundRenderer: returning null, type =", background?.type);
         return null;
     }
 

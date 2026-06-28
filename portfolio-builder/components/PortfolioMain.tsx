@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useCallback } from "react";
+import { useEffect, useMemo, useCallback, useState, useRef } from "react";
 import { usePortfolioStore } from "@/portfolio-builder/store/usePortfolioStore";
 import HeroSectionController from "@/portfolio-builder/components/sections/hero/HeroSectionController";
 import BioSectionController from "@/portfolio-builder/components/sections/bio/BioSectionController";
 import PortfolioProLogo from "@/src/app/components/logo/PortfolioProTextLogo";
 import { HeroData } from "@/portfolio-builder/types/hero";
 import { BioData } from "@/portfolio-builder/types/bio";
-import { LayoutData, SectionLink, syncSectionLinks } from "@/portfolio-builder/types/layout";
+import { LayoutData, syncSectionLinks } from "@/portfolio-builder/types/layout";
 import { usePortfolioTheme, PortfolioThemeData } from "@/portfolio-builder/hooks/usePortfolioTheme";
 import "@/portfolio-builder/styles/portfolio-theme.css";
 import { SkillsSectionController } from "./sections/skills";
@@ -26,7 +26,7 @@ import { BlogsSectionController } from "./sections/blogs";
 import { TestimonialsData } from "../types/testimonials";
 import { TestimonialsSectionController } from "./sections/testimonials";
 import { LayoutController } from "./sections/layout";
-import { useThemeToggle } from "./shared/ui/ThemeToggle";
+import { ThemeToggleProvider } from "./shared/ui/ThemeToggle";
 
 interface PortfolioMainProps {
   portfolioId: string;
@@ -89,10 +89,7 @@ function setSectionData<T>(
     sections.push({ type: sectionType, data: sectionData as unknown as Record<string, unknown> });
   }
 
-  return {
-    ...layout,
-    sections
-  };
+  return { ...layout, sections };
 }
 
 export default function PortfolioMain({ portfolioId }: PortfolioMainProps) {
@@ -100,31 +97,56 @@ export default function PortfolioMain({ portfolioId }: PortfolioMainProps) {
     usePortfolioStore();
   const { profileContext } = useTheme();
 
-  // Single source of truth for theme variant — toggle owns the mode,
-  // PortfolioMain owns the CSS injection via usePortfolioTheme
-  const { mode: themeVariant } = useThemeToggle();
-
   useEffect(() => {
     fetchPortfolioById(portfolioId);
   }, [portfolioId]);
 
   const layout = currentPortfolio?.layout ?? null;
 
-  const themeData = useMemo(() => {
-    const saved = getTopLevelData<PortfolioThemeData>(layout, "theme");
-    if (!saved) return null;
-    return { ...saved, themeVariant };
-  }, [layout, themeVariant]);
-
-  const resolvedTheme = usePortfolioTheme(themeData);
-
-  // ── Layout data (top-level key, not inside sections[]) ───────────────────
-  const layoutData = useMemo(
-    () => getTopLevelData<LayoutData>(layout, "layout"),
+  const savedTheme = useMemo(
+    () => getTopLevelData<PortfolioThemeData>(layout, "theme"),
     [layout]
   );
 
-  // ── Available sections from the layout data ─────────────────────────────
+  // ── ThemeToggle variant state ─────────────────────────────────────────────
+  // Tracks the active themeVariant locally so the toggle icon stays responsive
+  // without waiting for a store round-trip. Seeded once from savedTheme, then
+  // updated by the toggle and by the layout editor (via handleLayoutSave).
+  const [liveVariant, setLiveVariant] = useState<"light" | "dark" | "system">(
+    () => (savedTheme?.themeVariant ?? "system") as "light" | "dark" | "system"
+  );
+
+  const themeSeededRef = useRef(false);
+  const seededPortfolioIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (seededPortfolioIdRef.current !== portfolioId) {
+      seededPortfolioIdRef.current = portfolioId;
+      themeSeededRef.current = false;
+    }
+    if (themeSeededRef.current) return;
+    if (!savedTheme) return;
+    themeSeededRef.current = true;
+    setLiveVariant((savedTheme.themeVariant ?? "system") as "light" | "dark" | "system");
+  }, [savedTheme, portfolioId]);
+
+  // Build the full theme object for CSS injection — always from the store
+  // (the layout editor writes directly to the store, so it's always current).
+  const themeData = useMemo(
+    () => savedTheme ? { ...savedTheme, themeVariant: liveVariant } : null,
+    [savedTheme, liveVariant]
+  );
+
+  const resolvedTheme = usePortfolioTheme(themeData);
+
+  // ── Layout data ───────────────────────────────────────────────────────────
+  const layoutData = useMemo(() => {
+    const ld = getTopLevelData<LayoutData>(layout, "layout");
+    if (!savedTheme) return ld;
+    return { ...(ld ?? {}), theme: savedTheme } as LayoutData;
+  }, [layout, savedTheme]);
+
+  // ── Available sections ────────────────────────────────────────────────────
   const availableSections = useMemo(() => {
     if (!layout) return ALL_SECTION_TYPES;
     const sections = (layout as unknown as PortfolioLayout).sections ?? [];
@@ -132,7 +154,7 @@ export default function PortfolioMain({ portfolioId }: PortfolioMainProps) {
     return ALL_SECTION_TYPES.filter((t) => types.includes(t));
   }, [layout]);
 
-  // ── Sync section links with available sections ──────────────────────────
+  // ── Section links ─────────────────────────────────────────────────────────
   const sectionLinks = useMemo(() => {
     const navLinks = layoutData?.navbar?.sectionLinks ?? [];
     return syncSectionLinks(navLinks, availableSections);
@@ -186,12 +208,37 @@ export default function PortfolioMain({ portfolioId }: PortfolioMainProps) {
     await updatePortfolio(portfolioId, { layout: setSectionData(layout, "testimonials", updated) });
   }, [layout, portfolioId, updatePortfolio]);
 
-  // ── Layout save — stored as top-level key to avoid conflating with sections
+  // ── Layout save ───────────────────────────────────────────────────────────
+  // Called on every change from the layout editor (debounced at the controller
+  // level). Theme is hoisted to layout.theme (top-level). liveVariant is kept
+  // in sync so the ThemeToggle icon reflects the latest picked variant.
   const handleLayoutSave = useCallback(async (updated: LayoutData) => {
+    const { theme, ...layoutWithoutTheme } = updated;
+    if (theme?.themeVariant) {
+      setLiveVariant(theme.themeVariant as "light" | "dark" | "system");
+    }
     await updatePortfolio(portfolioId, {
-      layout: { ...layout, layout: updated },
+      layout: {
+        ...layout,
+        layout: layoutWithoutTheme,
+        ...(theme ? { theme } : {}),
+      },
     });
   }, [layout, portfolioId, updatePortfolio]);
+
+  // ── ThemeToggle variant change ────────────────────────────────────────────
+  const handleThemeVariantChange = useCallback(async (variant: "light" | "dark" | "system") => {
+    setLiveVariant(variant);
+    await updatePortfolio(portfolioId, {
+      layout: {
+        ...layout,
+        theme: {
+          ...(savedTheme ?? {}),
+          themeVariant: variant,
+        },
+      },
+    });
+  }, [layout, portfolioId, savedTheme, updatePortfolio]);
 
   const currentUsername = profileContext.username;
 
@@ -221,97 +268,60 @@ export default function PortfolioMain({ portfolioId }: PortfolioMainProps) {
     );
   }
 
-  // ── Render ALL sections, each wrapped with id={sectionType} for anchor scrolling
-  // Visibility is handled by the LayoutController/LayoutRenderer reading from sectionLinks
   const renderSection = (sectionType: string) => {
     switch (sectionType) {
       case "hero":
         return (
           <section id="hero" key="hero">
-            <HeroSectionController
-              heroData={heroData}
-              onSave={handleHeroSave}
-              theme={resolvedTheme}
-            />
+            <HeroSectionController heroData={heroData} onSave={handleHeroSave} theme={resolvedTheme} />
           </section>
         );
       case "bio":
         return (
           <section id="bio" key="bio">
-            <BioSectionController
-              bioData={bioData}
-              onSave={handleBioSave}
-            />
+            <BioSectionController bioData={bioData} onSave={handleBioSave} />
           </section>
         );
       case "skills":
         return (
           <section id="skills" key="skills">
-            <SkillsSectionController
-              skillsData={skillsData}
-              onSave={handleSkillsSave}
-              username={currentUsername || ""}
-            />
+            <SkillsSectionController skillsData={skillsData} onSave={handleSkillsSave} username={currentUsername || ""} />
           </section>
         );
       case "experience":
         return (
           <section id="experience" key="experience">
-            <ExperienceSectionController
-              experienceData={experienceData}
-              onSave={handleExperienceSave}
-              username={currentUsername || ""}
-            />
+            <ExperienceSectionController experienceData={experienceData} onSave={handleExperienceSave} username={currentUsername || ""} />
           </section>
         );
       case "education":
         return (
           <section id="education" key="education">
-            <EducationSectionController
-              educationData={educationData}
-              onSave={handleEducationSave}
-              username={currentUsername || ""}
-            />
+            <EducationSectionController educationData={educationData} onSave={handleEducationSave} username={currentUsername || ""} />
           </section>
         );
       case "certification":
         return (
           <section id="certification" key="certification">
-            <CertificationSectionController
-              certificationData={certificationData}
-              onSave={handleCertificationSave}
-              username={currentUsername || ""}
-            />
+            <CertificationSectionController certificationData={certificationData} onSave={handleCertificationSave} username={currentUsername || ""} />
           </section>
         );
       case "projects":
         return (
           <section id="projects" key="projects">
-            <ProjectsSectionController
-              projectsData={projectsData}
-              onSave={handleProjectsSave}
-              username={currentUsername || ""}
-            />
+            <ProjectsSectionController projectsData={projectsData} onSave={handleProjectsSave} username={currentUsername || ""} />
           </section>
         );
       case "blogs":
         return (
           <section id="blogs" key="blogs">
-            <BlogsSectionController
-              blogsData={blogsData}
-              onSave={handleBlogsSave}
-              username={currentUsername || ""}
-            />
+            <BlogsSectionController blogsData={blogsData} onSave={handleBlogsSave} username={currentUsername || ""} />
           </section>
         );
       case "testimonials":
         return (
           <section id="testimonials" key="testimonials">
-            <TestimonialsSectionController
-              testimonialsData={testimonialsData}
-              onSave={handleTestimonialsSave}
-              username={currentUsername || ""}
-            />
+            <TestimonialsSectionController testimonialsData={testimonialsData} onSave={handleTestimonialsSave} username={currentUsername || ""} />
           </section>
         );
       default:
@@ -320,13 +330,18 @@ export default function PortfolioMain({ portfolioId }: PortfolioMainProps) {
   };
 
   return (
-    <LayoutController
-      layoutData={layoutData}
-      onSave={handleLayoutSave}
-      availableSections={availableSections}
-      sectionLinks={sectionLinks}
+    <ThemeToggleProvider
+      themeVariant={liveVariant}
+      setThemeVariant={handleThemeVariantChange}
     >
-      {ALL_SECTION_TYPES.map((sectionType) => renderSection(sectionType))}
-    </LayoutController>
+      <LayoutController
+        layoutData={layoutData}
+        onSave={handleLayoutSave}
+        availableSections={availableSections}
+        sectionLinks={sectionLinks}
+      >
+        {ALL_SECTION_TYPES.map((sectionType) => renderSection(sectionType))}
+      </LayoutController>
+    </ThemeToggleProvider>
   );
 }

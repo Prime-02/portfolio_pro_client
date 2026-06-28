@@ -200,13 +200,27 @@ export const usePortfolioStore = create<PortfolioState>()((set, get) => ({
   // PUT /portfolios/{portfolio_id}
   // ------------------------------------------------------------------
   updatePortfolio: async (portfolioId: string, data: PortfolioUpdate) => {
-    set({ isLoading: true, error: null });
+    // Optimistic update — apply locally before the round-trip so the UI
+    // reflects the change immediately without waiting for the API response.
+    const previousState = get();
+    set((state) => ({
+      isLoading: true,
+      error: null,
+      portfolios: state.portfolios.map((p) =>
+        p.id === portfolioId ? { ...p, ...data } : p,
+      ),
+      currentPortfolio:
+        state.currentPortfolio?.id === portfolioId
+          ? { ...state.currentPortfolio, ...data }
+          : state.currentPortfolio,
+    }));
     try {
       const response = await api.put<PortfolioResponse>(
         `/portfolios/${portfolioId}`,
         data,
       );
       const updated = response.data;
+      // Reconcile with the authoritative server response (e.g. updated_at, slug)
       set((state) => ({
         portfolios: state.portfolios.map((p) =>
           p.id === portfolioId ? updated : p,
@@ -219,9 +233,14 @@ export const usePortfolioStore = create<PortfolioState>()((set, get) => ({
       }));
       return updated;
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to update portfolio";
-      set({ isLoading: false, error: message });
+      // Rollback to state before the optimistic update
+      set({
+        portfolios: previousState.portfolios,
+        currentPortfolio: previousState.currentPortfolio,
+        isLoading: false,
+        error:
+          err instanceof Error ? err.message : "Failed to update portfolio",
+      });
       throw err;
     }
   },

@@ -114,6 +114,17 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
   const brightnessRef = useRef(brightness);
   const hueRef = useRef(hue);
 
+  // Tracks the most recent color *this component* emitted via onChange.
+  // When the `value` prop round-trips back to us after going through the
+  // parent (and possibly several components above it), we can tell it's
+  // an echo of our own edit rather than a genuine external change (e.g. a
+  // preset picked elsewhere, or an undo) — and skip resyncing HSV from it.
+  // This matters because hex -> HSV -> hex is lossy (rounding, and hue is
+  // ill-defined at zero saturation/brightness), so resyncing from our own
+  // echoed value can snap the hue/saturation slider to a slightly
+  // different position mid-drag, even though the color itself is unchanged.
+  const lastEmittedRef = useRef(value);
+
   // Update refs when state changes
   useEffect(() => {
     saturationRef.current = saturation;
@@ -133,17 +144,33 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
     lg: "w-12 h-12",
   };
 
-  // Update color when value prop changes from outside
+  // Update color when value prop changes from outside.
+  // Skip while actively dragging — onChange fires on every mousemove, which
+  // round-trips back here as a new `value` prop; resyncing HSV from that
+  // echo mid-drag fights the user's own cursor (hex<->HSV is lossy, so the
+  // recomputed hue/saturation can differ slightly and snap the slider).
+  // Also skip if the incoming value is just an echo of what we last emitted
+  // ourselves (covers the moment right after a drag/keystroke ends, before
+  // the next genuinely external value arrives).
   useEffect(() => {
-    if (value !== currentColor) {
+    if (isDragging) return;
+    if (value === currentColor) return;
+    if (value === lastEmittedRef.current) {
+      // Our own edit echoed back unchanged — just reconcile currentColor,
+      // no need to recompute (and potentially perturb) hue/saturation.
       setCurrentColor(value);
-      const rgb = hexToRgb(value);
-      const hsv = rgbToHsv(rgb.r, rgb.g, rgb.b);
-      setHue(hsv.h);
-      setSaturation(hsv.s);
-      setBrightness(hsv.v);
+      return;
     }
-  }, [value]);
+    setCurrentColor(value);
+    const rgb = hexToRgb(value);
+    const hsv = rgbToHsv(rgb.r, rgb.g, rgb.b);
+    setHue(hsv.h);
+    setSaturation(hsv.s);
+    setBrightness(hsv.v);
+    hueRef.current = hsv.h;
+    saturationRef.current = hsv.s;
+    brightnessRef.current = hsv.v;
+  }, [value, isDragging]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -178,6 +205,7 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
     // Use ref to get current hue value
     const newColor = hsvToHex(hueRef.current, s, v);
     setCurrentColor(newColor);
+    lastEmittedRef.current = newColor;
     onChange?.(newColor);
   }, [onChange]);
 
@@ -201,6 +229,7 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
     // Use refs to get current saturation and brightness values
     const newColor = hsvToHex(newHue, saturationRef.current, brightnessRef.current);
     setCurrentColor(newColor);
+    lastEmittedRef.current = newColor;
     onChange?.(newColor);
   }, [onChange]);
 
@@ -297,6 +326,7 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
                 hueRef.current = hsv.h;
                 saturationRef.current = hsv.s;
                 brightnessRef.current = hsv.v;
+                lastEmittedRef.current = val;
                 onChange?.(val);
               } else {
                 setCurrentColor(val); // Allow typing incomplete values
@@ -335,6 +365,7 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
                     hueRef.current = hsv.h;
                     saturationRef.current = hsv.s;
                     brightnessRef.current = hsv.v;
+                    lastEmittedRef.current = preset;
                     onChange?.(preset);
                     onChangeComplete?.(preset);
                   }}

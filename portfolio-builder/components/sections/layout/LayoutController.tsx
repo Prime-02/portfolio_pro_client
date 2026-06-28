@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useRef } from "react";
 import { LayoutData, getEmptyLayoutData, SectionLink, syncSectionLinks } from "@/portfolio-builder/types/layout";
 import LayoutEditor from "./LayoutEditor";
 import LayoutRenderer from "./LayoutRenderer";
@@ -24,85 +24,73 @@ export default function LayoutController({
 }: LayoutControllerProps) {
     const [isEditing, setIsEditing] = useState(false);
 
-    // Helper to populate empty sectionLinks — has access to availableSections from props
     const populateLayoutData = useCallback((data: LayoutData | null, links: SectionLink[]): LayoutData => {
         const populated = data ?? getEmptyLayoutData();
         const navbar = populated.navbar ?? getEmptyLayoutData().navbar!;
 
-        // If navbar sectionLinks is empty, populate from the pre-synced sectionLinks
         if (!navbar.sectionLinks || navbar.sectionLinks.length === 0) {
             const synced = syncSectionLinks(links, availableSections);
             return {
                 ...populated,
-                navbar: {
-                    ...navbar,
-                    sectionLinks: synced,
-                },
+                navbar: { ...navbar, sectionLinks: synced },
             };
         }
 
         return populated;
     }, [availableSections]);
 
-    // Initialize draftData with populated sectionLinks if empty
-    const initialDraft = useMemo(() => {
-        return populateLayoutData(layoutData, sectionLinks);
+    // Local draft — seeded once from props on first open, then owned here.
+    // No reseed on prop changes: the editor is the source of truth while open,
+    // and closing without saving simply discards the unsaved draft.
+    const [draftData, setDraftData] = useState<LayoutData>(() =>
+        populateLayoutData(layoutData, sectionLinks)
+    );
+    const seededRef = useRef(false);
+
+    const handleOpen = useCallback(() => {
+        // Reseed from the latest props each time the panel opens so the draft
+        // always starts from whatever is currently saved.
+        setDraftData(populateLayoutData(layoutData, sectionLinks));
+        seededRef.current = true;
+        setIsEditing(true);
     }, [layoutData, sectionLinks, populateLayoutData]);
-
-    const [draftData, setDraftData] = useState<LayoutData>(initialDraft);
-
-    // Update draftData when layoutData changes from store (but preserve user edits if editing)
-    useEffect(() => {
-        if (layoutData && !isEditing) {
-            setDraftData(populateLayoutData(layoutData, sectionLinks));
-        }
-    }, [layoutData, sectionLinks, isEditing, populateLayoutData]);
 
     const handleEditorChange = useCallback((updated: LayoutData) => {
         setDraftData(updated);
     }, []);
 
-    const handleSave = async () => {
+    const handleSave = useCallback(async () => {
         await onSave(draftData);
         setIsEditing(false);
-    };
+    }, [draftData, onSave]);
 
-    const handleCancel = () => {
-        setDraftData(populateLayoutData(layoutData, sectionLinks)); // rollback
+    const handleClose = useCallback(() => {
         setIsEditing(false);
-    };
+        // Draft is intentionally left as-is — no rollback.
+    }, []);
 
-    // Get ordered and visible section links from draft navbar
     const orderedVisibleLinks = useMemo(() => {
-        return (draftData.navbar?.sectionLinks ?? sectionLinks)
-            .filter((l) => l.visible);
+        return (draftData.navbar?.sectionLinks ?? sectionLinks).filter((l) => l.visible);
     }, [draftData.navbar?.sectionLinks, sectionLinks]);
 
-    // Build a map of sectionType -> child element for reordering
     const childrenArray = useMemo(() => {
         return Array.isArray(children) ? children : [children];
     }, [children]);
 
-    // Filter and reorder children based on sectionLinks
     const visibleOrderedChildren = useMemo(() => {
         const childMap = new Map<string, React.ReactNode>();
 
         childrenArray.forEach((child) => {
             if (child && typeof child === "object" && "props" in child) {
                 const sectionId = (child.props as { id?: string })?.id;
-                if (sectionId) {
-                    childMap.set(sectionId, child);
-                }
+                if (sectionId) childMap.set(sectionId, child);
             }
         });
 
-        // Order by sectionLinks, filter invisible
         const result: React.ReactNode[] = [];
         for (const link of orderedVisibleLinks) {
             const child = childMap.get(link.sectionType);
-            if (child) {
-                result.push(child);
-            }
+            if (child) result.push(child);
         }
 
         return result;
@@ -110,32 +98,26 @@ export default function LayoutController({
 
     return (
         <>
-            {/* Main content — always full width, editor overlays on top */}
             <LayoutRenderer data={draftData}>
                 {visibleOrderedChildren}
             </LayoutRenderer>
 
-            {/* Floating "Edit Layout" trigger button — visible when not editing */}
             {!isEditing && (
                 <button
-                    onClick={() => setIsEditing(true)}
+                    onClick={handleOpen}
                     className="fixed bottom-6 left-6 z-[120] flex items-center gap-2 px-4 py-2.5 bg-[var(--pb-foreground-10)] backdrop-blur text-[var(--pb-text-primary)] border border-[var(--pb-border)] rounded-lg font-medium text-sm hover:bg-[var(--pb-foreground-20)] transition-colors shadow-lg"
-                    style={{
-                        bottom: "1.5rem",
-                    }}
                 >
                     <span className="text-xs">⚙</span>
                     Edit Layout
                 </button>
             )}
 
-            {/* Slide-in editor panel — overlays content, does NOT displace it */}
             {isEditing && (
                 <LayoutEditor
                     data={draftData}
                     onChange={handleEditorChange}
                     onSave={handleSave}
-                    onCancel={handleCancel}
+                    onClose={handleClose}
                     availableSections={availableSections}
                     sectionLinks={sectionLinks}
                 />

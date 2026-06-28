@@ -1,7 +1,4 @@
-// portfolio-builder/components/sections/layout/LayoutEditor.tsx
-
 "use client";
-
 import { useState, useCallback } from "react";
 import {
     LayoutData,
@@ -17,21 +14,15 @@ import {
     LayoutEditorTabs,
     LayoutEditorActions,
     LayoutTab,
+    ThemeTab,
 } from "./editor-components";
 import SectionLinksTab from "./editor-components/SectionLinksTab";
-import PortfolioThemePicker, { PortfolioThemeValues } from "@/src/app/components/portfolio/PortfolioThemePicker";
-import { usePortfolioStore } from "@/portfolio-builder/store/usePortfolioStore";
-import {
-    injectThemeCSS,
-    resolveTheme,
-    PortfolioThemeData,
-} from "@/portfolio-builder/hooks/usePortfolioTheme";
 
 interface LayoutEditorProps {
     data: LayoutData;
     onChange: (updated: LayoutData) => void;
     onSave: () => Promise<void>;
-    onCancel: () => void;
+    onClose: () => void;
     availableSections: string[];
     sectionLinks: SectionLink[];
 }
@@ -40,15 +31,13 @@ export default function LayoutEditor({
     data,
     onChange,
     onSave,
-    onCancel,
+    onClose,
     availableSections,
     sectionLinks,
 }: LayoutEditorProps) {
     const [activeTab, setActiveTab] = useState<LayoutTab>("links");
     const [isSaving, setIsSaving] = useState(false);
     const [isPreview, setIsPreview] = useState(false);
-
-    const { currentPortfolio } = usePortfolioStore();
 
     const handleSave = async () => {
         setIsSaving(true);
@@ -58,16 +47,6 @@ export default function LayoutEditor({
         } finally {
             setIsSaving(false);
         }
-    };
-
-    // On cancel, revert the live CSS to whatever is saved in the store
-    const handleCancel = () => {
-        setIsPreview(false);
-        const savedTheme = (
-            currentPortfolio?.layout as Record<string, unknown> | null
-        )?.theme as PortfolioThemeData | null ?? null;
-        injectThemeCSS(resolveTheme(savedTheme));
-        onCancel();
     };
 
     const handleSectionLinksChange = useCallback((links: SectionLink[]) => {
@@ -96,31 +75,6 @@ export default function LayoutEditor({
         onChange({ ...data, pageBackground });
     }, [data, onChange]);
 
-    // Update layout data state AND inject CSS live, same as ThemeToggle does
-    const handleThemeChange = useCallback((theme: PortfolioThemeValues) => {
-        const themeData: PortfolioThemeData = {
-            themeVariant: theme.themeVariant,
-            lightTheme: { background: theme.lightBg, foreground: theme.lightFg },
-            darkTheme: { background: theme.darkBg, foreground: theme.darkFg },
-            accent: theme.accent,
-        };
-        onChange({ ...data, theme: themeData });
-        injectThemeCSS(resolveTheme(themeData));
-    }, [data, onChange]);
-
-    // Reset to defaults and inject those defaults live
-    const handleResetToCurrent = useCallback(() => {
-        const defaults: PortfolioThemeData = {
-            themeVariant: "system",
-            lightTheme: { background: "#ffffff", foreground: "#0a0a0a" },
-            darkTheme: { background: "#0a0a0a", foreground: "#ededed" },
-            accent: "#737373",
-        };
-        onChange({ ...data, theme: defaults });
-        injectThemeCSS(resolveTheme(defaults));
-    }, [data, onChange]);
-
-    // When in preview mode, render a minimal toggle button instead of the full panel
     if (isPreview) {
         return (
             <button
@@ -145,7 +99,6 @@ export default function LayoutEditor({
             <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--pb-border)] shrink-0">
                 <h2 className="text-base font-semibold text-[var(--pb-text-primary)]">Layout Settings</h2>
                 <div className="flex items-center gap-2">
-                    {/* Preview toggle button */}
                     <button
                         type="button"
                         onClick={() => setIsPreview(true)}
@@ -159,8 +112,9 @@ export default function LayoutEditor({
                     </button>
                     <button
                         type="button"
-                        onClick={handleCancel}
+                        onClick={onClose}
                         className="text-[var(--pb-text-muted)] hover:text-[var(--pb-text-primary)] transition-colors text-lg leading-none"
+                        title="Close"
                     >
                         ✕
                     </button>
@@ -180,7 +134,6 @@ export default function LayoutEditor({
                         sectionLinks={data.navbar?.sectionLinks ?? sectionLinks}
                     />
                 )}
-
                 {activeTab === "footer" && (
                     <FooterTab
                         data={data.footer ?? getEmptyFooterData()}
@@ -189,7 +142,6 @@ export default function LayoutEditor({
                         onSectionLinksChange={handleSectionLinksChange}
                     />
                 )}
-
                 {activeTab === "links" && (
                     <SectionLinksTab
                         sectionLinks={data.navbar?.sectionLinks ?? sectionLinks}
@@ -199,33 +151,19 @@ export default function LayoutEditor({
                         onScrollBehaviorChange={handleScrollBehaviorChange}
                     />
                 )}
-
                 {activeTab === "background" && (
                     <PageBackgroundTab
                         data={data.pageBackground ?? getEmptyPageBackgroundData()}
                         onChange={handleBackgroundChange}
                     />
                 )}
-
                 {activeTab === "theme" && (
-                    <PortfolioThemePicker
-                        values={{
-                            themeVariant: data.theme?.themeVariant ?? "system",
-                            lightBg: data.theme?.lightTheme?.background ?? "#ffffff",
-                            lightFg: data.theme?.lightTheme?.foreground ?? "#0a0a0a",
-                            darkBg: data.theme?.darkTheme?.background ?? "#0a0a0a",
-                            darkFg: data.theme?.darkTheme?.foreground ?? "#ededed",
-                            accent: data.theme?.accent ?? "#737373",
-                        }}
-                        onChange={handleThemeChange}
-                        onResetToCurrent={handleResetToCurrent}
-                        description="Customize the colors and mode of your portfolio."
-                    />
+                    <ThemeTab data={data} onChange={onChange} />
                 )}
             </div>
 
             {/* Actions */}
-            <LayoutEditorActions isSaving={isSaving} onSave={handleSave} onCancel={handleCancel} />
+            <LayoutEditorActions isSaving={isSaving} onSave={handleSave} onCancel={onClose} />
         </div>
     );
 }

@@ -6,4 +6,5 @@ export { default as PageBackgroundTab } from "./PageBackgroundTab";
 export { default as LayoutEditorTabs } from "./LayoutEditorTabs";
 export { default as LayoutEditorActions } from "./LayoutEditorActions";
 export { default as SectionLinksTab } from "./SectionLinksTab";
+export { default as ThemeTab } from "./ThemeTab";
 export type { LayoutTab } from "./LayoutEditorTabs";

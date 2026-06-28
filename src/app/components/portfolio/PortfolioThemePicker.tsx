@@ -65,9 +65,12 @@ const PortfolioThemePicker = ({
 
   const handlePresetSelect = (preset: ThemePreset) => {
     onChange({
+      // Preserve the currently selected mode unless this preset explicitly
+      // specifies one — presets are color palettes, not mode pickers, so
+      // selecting one should never silently reset light/dark/system.
       themeVariant:
         (preset as ThemePreset & { themeVariant?: ThemeVariant })
-          .themeVariant ?? "system",
+          .themeVariant ?? values.themeVariant,
       lightBg: preset.light.background,
       lightFg: preset.light.foreground,
       darkBg: preset.dark.background,
@@ -78,8 +81,11 @@ const PortfolioThemePicker = ({
 
   const activePresetName = themePresets.find((preset: ThemePreset) => {
     const p = preset as ThemePreset & { themeVariant?: ThemeVariant };
+    // Mirror handlePresetSelect's fallback: if the preset doesn't pin a
+    // themeVariant, it matches whatever variant is currently selected,
+    // rather than only matching when the variant happens to be "system".
     return (
-      (p.themeVariant ?? "system") === values.themeVariant &&
+      (p.themeVariant ?? values.themeVariant) === values.themeVariant &&
       preset.accent === values.accent &&
       preset.light.background === values.lightBg &&
       preset.light.foreground === values.lightFg &&

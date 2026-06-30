@@ -10,12 +10,11 @@ import {
 
 // ── Import all background modules to trigger registration ─────────────────
 import "../backgrounds/none";
-import "../backgrounds/solid";
-import "../backgrounds/gradient";
 import "../backgrounds/image";
 import "../backgrounds/video";
-import "../backgrounds/mesh";
-import "../backgrounds/particles";
+import "../backgrounds/solid";
+import "../backgrounds/gradient";
+import "../backgrounds/antigravity";
 import "../backgrounds/aurora";
 import "../backgrounds/balatro";
 import "../backgrounds/ballpit";
@@ -25,7 +24,38 @@ import "../backgrounds/darkVeil";
 import "../backgrounds/dither";
 import "../backgrounds/dotField";
 import "../backgrounds/dotGrid";
-import "../backgrounds/antigravity"
+import "../backgrounds/faultyTerminal";
+import "../backgrounds/floatingLines";
+import "../backgrounds/galaxy";
+import "../backgrounds/gradientBlinds";
+import "../backgrounds/gridScan";
+import "../backgrounds/hyperspeed";
+import "../backgrounds/laserFlow";
+import "../backgrounds/letterGlitch";
+import "../backgrounds/lightPillar";
+import "../backgrounds/lightRays";
+import "../backgrounds/lightfall";
+import "../backgrounds/lineWaves";
+import "../backgrounds/liquidChrome";
+import "../backgrounds/liquidEther";
+import "../backgrounds/mesh";
+import "../backgrounds/noise";
+import "../backgrounds/orb";
+import "../backgrounds/particles";
+import "../backgrounds/pixelBlast";
+import "../backgrounds/pixelSnow";
+import "../backgrounds/plasma";
+import "../backgrounds/plasmaWave";
+import "../backgrounds/prism";
+import "../backgrounds/prismaticBurst";
+import "../backgrounds/radar";
+import "../backgrounds/rippleGrid";
+import "../backgrounds/shapeGrid";
+import "../backgrounds/sideRays";
+import "../backgrounds/silk";
+import "../backgrounds/softAurora";
+import "../backgrounds/threads";
+import "../backgrounds/waves";
 
 import type { SectionBackground } from "../types/sectionBackground";
 

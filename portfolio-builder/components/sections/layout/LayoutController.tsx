@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState, useCallback, useMemo, useRef } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { LayoutData, getEmptyLayoutData, SectionLink, syncSectionLinks } from "@/portfolio-builder/types/layout";
 import LayoutEditor from "./LayoutEditor";
 import LayoutRenderer from "./LayoutRenderer";
@@ -43,10 +43,23 @@ export default function LayoutController({
         populateLayoutData(layoutData, sectionLinks)
     );
 
+    // Toggle editor visibility with Ctrl + .
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.ctrlKey && e.key === ".") {
+                e.preventDefault();
+                setIsEditing(prev => !prev);
+            }
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, []);
+
     const handleOpen = () => {
         setIsEditing(true);
     }
-    
+
     const handleEditorChange = useCallback((updated: LayoutData) => {
         setDraftData(updated);
     }, []);
@@ -96,6 +109,7 @@ export default function LayoutController({
             {!isEditing && (
                 <button
                     onClick={handleOpen}
+                    title="Edit Layout (Ctrl + .)"
                     className="fixed bottom-6 left-6 z-[120] flex items-center gap-2 px-4 py-2.5 bg-[var(--pb-foreground-10)] backdrop-blur text-[var(--pb-text-primary)] border border-[var(--pb-border)] rounded-lg font-medium text-sm hover:bg-[var(--pb-foreground-20)] transition-colors shadow-lg"
                 >
                     <span className="text-xs">⚙</span>
@@ -103,16 +117,15 @@ export default function LayoutController({
                 </button>
             )}
 
-            {isEditing && (
-                <LayoutEditor
-                    data={draftData}
-                    onChange={handleEditorChange}
-                    onSave={handleSave}
-                    onClose={handleClose}
-                    availableSections={availableSections}
-                    sectionLinks={sectionLinks}
-                />
-            )}
+            <LayoutEditor
+                data={draftData}
+                onChange={handleEditorChange}
+                onSave={handleSave}
+                onClose={handleClose}
+                availableSections={availableSections}
+                sectionLinks={sectionLinks}
+                visible={isEditing}
+            />
         </>
     );
 }

@@ -1,3 +1,5 @@
+// portfolio-builder/components/sections/layout/LayoutEditor.tsx
+
 "use client";
 import { useState, useCallback } from "react";
 import {
@@ -25,6 +27,7 @@ interface LayoutEditorProps {
     onClose: () => void;
     availableSections: string[];
     sectionLinks: SectionLink[];
+    visible: boolean;
 }
 
 export default function LayoutEditor({
@@ -34,6 +37,7 @@ export default function LayoutEditor({
     onClose,
     availableSections,
     sectionLinks,
+    visible,
 }: LayoutEditorProps) {
     const [activeTab, setActiveTab] = useState<LayoutTab>("links");
     const [isSaving, setIsSaving] = useState(false);
@@ -73,9 +77,10 @@ export default function LayoutEditor({
         onChange({ ...data, pageBackground });
     }, [data, onChange]);
 
-
     return (
-        <div className="fixed inset-y-0 left-0 z-[150] w-full max-w-md lg:max-w-[33vw] xl:max-w-[28vw] bg-[var(--pb-background)] border-r border-[var(--pb-border)] flex flex-col shadow-2xl pointer-events-auto">
+        <div
+            className={`fixed inset-y-0 left-0 z-[150] w-full max-w-md lg:max-w-[33vw] xl:max-w-[28vw] bg-[var(--pb-background)] border-r border-[var(--pb-border)] flex flex-col shadow-2xl pointer-events-auto ${visible ? '' : 'hidden'}`}
+        >
             {/* Tabs */}
             <LayoutEditorTabs activeTab={activeTab} onChange={setActiveTab} />
 

@@ -67,7 +67,12 @@ const Dropdown: React.FC<DropdownProps> = ({
   const [selectedOption, setSelectedOption] = useState<DropdownOption | null>(null);
   const [selectedOptions, setSelectedOptions] = useState<DropdownOption[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [triggerRect, setTriggerRect] = useState<DOMRect | null>(null);
+  const [triggerRect, setTriggerRect] = useState<{
+    top: number;
+    bottom: number;
+    left: number;
+    width: number;
+  } | null>(null);
   const [activeIndex, setActiveIndex] = useState(-1);
   const [mounted, setMounted] = useState(false);
 
@@ -147,7 +152,19 @@ const Dropdown: React.FC<DropdownProps> = ({
 
     const updatePosition = () => {
       if (dropdownRef.current) {
-        setTriggerRect(dropdownRef.current.getBoundingClientRect());
+        const rect = dropdownRef.current.getBoundingClientRect();
+        setTriggerRect((prev) => {
+          if (
+            prev &&
+            prev.top === rect.top &&
+            prev.bottom === rect.bottom &&
+            prev.left === rect.left &&
+            prev.width === rect.width
+          ) {
+            return prev;
+          }
+          return { top: rect.top, bottom: rect.bottom, left: rect.left, width: rect.width };
+        });
       }
     };
 
@@ -327,7 +344,8 @@ const Dropdown: React.FC<DropdownProps> = ({
     if (disabled || loading) return;
 
     if (!isOpen && dropdownRef.current) {
-      setTriggerRect(dropdownRef.current.getBoundingClientRect());
+      const rect = dropdownRef.current.getBoundingClientRect();
+      setTriggerRect({ top: rect.top, bottom: rect.bottom, left: rect.left, width: rect.width });
       onFocus();
     }
     setIsOpen(!isOpen);
@@ -549,6 +567,8 @@ const Dropdown: React.FC<DropdownProps> = ({
           areAllSelected={areAllFilteredSelected}
           maxSelections={maxSelections}
           currentSelectionsCount={selectedOptions.length}
+          selectedOption={selectedOption}
+          selectedOptions={selectedOptions}
         />,
         document.body
       )}
@@ -559,7 +579,7 @@ const Dropdown: React.FC<DropdownProps> = ({
 // Dropdown Menu Component
 interface DropdownMenuProps {
   dropdownId: string;
-  triggerRect: DOMRect;
+  triggerRect: { top: number; bottom: number; left: number; width: number };
   options: DropdownOption[];
   searchQuery: string;
   setSearchQuery: (query: string) => void;
@@ -584,6 +604,8 @@ interface DropdownMenuProps {
   areAllSelected?: boolean;
   maxSelections?: number;
   currentSelectionsCount?: number;
+  selectedOption?: DropdownOption | null;
+  selectedOptions?: DropdownOption[];
 }
 
 const DropdownMenu: React.FC<DropdownMenuProps> = ({
@@ -612,10 +634,35 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
   areAllSelected = false,
   maxSelections,
   currentSelectionsCount = 0,
+  selectedOption = null,
+  selectedOptions: selectedOptionsProp = [],
   placeholder = "Search..."
 }) => {
   const [position, setPosition] = useState<"top" | "bottom">("bottom");
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // Scroll the active/selected option into view when the menu first opens
+  useEffect(() => {
+    if (!listRef.current) return;
+
+    const selectedIndex = allOptions.findIndex((item) => {
+      if (multiple) {
+        return selectedOptionsProp.some(
+          (sel) => String(sel[valueKey]) === String(item.option[valueKey])
+        );
+      }
+      return selectedOption
+        ? String(selectedOption[valueKey]) === String(item.option[valueKey])
+        : false;
+    });
+
+    if (selectedIndex >= 0) {
+      setActiveIndex(selectedIndex);
+      const el = listRef.current.children[selectedIndex] as HTMLElement | undefined;
+      el?.scrollIntoView({ block: "nearest" });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (triggerRect && menuRef.current) {

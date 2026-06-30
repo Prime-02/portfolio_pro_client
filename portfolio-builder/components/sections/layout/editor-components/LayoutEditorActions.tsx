@@ -19,6 +19,7 @@ export default function LayoutEditorActions({
                 type="button"
                 onClick={onCancel}
                 disabled={isSaving}
+                title="Close editor without saving (Ctrl + .)"
                 className="px-4 py-2 text-sm text-[var(--pb-text-secondary)] border border-[var(--pb-border)] rounded-lg hover:border-[var(--pb-border-hover)] hover:bg-[var(--pb-surface-hover)] hover:text-[var(--pb-text-primary)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
                 Preview
@@ -27,6 +28,7 @@ export default function LayoutEditorActions({
                 type="button"
                 onClick={onSave}
                 disabled={isSaving}
+                title="Save layout changes"
                 className="px-5 py-2 text-sm font-medium bg-[var(--pb-foreground)] text-[var(--pb-background)] rounded-lg hover:bg-[var(--pb-foreground-80)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
                 {isSaving ? "Saving…" : "Save Layout"}

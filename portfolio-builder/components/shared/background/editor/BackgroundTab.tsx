@@ -29,6 +29,37 @@ import "../backgrounds/dither";
 import "../backgrounds/dotField";
 import "../backgrounds/dotGrid";
 import "../backgrounds/antigravity";
+import "../backgrounds/faultyTerminal";
+import "../backgrounds/floatingLines";
+import "../backgrounds/galaxy";
+import "../backgrounds/gradientBlinds";
+import "../backgrounds/gridScan";
+import "../backgrounds/hyperspeed";
+import "../backgrounds/laserFlow";
+import "../backgrounds/letterGlitch";
+import "../backgrounds/lightPillar";
+import "../backgrounds/lightRays";
+import "../backgrounds/lightfall";
+import "../backgrounds/lineWaves";
+import "../backgrounds/liquidChrome";
+import "../backgrounds/liquidEther";
+import "../backgrounds/noise";
+import "../backgrounds/orb";
+import "../backgrounds/particles";
+import "../backgrounds/pixelBlast";
+import "../backgrounds/pixelSnow";
+import "../backgrounds/plasma";
+import "../backgrounds/plasmaWave";
+import "../backgrounds/prismaticBurst";
+import "../backgrounds/prism";
+import "../backgrounds/radar";
+import "../backgrounds/rippleGrid";
+import "../backgrounds/shapeGrid";
+import "../backgrounds/sideRays";
+import "../backgrounds/silk";
+import "../backgrounds/softAurora";
+import "../backgrounds/threads";
+import "../backgrounds/waves";
 import { AutoBackgroundFields } from "./AutoBackgroundFields";
 
 interface BackgroundTabProps<T extends { background?: SectionBackground }> {
@@ -61,6 +92,73 @@ export default function BackgroundTab<T extends { background?: SectionBackground
     }
   };
 
+  /** Reset current background to its module defaults */
+  const handleReset = () => {
+    if (currentModule) {
+      onUpdate(getDefaultsForType(type));
+    }
+  };
+
+  /** Randomize all configurable fields within their valid ranges */
+  const handleRandomize = () => {
+    if (!currentModule) return;
+
+    const randomized: Partial<SectionBackground> = { type };
+
+    for (const field of currentModule.fields) {
+      switch (field.kind) {
+        case "color": {
+          // Generate a random hex color
+          const hex = "#" + Math.floor(Math.random() * 16777215).toString(16).padStart(6, "0");
+          randomized[field.key as keyof SectionBackground] = hex as any;
+          break;
+        }
+        case "slider": {
+          const { min, max, step } = field;
+          const steps = Math.floor((max - min) / step);
+          const randomStep = Math.floor(Math.random() * (steps + 1));
+          const val = min + randomStep * step;
+          // Round to avoid floating point artifacts
+          const decimals = step.toString().split(".")[1]?.length ?? 0;
+          randomized[field.key as keyof SectionBackground] = Number(val.toFixed(decimals)) as any;
+          break;
+        }
+        case "checkbox": {
+          randomized[field.key as keyof SectionBackground] = Math.random() > 0.5 as any;
+          break;
+        }
+        case "dropdown": {
+          const randomOption = field.options[Math.floor(Math.random() * field.options.length)];
+          randomized[field.key as keyof SectionBackground] = randomOption.id as any;
+          break;
+        }
+        case "text": {
+          // For text fields, keep the default or generate something simple
+          // Most text fields are colors or special values - skip randomization
+          break;
+        }
+        case "group": {
+          for (const sub of field.fields) {
+            if (sub.kind === "color") {
+              const hex = "#" + Math.floor(Math.random() * 16777215).toString(16).padStart(6, "0");
+              randomized[sub.key as keyof SectionBackground] = hex as any;
+            }
+          }
+          break;
+        }
+        case "custom":
+          // Custom fields cannot be auto-randomized
+          break;
+      }
+    }
+
+    // Preserve overlay settings from current background
+    if (bg.overlayColor !== undefined) randomized.overlayColor = bg.overlayColor;
+    if (bg.overlayOpacity !== undefined) randomized.overlayOpacity = bg.overlayOpacity;
+
+    onUpdate(randomized);
+  };
+
   return (
     <div className="flex flex-col gap-5">
       {/* Type selector */}
@@ -75,6 +173,9 @@ export default function BackgroundTab<T extends { background?: SectionBackground
           size="md"
           variant="outlined"
           className="w-full"
+          type="datalist"
+          includeNoneOption={false}
+          includeQueryAsOption={false}
         />
       </div>
 
@@ -86,6 +187,26 @@ export default function BackgroundTab<T extends { background?: SectionBackground
       {/* Shared overlay section */}
       {supportsOverlay(type) && (
         <OverlayFields bg={bg} onUpdate={onUpdate} />
+      )}
+
+      {/* Action buttons */}
+      {currentModule && type !== "none" && (
+        <div className="flex gap-3 pt-2 border-t border-[var(--pb-border)]">
+          <button
+            onClick={handleRandomize}
+            className="flex-1 px-4 py-2 bg-[var(--pb-accent)] text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity"
+            type="button"
+          >
+            Randomize
+          </button>
+          <button
+            onClick={handleReset}
+            className="flex-1 px-4 py-2 bg-[var(--pb-foreground-10)] text-[var(--pb-text-secondary)] text-sm font-medium rounded-lg hover:bg-[var(--pb-foreground-20)] transition-colors"
+            type="button"
+          >
+            Reset
+          </button>
+        </div>
       )}
     </div>
   );

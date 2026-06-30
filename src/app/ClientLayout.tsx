@@ -17,6 +17,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
     "/user-auth",
     "/welcome",
     "/studio",
+    "/portfolios/"
   ].some(route => pathname?.includes(route));
 
   const isMobile = viewportWidth < 768;

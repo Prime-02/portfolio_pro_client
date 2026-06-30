@@ -3,8 +3,6 @@ import type { PortfolioResponse, PortfolioUpdate } from "@/portfolio-builder/sto
 import Modal from "../containers/modals/Modal"
 import { Textinput } from "../inputs/Textinput"
 import { TextArea } from "../inputs/TextArea"
-import { useTheme } from "../theme/ThemeContext "
-import PortfolioThemePicker, { type PortfolioThemeValues } from "./PortfolioThemePicker"
 
 interface EditPortfolioModalProps {
     portfolio: PortfolioResponse | null
@@ -14,34 +12,6 @@ interface EditPortfolioModalProps {
     isLoading: boolean
 }
 
-interface PortfolioThemeLayout {
-    themeVariant: string
-    lightTheme: { background: string; foreground: string }
-    darkTheme: { background: string; foreground: string }
-    accent: string
-}
-
-const parseLayout = (layout: Record<string, unknown> | null): PortfolioThemeLayout | null => {
-    if (!layout) return null
-    const theme = layout.theme as Record<string, unknown> | undefined
-    if (!theme) return null
-
-    if (
-        typeof theme.themeVariant === "string" &&
-        theme.lightTheme && typeof theme.lightTheme === "object" &&
-        typeof (theme.lightTheme as Record<string, unknown>).background === "string" &&
-        typeof (theme.lightTheme as Record<string, unknown>).foreground === "string" &&
-        theme.darkTheme && typeof theme.darkTheme === "object" &&
-        typeof (theme.darkTheme as Record<string, unknown>).background === "string" &&
-        typeof (theme.darkTheme as Record<string, unknown>).foreground === "string" &&
-        typeof theme.accent === "string"
-    ) {
-        return theme as unknown as PortfolioThemeLayout
-    }
-
-    return null
-}
-
 const EditPortfolioModal = ({
     portfolio,
     isOpen,
@@ -49,44 +19,17 @@ const EditPortfolioModal = ({
     onSubmit,
     isLoading,
 }: EditPortfolioModalProps) => {
-    const { themeVariant, lightTheme, darkTheme, accentColor } = useTheme()
     const [name, setName] = useState("")
     const [description, setDescription] = useState("")
     const [isPublic, setIsPublic] = useState(true)
-
-    const currentTheme = (): PortfolioThemeValues => ({
-        themeVariant,
-        lightBg: lightTheme.background,
-        lightFg: lightTheme.foreground,
-        darkBg: darkTheme.background,
-        darkFg: darkTheme.foreground,
-        accent: accentColor.color,
-    })
-
-    const savedTheme = (): PortfolioThemeValues | null => {
-        if (!portfolio?.layout) return null
-        const layout = parseLayout(portfolio.layout)
-        if (!layout) return null
-        return {
-            themeVariant: layout.themeVariant as "light" | "dark" | "system",
-            lightBg: layout.lightTheme.background,
-            lightFg: layout.lightTheme.foreground,
-            darkBg: layout.darkTheme.background,
-            darkFg: layout.darkTheme.foreground,
-            accent: layout.accent,
-        }
-    }
-
-    const [theme, setTheme] = useState<PortfolioThemeValues>(currentTheme)
 
     useEffect(() => {
         if (portfolio) {
             setName(portfolio.name)
             setDescription(portfolio.description || "")
             setIsPublic(portfolio.is_public)
-            setTheme(savedTheme() ?? currentTheme())
         }
-    }, [portfolio, lightTheme, darkTheme, accentColor])
+    }, [portfolio])
 
     const handleSubmit = () => {
         if (!portfolio) return
@@ -95,19 +38,8 @@ const EditPortfolioModal = ({
             name: name.trim(),
             description: description.trim() || undefined,
             is_public: isPublic,
-            layout: {
-                ...portfolio.layout,
-                theme: {
-                    themeVariant: theme.themeVariant,
-                    lightTheme: { background: theme.lightBg, foreground: theme.lightFg },
-                    darkTheme: { background: theme.darkBg, foreground: theme.darkFg },
-                    accent: theme.accent,
-                },
-            },
         })
     }
-
-    const hasSavedTheme = !!portfolio?.layout && !!parseLayout(portfolio.layout)
 
     return (
         <Modal title="Edit Portfolio" isOpen={isOpen} onClose={onClose}>
@@ -124,36 +56,6 @@ const EditPortfolioModal = ({
                         Description
                     </label>
                     <TextArea value={description} onChange={(e) => setDescription(e)} />
-                </div>
-
-                {/* Theme section with reset buttons sitting outside PortfolioThemePicker */}
-                <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-[var(--foreground)]/80">Theme</span>
-                        <div className="flex items-center gap-3">
-                            {hasSavedTheme && (
-                                <button
-                                    type="button"
-                                    onClick={() => setTheme(savedTheme() ?? currentTheme())}
-                                    className="text-xs text-[var(--foreground)]/50 hover:text-[var(--foreground)]/80 transition-colors"
-                                >
-                                    Reset to saved
-                                </button>
-                            )}
-                            <button
-                                type="button"
-                                onClick={() => setTheme(currentTheme())}
-                                className="text-xs text-[var(--foreground)]/50 hover:text-[var(--foreground)]/80 transition-colors"
-                            >
-                                Reset to current theme
-                            </button>
-                        </div>
-                    </div>
-                    <PortfolioThemePicker
-                        values={theme}
-                        onChange={setTheme}
-                        description="Customize the appearance of your portfolio. Changes will only affect this portfolio."
-                    />
                 </div>
 
                 <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--foreground)]/10">

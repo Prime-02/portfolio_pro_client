@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react"
 import type { PortfolioCreate } from "@/portfolio-builder/store/usePortfolioStore"
 import Modal from "../containers/modals/Modal"
-import { useTheme } from "../theme/ThemeContext "
-import PortfolioThemePicker, { type PortfolioThemeValues } from "./PortfolioThemePicker"
 
 interface CreatePortfolioModalProps {
   isOpen: boolean
@@ -17,29 +15,16 @@ const CreatePortfolioModal = ({
   onSubmit,
   isLoading,
 }: CreatePortfolioModalProps) => {
-  const { themeVariant, lightTheme, darkTheme, accentColor } = useTheme()
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
   const [isPublic, setIsPublic] = useState(true)
   const [errors, setErrors] = useState<Record<string, string>>({})
-
-  const defaultTheme = (): PortfolioThemeValues => ({
-    themeVariant,
-    lightBg: lightTheme.background,
-    lightFg: lightTheme.foreground,
-    darkBg: darkTheme.background,
-    darkFg: darkTheme.foreground,
-    accent: accentColor.color,
-  })
-
-  const [theme, setTheme] = useState<PortfolioThemeValues>(defaultTheme)
 
   const reset = () => {
     setName("")
     setDescription("")
     setIsPublic(true)
     setErrors({})
-    setTheme(defaultTheme())
   }
 
   const handleClose = () => {
@@ -64,14 +49,6 @@ const CreatePortfolioModal = ({
       name: name.trim(),
       description: description.trim() || undefined,
       is_public: isPublic,
-      layout: {
-        theme: {
-          themeVariant: theme.themeVariant,
-          lightTheme: { background: theme.lightBg, foreground: theme.lightFg },
-          darkTheme: { background: theme.darkBg, foreground: theme.darkFg },
-          accent: theme.accent,
-        },
-      },
     })
   }
 
@@ -109,25 +86,6 @@ const CreatePortfolioModal = ({
             placeholder="Brief description of your portfolio..."
             rows={3}
             className="w-full px-4 py-2.5 bg-[var(--background)] border border-[var(--foreground)]/20 rounded-lg text-[var(--foreground)] placeholder:text-[var(--foreground)]/30 focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all resize-none"
-          />
-        </div>
-
-        {/* Theme section with reset sitting outside PortfolioThemePicker */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-[var(--foreground)]/80">Theme</span>
-            <button
-              type="button"
-              onClick={() => setTheme(defaultTheme())}
-              className="text-xs text-[var(--foreground)]/50 hover:text-[var(--foreground)]/80 transition-colors"
-            >
-              Reset to current theme
-            </button>
-          </div>
-          <PortfolioThemePicker
-            values={theme}
-            onChange={setTheme}
-            description="Customize the colors and mode of your portfolio."
           />
         </div>
 

@@ -79,7 +79,7 @@ export default function LayoutEditor({
 
     return (
         <div
-            className={`fixed inset-y-0 left-0 z-[150] w-full max-w-md lg:max-w-[33vw] xl:max-w-[28vw] bg-[var(--pb-background)] border-r border-[var(--pb-border)] flex flex-col shadow-2xl pointer-events-auto ${visible ? '' : 'hidden'}`}
+            className={`fixed inset-y-0 left-0 z-[150] w-full max-w-md lg:max-w-[33vw] xl:max-w-[28vw] bg-[var(--pb-background)]/80 border-r border-[var(--pb-border)] flex flex-col shadow-2xl pointer-events-auto ${visible ? '' : 'hidden'}`}
         >
             {/* Tabs */}
             <LayoutEditorTabs activeTab={activeTab} onChange={setActiveTab} />

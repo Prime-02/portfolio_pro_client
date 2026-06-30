@@ -29,6 +29,7 @@ import { LayoutController } from "./sections/layout";
 
 interface PortfolioMainProps {
   portfolioId: string;
+  viewOnly: boolean
 }
 
 interface PortfolioSection {
@@ -91,7 +92,7 @@ function setSectionData<T>(
   return { ...layout, sections };
 }
 
-export default function PortfolioMain({ portfolioId }: PortfolioMainProps) {
+export default function PortfolioMain({ portfolioId, viewOnly }: PortfolioMainProps) {
   const { currentPortfolio, error, fetchPortfolioById, updatePortfolio } =
     usePortfolioStore();
   const { profileContext } = useTheme();
@@ -223,55 +224,55 @@ export default function PortfolioMain({ portfolioId }: PortfolioMainProps) {
       case "hero":
         return (
           <section id="hero" key="hero">
-            <HeroSectionController heroData={heroData} onSave={handleHeroSave} theme={resolvedTheme} />
+            <HeroSectionController heroData={heroData} viewOnly={viewOnly} onSave={handleHeroSave} theme={resolvedTheme} />
           </section>
         );
       case "bio":
         return (
           <section id="bio" key="bio">
-            <BioSectionController bioData={bioData} onSave={handleBioSave} />
+            <BioSectionController bioData={bioData} viewOnly={viewOnly} onSave={handleBioSave} />
           </section>
         );
       case "skills":
         return (
           <section id="skills" key="skills">
-            <SkillsSectionController skillsData={skillsData} onSave={handleSkillsSave} username={currentUsername || ""} />
+            <SkillsSectionController skillsData={skillsData} viewOnly={viewOnly} onSave={handleSkillsSave} username={currentUsername || ""} />
           </section>
         );
       case "experience":
         return (
           <section id="experience" key="experience">
-            <ExperienceSectionController experienceData={experienceData} onSave={handleExperienceSave} username={currentUsername || ""} />
+            <ExperienceSectionController experienceData={experienceData} viewOnly={viewOnly} onSave={handleExperienceSave} username={currentUsername || ""} />
           </section>
         );
       case "education":
         return (
           <section id="education" key="education">
-            <EducationSectionController educationData={educationData} onSave={handleEducationSave} username={currentUsername || ""} />
+            <EducationSectionController educationData={educationData} viewOnly={viewOnly} onSave={handleEducationSave} username={currentUsername || ""} />
           </section>
         );
       case "certification":
         return (
           <section id="certification" key="certification">
-            <CertificationSectionController certificationData={certificationData} onSave={handleCertificationSave} username={currentUsername || ""} />
+            <CertificationSectionController certificationData={certificationData} viewOnly={viewOnly} onSave={handleCertificationSave} username={currentUsername || ""} />
           </section>
         );
       case "projects":
         return (
           <section id="projects" key="projects">
-            <ProjectsSectionController projectsData={projectsData} onSave={handleProjectsSave} username={currentUsername || ""} />
+            <ProjectsSectionController projectsData={projectsData} viewOnly={viewOnly} onSave={handleProjectsSave} username={currentUsername || ""} />
           </section>
         );
       case "blogs":
         return (
           <section id="blogs" key="blogs">
-            <BlogsSectionController blogsData={blogsData} onSave={handleBlogsSave} username={currentUsername || ""} />
+            <BlogsSectionController blogsData={blogsData} viewOnly={viewOnly} onSave={handleBlogsSave} username={currentUsername || ""} />
           </section>
         );
       case "testimonials":
         return (
           <section id="testimonials" key="testimonials">
-            <TestimonialsSectionController testimonialsData={testimonialsData} onSave={handleTestimonialsSave} username={currentUsername || ""} />
+            <TestimonialsSectionController testimonialsData={testimonialsData} viewOnly={viewOnly} onSave={handleTestimonialsSave} username={currentUsername || ""} />
           </section>
         );
       default:
@@ -282,7 +283,7 @@ export default function PortfolioMain({ portfolioId }: PortfolioMainProps) {
   return (
     <LayoutController
       layoutData={layoutData}
-      onSave={handleLayoutSave}
+      viewOnly={viewOnly} onSave={handleLayoutSave}
       availableSections={availableSections}
       sectionLinks={sectionLinks}
     >

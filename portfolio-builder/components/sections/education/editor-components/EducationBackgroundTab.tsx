@@ -2,20 +2,17 @@
 
 import { EducationData } from "@/portfolio-builder/types/education";
 import BackgroundTab from "@/portfolio-builder/components/shared/background/editor/BackgroundTab";
-import { SectionBackgroundType } from "@/portfolio-builder/components/shared/background/types/sectionBackground";
 
 interface EducationBackgroundTabProps {
   data: EducationData;
   onUpdate: (value: Partial<EducationData["background"]>) => void;
-  allowedTypes?: SectionBackgroundType[];
 }
 
-export default function EducationBackgroundTab({ data, onUpdate, allowedTypes }: EducationBackgroundTabProps) {
+export default function EducationBackgroundTab({ data, onUpdate }: EducationBackgroundTabProps) {
   return (
     <BackgroundTab
       data={{ background: data.background }}
       onUpdate={(value) => onUpdate(value)}
-      allowedTypes={allowedTypes}
     />
   );
 }

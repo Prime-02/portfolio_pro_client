@@ -7,15 +7,13 @@ import { SectionBackgroundType } from "@/portfolio-builder/components/shared/bac
 interface BlogsBackgroundTabProps {
   data: BlogsData;
   onUpdate: (value: Partial<BlogsData["background"]>) => void;
-  allowedTypes?: SectionBackgroundType[];
 }
 
-export default function BlogsBackgroundTab({ data, onUpdate, allowedTypes }: BlogsBackgroundTabProps) {
+export default function BlogsBackgroundTab({ data, onUpdate }: BlogsBackgroundTabProps) {
   return (
     <BackgroundTab
       data={{ background: data.background }}
       onUpdate={(value) => onUpdate(value)}
-      allowedTypes={allowedTypes}
     />
   );
 }

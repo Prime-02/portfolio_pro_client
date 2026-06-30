@@ -14,13 +14,14 @@ import { BioData, getEmptyBioData } from "@/portfolio-builder/types/bio";
 interface BioSectionControllerProps {
   bioData: BioData | null;
   onSave: (updatedBioData: BioData) => Promise<void>;
+  viewOnly: boolean
 }
 
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
-export default function BioSectionController({ bioData, onSave }: BioSectionControllerProps) {
+export default function BioSectionController({ bioData, onSave, viewOnly }: BioSectionControllerProps) {
   const [isEditing, setIsEditing] = useState(false);
 
   // ── Optimistic local state ─────────────────────────────────────────────
@@ -82,12 +83,15 @@ export default function BioSectionController({ bioData, onSave }: BioSectionCont
       <BioRenderer data={localData!} />
 
       {/* Edit button */}
-      <button
-        onClick={() => setIsEditing(true)}
-        className="absolute top-4 right-4 z-50 px-4 py-2 bg-[var(--pb-foreground-10)] backdrop-blur text-[var(--pb-text-primary)] border border-[var(--pb-border)] rounded-lg font-medium text-sm hover:bg-[var(--pb-foreground-20)] transition-colors"
-      >
-        Edit
-      </button>
+      {
+        !viewOnly &&
+        <button
+          onClick={() => setIsEditing(true)}
+          className="absolute top-4 right-4 z-50 px-4 py-2 bg-[var(--pb-foreground-10)] backdrop-blur text-[var(--pb-text-primary)] border border-[var(--pb-border)] rounded-lg font-medium text-sm hover:bg-[var(--pb-foreground-20)] transition-colors"
+        >
+          Edit
+        </button>
+      }
     </div>
   );
 }

@@ -279,7 +279,7 @@ export default function SocialLinksTab({ data, onUpdate }: SocialLinksTabProps) 
                                                         background: displayColor,
                                                     }}
                                                 />
-                                                {link.useIconColor !== false ? "Brand Color" : "Custom"}
+                                                {link.useIconColor !== false ? "Default Color" : "Custom"}
                                             </button>
                                         </div>
 

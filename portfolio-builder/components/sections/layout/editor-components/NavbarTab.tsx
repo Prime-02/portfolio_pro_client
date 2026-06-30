@@ -643,6 +643,7 @@ export default function NavbarTab({ data, onChange, availableSections, sectionLi
                         onUpdate={(partial) =>
                             update({ background: { ...(data.background ?? { type: "none" }), ...partial } })
                         }
+                        allowedTypes={["none", "image", "solid", "gradient"]}
                     />
                 </>
             )}

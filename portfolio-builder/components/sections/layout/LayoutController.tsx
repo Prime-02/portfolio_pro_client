@@ -13,6 +13,7 @@ interface LayoutControllerProps {
     availableSections: string[];
     sectionLinks: SectionLink[];
     children: React.ReactNode;
+    viewOnly: boolean
 }
 
 export default function LayoutController({
@@ -21,6 +22,7 @@ export default function LayoutController({
     availableSections,
     sectionLinks,
     children,
+    viewOnly
 }: LayoutControllerProps) {
     const [isEditing, setIsEditing] = useState(false);
 
@@ -45,6 +47,7 @@ export default function LayoutController({
 
     // Toggle editor visibility with Ctrl + .
     useEffect(() => {
+        if (viewOnly) return
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.ctrlKey && e.key === ".") {
                 e.preventDefault();
@@ -106,7 +109,7 @@ export default function LayoutController({
                 {visibleOrderedChildren}
             </LayoutRenderer>
 
-            {!isEditing && (
+            {!isEditing && !viewOnly && (
                 <button
                     onClick={handleOpen}
                     title="Edit Layout (Ctrl + .)"

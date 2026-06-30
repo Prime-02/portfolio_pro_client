@@ -16,6 +16,7 @@ interface BlogsSectionControllerProps {
   blogsData: BlogsData | null;
   onSave: (updatedBlogsData: BlogsData) => Promise<void>;
   username: string;
+  viewOnly: boolean
 }
 
 // ---------------------------------------------------------------------------
@@ -26,6 +27,7 @@ export default function BlogsSectionController({
   blogsData,
   onSave,
   username,
+  viewOnly
 }: BlogsSectionControllerProps) {
   const [isEditing, setIsEditing] = useState(false);
   const { fetchPublicContent } = useContentStore();
@@ -113,12 +115,15 @@ export default function BlogsSectionController({
       <BlogsRenderer data={localData!} username={username} />
 
       {/* Edit button */}
-      <button
-        onClick={() => setIsEditing(true)}
-        className="absolute top-4 right-4 z-50 px-4 py-2 bg-[var(--pb-foreground-10)] backdrop-blur text-[var(--pb-text-primary)] border border-[var(--pb-border)] rounded-lg font-medium text-sm hover:bg-[var(--pb-foreground-20)] transition-colors"
-      >
-        Edit
-      </button>
+      {
+        !viewOnly &&
+        <button
+          onClick={() => setIsEditing(true)}
+          className="absolute top-4 right-4 z-50 px-4 py-2 bg-[var(--pb-foreground-10)] backdrop-blur text-[var(--pb-text-primary)] border border-[var(--pb-border)] rounded-lg font-medium text-sm hover:bg-[var(--pb-foreground-20)] transition-colors"
+        >
+          Edit
+        </button>
+      }
     </div>
   );
 }

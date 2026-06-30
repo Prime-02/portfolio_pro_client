@@ -8,7 +8,7 @@ const PortfolioStudio = () => {
   const portfolioId = params.portfolio as string;
 
   return (
-    <PortfolioMain portfolioId={portfolioId} />
+    <PortfolioMain portfolioId={portfolioId} viewOnly={false} />
   )
 }
 

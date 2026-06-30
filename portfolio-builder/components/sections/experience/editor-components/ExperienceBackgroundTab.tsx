@@ -2,20 +2,17 @@
 
 import { ExperienceData } from "@/portfolio-builder/types/experience";
 import BackgroundTab from "@/portfolio-builder/components/shared/background/editor/BackgroundTab";
-import { SectionBackgroundType } from "@/portfolio-builder/components/shared/background/types/sectionBackground";
 
 interface ExperienceBackgroundTabProps {
   data: ExperienceData;
   onUpdate: (value: Partial<ExperienceData["background"]>) => void;
-  allowedTypes?: SectionBackgroundType[];
 }
 
-export default function ExperienceBackgroundTab({ data, onUpdate, allowedTypes }: ExperienceBackgroundTabProps) {
+export default function ExperienceBackgroundTab({ data, onUpdate }: ExperienceBackgroundTabProps) {
   return (
     <BackgroundTab
       data={{ background: data.background }}
       onUpdate={(value) => onUpdate(value)}
-      allowedTypes={allowedTypes}
     />
   );
 }

@@ -153,6 +153,7 @@ export interface FooterData {
   /** Visual */
   background?: SectionBackground;
   borderTop?: boolean;
+  blur?: boolean;
   borderColor?: string;
 
   /** Padding */

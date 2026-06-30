@@ -2,20 +2,17 @@
 
 import { SkillsData } from "@/portfolio-builder/types/skills";
 import BackgroundTab from "@/portfolio-builder/components/shared/background/editor/BackgroundTab";
-import { SectionBackgroundType } from "@/portfolio-builder/components/shared/background/types/sectionBackground";
 
 interface SkillsBackgroundTabProps {
   data: SkillsData;
   onUpdate: (value: Partial<SkillsData["background"]>) => void;
-  allowedTypes?: SectionBackgroundType[]
 }
 
-export default function SkillsBackgroundTab({ data, onUpdate, allowedTypes }: SkillsBackgroundTabProps) {
+export default function SkillsBackgroundTab({ data, onUpdate }: SkillsBackgroundTabProps) {
   return (
     <BackgroundTab
       data={{ background: data.background }}
       onUpdate={(value) => onUpdate(value)}
-      allowedTypes={allowedTypes}
     />
   );
 }

@@ -194,6 +194,7 @@ function SocialLinksManager({
     } = useSocialLinks();
 
     useEffect(() => {
+        if (userSocialLinks.length > 0) return
         fetchAllSocialLinks().catch(() => { });
     }, [fetchAllSocialLinks]);
 
@@ -343,7 +344,7 @@ function SocialLinksManager({
                                             : "bg-[var(--pb-surface-elevated)] text-[var(--pb-text-primary)] border border-[var(--pb-border)]"
                                             }`}
                                     >
-                                        {link.useIconColor !== false ? "Brand" : "Custom"}
+                                        {link.useIconColor !== false ? "Default" : "Custom"}
                                     </button>
                                     {link.useIconColor === false && (
                                         <input
@@ -551,6 +552,13 @@ export default function FooterTab({ data, onChange, sectionLinks, onSectionLinks
                     <SectionDivider label="Visual" />
 
                     <Toggle
+                        label="Blur / Glass Effect"
+                        description="Frosted glass backdrop behind the footer"
+                        checked={!!data.blur}
+                        onChange={(v) => update({ blur: v })}
+                    />
+
+                    <Toggle
                         label="Top Border"
                         checked={data.borderTop ?? true}
                         onChange={(v) => update({ borderTop: v })}
@@ -582,6 +590,7 @@ export default function FooterTab({ data, onChange, sectionLinks, onSectionLinks
                         onUpdate={(partial) =>
                             update({ background: { ...(data.background ?? { type: "none" }), ...partial } })
                         }
+                        allowedTypes={["none", "image", "solid", "gradient"]}
                     />
 
                     {/* Columns (only for "columns" layout) */}

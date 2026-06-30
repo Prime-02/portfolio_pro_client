@@ -11,12 +11,14 @@ interface TestimonialsSectionControllerProps {
   testimonialsData: TestimonialsData | null;
   onSave: (updatedTestimonialsData: TestimonialsData) => Promise<void>;
   username: string;
+  viewOnly: boolean
 }
 
 export default function TestimonialsSectionController({
   testimonialsData,
   onSave,
   username,
+  viewOnly
 }: TestimonialsSectionControllerProps) {
   const [isEditing, setIsEditing] = useState(false);
   const { fetchUserTestimonials } = useTestimonialsStore();
@@ -88,12 +90,16 @@ export default function TestimonialsSectionController({
     <div className="relative">
       <TestimonialsRenderer data={localData!} username={username} />
 
-      <button
-        onClick={() => setIsEditing(true)}
-        className="absolute top-4 right-4 z-50 px-4 py-2 bg-[var(--pb-foreground-10)] backdrop-blur text-[var(--pb-text-primary)] border border-[var(--pb-border)] rounded-lg font-medium text-sm hover:bg-[var(--pb-foreground-20)] transition-colors"
-      >
-        Edit
-      </button>
+
+      {
+        !viewOnly &&
+        <button
+          onClick={() => setIsEditing(true)}
+          className="absolute top-4 right-4 z-50 px-4 py-2 bg-[var(--pb-foreground-10)] backdrop-blur text-[var(--pb-text-primary)] border border-[var(--pb-border)] rounded-lg font-medium text-sm hover:bg-[var(--pb-foreground-20)] transition-colors"
+        >
+          Edit
+        </button>
+      }
     </div>
   );
 }

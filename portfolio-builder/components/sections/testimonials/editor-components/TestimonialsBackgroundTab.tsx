@@ -2,20 +2,17 @@
 
 import { TestimonialsData } from "@/portfolio-builder/types/testimonials";
 import BackgroundTab from "@/portfolio-builder/components/shared/background/editor/BackgroundTab";
-import { SectionBackgroundType } from "@/portfolio-builder/components/shared/background/types/sectionBackground";
 
 interface TestimonialsBackgroundTabProps {
   data: TestimonialsData;
   onUpdate: (value: Partial<TestimonialsData["background"]>) => void;
-  allowedTypes?: SectionBackgroundType[];
 }
 
-export default function TestimonialsBackgroundTab({ data, onUpdate, allowedTypes }: TestimonialsBackgroundTabProps) {
+export default function TestimonialsBackgroundTab({ data, onUpdate }: TestimonialsBackgroundTabProps) {
   return (
     <BackgroundTab
       data={{ background: data.background }}
       onUpdate={(value) => onUpdate(value)}
-      allowedTypes={allowedTypes}
     />
   );
 }

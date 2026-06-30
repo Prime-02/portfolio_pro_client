@@ -54,6 +54,7 @@ export default function Footer({ data, navbarData }: FooterProps) {
             ? `1px solid ${data.borderColor ?? "var(--pb-border)"}`
             : undefined,
         color: data.textColor ?? "var(--pb-text-secondary)",
+        backdropFilter: data.blur ? "blur(12px)" : undefined,
     };
 
     const copyright = resolveCopyright(data.copyrightText, data.showYear);

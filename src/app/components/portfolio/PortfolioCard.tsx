@@ -12,7 +12,6 @@ interface PortfolioCardProps {
 
 const PortfolioCard = ({ portfolio, onEdit, onDelete }: PortfolioCardProps) => {
     const router = useRouter()
-    const {userInfo} = useUserSettings()
 
     return (
         <div className="card rounded-xl border border-[var(--foreground)]/10 p-5 hover:border-[var(--accent)]/50 transition-all duration-200 group">

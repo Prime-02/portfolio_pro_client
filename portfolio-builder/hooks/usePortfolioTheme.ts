@@ -60,16 +60,49 @@ export function clearThemeCSS() {
 }
 
 // ---------------------------------------------------------------------------
+// URL Theme Override
+// ---------------------------------------------------------------------------
+
+/**
+ * Reads ?theme=dark|light from the current URL, if present.
+ * Used to force a deterministic theme for headless screenshot tools
+ * (e.g. thum.io, our own Puppeteer thumbnail generator) which don't
+ * set prefers-color-scheme and have no localStorage/user preference.
+ * Returns null when absent, invalid, or on the server.
+ */
+export function getURLThemeOverride(): "light" | "dark" | null {
+  if (typeof window === "undefined") return null;
+  const param = new URLSearchParams(window.location.search).get("theme");
+  return param === "light" || param === "dark" ? param : null;
+}
+
+// ---------------------------------------------------------------------------
 // Resolution Logic
 // ---------------------------------------------------------------------------
 
 /**
  * Resolves a PortfolioThemeData object into a flat ResolvedTheme,
  * respecting the themeVariant and system preference.
+ *
+ * `override`, when "light" or "dark", takes precedence over both the
+ * stored themeVariant and the system preference — this is how the
+ * ?theme= URL param forces a deterministic render for screenshot tools.
+ *
  * Exported so other modules (e.g. ThemeTab) can inject CSS directly.
  */
-export function resolveTheme(data: PortfolioThemeData | null): ResolvedTheme {
+export function resolveTheme(
+  data: PortfolioThemeData | null,
+  override: "light" | "dark" | null = null,
+): ResolvedTheme {
   if (!data) {
+    if (override === "light") {
+      return {
+        background: "#ffffff",
+        foreground: "#0a0a0a",
+        accent: "#737373",
+        isDark: false,
+      };
+    }
     return {
       background: "#0a0a0a",
       foreground: "#ededed",
@@ -81,7 +114,9 @@ export function resolveTheme(data: PortfolioThemeData | null): ResolvedTheme {
   let resolved: ThemeColors;
   let isDark: boolean;
 
-  switch (data.themeVariant) {
+  const effectiveVariant = override ?? data.themeVariant;
+
+  switch (effectiveVariant) {
     case "light":
       resolved = data.lightTheme;
       isDark = false;
@@ -123,24 +158,35 @@ export function usePortfolioTheme(): ResolvedTheme {
       null,
   );
 
+  // Read once — the URL doesn't change under a screenshot tool's navigation,
+  // and if a person deep-links with ?theme=, honoring it for the life of the
+  // page (not just first paint) is the desired behavior.
+  const urlOverride = getURLThemeOverride();
+
   const injectAndResolve = useCallback(() => {
-    const resolved = resolveTheme(themeData);
+    const resolved = resolveTheme(themeData, urlOverride);
     injectThemeCSS(resolved);
     return resolved;
-  }, [themeData]);
+  }, [themeData, urlOverride]);
 
   // Re-inject whenever themeData changes (covers toggle + tab changes).
   useEffect(() => {
     injectAndResolve();
 
-    // Keep CSS in sync when the OS switches light/dark while variant === "system"
-    if (themeData?.themeVariant === "system" && typeof window !== "undefined") {
+    // Keep CSS in sync when the OS switches light/dark while variant === "system".
+    // Skipped entirely when a URL override is present — screenshot tools want
+    // a deterministic render, not one that can flip mid-capture.
+    if (
+      !urlOverride &&
+      themeData?.themeVariant === "system" &&
+      typeof window !== "undefined"
+    ) {
       const mql = window.matchMedia("(prefers-color-scheme: light)");
       const handler = () => injectAndResolve();
       mql.addEventListener("change", handler);
       return () => mql.removeEventListener("change", handler);
     }
-  }, [themeData, injectAndResolve]);
+  }, [themeData, urlOverride, injectAndResolve]);
 
-  return resolveTheme(themeData);
+  return resolveTheme(themeData, urlOverride);
 }

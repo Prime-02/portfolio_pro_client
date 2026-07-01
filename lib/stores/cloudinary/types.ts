@@ -156,6 +156,7 @@ export interface UrlUploadRequest {
   tags?: string[];
   transformation?: TransformationOptions;
   resource_type?: ResourceType;
+  overwrite?: boolean;
 }
 
 export interface UrlGenerationRequest {

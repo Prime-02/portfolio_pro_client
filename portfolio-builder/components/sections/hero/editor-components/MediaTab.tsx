@@ -5,7 +5,6 @@ import { HeroData, HeroMediaType, HeroMediaShape, HeroMediaSize } from "@/portfo
 import SelectField from './SelectField';
 import Field from './Field';
 import { ImageField } from "@/src/app/components/cloudinary/ImageField";
-import { inputClass } from "./styles";
 import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 import { useParams } from "next/navigation";
 import { useCloudinaryCore } from "@/lib/stores/cloudinary/useCloudinaryCore";

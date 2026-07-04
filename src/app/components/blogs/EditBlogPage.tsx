@@ -12,6 +12,7 @@ import { Textinput } from "../inputs/Textinput";
 import { FileInput } from "../inputs/FileInput";
 import MarkdownEditor from "../markdown/MarkdownEditor";
 import { useUserSettings } from "@/lib/stores/user/useUserSettings";
+import { TextArea } from "../inputs/TextArea";
 
 type EditTab = "basic" | "media" | "settings";
 
@@ -164,10 +165,10 @@ export default function EditBlogPage() {
           animate={{ opacity: 1, y: 0 }}
         >
           <h1
-          onClick={()=>{
+            onClick={() => {
               console.log(currentContent)
-          }}
-          className="text-3xl font-league-700 mb-2">Edit Post</h1>
+            }}
+            className="text-3xl font-league-700 mb-2">Edit Post</h1>
           <p className="text-[var(--foreground)]/50 mb-8">
             Update {currentContent?.title}
           </p>
@@ -215,6 +216,12 @@ export default function EditBlogPage() {
                   onChange={(v) => set("category", v)}
                 />
 
+                <TextArea
+                  label="Summary/Excerpt"
+                  value={form.excerpt ?? ""}
+                  onChange={(v) => set("excerpt", v)}
+                />
+
                 <MarkdownEditor
                   label="Content"
                   value={form.body ?? ""}
@@ -222,12 +229,6 @@ export default function EditBlogPage() {
                   minHeight="200px"
                 />
 
-                <MarkdownEditor
-                  label="Excerpt"
-                  value={form.excerpt ?? ""}
-                  onChange={(v) => set("excerpt", v)}
-                  minHeight="80px"
-                />
 
                 {/* Tags */}
                 <div>

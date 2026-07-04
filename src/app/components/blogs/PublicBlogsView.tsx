@@ -36,7 +36,7 @@ export function PublicBlogsView({
 }: PublicBlogsViewProps) {
   const router = useRouter();
   const { profileContext } = useTheme();
-  const usernamePath = profileContext?.username ? `/${profileContext.username}` : "";
+  const usernamePath = profileContext?.username ? `${profileContext.username}` : "";
   const displayedBlogs = miniView ? blogs.slice(0, 3) : blogs;
   const showSeeAll = miniView && blogs.length > 0;
 

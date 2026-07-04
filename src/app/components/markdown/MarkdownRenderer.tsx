@@ -1,12 +1,23 @@
 // MarkdownRenderer.tsx
-// A standalone component that renders Markdown with the same fidelity
-// as the WYSIWYG editor. No editor dependency — just pass a markdown string.
+// Standalone, read-only markdown renderer for public-facing portfolio pages.
+//
+// Deliberately NOT built on MDXEditor. MDXEditor is a ~850KB (gzipped)
+// WYSIWYG editing engine — shipping that to every visitor of a public
+// portfolio page just to render text would be a big regression. This uses
+// react-markdown (+ remark-gfm for tables/strikethrough/task-lists, +
+// rehype-slug for heading anchor ids, + rehype-raw so literal <details>/<img
+// width height> HTML the editor may have emitted still renders).
+//
+// npm install react-markdown remark-gfm rehype-slug rehype-raw
 
 "use client";
 
 import { memo, useEffect, useRef } from "react";
+import ReactMarkdown, { type Components } from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeSlug from "rehype-slug";
+import rehypeRaw from "rehype-raw";
 import { RENDERER_STYLES } from "./styles";
-import { mdToHtml } from "./markdown-utils";
 import { resolveImageUrl } from "@/lib/stores/cloudinary/helpers";
 
 let stylesInjected = false;
@@ -18,14 +29,55 @@ function injectRendererStyles() {
     stylesInjected = true;
 }
 
-// Mirrors CloudinaryImage and resolveEditorImageSrc in MarkdownEditor:
-// public IDs (no http prefix) are resolved with standard options;
-// full URLs pass through untouched.
-function resolveRendererImageSrc(src: string): string {
+// Mirrors the resolver used by the editor's image plugin: public Cloudinary
+// IDs (no http prefix) get resolved with standard display options; full
+// URLs (including ones the user pasted directly) pass through untouched.
+function resolveRendererImageSrc(src?: string): string {
+    if (!src) return "";
     return src.startsWith("http")
         ? src
         : resolveImageUrl(src, { width: 1200, height: 800, quality: "auto" });
 }
+
+// ─── react-markdown component overrides ──────────────────────────────────────
+
+const components: Components = {
+    img: ({ src, alt, width, height }) => (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+            src={resolveRendererImageSrc(typeof src === "string" ? src : undefined)}
+            alt={alt ?? ""}
+            width={width}
+            height={height}
+            loading="lazy"
+        />
+    ),
+    // remark-gfm marks task-list <li> with className="task-list-item"; map
+    // that onto the "task-item" class your existing CSS (.mdr li.task-item)
+    // already styles, so the stylesheet didn't need to change.
+    li: ({ className, children, ...props }) => {
+        const isTask = className?.includes("task-list-item");
+        return (
+            <li className={isTask ? "task-item" : className} {...props}>
+                {children}
+            </li>
+        );
+    },
+    // Code blocks: preserve the data-lang attribute your CSS uses for the
+    // little language label in the top-right corner of <pre>.
+    pre: ({ children, ...props }) => {
+        const child = Array.isArray(children) ? children[0] : children;
+        const lang =
+            child && typeof child === "object" && "props" in child
+                ? (child.props.className || "").replace("language-", "")
+                : "";
+        return (
+            <pre data-lang={lang} {...props}>
+                {children}
+            </pre>
+        );
+    },
+};
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
@@ -45,10 +97,6 @@ interface MarkdownRendererProps {
 /**
  * `MarkdownRenderer` — a standalone, read-only markdown renderer.
  *
- * Renders a markdown string with the same visual fidelity as the WYSIWYG
- * editor, using the same shared `mdToHtml` parser with `resolveRendererImageSrc`
- * so image URLs are resolved identically in both contexts.
- *
  * Headings automatically receive slug IDs (e.g. "Project Overview" → id="project-overview")
  * so URL hashes like `#project-overview` scroll directly to that heading.
  */
@@ -61,7 +109,6 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({
 }: MarkdownRendererProps) {
     const rootRef = useRef<HTMLDivElement>(null);
 
-    // Inject styles once on mount
     useEffect(() => {
         injectRendererStyles();
     }, []);
@@ -117,12 +164,15 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({
     }
 
     return (
-        <div
-            ref={rootRef}
-            className={`mdr ${className}`.trim()}
-            style={style}
-            dangerouslySetInnerHTML={{ __html: mdToHtml(markdown, resolveRendererImageSrc) }}
-        />
+        <div ref={rootRef} className={`mdr ${className}`.trim()} style={style}>
+            <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                rehypePlugins={[rehypeSlug, rehypeRaw]}
+                components={components}
+            >
+                {markdown}
+            </ReactMarkdown>
+        </div>
     );
 });
 

@@ -56,8 +56,8 @@ export function OwnProjectsView({
 }: OwnProjectsViewProps) {
   const router = useRouter();
   const { profileContext } = useTheme();
-  const {userInfo} = useUserSettings()
-  const usernamePath = profileContext?.username ? `/${profileContext.username}` : "";
+  const { userInfo } = useUserSettings()
+  const usernamePath = profileContext?.username ? `${profileContext.username}` : "";
   const [deleteProject, setDeleteProject] = useState<PortfolioProjectResponse | null>(null);
 
   const handleEdit = (project: PortfolioProjectResponse) => {

@@ -72,7 +72,7 @@ export function OwnProfileView({
 }: OwnProfileViewProps) {
     const router = useRouter();
     const { profileContext } = useTheme();
-    const usernamePath = profileContext?.username ? `/${profileContext.username}` : "";
+    const usernamePath = profileContext?.username ? `${profileContext.username}` : "";
     const isReceivedTab = activeTab === "received";
     const currentTestimonials = isReceivedTab ? receivedTestimonials : authoredTestimonials;
     const currentTotal = isReceivedTab ? totalReceived : totalAuthored;

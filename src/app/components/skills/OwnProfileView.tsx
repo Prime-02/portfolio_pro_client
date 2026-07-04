@@ -44,7 +44,7 @@ export function OwnProfileView({
 }: OwnProfileViewProps) {
     const router = useRouter();
     const { profileContext } = useTheme();
-    const usernamePath = profileContext?.username ? `/${profileContext.username}` : "";
+    const usernamePath = profileContext?.username ? `${profileContext.username}` : "";
     const displayedSkills = miniView ? skills.slice(0, 3) : skills;
     const showSeeAll = miniView && skills.length > 0;
 

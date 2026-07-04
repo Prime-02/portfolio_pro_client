@@ -74,7 +74,7 @@ export function PublicProfileView({
     const currentOnLoadMore = isTheirTab ? onLoadMore : onLoadMoreAuthored;
     const router = useRouter();
     const { profileContext } = useTheme();
-    const usernamePath = profileContext?.username ? `/${profileContext.username}` : "";
+    const usernamePath = profileContext?.username ? `${profileContext.username}` : "";
     const displayedTestimonials = miniView ? currentTestimonials.slice(0, 3) : currentTestimonials;
     const showSeeAll = miniView && currentTestimonials.length > 0;
 

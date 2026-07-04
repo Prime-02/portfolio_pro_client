@@ -37,6 +37,7 @@ export const unprotectedRoutes = [
   "/auth",
   "/public",
   "/welcome",
+  "/feed",
   "test-endpoints",
 ];
 

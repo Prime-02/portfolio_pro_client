@@ -15,8 +15,8 @@ interface PublicSocialProfileProps {
 export function PublicSocialProfile({ username, miniView = false }: PublicSocialProfileProps) {
     const { publicSocialLinks, publicUsername, fetchPublicSocialLinks, isLoadingPublic } = useSocialLinks();
     const { profileContext } = useTheme();
-    const {router} = useRouting()
-    const usernamePath = profileContext?.username ? `/${profileContext.username}` : "";
+    const { router } = useRouting()
+    const usernamePath = profileContext?.username ? `${profileContext.username}` : "";
 
     useEffect(() => {
         if (username && username !== publicUsername) {

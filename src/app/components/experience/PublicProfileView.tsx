@@ -29,7 +29,7 @@ export function PublicProfileView({
 }: PublicProfileViewProps) {
     const router = useRouter();
     const { profileContext } = useTheme();
-    const usernamePath = profileContext?.username ? `/${profileContext.username}` : "";
+    const usernamePath = profileContext?.username ? `${profileContext.username}` : "";
     const displayedExperiences = miniView ? experiences.slice(0, 3) : experiences;
     const showSeeAll = miniView && experiences.length > 0;
 

@@ -1,4 +1,4 @@
-// EditorFooter.tsx
+// EditorFooter.tsx  (unchanged — still just reads the markdown string)
 "use client";
 
 interface EditorFooterProps {
@@ -24,20 +24,10 @@ export function EditorFooter({
                 {wordCount}w · {charCount}c
             </span>
             <div className="mde2-actions">
-                <button
-                    type="button"
-                    className="mde2-action-btn"
-                    onClick={onCopy}
-                    disabled={disabled}
-                >
+                <button type="button" className="mde2-action-btn" onClick={onCopy} disabled={disabled}>
                     {copied ? "✓ copied" : "⧉ copy md"}
                 </button>
-                <button
-                    type="button"
-                    className="mde2-action-btn"
-                    onClick={onDownload}
-                    disabled={disabled}
-                >
+                <button type="button" className="mde2-action-btn" onClick={onDownload} disabled={disabled}>
                     ↓ .md
                 </button>
             </div>

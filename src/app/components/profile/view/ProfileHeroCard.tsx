@@ -92,11 +92,11 @@ export const ProfileHeroCard = ({
                 {profile?.availability && (
                     <Badge color="primary">{profile.availability.replace("_", " ").toLocaleUpperCase()} Notice Period</Badge>
                 )}
-                {(userInfo as any)?.is_active !== undefined && (
+                {/* {(userInfo as any)?.is_active !== undefined && (
                     <Badge active={(userInfo as any).is_active} color={(userInfo as any).is_active ? "accent" : "secondary"}>
                         {(userInfo as any).is_active ? "Active" : "Inactive"}
                     </Badge>
-                )}
+                )} */}
             </div>
 
             {/* Bio */}

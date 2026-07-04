@@ -1,4 +1,4 @@
-// ViewTabs.tsx
+// ViewTabs.tsx  (unchanged)
 "use client";
 
 type ViewMode = "editor" | "split" | "preview";

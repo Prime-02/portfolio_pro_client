@@ -36,7 +36,7 @@ export function PublicProjectsView({
 }: PublicProjectsViewProps) {
   const router = useRouter();
   const { profileContext } = useTheme();
-  const usernamePath = profileContext?.username ? `/${profileContext.username}` : "";
+  const usernamePath = profileContext?.username ? `${profileContext.username}` : "";
   const displayedProjects = miniView ? projects.slice(0, 3) : projects;
   const showSeeAll = miniView && projects.length > 0;
 

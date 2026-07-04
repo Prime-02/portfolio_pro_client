@@ -1,4 +1,4 @@
-// PreviewPane.tsx
+// PreviewPane.tsx  (unchanged)
 "use client";
 
 import { memo } from "react";

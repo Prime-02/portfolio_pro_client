@@ -55,7 +55,7 @@ export function OwnBlogsView({
   const router = useRouter();
   const { profileContext } = useTheme();
   const { userInfo } = useUserSettings();
-  const usernamePath = profileContext?.username ? `/${profileContext.username}` : "";
+  const usernamePath = profileContext?.username ? `${profileContext.username}` : "";
   const [deleteBlog, setDeleteBlog] = useState<ContentWithAuthor | null>(null);
 
   const handleEdit = (blog: ContentWithAuthor) => {

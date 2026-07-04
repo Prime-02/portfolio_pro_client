@@ -37,7 +37,6 @@ export interface UserSettings extends UserSettingsBase {
 
 export interface UserProfileRequest {
   user_id: string | null;
-  github_username: string | null;
   bio: string | null;
   profession: string | null;
   job_title: string | null;
@@ -90,7 +89,6 @@ export interface UpdateUserInfoPayload {
 }
 
 export interface UpdateProfilePayload {
-  github_username?: string | null;
   bio?: string | null;
   profession?: string | null;
   job_title?: string | null;

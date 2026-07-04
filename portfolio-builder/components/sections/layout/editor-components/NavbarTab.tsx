@@ -449,6 +449,7 @@ export default function NavbarTab({ data, onChange, availableSections, sectionLi
     const update = (partial: Partial<NavbarData>) => onChange({ ...data, ...partial });
     const visibleCount = (data.sectionLinks ?? sectionLinks).filter((l) => l.visible).length;
     const ctaButtons: BioCTA[] = (data.ctaButtons as BioCTA[] | undefined) ?? [];
+    const { userInfo } = useUserSettings()
 
     return (
         <div className="flex flex-col gap-5">
@@ -536,7 +537,7 @@ export default function NavbarTab({ data, onChange, availableSections, sectionLi
                             {data.logoType === "text" && (
                                 <PBTextInput
                                     label="Logo Text"
-                                    value={data.logoText ?? ""}
+                                    value={data.logoText ?? `${userInfo?.username}`}
                                     onChange={(v) => update({ logoText: v })}
                                     placeholder="Portfolio"
                                 />

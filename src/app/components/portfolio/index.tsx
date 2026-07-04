@@ -61,6 +61,7 @@ const PortfolioPage = () => {
                 await updatePortfolio(id, data)
                 setIsEditModalOpen(false)
                 setEditingPortfolio(null)
+                fetchMyPortfolios()
             } catch (err) {
                 // Error handled by store
             }

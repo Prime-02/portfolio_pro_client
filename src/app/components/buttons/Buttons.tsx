@@ -8,8 +8,9 @@ import React, {
   useEffect,
 } from "react";
 import { getLoader, SpinLoader } from "../loaders/Loader";
-import { useTheme } from "../theme/ThemeContext ";
+import { useTheme } from "../theme/ThemeContext";
 import { getColorShade } from "@/lib/utilities/syncFunctions/syncs";
+import { themePresets } from "@/lib/utilities/indices/Themes";
 
 type ButtonProps = {
   icon?: ReactNode;
@@ -36,7 +37,7 @@ type ButtonProps = {
 
 // Enhanced color normalization with better error handling
 const normalizeColorToHex = (color: string): string => {
-  if (!color) return "#737373";
+  if (!color) return themePresets[0].accent;
 
   const colorStr = String(color).trim();
 
@@ -117,7 +118,7 @@ const normalizeColorToHex = (color: string): string => {
   if (typeof window !== "undefined") {
     console.warn(`Could not parse color format: "${colorStr}", using fallback`);
   }
-  return "#737373";
+  return themePresets[0].accent;
 };
 
 // Enhanced color generation with intensity options

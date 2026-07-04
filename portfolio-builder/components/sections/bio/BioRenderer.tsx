@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useRef, useEffect, useState, JSX } from "react";
+import { useRef, useEffect, useState, useMemo, JSX } from "react";
 import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import { BioData } from "@/portfolio-builder/types/bio";
 import type { BioAnimations } from "@/portfolio-builder/types/bio";
@@ -19,6 +19,23 @@ import { SectionBackgroundRenderer } from "@/portfolio-builder/components/shared
 interface BioRendererProps {
   data: BioData;
 }
+
+const defaultAnim: BioAnimations = {
+  preset: "fadeIn",
+  duration: 0.6,
+  delay: 0.1,
+  easing: "easeOut",
+  staggerChildren: true,
+  staggerDelay: 0.12,
+  scrollTrigger: true,
+  scrollOnce: true,
+  parallax: false,
+  parallaxIntensity: 20,
+  hoverEffect: "none",
+  hoverScale: 1.03,
+  textReveal: false,
+  textRevealDelay: 0.2,
+};
 
 export default function BioRenderer({ data }: BioRendererProps) {
   const {
@@ -42,27 +59,31 @@ export default function BioRenderer({ data }: BioRendererProps) {
     ctaButtons,
   } = data;
 
-  const defaultAnim: BioAnimations = {
-    preset: "fadeIn",
-    duration: 0.6,
-    delay: 0.1,
-    easing: "easeOut",
-    staggerChildren: true,
-    staggerDelay: 0.12,
-    scrollTrigger: true,
-    scrollOnce: true,
-    parallax: false,
-    parallaxIntensity: 20,
-    hoverEffect: "none",
-    hoverScale: 1.03,
-    textReveal: false,
-    textRevealDelay: 0.2,
-  };
-
-  const anim: BioAnimations = {
-    ...defaultAnim,
-    ...(animations ?? {}),
-  };
+  const anim: BioAnimations = useMemo(
+    () => ({
+      ...defaultAnim,
+      ...(animations ?? {}),
+    }),
+    // Depend on the individual primitive fields, not the `animations` object
+    // reference itself — `data.animations` (and `data` as a whole) can be a
+    // new object on every render even when nothing in it actually changed.
+    [
+      animations?.preset,
+      animations?.duration,
+      animations?.delay,
+      animations?.easing,
+      animations?.staggerChildren,
+      animations?.staggerDelay,
+      animations?.scrollTrigger,
+      animations?.scrollOnce,
+      animations?.parallax,
+      animations?.parallaxIntensity,
+      animations?.hoverEffect,
+      animations?.hoverScale,
+      animations?.textReveal,
+      animations?.textRevealDelay,
+    ]
+  );
 
   const fontsConfig = fonts ?? {};
   const typographyConfig = typography ?? {};
@@ -518,6 +539,7 @@ export default function BioRenderer({ data }: BioRendererProps) {
         parallax={anim.parallax}
         parallaxY={parallaxY}
         className={`relative z-10 ${layoutContainer(layoutWidthClasses[layout] || "max-w-4xl")} ${alignClass}`}
+        style={{ maxWidth: `${maxWidth}px` }}
       >
         {renderLayout()}
       </MotionContainer>

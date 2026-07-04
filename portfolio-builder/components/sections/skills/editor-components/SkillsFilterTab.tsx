@@ -4,7 +4,6 @@
 
 import { useEffect, useRef } from "react";
 import { SkillsData, SkillsFilterConfig } from "@/portfolio-builder/types/skills";
-import { Textinput } from "@/src/app/components/inputs/Textinput";
 import Dropdown from "@/src/app/components/inputs/DynamicDropdown";
 import { sectionClass, sectionTitleClass } from "../../bio/editor-components/styles";
 import Toggle from "../../bio/editor-components/Toggle";
@@ -21,7 +20,7 @@ interface SkillsFilterTabProps {
 export default function SkillsFilterTab({ data, onUpdate }: SkillsFilterTabProps) {
   const { skills, fetchAllSkills, isLoading } = useSkills();
   const { userInfo } = useUserSettings()
-  const filters = data.filters;
+  const filters = data.filters ?? ({} as SkillsFilterConfig);
 
   // `skills` is the authenticated user's own unfiltered list — the correct
   // source for the editor. `fetchPublicSkillsByUsername` is intentionally not

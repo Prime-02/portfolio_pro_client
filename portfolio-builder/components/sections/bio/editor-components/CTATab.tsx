@@ -209,7 +209,6 @@ function UrlPicker({
     { id: `/${username}/projects`, code: "Your Projects" },
     { id: `/${username}/socials`, code: "Your Social Media Handles" },
     { id: `/${username}/experience`, code: "Your Experiences" },
-    { id: `/${username}/resume`, code: "Your CV/Resume" },
     { id: `/${username}/certification`, code: "Your Certifications" },
     { id: `/${username}/education`, code: "Your Education" },
     { id: `/${username}/skills`, code: "Your Skills" },
@@ -324,8 +323,8 @@ export default function CTATab({ data, onChange }: CTATabProps) {
           onClick={addButton}
           disabled={atLimit}
           className={`text-sm transition-colors px-3 py-1 rounded-md ${atLimit
-              ? "text-[var(--pb-text-disabled)] cursor-not-allowed"
-              : "text-[var(--pb-text-primary)] hover:bg-[var(--pb-surface-hover)] border border-[var(--pb-border)]"
+            ? "text-[var(--pb-text-disabled)] cursor-not-allowed"
+            : "text-[var(--pb-text-primary)] hover:bg-[var(--pb-surface-hover)] border border-[var(--pb-border)]"
             }`}
           title={atLimit ? `Maximum of ${MAX_BUTTONS} buttons allowed` : undefined}
         >

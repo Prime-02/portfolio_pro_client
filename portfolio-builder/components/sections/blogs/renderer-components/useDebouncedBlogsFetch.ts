@@ -9,7 +9,7 @@ const DEBOUNCE_MS = 400;
 
 export function useDebouncedBlogsFetch(
   username: string,
-  filters: BlogsData["filters"],
+  filters?: BlogsData["filters"],
 ) {
   const { fetchPublicContent } = useContentStore();
   const [rendererBlogs, setRendererBlogs] = useState<ContentWithAuthor[]>([]);
@@ -18,8 +18,8 @@ export function useDebouncedBlogsFetch(
 
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
-  const latestFiltersRef = useRef(filters);
-  latestFiltersRef.current = filters;
+  const latestFiltersRef = useRef(filters ?? ({} as BlogsData["filters"]));
+  latestFiltersRef.current = filters ?? ({} as BlogsData["filters"]);
 
   const executeFetch = useCallback(() => {
     if (!username) return;
@@ -36,17 +36,17 @@ export function useDebouncedBlogsFetch(
 
     fetchPublicContent({
       username,
-      content_type: latestFiltersRef.current.content_type,
-      status: latestFiltersRef.current.status,
-      category: latestFiltersRef.current.category,
-      tags: latestFiltersRef.current.tags,
-      is_public: latestFiltersRef.current.is_public,
-      is_featured: latestFiltersRef.current.is_featured,
-      search: latestFiltersRef.current.search,
-      date_from: latestFiltersRef.current.date_from,
-      date_to: latestFiltersRef.current.date_to,
-      ids: latestFiltersRef.current.ids,
-      merge_filters: latestFiltersRef.current.merge_filters,
+      content_type: latestFiltersRef.current.content_type ?? undefined,
+      status: latestFiltersRef.current.status ?? undefined,
+      category: latestFiltersRef.current.category ?? undefined,
+      tags: latestFiltersRef.current.tags ?? undefined,
+      is_public: latestFiltersRef.current.is_public ?? undefined,
+      is_featured: latestFiltersRef.current.is_featured ?? undefined,
+      search: latestFiltersRef.current.search ?? undefined,
+      date_from: latestFiltersRef.current.date_from ?? undefined,
+      date_to: latestFiltersRef.current.date_to ?? undefined,
+      ids: latestFiltersRef.current.ids ?? undefined,
+      merge_filters: latestFiltersRef.current.merge_filters ?? undefined,
       page_size: 50,
     })
       .then(() => {
@@ -78,17 +78,17 @@ export function useDebouncedBlogsFetch(
     };
   }, [
     username,
-    filters.content_type,
-    filters.status,
-    filters.category,
-    filters.tags?.join(","),
-    filters.is_public,
-    filters.is_featured,
-    filters.search,
-    filters.date_from,
-    filters.date_to,
-    filters.ids?.join(","),
-    filters.merge_filters,
+    filters?.content_type,
+    filters?.status,
+    filters?.category,
+    filters?.tags?.join(","),
+    filters?.is_public,
+    filters?.is_featured,
+    filters?.search,
+    filters?.date_from,
+    filters?.date_to,
+    filters?.ids?.join(","),
+    filters?.merge_filters,
     executeFetch,
   ]);
 

@@ -16,6 +16,32 @@ import {
 } from "./editor-components";
 import CertificationRenderer from "./CertificationRenderer";
 
+// ---------------------------------------------------------------------------
+// Deep merge with defaults to handle missing/legacy keys
+// ---------------------------------------------------------------------------
+function mergeWithDefaults(partial: CertificationData): CertificationData {
+  const defaults = getEmptyCertificationData();
+
+  return {
+    ...defaults,
+    ...partial,
+    // Deep merge nested objects to preserve new default fields
+    filters: { ...defaults.filters, ...partial.filters },
+    padding: partial.padding
+      ? { ...defaults.padding, ...partial.padding }
+      : defaults.padding,
+    background: partial.background
+      ? { ...defaults.background, ...partial.background }
+      : defaults.background,
+    animations: partial.animations
+      ? { ...defaults.animations, ...partial.animations }
+      : defaults.animations,
+    // Arrays are preserved as-is (no merge needed)
+    cardOverrides: partial.cardOverrides ?? defaults.cardOverrides,
+    ctaButtons: partial.ctaButtons ?? defaults.ctaButtons,
+  };
+}
+
 interface CertificationEditorProps {
   initialData: CertificationData;
   onSave: (data: CertificationData) => Promise<void>;
@@ -31,7 +57,13 @@ export default function CertificationEditor({
   setFullScreen,
   username,
 }: CertificationEditorProps) {
-  const [data, setData] = useState<CertificationData>(() => structuredClone(initialData));
+  // ── Resolve data with defaults ─────────────────────────────────────────
+  const resolvedInitialData = mergeWithDefaults(initialData);
+  const usingDefaultsRef = useRef(
+    JSON.stringify(resolvedInitialData) !== JSON.stringify(initialData)
+  );
+
+  const [data, setData] = useState<CertificationData>(() => structuredClone(resolvedInitialData));
   const [activeTab, setActiveTab] = useState<
     "filters" | "card-layout" | "layout" | "background" | "animations" | "cta"
   >("filters");
@@ -40,8 +72,12 @@ export default function CertificationEditor({
   // ── Animation replay counter ─────────────────────────────────────────────
   const [animationKey, setAnimationKey] = useState(0);
 
-  // ── Stable serialised baseline ─────────────────────────────────────────────
-  const savedSnapshotRef = useRef(JSON.stringify(initialData));
+  // ── Stable serialised baseline ───────────────────────────────────────────
+  // Left blank when defaults were used so the mount-save effect below forces
+  // an initial persist instead of treating unsaved defaults as already saved.
+  const savedSnapshotRef = useRef(
+    usingDefaultsRef.current ? "" : JSON.stringify(resolvedInitialData)
+  );
   const hasChanges = JSON.stringify(data) !== savedSnapshotRef.current;
 
   // ── Save orchestration refs ──────────────────────────────────────────────
@@ -105,6 +141,15 @@ export default function CertificationEditor({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
 
+  // ── Persist defaults right away when they weren't already saved ──────────
+  useEffect(() => {
+    if (usingDefaultsRef.current) {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      executeSave(data);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // ── Prevent accidental page unload ───────────────────────────────────────
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -131,14 +176,14 @@ export default function CertificationEditor({
     setData((prev) => ({ ...prev, [key]: value }));
   };
 
-  const updateFilters = (value: Partial<CertificationData["filters"]> ) => {
+  const updateFilters = (value: Partial<CertificationData["filters"]>) => {
     setData((prev) => ({
       ...prev,
       filters: { ...prev.filters, ...value },
     }));
   };
 
-  const updateBackground = (value: Partial<CertificationData["background"]> ) => {
+  const updateBackground = (value: Partial<CertificationData["background"]>) => {
     setData((prev) => ({
       ...prev,
       background: { ...prev.background, ...value },
@@ -230,11 +275,10 @@ export default function CertificationEditor({
       {/* Save status banner */}
       {(saveStatus === "saving" || saveStatus === "error") && (
         <div
-          className={`fixed bottom-4 right-4 z-50 px-4 py-2 rounded-lg shadow-lg ${
-            saveStatus === "saving"
+          className={`fixed bottom-4 right-4 z-50 px-4 py-2 rounded-lg shadow-lg ${saveStatus === "saving"
               ? "bg-[var(--pb-info-bg)] text-[var(--pb-info)] border border-[var(--pb-info-border)]"
               : "bg-[var(--pb-error-bg)] text-[var(--pb-error)] border border-[var(--pb-error-border)]"
-          }`}
+            }`}
         >
           <div className="flex items-center gap-2">
             {saveStatus === "saving" ? (

@@ -1,46 +1,32 @@
 // portfolio-builder/components/sections/bio/editor-components/SliderField.tsx
 
-import Field from "./Field";
+import { PBRangeInput } from "@/portfolio-builder/components/shared/ui/inputs";
 
 interface SliderFieldProps {
   label: string;
-  htmlFor: string;
   value: number;
   min: number;
   max: number;
   step: number;
-  unit?: string;
   onChange: (v: number) => void;
 }
 
 export default function SliderField({
   label,
-  htmlFor,
   value,
   min,
   max,
   step,
-  unit,
   onChange,
 }: SliderFieldProps) {
   return (
-    <Field label={label} htmlFor={htmlFor}>
-      <div className="flex items-center gap-3">
-        <input
-          id={htmlFor}
-          type="range"
-          min={min}
-          max={max}
-          step={step}
-          value={value}
-          onChange={(e) => onChange(Number(e.target.value))}
-          className="flex-1 h-1.5 appearance-none bg-foreground/20 rounded-full accent-foreground cursor-pointer"
-        />
-        <span className="text-sm text-foreground/70 tabular-nums w-16 text-right">
-          {value}
-          {unit}
-        </span>
-      </div>
-    </Field>
+    <PBRangeInput
+      label={label}
+      value={value}
+      min={min}
+      max={max}
+      step={step}
+      onChange={onChange}
+    />
   );
 }

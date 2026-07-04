@@ -109,6 +109,17 @@ interface PortfolioState {
     theme: Partial<PortfolioThemeData>,
   ) => void;
 
+  /**
+   * Synchronously replaces layout.sections inside currentPortfolio (and the
+   * matching entry in portfolios[]) without touching the API. Use this for
+   * add/remove-section edits in the layout editor that should be held
+   * locally until the user clicks "Save Layout" (updatePortfolio).
+   */
+  updateSectionsLocally: (
+    portfolioSlug: string,
+    sections: Record<string, unknown>[],
+  ) => void;
+
   // Helpers
   clearError: () => void;
   clearCurrentPortfolio: () => void;
@@ -356,6 +367,41 @@ export const usePortfolioStore = create<PortfolioState>()((set, get) => ({
       currentPortfolio:
         state.currentPortfolio?.slug === portfolioSlug
           ? mergeTheme(state.currentPortfolio)
+          : state.currentPortfolio,
+    }));
+  },
+
+  // ------------------------------------------------------------------
+  // updateSectionsLocally — no API call, no loading flag.
+  // Replaces layout.sections of the matching portfolio so add/remove
+  // section edits in the layout editor reflect immediately. The caller
+  // is responsible for persisting via updatePortfolio (triggered by
+  // "Save Layout"), same contract as updateThemeLocally.
+  // ------------------------------------------------------------------
+  updateSectionsLocally: (portfolioSlug, sections) => {
+    const mergeSections = (
+      portfolio: PortfolioResponse,
+    ): PortfolioResponse => ({
+      ...portfolio,
+      layout: {
+        ...portfolio.layout,
+        sections,
+      },
+    });
+
+    if (get().currentPortfolio?.slug !== portfolioSlug) {
+      console.warn(
+        `updateSectionsLocally: no currentPortfolio matched slug "${portfolioSlug}" — sections were not applied.`,
+      );
+    }
+
+    set((state) => ({
+      portfolios: state.portfolios.map((p) =>
+        p.slug === portfolioSlug ? mergeSections(p) : p,
+      ),
+      currentPortfolio:
+        state.currentPortfolio?.slug === portfolioSlug
+          ? mergeSections(state.currentPortfolio)
           : state.currentPortfolio,
     }));
   },

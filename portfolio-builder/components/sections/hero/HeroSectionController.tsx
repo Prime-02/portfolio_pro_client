@@ -5,8 +5,9 @@
 import { useState, useEffect } from "react";
 import HeroRenderer from "@/portfolio-builder/components/sections/hero/HeroRenderer";
 import HeroEditor from "@/portfolio-builder/components/sections/hero/HeroEditor";
-import { HeroData, getEmptyHeroData } from "@/portfolio-builder/types/hero";
+import { HeroData, getEmptyHeroData, getDefaultHeroData } from "@/portfolio-builder/types/hero";
 import { ResolvedTheme } from "@/portfolio-builder/hooks/usePortfolioTheme";
+import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 
 // ---------------------------------------------------------------------------
 // Props
@@ -25,6 +26,7 @@ interface HeroSectionControllerProps {
 
 export default function HeroSectionController({ heroData, onSave, theme, viewOnly }: HeroSectionControllerProps) {
     const [isEditing, setIsEditing] = useState(false);
+    const { userInfo } = useUserSettings()
 
     // ── Optimistic local state ─────────────────────────────────────────────
     const [localData, setLocalData] = useState<HeroData | null>(heroData);
@@ -71,7 +73,10 @@ export default function HeroSectionController({ heroData, onSave, theme, viewOnl
     if (isEditing) {
         return (
             <HeroEditor
-                initialData={localData || getEmptyHeroData()}
+                initialData={localData || getDefaultHeroData({
+                    name: `${userInfo?.firstname} ${userInfo?.lastname}`,
+                    avatar: `${userInfo?.profile_picture}`
+                })}
                 onSave={handleSave}
                 onCancel={handleCancel}
                 theme={theme}

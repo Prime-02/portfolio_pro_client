@@ -2,7 +2,7 @@ export type Primitive = string | number | boolean | symbol | null | undefined;
 
 /**
  * Generates a shade of a given hex color based on a percentage (1-100).
- * @param hex - The base color in hex format (e.g., "#737373").
+ * @param hex - The base color in hex format .
  * @param percent - A number between 1 (lightest) and 100 (darkest).
  * @returns The resulting shade in hex format.
  */

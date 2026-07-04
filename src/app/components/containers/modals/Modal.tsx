@@ -3,7 +3,7 @@
 import React, { ReactNode, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence, Variants } from "framer-motion";
-import { useTheme } from "../../theme/ThemeContext ";
+import { useTheme } from "../../theme/ThemeContext";
 import { X, Minus, Maximize2 } from "lucide-react";
 import { getColorShade } from "@/lib/utilities/syncFunctions/syncs";
 

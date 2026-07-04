@@ -11,18 +11,17 @@ export interface RangeInputProps {
   showMinMax?: boolean;
   disabled?: boolean;
   className?: string;
-  trackColor?: string;
-  thumbColor?: string;
-  fillColor?: string;
   size?: "sm" | "md" | "lg";
   id?: string;
+  showSteps?: boolean;
+  stepLabelInterval?: number;
 }
 
 const RangeInput = ({
   min = 0,
   max = 100,
   value = 50,
-  step = 1, // Fine step for precise control
+  step = 1,
   onChange,
   label,
   showValue = true,
@@ -31,23 +30,66 @@ const RangeInput = ({
   className = "",
   id = "range-input",
   size = "md",
+  showSteps = true,
+  stepLabelInterval = 0,
 }: RangeInputProps) => {
   const percentage = ((value - min) / (max - min)) * 100;
   const trackRef = useRef<HTMLDivElement>(null);
-  const thumbRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
 
-  const sizeClasses = {
-    sm: "h-1",
-    md: "h-2",
-    lg: "h-3",
+  // Taller tracks to contain ruler ticks inside
+  const sizeConfig = {
+    sm: {
+      trackHeight: 24,
+      thumbWidth: 6,
+      thumbHeight: 32,
+      tickHeight: 12,
+      tickWidth: 1.5,
+      majorTickHeight: 18,
+      fontSize: "text-xs",
+    },
+    md: {
+      trackHeight: 32,
+      thumbWidth: 8,
+      thumbHeight: 44,
+      tickHeight: 16,
+      tickWidth: 2,
+      majorTickHeight: 24,
+      fontSize: "text-sm",
+    },
+    lg: {
+      trackHeight: 44,
+      thumbWidth: 10,
+      thumbHeight: 56,
+      tickHeight: 22,
+      tickWidth: 2.5,
+      majorTickHeight: 34,
+      fontSize: "text-base",
+    },
   };
 
-  const thumbSizeClasses = {
-    sm: "w-4 h-4",
-    md: "w-5 h-5",
-    lg: "w-6 h-6",
+  const config = sizeConfig[size];
+
+  // Generate step positions
+  const getStepPositions = () => {
+    if (!showSteps || step <= 0) return [];
+    const steps = [];
+    const stepCount = Math.floor((max - min) / step);
+    const majorInterval = Math.max(1, Math.floor(stepCount / 10));
+
+    for (let i = 0; i <= stepCount; i++) {
+      const stepValue = min + i * step;
+      const stepPercentage = ((stepValue - min) / (max - min)) * 100;
+      steps.push({
+        value: stepValue,
+        position: stepPercentage,
+        isMajor: i % majorInterval === 0,
+      });
+    }
+    return steps;
   };
+
+  const stepPositions = getStepPositions();
 
   // Handle precise dragging
   const handleDrag = (clientX: number) => {
@@ -56,10 +98,7 @@ const RangeInput = ({
     const rect = trackRef.current.getBoundingClientRect();
     const offsetX = clientX - rect.left;
     const trackWidth = rect.width;
-    const newPercentage = Math.max(
-      0,
-      Math.min(100, (offsetX / trackWidth) * 100)
-    );
+    const newPercentage = Math.max(0, Math.min(100, (offsetX / trackWidth) * 100));
     const newValue = min + (newPercentage / 100) * (max - min);
     const steppedValue = Math.round(newValue / step) * step;
     const clampedValue = Math.max(min, Math.min(max, steppedValue));
@@ -69,39 +108,28 @@ const RangeInput = ({
     }
   };
 
-  // Mouse event handlers
   const handleMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true);
     handleDrag(e.clientX);
   };
 
   const handleMouseMove = (e: MouseEvent) => {
-    if (isDragging) {
-      handleDrag(e.clientX);
-    }
+    if (isDragging) handleDrag(e.clientX);
   };
 
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
+  const handleMouseUp = () => setIsDragging(false);
 
-  // Touch event handlers
   const handleTouchStart = (e: React.TouchEvent) => {
     setIsDragging(true);
     handleDrag(e.touches[0].clientX);
   };
 
   const handleTouchMove = (e: TouchEvent) => {
-    if (isDragging) {
-      handleDrag(e.touches[0].clientX);
-    }
+    if (isDragging) handleDrag(e.touches[0].clientX);
   };
 
-  const handleTouchEnd = () => {
-    setIsDragging(false);
-  };
+  const handleTouchEnd = () => setIsDragging(false);
 
-  // Add/remove global event listeners for mouse and touch
   useEffect(() => {
     if (isDragging) {
       window.addEventListener("mousemove", handleMouseMove);
@@ -119,34 +147,67 @@ const RangeInput = ({
 
   return (
     <div className={`w-full ${className}`}>
+      {/* Label row */}
       {label && (
-        <label
-          htmlFor={id}
-          className="block text-sm font-medium opacity-65 mb-2"
-        >
-          {label}
+        <div className="flex items-center justify-between mb-3">
+          <label htmlFor={id} className={`${config.fontSize} font-medium opacity-70`}>
+            {label}
+          </label>
           {showValue && (
-            <span className="ml-2 text-[var(--accent)] font-semibold">
+            <span className={`${config.fontSize} font-bold text-[var(--accent)] bg-[var(--accent)]/10 px-2.5 py-1 rounded-md`}>
               {value}
             </span>
           )}
-        </label>
+        </div>
       )}
 
-      <div className="relative">
+      {/* Slider container */}
+      <div className="relative flex items-center" style={{ height: `${config.thumbHeight}px` }}>
+
         {/* Track */}
         <div
-          className={`w-full ${sizeClasses[size]} bg-[var(--background)] rounded-full`}
           ref={trackRef}
+          className="relative w-full rounded-lg bg-[var(--background)] border border-[var(--foreground)]/10 overflow-hidden shadow-inner"
+          style={{ height: `${config.trackHeight}px` }}
         >
           {/* Fill */}
           <div
-            className={`${sizeClasses[size]} bg-[var(--accent)] rounded-full transition-all duration-150`}
+            className="absolute top-0 left-0 h-full bg-[var(--accent)]/90 rounded-lg transition-all duration-150 ease-out"
             style={{ width: `${percentage}%` }}
           />
+
+        {/* Ruler ticks — INSIDE the track */}
+          {showSteps && stepPositions.length > 0 && (
+            <div className="absolute inset-0 pointer-events-none flex items-end">
+              {stepPositions.map((step, index) => {
+                const isMajor = step.isMajor;
+                const tickHeight = isMajor ? config.majorTickHeight : config.tickHeight;
+                const tickOpacity = isMajor ? 0.35 : 0.2;
+                const tickWidth = isMajor ? config.tickWidth * 1.5 : config.tickWidth;
+
+                return (
+                  <div
+                    key={index}
+                    className="absolute bottom-0 flex flex-col items-center justify-end"
+                    style={{ left: `${step.position}%`, transform: 'translateX(-50%)' }}
+                  >
+                    <div
+                      className="rounded-full"
+                      style={{
+                        width: `${tickWidth}px`,
+                        height: `${tickHeight}px`,
+                        backgroundColor: `var(--foreground)`,
+                        opacity: tickOpacity,
+                      }}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
-        {/* Input */}
+        {/* Invisible native input for accessibility */}
         <input
           id={id}
           type="range"
@@ -156,21 +217,27 @@ const RangeInput = ({
           value={value}
           onChange={(e) => onChange && onChange(Number(e.target.value))}
           disabled={disabled}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+          className="absolute inset-0 w-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+          style={{ height: `${config.thumbHeight}px` }}
         />
 
-        {/* Custom Thumb */}
+        {/* Custom Thumb — BAR STYLE */}
         <div
-          ref={thumbRef}
-          className={`absolute top-1/2 transform -translate-y-1/2 -translate-x-1/2 ${thumbSizeClasses[size]} bg-[var(--accent)] rounded-full shadow-md border border-[var(--foreground)] transition-all duration-150 ${disabled ? "opacity-50 cursor-not-allowed" : "hover:scale-110 cursor-grab"} ${isDragging ? "cursor-grabbing" : ""}`}
-          style={{ left: `${percentage}%` }}
-          onMouseDown={handleMouseDown}
-          onTouchStart={handleTouchStart}
+          className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 rounded-sm shadow-lg border-[2px] border-[var(--background)] bg-[var(--accent)] transition-all duration-150 ease-out pointer-events-none
+            ${disabled ? "opacity-40" : "hover:scale-y-110 hover:shadow-xl"} 
+            ${isDragging ? "scale-y-110 shadow-xl ring-[2px] ring-[var(--accent)]/25" : ""}`}
+          style={{
+            left: `${percentage}%`,
+            width: `${config.thumbWidth}px`,
+            height: `${config.thumbHeight}px`,
+            borderRadius: "3px",
+          }}
         />
       </div>
 
+      {/* Min/Max labels */}
       {showMinMax && (
-        <div className="flex justify-between text-xs opacity-65 mt-1">
+        <div className="flex justify-between text-xs opacity-50 mt-2 font-medium">
           <span>{min}</span>
           <span>{max}</span>
         </div>

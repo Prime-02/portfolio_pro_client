@@ -4,7 +4,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { AlertTriangle, Loader2, Maximize } from "lucide-react";
-import { BioData } from "@/portfolio-builder/types/bio";
+import { BioData, getEmptyBioData } from "@/portfolio-builder/types/bio";
 import { getDefaultAnimations } from "@/portfolio-builder/types/hero";
 import type { BioAnimations } from "@/portfolio-builder/types/bio";
 import {
@@ -18,6 +18,38 @@ import {
 import BioRenderer from "./BioRenderer";
 import BackgroundTab from "@/portfolio-builder/components/shared/background/editor/BackgroundTab";
 
+// ---------------------------------------------------------------------------
+// Deep merge with defaults to handle missing/legacy keys
+// ---------------------------------------------------------------------------
+function mergeWithDefaults(partial: BioData): BioData {
+  const defaults = getEmptyBioData();
+
+  return {
+    ...defaults,
+    ...partial,
+    // Deep merge nested objects to preserve new default fields
+    padding: partial.padding
+      ? { ...defaults.padding, ...partial.padding }
+      : defaults.padding,
+    status: partial.status
+      ? { ...defaults.status, ...partial.status }
+      : defaults.status,
+    background: partial.background
+      ? { ...defaults.background, ...partial.background }
+      : defaults.background,
+    animations: partial.animations
+      ? { ...getDefaultAnimations(), ...partial.animations }
+      : getDefaultAnimations(),
+    fonts: partial.fonts ?? defaults.fonts,
+    typography: partial.typography ?? defaults.typography,
+    // Arrays are preserved as-is (no merge needed)
+    languages: partial.languages ?? defaults.languages,
+    contacts: partial.contacts ?? defaults.contacts,
+    metadata: partial.metadata ?? defaults.metadata,
+    ctaButtons: partial.ctaButtons ?? defaults.ctaButtons,
+  };
+}
+
 interface BioEditorProps {
   initialData: BioData;
   onSave: (data: BioData) => Promise<void>;
@@ -26,14 +58,24 @@ interface BioEditorProps {
 }
 
 export default function BioEditor({ initialData, onSave, onCancel, setFullScreen }: BioEditorProps) {
-  const [data, setData] = useState<BioData>(() => structuredClone(initialData));
+  // ── Resolve data with defaults ─────────────────────────────────────────
+  const resolvedInitialData = mergeWithDefaults(initialData);
+  const usingDefaultsRef = useRef(
+    JSON.stringify(resolvedInitialData) !== JSON.stringify(initialData)
+  );
+
+  const [data, setData] = useState<BioData>(() => structuredClone(resolvedInitialData));
   const [activeTab, setActiveTab] = useState<
     "content" | "layout" | "background" | "cta" | "animations"
   >("content");
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
 
   // ── Stable serialised baseline ───────────────────────────────────────────
-  const savedSnapshotRef = useRef(JSON.stringify(initialData));
+  // Left blank when defaults were used so the mount-save effect below forces
+  // an initial persist instead of treating unsaved defaults as already saved.
+  const savedSnapshotRef = useRef(
+    usingDefaultsRef.current ? "" : JSON.stringify(resolvedInitialData)
+  );
   const hasChanges = JSON.stringify(data) !== savedSnapshotRef.current;
 
   // ── Save orchestration refs ──────────────────────────────────────────────
@@ -98,6 +140,15 @@ export default function BioEditor({ initialData, onSave, onCancel, setFullScreen
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
+
+  // ── Persist defaults right away when they weren't already saved ──────────
+  useEffect(() => {
+    if (usingDefaultsRef.current) {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      executeSave(data);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── Prevent accidental page unload ───────────────────────────────────────
   useEffect(() => {
@@ -176,8 +227,6 @@ export default function BioEditor({ initialData, onSave, onCancel, setFullScreen
   };
 
   // ── Fullscreen ───────────────────────────────────────────────────────────
-  // Pass current editor data to the controller so it can update its optimistic
-  // state.  We do NOT call onSave here — preview is not persistence.
   const handleFullscreen = () => {
     setFullScreen(data);
   };

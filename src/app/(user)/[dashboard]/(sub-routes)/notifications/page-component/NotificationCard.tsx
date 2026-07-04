@@ -2,7 +2,7 @@ import { api } from "@/lib/client/api";
 import { useUIStore } from "@/lib/stores/ui/useUIStore";
 import { formatDateString, getColorShade } from "@/lib/utilities/syncFunctions/syncs";
 import Button from "@/src/app/components/buttons/Buttons";
-import { useTheme } from "@/src/app/components/theme/ThemeContext ";
+import { useTheme } from "@/src/app/components/theme/ThemeContext";
 import { ProcessedNotification } from "@/src/app/components/types and interfaces/NotificationsInterface";
 import { useWebSocketContext } from "@/src/app/WebSocketContext";
 import React from "react";

@@ -1,7 +1,7 @@
 // portfolio-builder/components/sections/layout/LayoutEditor.tsx
 
 "use client";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import {
     LayoutData,
     getEmptyNavbarData,
@@ -27,6 +27,9 @@ interface LayoutEditorProps {
     onClose: () => void;
     availableSections: string[];
     sectionLinks: SectionLink[];
+    missingSections: string[];
+    onAddSection: (sectionType: string) => void;
+    onRemoveSection: (sectionType: string) => void;
     visible: boolean;
 }
 
@@ -37,19 +40,53 @@ export default function LayoutEditor({
     onClose,
     availableSections,
     sectionLinks,
+    missingSections,
+    onAddSection,
+    onRemoveSection,
     visible,
 }: LayoutEditorProps) {
     const [activeTab, setActiveTab] = useState<LayoutTab>("links");
     const [isSaving, setIsSaving] = useState(false);
+    const isSavingRef = useRef(false);
+    const editorRef = useRef<HTMLDivElement>(null);
 
-    const handleSave = async () => {
+    const handleSave = useCallback(async () => {
+        if (isSavingRef.current) return;
+        isSavingRef.current = true;
         setIsSaving(true);
         try {
             await onSave();
         } finally {
+            isSavingRef.current = false;
             setIsSaving(false);
         }
-    };
+    }, [onSave]);
+
+    const handleClose = useCallback(() => {
+        handleSave(); // Fire and forget - don't await
+        onClose();    // Close immediately
+    }, [handleSave, onClose]);
+
+    // Handle clicks outside the editor
+    useEffect(() => {
+        if (!visible) return;
+
+        const handleClickOutside = (event: MouseEvent) => {
+            if (editorRef.current && !editorRef.current.contains(event.target as Node)) {
+                handleClose();
+            }
+        };
+
+        // Add small delay to prevent immediate trigger on open
+        const timeoutId = setTimeout(() => {
+            document.addEventListener('mousedown', handleClickOutside);
+        }, 100);
+
+        return () => {
+            clearTimeout(timeoutId);
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [visible, handleClose]);
 
     const handleSectionLinksChange = useCallback((links: SectionLink[]) => {
         onChange({
@@ -79,7 +116,8 @@ export default function LayoutEditor({
 
     return (
         <div
-            className={`fixed inset-y-0 left-0 z-[150] w-full max-w-md lg:max-w-[33vw] xl:max-w-[28vw] bg-[var(--pb-background)]/80 border-r border-[var(--pb-border)] flex flex-col shadow-2xl pointer-events-auto ${visible ? '' : 'hidden'}`}
+            ref={editorRef}
+            className={`fixed inset-y-0 left-0 z-[150] w-full max-w-md lg:max-w-[33vw] xl:max-w-[28vw] bg-[var(--pb-background)] border-r border-[var(--pb-border)] flex flex-col shadow-2xl pointer-events-auto ${visible ? '' : 'hidden'}`}
         >
             {/* Tabs */}
             <LayoutEditorTabs activeTab={activeTab} onChange={setActiveTab} />
@@ -109,6 +147,9 @@ export default function LayoutEditor({
                         scrollBehavior={data.navbar?.scrollBehavior ?? "smooth"}
                         onChange={handleSectionLinksChange}
                         onScrollBehaviorChange={handleScrollBehaviorChange}
+                        missingSections={missingSections}
+                        onAddSection={onAddSection}
+                        onRemoveSection={onRemoveSection}
                     />
                 )}
                 {activeTab === "background" && (

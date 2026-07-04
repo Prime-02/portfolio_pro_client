@@ -63,12 +63,13 @@ export default function ProjectsRenderer({ data, username, animationKey }: Proje
     filters,
   } = data;
 
+  const safeFilters = filters ?? ({} as ProjectsData["filters"]);
   const anim: BioAnimations = { ...DEFAULT_ANIM, ...(animations ?? {}) };
   const isAnimated = anim.preset !== "none";
 
   // ── Projects fetch ──────────────────────────────────────────────────────────
-  const { rendererProjects, isLoadingProjects } = useDebouncedProjectsFetch(username, filters);
-  const sortedProjects = sortProjects(rendererProjects, filters._sortBy || "default");
+  const { rendererProjects, isLoadingProjects } = useDebouncedProjectsFetch(username, safeFilters);
+  const sortedProjects = sortProjects(rendererProjects, safeFilters._sortBy || "default");
 
   // ── Scroll / parallax refs ────────────────────────────────────────────────
   const sectionRef = useRef<HTMLElement>(null);

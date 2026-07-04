@@ -14,7 +14,7 @@ import {
   Download,
 } from "lucide-react";
 import { getColorShade } from "@/lib/utilities/syncFunctions/syncs";
-import { useTheme } from "../theme/ThemeContext ";
+import { useTheme } from "../theme/ThemeContext";
 import Button from "../buttons/Buttons";
 import RangeInput from "./RangeInput";
 import { Textinput } from "./Textinput";
@@ -457,10 +457,9 @@ export default function ImageCropper({
           {...getRootProps()}
           className={`
             border-2 border-dashed rounded-lg p-6 cursor-pointer transition-all
-            ${
-              isDragActive
-                ? "border-[var(--accent)] bg-[var(--accent)]"
-                : "border-gray-300 hover:border-[var(--accent)]"
+            ${isDragActive
+              ? "border-[var(--accent)] bg-[var(--accent)]"
+              : "border-gray-300 hover:border-[var(--accent)]"
             }
           `}
           aria-label="Upload image"
@@ -497,13 +496,12 @@ export default function ImageCropper({
               {currentImage && (
                 <span
                   onClick={() => setShowSettings(!showSettings)}
-                  className={`p-2 rounded-lg  transition-colors ${
-                    showSettings
+                  className={`p-2 rounded-lg  transition-colors ${showSettings
                       ? "bg-[var(--accent)] text-[var(--foreground)]"
                       : "cursor-pointer"
-                  }`}
+                    }`}
                   aria-label={showSettings ? "Hide settings" : "Show settings"}
-                  // aria-expanded={showSettings}
+                // aria-expanded={showSettings}
                 >
                   <Settings size={16} />
                 </span>
@@ -540,11 +538,10 @@ export default function ImageCropper({
                     <button
                       key={ratio.label}
                       onClick={() => handleAspectRatioChange(ratio.value)}
-                      className={`px-2 py-1 text-xs rounded flex items-center space-x-1 ${
-                        cropAspect === ratio.value
+                      className={`px-2 py-1 text-xs rounded flex items-center space-x-1 ${cropAspect === ratio.value
                           ? "bg-[var(--accent)] text-white"
                           : "card hover:"
-                      }`}
+                        }`}
                       aria-label={`Set aspect ratio to ${ratio.label}`}
                     >
                       <ratio.icon size={10} />
@@ -557,18 +554,16 @@ export default function ImageCropper({
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => setFlipH(!flipH)}
-                  className={`px-2 py-1 text-xs rounded ${
-                    flipH ? "bg-[var(--accent)] text-white" : "card"
-                  }`}
+                  className={`px-2 py-1 text-xs rounded ${flipH ? "bg-[var(--accent)] text-white" : "card"
+                    }`}
                   aria-label={`Flip horizontal ${flipH ? "on" : "off"}`}
                 >
                   Flip H
                 </button>
                 <button
                   onClick={() => setFlipV(!flipV)}
-                  className={`px-2 py-1 text-xs rounded ${
-                    flipV ? "bg-[var(--accent)] text-white" : "card"
-                  }`}
+                  className={`px-2 py-1 text-xs rounded ${flipV ? "bg-[var(--accent)] text-white" : "card"
+                    }`}
                   aria-label={`Flip vertical ${flipV ? "on" : "off"}`}
                 >
                   Flip V

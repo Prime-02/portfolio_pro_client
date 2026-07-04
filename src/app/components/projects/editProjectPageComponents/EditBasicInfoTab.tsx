@@ -6,6 +6,7 @@ import MarkdownEditor from "../../markdown/MarkdownEditor";
 import { TagInput } from "../createProjectPageComponents/TagInput";
 import { toast } from "../../toastify/Toastify";
 import type { PortfolioProjectUpdate } from "@/lib/stores/projects/types/project.types";
+import { TextArea } from "../../inputs/TextArea";
 
 type FormState = PortfolioProjectUpdate & { mediaSlots: Record<string, File | null> };
 
@@ -60,6 +61,14 @@ export function EditBasicInfoTab({ form, projectPlatform, set }: EditBasicInfoTa
                 onChange={(v) => set("project_category", v)}
                 maxLength={100}
             />
+
+            <TextArea
+                label="Summary"
+                value={form.project_summary ?? ""}
+                onChange={(v) => set("project_summary", v)}
+                maxLength={500}
+            />
+    
 
             <MarkdownEditor
                 label="Description"

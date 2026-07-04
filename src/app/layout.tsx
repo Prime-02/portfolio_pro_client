@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "./components/theme/ThemeContext ";
+import { ThemeProvider } from "./components/theme/ThemeContext";
 import { ToastProvider } from "./components/toastify/Toastify";
 import ClientLayout from "./ClientLayout";
 import { Suspense } from "react";
 import PortfolioProLogo from "./components/logo/PortfolioProTextLogo";
 import DynamicTitle from "./DynamicTitle";
 import { WebSocketProvider } from "./WebSocketContext";
+import { themePresets } from "@/lib/utilities/indices/Themes";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -113,7 +114,7 @@ export const metadata: Metadata = {
     "mobile-web-app-capable": "yes",
     "apple-mobile-web-app-capable": "yes",
     "apple-mobile-web-app-status-bar-style": "black-translucent",
-    "theme-color": "#737373", // Replace with your brand color
+    "theme-color": themePresets[0].accent, // Replace with your brand color
   },
 };
 

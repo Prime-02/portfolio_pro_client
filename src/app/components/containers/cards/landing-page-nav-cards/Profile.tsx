@@ -12,7 +12,7 @@ import HelpComponent from "./profile-components/HelpComponent";
 import LogOutComponent from "./LogOutComponent";
 import Link from "next/link";
 import Image from "next/image";
-import { useTheme } from "../../../theme/ThemeContext ";
+import { useTheme } from "../../../theme/ThemeContext";
 import { getColorShade, getImageSrc } from "@/lib/utilities/syncFunctions/syncs";
 import Button from "../../../buttons/Buttons";
 import { isAuthenticated } from "@/lib/client/api";

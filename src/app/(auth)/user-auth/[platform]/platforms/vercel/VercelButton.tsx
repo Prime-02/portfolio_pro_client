@@ -5,14 +5,14 @@ import { PathUtil } from "@/lib/utilities/syncFunctions/syncs";
 import Button from "@/src/app/components/buttons/Buttons";
 import Modal from "@/src/app/components/containers/modals/Modal";
 import { Textinput } from "@/src/app/components/inputs/Textinput";
-import { useTheme } from "@/src/app/components/theme/ThemeContext ";
+import { useTheme } from "@/src/app/components/theme/ThemeContext";
 import { toast } from "@/src/app/components/toastify/Toastify";
 import Image from "next/image";
 import React, { FormEvent, useState } from "react";
 
 const VercelButton = () => {
   const { isDarkMode } = useTheme();
-  const {startLoading, stopLoading, isLoading} = useUIStore()
+  const { startLoading, stopLoading, isLoading } = useUIStore()
   const {
     checkParams,
     clearQueryParam,

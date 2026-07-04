@@ -64,6 +64,14 @@ export function BasicInfoTab({ form, set, activeTab, onTabChange }: BasicInfoTab
                 maxLength={100}
             />
 
+            <TextArea
+                label="Project Summary"
+                desc="A brief summary of the project (max 500 characters)"
+                value={form.project_summary ?? ""}
+                onChange={(v) => set("project_summary", v)}
+                maxLength={500}
+            />
+
             <MarkdownEditor
                 label="Description"
                 hint="What does this project do?"

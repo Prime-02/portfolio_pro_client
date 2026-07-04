@@ -93,7 +93,7 @@ export const Textinput: React.FC<TextInputProps> = ({
           tag={tag}
           valueKey="id"
           displayKey="code"
-          className={labelStyle}
+          className={className}
           value={value as string}
         />
         {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
@@ -157,28 +157,28 @@ export const Textinput: React.FC<TextInputProps> = ({
             ${desc ? 'pr-10' : ''}
             ${className}
           `}
-          placeholder={inputProps.placeholder || label || " "}
+          placeholder={(isFocused || hasValue) ? (inputProps.placeholder || label || " ") : " "}
         />
 
-        {/* Floating label - UPDATED */}
+        {/* Floating label */}
         {label && (
           <label
             htmlFor={id}
             className={`
-      absolute left-3
-      transition-all duration-200 pointer-events-none
-      select-none
-      ${icon ? 'left-10' : ''}
-      ${isFocused || hasValue
+              absolute left-3
+              transition-all duration-200 pointer-events-none
+              select-none
+              ${icon ? 'left-10' : ''}
+              ${isFocused || hasValue
                 ? `text-xs -translate-y-2.5 px-1
-           bg-[var(--background)] text-[var(--accent)]`
-                : 'text-sm top-2.5 text-[var(--foreground)]'
+                   bg-[var(--background)] text-[var(--accent)]`
+                : 'text-sm top-2.5 text-[var(--foreground)] opacity-50'
               }
-      ${error ? 'text-red-500' : ''}
-      ${isFocused && error ? 'text-red-500' : ''}
-      ${hasValue && !isFocused && !error ? 'text-[var(--foreground)] ' : ''}
-      ${labelStyle}  // ← ADD THIS LINE
-    `}
+              ${error ? 'text-red-500' : ''}
+              ${isFocused && error ? 'text-red-500' : ''}
+              ${hasValue && !isFocused && !error ? 'text-[var(--foreground)] opacity-70' : ''}
+              ${labelStyle}
+            `}
           >
             {label}
             {required && <span className="text-red-500 ml-0.5">*</span>}
@@ -227,7 +227,7 @@ export const Textinput: React.FC<TextInputProps> = ({
       {/* Description tooltip */}
       {desc && showDesc && (
         <div
-          className="absolute z-10 mt-1 p-3 text-sm card rounded-lg shadow-lg border border-[var(--foreground)] border-opacity-20 max-w-xs"
+          className="absolute z-10 mt-1 p-3 text-sm rounded-lg shadow-lg border border-[var(--foreground)] border-opacity-20 max-w-xs bg-[var(--background)]"
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={() => setIsHovering(false)}
         >

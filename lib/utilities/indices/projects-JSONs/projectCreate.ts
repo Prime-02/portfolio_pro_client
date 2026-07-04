@@ -4,6 +4,7 @@ export const initialProjectFormData: ProjectCreateFormData = {
   // STEP 1: Basic Info
   project_name: "",
   project_description: "",
+  project_summary: "",
   project_platform: "portfolio-pro",
   project_media: null,
   project_category: "",

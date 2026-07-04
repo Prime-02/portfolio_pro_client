@@ -59,8 +59,8 @@ export default function BlogsAnimationsTab({ data, onUpdate }: BlogsAnimationsTa
         {isAnimated && (
           <>
             <SelectField label="Easing" id="animEasing" value={easing} onChange={(v) => onUpdate({ easing: v as BioAnimations["easing"] })} options={EASING_OPTIONS} />
-            <SliderField label="Duration" htmlFor="animDuration" value={duration} min={0.1} max={2} step={0.05} unit="s" onChange={(v) => onUpdate({ duration: v })} />
-            <SliderField label="Initial Delay" htmlFor="animDelay" value={delay} min={0} max={2} step={0.05} unit="s" onChange={(v) => onUpdate({ delay: v })} />
+            <SliderField label="Duration" value={duration} min={0.1} max={2} step={0.05} onChange={(v) => onUpdate({ duration: v })} />
+            <SliderField label="Initial Delay" value={delay} min={0} max={2} step={0.05} onChange={(v) => onUpdate({ delay: v })} />
           </>
         )}
       </div>
@@ -71,7 +71,7 @@ export default function BlogsAnimationsTab({ data, onUpdate }: BlogsAnimationsTa
           <h3 className={sectionTitleClass}>Stagger</h3>
           <Toggle label="Stagger child elements" description="Each blog card animates in sequence" checked={staggerChildren} onChange={(v) => onUpdate({ staggerChildren: v })} />
           {staggerChildren && (
-            <SliderField label="Delay between cards" htmlFor="staggerDelay" value={staggerDelay} min={0.02} max={0.5} step={0.01} unit="s" onChange={(v) => onUpdate({ staggerDelay: v })} />
+            <SliderField label="Delay between cards" value={staggerDelay} min={0.02} max={0.5} step={0.01} onChange={(v) => onUpdate({ staggerDelay: v })} />
           )}
         </div>
       )}
@@ -92,7 +92,7 @@ export default function BlogsAnimationsTab({ data, onUpdate }: BlogsAnimationsTa
         <h3 className={sectionTitleClass}>Parallax</h3>
         <Toggle label="Enable parallax" description="Section moves at a different speed while scrolling" checked={parallax} onChange={(v) => onUpdate({ parallax: v })} />
         {parallax && (
-          <SliderField label="Parallax intensity" htmlFor="parallaxIntensity" value={parallaxIntensity} min={5} max={100} step={5} unit="px" onChange={(v) => onUpdate({ parallaxIntensity: v })} />
+          <SliderField label="Parallax intensity" value={parallaxIntensity} min={5} max={100} step={5} onChange={(v) => onUpdate({ parallaxIntensity: v })} />
         )}
       </div>
 
@@ -102,7 +102,7 @@ export default function BlogsAnimationsTab({ data, onUpdate }: BlogsAnimationsTa
           <h3 className={sectionTitleClass}>Text Reveal</h3>
           <Toggle label="Enable text reveal" description="Headline and subheadline animate in with a typewriter-like effect" checked={textReveal} onChange={(v) => onUpdate({ textReveal: v })} />
           {textReveal && (
-            <SliderField label="Reveal delay" htmlFor="textRevealDelay" value={textRevealDelay} min={0} max={1} step={0.05} unit="s" onChange={(v) => onUpdate({ textRevealDelay: v })} />
+            <SliderField label="Reveal delay" value={textRevealDelay} min={0} max={1} step={0.05} onChange={(v) => onUpdate({ textRevealDelay: v })} />
           )}
         </div>
       )}
@@ -117,7 +117,7 @@ export default function BlogsAnimationsTab({ data, onUpdate }: BlogsAnimationsTa
           { value: "glow", label: "Glow shadow" },
         ]} />
         {hoverEffect === "scale" && (
-          <SliderField label="Scale amount" htmlFor="hoverScale" value={hoverScale} min={1.01} max={1.1} step={0.01} onChange={(v) => onUpdate({ hoverScale: v })} />
+          <SliderField label="Scale amount" value={hoverScale} min={1.01} max={1.1} step={0.01} onChange={(v) => onUpdate({ hoverScale: v })} />
         )}
       </div>
     </div>

@@ -9,7 +9,7 @@ const DEBOUNCE_MS = 400;
 
 export function useDebouncedExperiencesFetch(
   username: string,
-  filters: ExperienceFilterConfig,
+  filters?: ExperienceFilterConfig,
 ) {
   // Pull only the action — NOT userPublicExperiences.
   // This prevents executeFetch from recreating every time the store updates.
@@ -25,8 +25,8 @@ export function useDebouncedExperiencesFetch(
 
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
-  const latestFiltersRef = useRef(filters);
-  latestFiltersRef.current = filters;
+  const latestFiltersRef = useRef(filters ?? ({} as ExperienceFilterConfig));
+  latestFiltersRef.current = filters ?? ({} as ExperienceFilterConfig);
 
   const executeFetch = useCallback(() => {
     if (!username) return;
@@ -42,13 +42,13 @@ export function useDebouncedExperiencesFetch(
     setIsStale(false);
 
     fetchUserExperiencesByUsername(username, {
-      is_featured: latestFiltersRef.current.is_featured,
-      is_current: latestFiltersRef.current.is_current,
-      employment_type: latestFiltersRef.current.employment_type,
-      location_type: latestFiltersRef.current.location_type,
-      industry: latestFiltersRef.current.industry,
-      ids: latestFiltersRef.current.ids,
-      merge_filters: latestFiltersRef.current.merge_filters,
+      is_featured: latestFiltersRef.current.is_featured ?? undefined,
+      is_current: latestFiltersRef.current.is_current ?? undefined,
+      employment_type: latestFiltersRef.current.employment_type ?? undefined,
+      location_type: latestFiltersRef.current.location_type ?? undefined,
+      industry: latestFiltersRef.current.industry ?? undefined,
+      ids: latestFiltersRef.current.ids ?? undefined,
+      merge_filters: latestFiltersRef.current.merge_filters ?? undefined,
     })
       .then(() => {
         if (!controller.signal.aborted) {
@@ -93,14 +93,14 @@ export function useDebouncedExperiencesFetch(
     };
   }, [
     username,
-    filters.is_featured,
-    filters.is_current,
-    filters.employment_type,
-    filters.location_type,
-    filters.industry,
+    filters?.is_featured,
+    filters?.is_current,
+    filters?.employment_type,
+    filters?.location_type,
+    filters?.industry,
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    filters.ids?.join(","),
-    filters.merge_filters,
+    filters?.ids?.join(","),
+    filters?.merge_filters,
     executeFetch,
   ]);
 

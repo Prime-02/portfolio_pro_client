@@ -576,7 +576,7 @@ export interface SectionBackground {
 
   // Threads
   threadsAmplitude?: number;
-  threadsColor?: number[];
+  threadsColor?: string;
   threadsDistance?: number;
   threadsEnableMouseInteraction?: boolean;
 

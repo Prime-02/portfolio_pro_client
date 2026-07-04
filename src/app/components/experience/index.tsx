@@ -7,9 +7,9 @@ import type { Experience } from "@/lib/stores/experiences/useExperience";
 import { LoadingSkeleton } from "./LoadingSkeleton";
 import { PublicProfileView } from "./PublicProfileView";
 import { OwnProfileView } from "./OwnProfileView";
-import { useTheme } from "../theme/ThemeContext ";
+import { useTheme } from "../theme/ThemeContext";
 
-export default function ExperiencePage() {
+export default function ExperiencePage({ miniView = false }: { miniView?: boolean }) {
     const {
         myExperiences,
         myExperiencesLoading,
@@ -82,6 +82,7 @@ export default function ExperiencePage() {
             <PublicProfileView
                 username={publicUsername}
                 experiences={displayExperiences}
+                miniView={miniView}
                 isLoading={isLoading}
                 error={error}
                 onClearError={() => setError(null)}
@@ -93,6 +94,7 @@ export default function ExperiencePage() {
     return (
         <OwnProfileView
             experiences={displayExperiences}
+            miniView={miniView}
             isLoading={isLoading}
             error={error}
             onClearError={() => setError(null)}

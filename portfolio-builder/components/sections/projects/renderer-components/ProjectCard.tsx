@@ -163,8 +163,8 @@ export default function ProjectCard({ project, config, cardSize, fullWidth = tru
                     <p className={`${nameText} font-medium text-[var(--pb-text-primary)] truncate`}>
                         {project.project_name}
                     </p>
-                    {showDescription && project.project_description && (
-                        <MarkdownText className="text-xs text-[var(--pb-text-muted)] truncate">{project.project_description}</MarkdownText>
+                    {showDescription && project.project_summary && (
+                        <p className="text-xs text-[var(--pb-text-muted)] truncate">{project.project_summary}</p>
                     )}
                     <div className="flex items-center gap-2 mt-1 flex-wrap">
                         {showCategory && <CategoryBadge category={project.project_category || undefined} display={categoryDisplay} accentColor={accentColor} />}
@@ -224,10 +224,10 @@ export default function ProjectCard({ project, config, cardSize, fullWidth = tru
                     </div>
                 )}
                 <div className={pad}>
-                    {showDescription && project.project_description && (
-                        <MarkdownText className="text-sm text-[var(--pb-text-secondary)] leading-relaxed line-clamp-3 mb-3">
-                            {project.project_description}
-                        </MarkdownText>
+                    {showDescription && project.project_summary && (
+                        <p className="text-sm text-[var(--pb-text-secondary)] leading-relaxed line-clamp-3 mb-3">
+                            {project.project_summary}
+                        </p>
                     )}
                     <div className="flex flex-wrap items-center gap-2">
                         {showDates && project.start_date && (
@@ -310,9 +310,9 @@ export default function ProjectCard({ project, config, cardSize, fullWidth = tru
                     </div>
                 </div>
 
-                {showDescription && project.project_description && (
+                {showDescription && project.project_summary && (
                     <MarkdownText className="text-sm text-[var(--pb-text-secondary)] leading-relaxed line-clamp-3">
-                        {project.project_description}
+                        {project.project_summary}
                     </MarkdownText>
                 )}
 
@@ -397,8 +397,8 @@ export default function ProjectCard({ project, config, cardSize, fullWidth = tru
                 {showPlatform && <PlatformBadge platform={project.project_platform} display={platformDisplay} accentColor={accentColor} />}
             </div>
 
-            {showDescription && project.project_description && (
-                <MarkdownText className="text-sm text-[var(--pb-text-secondary)] line-clamp-2">{project.project_description}</MarkdownText>
+            {showDescription && project.project_summary && (
+                <p className="text-sm text-[var(--pb-text-secondary)] line-clamp-2">{project.project_summary}</p>
             )}
 
             <div className="flex items-center justify-between pt-1 gap-2">

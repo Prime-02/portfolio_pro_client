@@ -5,11 +5,11 @@ import { useContentStore } from "@/lib/stores/contents/useContentStore";
 import { LoadingSkeletonBlogs } from "./LoadingSkeletonBlogs";
 import { OwnBlogsView } from "./OwnBlogsView";
 import { PublicBlogsView } from "./PublicBlogsView";
-import { useTheme } from "../theme/ThemeContext ";
+import { useTheme } from "../theme/ThemeContext";
 
 const PAGE_SIZE = 20;
 
-export default function BlogsPage() {
+export default function BlogsPage({ miniView = false }: { miniView?: boolean }) {
   const {
     items,
     total,
@@ -132,6 +132,7 @@ export default function BlogsPage() {
       <PublicBlogsView
         username={publicUsername}
         blogs={publicItems}
+        miniView={miniView}
         totalBlogs={publicTotal}
         isLoading={isLoading}
         hasMore={publicHasNext}
@@ -145,6 +146,7 @@ export default function BlogsPage() {
   return (
     <OwnBlogsView
       blogs={items}
+      miniView={miniView}
       totalBlogs={total}
       isLoading={isLoading}
       hasMore={has_next}

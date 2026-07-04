@@ -4,6 +4,8 @@ import ColorPicker from "../inputs/ColorPicker";
 import type { ThemeVariant } from "../types and interfaces/loaderTypes";
 import { ThemePreset } from "../../(user)/[dashboard]/(sub-routes)/settings/preference/tabs/Themes";
 import { hexToRgb } from "@/lib/utilities/syncFunctions/syncs";
+import { useTheme } from "../theme/ThemeContext";
+
 
 export interface PortfolioThemeValues {
   themeVariant: ThemeVariant;
@@ -25,6 +27,9 @@ const PortfolioThemePicker = ({
   onChange,
   description = "Customize the appearance of your portfolio. Defaults to your current theme settings.",
 }: PortfolioThemePickerProps) => {
+  // Get current app theme context for defaults
+  const { lightTheme, darkTheme, accentColor, themeVariant: appThemeVariant } = useTheme();
+
   // Detect system dark mode for "system" variant
   const [systemDark, setSystemDark] = useState(false);
 
@@ -35,6 +40,16 @@ const PortfolioThemePicker = ({
     mq.addEventListener("change", handler);
     return () => mq.removeEventListener("change", handler);
   }, []);
+
+  // Get effective default values from app theme context
+  const getDefaultValues = (): PortfolioThemeValues => ({
+    themeVariant: appThemeVariant,
+    lightBg: lightTheme.background,
+    lightFg: lightTheme.foreground,
+    darkBg: darkTheme.background,
+    darkFg: darkTheme.foreground,
+    accent: accentColor.color,
+  });
 
   // Resolve which bg/fg to use for the component's own chrome
   const isDark =
@@ -72,6 +87,20 @@ const PortfolioThemePicker = ({
     });
   };
 
+  // Reset to app theme defaults
+  const handleResetToDefaults = () => {
+    onChange(getDefaultValues());
+  };
+
+  // Determine if current values match app theme defaults
+  const defaults = getDefaultValues();
+  const isUsingDefaults =
+    values.lightBg === defaults.lightBg &&
+    values.lightFg === defaults.lightFg &&
+    values.darkBg === defaults.darkBg &&
+    values.darkFg === defaults.darkFg &&
+    values.accent === defaults.accent;
+
   const activePresetName = themePresets.find((preset: ThemePreset) => {
     const p = preset as ThemePreset & { themeVariant?: ThemeVariant };
     return (
@@ -94,12 +123,29 @@ const PortfolioThemePicker = ({
     >
       {/* Header */}
       <div>
-        <h3
-          className="text-sm font-medium mb-1"
-          style={{ color: chromeFg }}
-        >
-          Portfolio Theme
-        </h3>
+        <div className="flex items-center justify-between mb-1">
+          <h3
+            className="text-sm font-medium"
+            style={{ color: chromeFg }}
+          >
+            Portfolio Theme
+          </h3>
+          <button
+            type="button"
+            onClick={handleResetToDefaults}
+            disabled={isUsingDefaults}
+            className="text-xs px-2 py-1 rounded-md transition-all"
+            style={{
+              backgroundColor: isUsingDefaults ? 'transparent' : `${chromeAccent}20`,
+              color: isUsingDefaults ? chromeFg : chromeAccent,
+              opacity: isUsingDefaults ? 0.4 : 1,
+              border: `1px solid ${isUsingDefaults ? 'transparent' : chromeAccent}40`,
+              cursor: isUsingDefaults ? 'not-allowed' : 'pointer',
+            }}
+          >
+            {isUsingDefaults ? 'Using App Theme' : 'Reset to App Theme'}
+          </button>
+        </div>
         <p style={{ color: chromeFg, opacity: 0.5 }} className="text-xs">
           {description}
         </p>

@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react"
 import type { PortfolioCreate } from "@/portfolio-builder/store/usePortfolioStore"
 import Modal from "../containers/modals/Modal"
+import Button from "../buttons/Buttons"
+import { Textinput } from "../inputs/Textinput"
+import { TextArea } from "../inputs/TextArea"
 
 interface CreatePortfolioModalProps {
   isOpen: boolean
@@ -60,32 +63,26 @@ const CreatePortfolioModal = ({
     <Modal title="Create New Portfolio" isOpen={isOpen} onClose={handleClose}>
       <form onSubmit={handleSubmit} className="space-y-4 mt-4">
         <div>
-          <label className="block text-sm font-medium text-[var(--foreground)]/80 mb-1.5">
-            Name <span className="text-red-500">*</span>
-          </label>
-          <input
+          <Textinput
+            label="Name"
+            required
             type="text"
             value={name}
-            onChange={(e) => {
-              setName(e.target.value)
+            onChange={(val) => {
+              setName(val)
               if (errors.name) setErrors((prev) => ({ ...prev, name: "" }))
             }}
             placeholder="My Awesome Portfolio"
-            className="w-full px-4 py-2.5 bg-[var(--background)] border border-[var(--foreground)]/20 rounded-lg text-[var(--foreground)] placeholder:text-[var(--foreground)]/30 focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all"
           />
           {errors.name && <p className="mt-1 text-sm text-red-500">{errors.name}</p>}
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-[var(--foreground)]/80 mb-1.5">
-            Description
-          </label>
-          <textarea
+          <TextArea
+            label="Description"
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={(val) => setDescription(val)}
             placeholder="Brief description of your portfolio..."
-            rows={3}
-            className="w-full px-4 py-2.5 bg-[var(--background)] border border-[var(--foreground)]/20 rounded-lg text-[var(--foreground)] placeholder:text-[var(--foreground)]/30 focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all resize-none"
           />
         </div>
 
@@ -108,20 +105,22 @@ const CreatePortfolioModal = ({
         </div>
 
         <div className="flex gap-3 pt-2">
-          <button
-            type="button"
+          <Button
+            variant="outline"
+            size="md"
+            text="Cancel"
             onClick={handleClose}
-            className="flex-1 px-4 py-2.5 text-sm font-medium border border-[var(--foreground)]/20 text-[var(--foreground)] rounded-lg hover:bg-[var(--foreground)]/5 transition-colors"
-          >
-            Cancel
-          </button>
-          <button
+            className="flex-1"
+          />
+          <Button
             type="submit"
+            variant="primary"
+            size="md"
+            text={isLoading ? "Creating..." : "Create Portfolio"}
             disabled={isLoading}
-            className="flex-1 px-4 py-2.5 text-sm font-medium bg-[var(--accent)] text-[var(--background)] rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isLoading ? "Creating..." : "Create Portfolio"}
-          </button>
+            loading={isLoading}
+            className="flex-1"
+          />
         </div>
       </form>
     </Modal>
@@ -129,3 +128,4 @@ const CreatePortfolioModal = ({
 }
 
 export default CreatePortfolioModal
+

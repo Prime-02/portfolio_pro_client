@@ -18,7 +18,7 @@ import { EducationSectionController } from "./sections/education";
 import { EducationData } from "../types/education";
 import { CertificationSectionController } from "./sections/certification";
 import { CertificationData } from "../types/certification";
-import { useTheme } from "@/src/app/components/theme/ThemeContext ";
+import { useTheme } from "@/src/app/components/theme/ThemeContext";
 import { ProjectsData } from "../types/projects";
 import { ProjectsSectionController } from "./sections/projects";
 import { BlogsData } from "../types/blogs";
@@ -92,8 +92,17 @@ function setSectionData<T>(
   return { ...layout, sections };
 }
 
+function removeSectionData(
+  layout: Record<string, unknown> | null,
+  sectionType: string
+): Record<string, unknown> {
+  const currentLayout = layout ? (layout as unknown as PortfolioLayout) : { sections: [] };
+  const sections = (currentLayout.sections || []).filter((s) => s.type !== sectionType);
+  return { ...layout, sections };
+}
+
 export default function PortfolioMain({ portfolioId, viewOnly }: PortfolioMainProps) {
-  const { currentPortfolio, error, fetchPortfolioById, updatePortfolio } =
+  const { currentPortfolio, error, fetchPortfolioById, updatePortfolio, updateSectionsLocally } =
     usePortfolioStore();
   const { profileContext } = useTheme();
 
@@ -121,6 +130,12 @@ export default function PortfolioMain({ portfolioId, viewOnly }: PortfolioMainPr
     const types = sections.map((s) => s.type);
     return ALL_SECTION_TYPES.filter((t) => types.includes(t));
   }, [layout]);
+
+  // ── Sections not yet added to the portfolio ───────────────────────────────
+  const missingSections = useMemo(
+    () => ALL_SECTION_TYPES.filter((t) => !availableSections.includes(t)),
+    [availableSections]
+  );
 
   // ── Section links ─────────────────────────────────────────────────────────
   const sectionLinks = useMemo(() => {
@@ -190,6 +205,22 @@ export default function PortfolioMain({ portfolioId, viewOnly }: PortfolioMainPr
       },
     });
   }, [layout, portfolioId, updatePortfolio]);
+
+  // ── Add section ───────────────────────────────────────────────────────────
+  // Seeds an empty data object for the new section type. Individual
+  // *SectionController components are expected to render sensibly against
+  // an empty/null data shape (same contract they already have on first load).
+  const handleAddSection = useCallback((sectionType: string) => {
+    if (!currentPortfolio || availableSections.includes(sectionType)) return;
+    const nextLayout = setSectionData(layout, sectionType, {}) as unknown as PortfolioLayout;
+    updateSectionsLocally(currentPortfolio.slug, nextLayout.sections as unknown as Record<string, unknown>[]);
+  }, [currentPortfolio, layout, availableSections, updateSectionsLocally]);
+
+  const handleRemoveSection = useCallback((sectionType: string) => {
+    if (!currentPortfolio) return;
+    const nextLayout = removeSectionData(layout, sectionType) as unknown as PortfolioLayout;
+    updateSectionsLocally(currentPortfolio.slug, nextLayout.sections as unknown as Record<string, unknown>[]);
+  }, [currentPortfolio, layout, updateSectionsLocally]);
 
   const currentUsername = profileContext.username;
 
@@ -286,6 +317,9 @@ export default function PortfolioMain({ portfolioId, viewOnly }: PortfolioMainPr
       viewOnly={viewOnly} onSave={handleLayoutSave}
       availableSections={availableSections}
       sectionLinks={sectionLinks}
+      missingSections={missingSections}
+      onAddSection={handleAddSection}
+      onRemoveSection={handleRemoveSection}
     >
       {ALL_SECTION_TYPES.map((sectionType) => renderSection(sectionType))}
     </LayoutController>

@@ -4,6 +4,8 @@
 
 import { useEffect, useCallback } from "react";
 import { usePortfolioStore } from "@/portfolio-builder/store/usePortfolioStore";
+import { themePresets } from "@/lib/utilities/indices/Themes";
+import { useTheme } from "@/src/app/components/theme/ThemeContext";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -88,25 +90,40 @@ export function getURLThemeOverride(): "light" | "dark" | null {
  * stored themeVariant and the system preference — this is how the
  * ?theme= URL param forces a deterministic render for screenshot tools.
  *
+ * `fallbackTheme` provides default colors when no portfolio theme data exists.
+ * This should be the current app theme to maintain visual consistency.
+ *
  * Exported so other modules (e.g. ThemeTab) can inject CSS directly.
  */
 export function resolveTheme(
   data: PortfolioThemeData | null,
   override: "light" | "dark" | null = null,
+  fallbackTheme?: {
+    background: string;
+    foreground: string;
+    accent: string;
+    isDark: boolean;
+  },
 ): ResolvedTheme {
   if (!data) {
+    // Use provided fallback theme if available
+    if (fallbackTheme) {
+      return fallbackTheme;
+    }
+
+    // Absolute last resort hard-coded defaults
     if (override === "light") {
       return {
         background: "#ffffff",
         foreground: "#0a0a0a",
-        accent: "#737373",
+        accent: themePresets[0].accent,
         isDark: false,
       };
     }
     return {
       background: "#0a0a0a",
       foreground: "#ededed",
-      accent: "#737373",
+      accent: themePresets[0].accent,
       isDark: true,
     };
   }
@@ -145,7 +162,7 @@ export function resolveTheme(
 }
 
 // ---------------------------------------------------------------------------
-// Hook — reads directly from the store, no props needed.
+// Hook — reads directly from the store and ThemeContext, no props needed.
 // CSS is injected whenever the store's theme changes, including local-only
 // updates from ThemeToggle / ThemeTab before the user hits "Save Layout".
 // ---------------------------------------------------------------------------
@@ -158,20 +175,31 @@ export function usePortfolioTheme(): ResolvedTheme {
       null,
   );
 
+  // Get current app theme from ThemeContext for fallback values
+  const { theme, accentColor, isDarkMode } = useTheme();
+
   // Read once — the URL doesn't change under a screenshot tool's navigation,
   // and if a person deep-links with ?theme=, honoring it for the life of the
   // page (not just first paint) is the desired behavior.
   const urlOverride = getURLThemeOverride();
 
   const injectAndResolve = useCallback(() => {
-    const resolved = resolveTheme(themeData, urlOverride);
+    // Create fallback theme from current app theme
+    const fallbackTheme = {
+      background: theme.background,
+      foreground: theme.foreground,
+      accent: accentColor.color,
+      isDark: isDarkMode,
+    };
+
+    const resolved = resolveTheme(themeData, urlOverride, fallbackTheme);
     injectThemeCSS(resolved);
     return resolved;
-  }, [themeData, urlOverride]);
+  }, [themeData, urlOverride, theme, accentColor, isDarkMode]);
 
   // Re-inject whenever themeData changes (covers toggle + tab changes).
   useEffect(() => {
-    injectAndResolve();
+    const resolved = injectAndResolve();
 
     // Keep CSS in sync when the OS switches light/dark while variant === "system".
     // Skipped entirely when a URL override is present — screenshot tools want
@@ -188,5 +216,11 @@ export function usePortfolioTheme(): ResolvedTheme {
     }
   }, [themeData, urlOverride, injectAndResolve]);
 
-  return resolveTheme(themeData, urlOverride);
+  // Return the resolved theme directly, using the app theme as fallback
+  return resolveTheme(themeData, urlOverride, {
+    background: theme.background,
+    foreground: theme.foreground,
+    accent: accentColor.color,
+    isDark: isDarkMode,
+  });
 }

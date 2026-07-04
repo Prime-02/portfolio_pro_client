@@ -4,7 +4,6 @@
 
 import { useEffect, useRef } from "react";
 import { ExperienceData, ExperienceFilterConfig } from "@/portfolio-builder/types/experience";
-import { Textinput } from "@/src/app/components/inputs/Textinput";
 import Dropdown from "@/src/app/components/inputs/DynamicDropdown";
 import { sectionClass, sectionTitleClass } from "../../bio/editor-components/styles";
 import Toggle from "../../bio/editor-components/Toggle";
@@ -12,6 +11,7 @@ import Link from "next/link";
 import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 import { RefreshCcwDot } from "lucide-react";
 import { useExperiencesStore } from "@/lib/stores/experiences/useExperience";
+import { PBDropdown } from "@/portfolio-builder/components/shared/ui/inputs";
 
 // NOTE: Replace with your actual experience store hook
 // import { useExperience } from "@/lib/stores/experience/useExperience";
@@ -36,7 +36,7 @@ export default function ExperienceFilterTab({ data, onUpdate }: ExperienceFilter
   // const { experiences, fetchAllExperiences, isLoading } = useExperience();
   const { userInfo } = useUserSettings();
   const { myExperiences: allExperiences, fetchMyExperiences } = useExperiencesStore()
-  const filters = data.filters;
+  const filters = data.filters ?? ({} as ExperienceFilterConfig)
 
   const isLoading = false;
 
@@ -154,7 +154,7 @@ export default function ExperienceFilterTab({ data, onUpdate }: ExperienceFilter
 
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Dropdown
+            <PBDropdown
               id="filter-industry"
               label="Industry"
               value={filters.industry || ""}
@@ -163,7 +163,7 @@ export default function ExperienceFilterTab({ data, onUpdate }: ExperienceFilter
               placeholder="All industries"
               clearable
             />
-            <Dropdown
+            <PBDropdown
               id="filter-employment-type"
               label="Employment Type"
               value={filters.employment_type || ""}
@@ -175,7 +175,7 @@ export default function ExperienceFilterTab({ data, onUpdate }: ExperienceFilter
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Dropdown
+            <PBDropdown
               id="filter-location-type"
               label="Location Type"
               value={filters.location_type || ""}

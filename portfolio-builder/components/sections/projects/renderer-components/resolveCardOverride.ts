@@ -37,7 +37,7 @@ export function resolveCardOverride(
   overrides: ProjectsData["cardOverrides"],
   defaults: Defaults,
 ): CardConfig {
-  for (const override of overrides) {
+  for (const override of overrides ?? []) {
     const target = override.target;
     let matches = false;
 

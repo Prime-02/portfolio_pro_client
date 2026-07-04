@@ -1,7 +1,7 @@
 // portfolio-builder/components/shared/background/editor/BackgroundTab.tsx
 
 import type { SectionBackground, SectionBackgroundType } from "../types/sectionBackground";
-import { PBDropdown } from "../../ui/inputs";
+import { PBDropdown, PBRangeInput } from "../../ui/inputs";
 import {
   getAllBackgroundModules,
   getBackgroundModule,
@@ -246,19 +246,14 @@ function OverlayFields({
       </div>
       <div>
         <div className="flex justify-between mb-1">
-          <label className="text-xs text-[var(--pb-text-muted)]">Overlay Opacity</label>
-          <span className="text-xs text-[var(--pb-text-muted)] tabular-nums">
-            {bg.overlayOpacity ?? 0}%
-          </span>
         </div>
-        <input
-          type="range"
+        <PBRangeInput
+          label="Overlay Opacity"
           min={0}
           max={100}
           step={5}
           value={bg.overlayOpacity ?? 0}
-          onChange={(e) => onUpdate({ overlayOpacity: Number(e.target.value) })}
-          className="w-full h-1.5 appearance-none bg-[var(--pb-foreground-20)] rounded-full accent-[#ffffff] cursor-pointer"
+          onChange={(e) => onUpdate({ overlayOpacity: Number(e) })}
         />
       </div>
     </div>

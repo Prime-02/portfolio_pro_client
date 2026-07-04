@@ -2,6 +2,8 @@
 "use client";
 
 import { Quote, PenLine, Share2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useTheme } from "../theme/ThemeContext";
 import Button from "../buttons/Buttons";
 import { Testimonial, TestimonialStats } from "@/lib/stores/testimonials/useTestimonial";
 import { StatsBar } from "./StatsBar";
@@ -36,6 +38,7 @@ interface OwnProfileViewProps {
     onNavigateToWrite: () => void;
     onNavigateToEdit: (testimonial: Testimonial) => void;
     onApproveTestimonial: (testimonial: Testimonial) => Promise<void>;
+    miniView?: boolean;
 }
 
 export function OwnProfileView({
@@ -61,13 +64,19 @@ export function OwnProfileView({
     onNavigateToWrite,
     onNavigateToEdit,
     onApproveTestimonial,
+    miniView = false,
 }: OwnProfileViewProps) {
+    const router = useRouter();
+    const { profileContext } = useTheme();
+    const usernamePath = profileContext?.username ? `/${profileContext.username}` : "";
     const isReceivedTab = activeTab === "received";
     const currentTestimonials = isReceivedTab ? receivedTestimonials : authoredTestimonials;
     const currentTotal = isReceivedTab ? totalReceived : totalAuthored;
     const currentLoading = isReceivedTab ? isLoadingReceived : isLoadingAuthored;
     const currentHasMore = isReceivedTab ? hasMoreReceived : hasMoreAuthored;
     const currentOnLoadMore = isReceivedTab ? onLoadMoreReceived : onLoadMoreAuthored;
+    const displayedTestimonials = miniView ? currentTestimonials.slice(0, 3) : currentTestimonials;
+    const showSeeAll = miniView && currentTestimonials.length > 0;
 
     // Show loading skeleton only on initial load (no data yet)
     if (isLoadingReceived && receivedTestimonials.length === 0 && isReceivedTab) {
@@ -78,7 +87,7 @@ export function OwnProfileView({
     const pendingCount = receivedTestimonials.filter((t) => !t.is_approved).length;
 
     return (
-        <div className="min-h-screen p-6 md:p-8 lg:p-10 max-w-6xl mx-auto">
+        <div className={miniView ? "p-6 md:p-8 lg:p-10 max-w-6xl mx-auto" : "min-h-screen p-6 md:p-8 lg:p-10 max-w-6xl mx-auto"}>
             <PageHeader
                 icon={<Quote className="w-6 h-6 text-[var(--accent)]" />}
                 title="My Testimonials"
@@ -87,7 +96,7 @@ export function OwnProfileView({
                         ? `${totalReceived} testimonial${totalReceived !== 1 ? "s" : ""} received${pendingCount > 0 ? ` (${pendingCount} pending approval)` : ""}`
                         : `${totalAuthored} testimonial${totalAuthored !== 1 ? "s" : ""} written by you`
                 }
-                action={
+                action={!miniView ? (
                     <div className="flex items-center gap-x-2">
                         <Button
                             onClick={handleShareProfile}
@@ -103,7 +112,7 @@ export function OwnProfileView({
                             icon={<PenLine className="w-4 h-4" />}
                         />
                     </div>
-                }
+                ) : undefined}
             />
 
             {!isLoadingReceived && isReceivedTab && <StatsBar stats={stats} />}
@@ -139,7 +148,7 @@ export function OwnProfileView({
 
             {/* Testimonials Grid with Infinite Scroll */}
             <TestimonialsGrid
-                testimonials={currentTestimonials}
+                testimonials={displayedTestimonials}
                 isLoading={currentLoading && currentTestimonials.length === 0}
                 onEdit={onNavigateToEdit}
                 onDelete={onDeleteTestimonialChange}
@@ -165,8 +174,19 @@ export function OwnProfileView({
                 isOwner={true}
             />
 
+            {showSeeAll && (
+                <div className="mt-6 flex justify-end">
+                    <button
+                        onClick={() => router.push(usernamePath ? `/${usernamePath}/testimonials` : "/testimonials")}
+                        className="rounded-full border border-[var(--accent)]/30 px-4 py-2 text-sm font-medium text-[var(--accent)] transition hover:bg-[var(--accent)]/10"
+                    >
+                        See all
+                    </button>
+                </div>
+            )}
+
             {/* Infinite Scroll Trigger */}
-            {currentTestimonials.length > 0 && (
+            {!miniView && currentTestimonials.length > 0 && (
                 <InfiniteScrollTrigger
                     hasMore={currentHasMore}
                     isLoading={currentLoading}

@@ -11,6 +11,7 @@ import { useProjectStore } from "@/lib/stores/projects/useProjectsStore";
 import Link from "next/link";
 import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 import { RefreshCcwDot } from "lucide-react";
+import { PBDropdown } from "@/portfolio-builder/components/shared/ui/inputs";
 
 interface ProjectsFilterTabProps {
   data: ProjectsData;
@@ -20,7 +21,7 @@ interface ProjectsFilterTabProps {
 export default function ProjectsFilterTab({ data, onUpdate }: ProjectsFilterTabProps) {
   const { projects, fetchMyProjects, loading } = useProjectStore();
   const { userInfo } = useUserSettings();
-  const filters = data.filters;
+  const filters = data.filters ?? ({} as ProjectsFilterConfig)
 
   // `projects` is the authenticated user's own unfiltered list
   const allProjects = projects;
@@ -141,7 +142,7 @@ export default function ProjectsFilterTab({ data, onUpdate }: ProjectsFilterTabP
 
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Dropdown
+            <PBDropdown
               id="filter-category"
               label="Category"
               value={filters.project_category || ""}
@@ -150,7 +151,7 @@ export default function ProjectsFilterTab({ data, onUpdate }: ProjectsFilterTabP
               placeholder="All categories"
               clearable
             />
-            <Dropdown
+            <PBDropdown
               id="filter-platform"
               label="Platform"
               value={filters.project_platform || ""}
@@ -162,7 +163,7 @@ export default function ProjectsFilterTab({ data, onUpdate }: ProjectsFilterTabP
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Dropdown
+            <PBDropdown
               id="filter-status"
               label="Status"
               value={filters.project_status || ""}

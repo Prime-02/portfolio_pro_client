@@ -1,0 +1,168 @@
+{
+    "sections": [
+        {
+            "data": {
+                "name": "Chidera Gospel Utojiuba",
+                "title": "Software Developer",
+                "greeting": "Bringing companies to the world stage.",
+                "socialLinks": [
+                    {
+                        "url": "utojiubachidera2@gmail.com",
+                        "platformId": "Email"
+                    },
+                    {
+                        "url": "https://www.linkedin.com/in/chidera-utojiuba-82933a31b/",
+                        "platformId": "LinkedIn"
+                    },
+                    {
+                        "url": "08023047838",
+                        "platformId": "Phone"
+                    },
+                    {
+                        "url": "https://github.com/Prime-02",
+                        "platformId": "GitHub"
+                    },
+                    {
+                        "url": "https://api.whatsapp.com/send?phone=2348023047638&text=Hello%2C%20came%20across%20your%20portfolio.%20Impressed%20by%20your%20software%20engineering%20work.%20Would%20love%20to%20explore%20working%20together.",
+                        "platformId": "WhatsApp"
+                    }
+                ]
+            },
+            "type": "hero"
+        },
+        {
+            "data": {
+                "bio": "# Observant. Calm Under Pressure. Quick With Solutions. Business-Minded.\n\nI build software that works, ship it fast, and make sure it stays maintainable. I don't just write code—I solve problems, collaborate well with cross-functional teams, and take ownership from design to deployment. I learn quickly, adapt to new stacks when needed, and care deeply about the impact my work has on users and the business.",
+                "status": {
+                    "type": "open-to-work"
+                },
+                "headline": "Who I Am",
+                "location": "Ikorodu, Lagos, Nigeria",
+                "languages": [
+                    {
+                        "language": "English",
+                        "proficiency": "fluent"
+                    }
+                ],
+                "yearsExperience": 5
+            },
+            "type": "bio"
+        },
+        {
+            "data": {
+                "filters": {
+                    "is_major": true,
+                    "merge_filters": true
+                },
+                "headline": "My Technical Skills",
+                "subheadline": "Technologies and tools I've mastered over 5 years of development",
+                "showCategory": true,
+                "showDifficulty": false,
+                "showDescription": true,
+                "showProficiency": true
+            },
+            "type": "skills"
+        },
+        {
+            "data": {
+                "filters": {
+                    "_sortBy": "date-desc"
+                },
+                "headline": "Work Experience",
+                "subheadline": "My relevant work experience over the course of 5 years",
+                "showSkills": true,
+                "showDuration": true,
+                "showJobTitle": true,
+                "showCompanyLogo": true,
+                "showCompanyName": true,
+                "showDescription": true,
+                "showLocationType": true,
+                "showEmploymentType": true
+            },
+            "type": "experience"
+        },
+        {
+            "data": {
+                "columns": 2,
+                "filters": {
+                    "merge_filters": true
+                },
+                "headline": "Education",
+                "subheadline": "My academic background and qualifications",
+                "showDegree": true,
+                "showDuration": true,
+                "showDescription": true,
+                "showInstitution": true,
+                "showFieldOfStudy": true,
+                "showInstitutionLogo": true,
+                "showCurrentIndicator": true
+            },
+            "type": "education"
+        },
+        {
+            "data": {
+                "columns": 2,
+                "filters": {},
+                "headline": "Certifications",
+                "showIssueDate": true,
+                "showDescription": true,
+                "showExpirationDate": true,
+                "showCertificateLink": true,
+                "showCertificationName": true,
+                "showValidityIndicator": true,
+                "showVerificationBadge": true,
+                "showIssuingOrganization": true
+            },
+            "type": "certification"
+        },
+        {
+            "data": {
+                "columns": 3,
+                "filters": {},
+                "headline": "Featured Projects",
+                "showUrl": true,
+                "showImage": true,
+                "showStatus": true,
+                "showCategory": true,
+                "showPlatform": true,
+                "showDescription": true,
+                "showContribution": true
+            },
+            "type": "projects"
+        },
+        {
+            "data": {
+                "columns": 2,
+                "filters": {},
+                "headline": "Latest Writings",
+                "subheadline": "My thoughts, stories and ideas",
+                "showUrl": true,
+                "showTags": true,
+                "showImage": true,
+                "showTitle": true,
+                "showAuthor": true,
+                "showStatus": true,
+                "showExcerpt": true,
+                "showCategory": true,
+                "showReadTime": true
+            },
+            "type": "blogs"
+        },
+        {
+            "data": {
+                "columns": 3,
+                "filters": {},
+                "headline": "What People Say",
+                "subheadline": "Testimonials from clients and colleagues",
+                "showAvatar": true,
+                "showRating": true,
+                "showContent": true,
+                "showAuthorName": true,
+                "showAuthorTitle": true,
+                "showAuthorCompany": true,
+                "showFeaturedBadge": true
+            },
+            "type": "testimonials"
+        }
+    ]
+}

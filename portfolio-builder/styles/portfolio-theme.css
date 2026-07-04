@@ -9,9 +9,9 @@
 @layer base {
   :root {
     /* Core theme colors — injected dynamically by usePortfolioTheme */
-    --pb-background: #0a0a0a;
+    /* --pb-background: #0a0a0a;
     --pb-foreground: #ededed;
-    --pb-accent: #737373;
+    --pb-accent: #737373; */
 
     /* ── Derived opacity variants for foreground ─────────────────────────── */
     --pb-foreground-10: color-mix(in srgb, var(--pb-foreground) 10%, transparent);

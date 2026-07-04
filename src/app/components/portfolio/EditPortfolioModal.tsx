@@ -1,11 +1,13 @@
-import React, { useState, useEffect, useRef, useCallback } from "react"
+import React, { useState, useEffect, useCallback } from "react"
 import type { PortfolioResponse, PortfolioUpdate } from "@/portfolio-builder/store/usePortfolioStore"
 import Modal from "../containers/modals/Modal"
-import { Textinput } from "../inputs/Textinput"
 import { TextArea } from "../inputs/TextArea"
 import { useCloudinaryCore } from "@/lib/stores/cloudinary"
 import { useUserSettings } from "@/lib/stores/user/useUserSettings"
 import { useRouting } from "@/lib/hooks/routing/useRouting"
+import { FileInput } from "../inputs/FileInput"
+import Button from "../buttons/Buttons"
+import { Textinput } from "../inputs/Textinput"
 
 type SnapshotMode = "none" | "generate" | "upload"
 
@@ -50,7 +52,6 @@ const EditPortfolioModal = ({
     const [isUploading, setIsUploading] = useState(false)
     const [isResolvingSnapshot, setIsResolvingSnapshot] = useState(false)
     const [snapshotResolveError, setSnapshotResolveError] = useState<string | null>(null)
-    const fileInputRef = useRef<HTMLInputElement>(null)
 
     const portfolioSnapshot = () => {
         const portfolioThemeVariant = (portfolio?.layout as any)?.theme?.themeVariant || "system"
@@ -128,9 +129,14 @@ const EditPortfolioModal = ({
     }, [portfolio, snapshotKey, previewObjectUrl])
 
     // Stages a picked file for upload at save-time, showing a local preview. No network call here.
-    const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0]
-        if (!file || !portfolio) return
+    const handleFileSelect = useCallback((file: File | null) => {
+        if (file === null) {
+            clearPending()
+            setCoverImageUrl(null)
+            return
+        }
+
+        if (!portfolio) return
 
         const objectUrl = URL.createObjectURL(file)
         if (previewObjectUrl) URL.revokeObjectURL(previewObjectUrl)
@@ -139,9 +145,7 @@ const EditPortfolioModal = ({
         setPreviewObjectUrl(objectUrl)
         setCoverImageUrl(objectUrl)
         setSnapshotMode("none")
-
-        if (fileInputRef.current) fileInputRef.current.value = ""
-    }, [portfolio, previewObjectUrl])
+    }, [portfolio, previewObjectUrl, clearPending])
 
     const handleRemoveCoverImage = useCallback(() => {
         clearPending()
@@ -197,17 +201,12 @@ const EditPortfolioModal = ({
         <Modal title="Edit Portfolio" isOpen={isOpen} onClose={onClose}>
             <div className="space-y-4 mt-4">
                 <div>
-                    <label className="block text-sm font-medium text-[var(--foreground)]/80 mb-1.5">
-                        Name <span className="text-red-500">*</span>
-                    </label>
-                    <Textinput type="text" value={name} onChange={(e) => setName(e)} />
+
+                    <Textinput label="Name" required type="text" value={name} onChange={(e) => setName(e)} />
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-[var(--foreground)]/80 mb-1.5">
-                        Description
-                    </label>
-                    <TextArea value={description} onChange={(e) => setDescription(e)} />
+                    <TextArea label="Description" value={description} onChange={(e) => setDescription(e)} />
                 </div>
 
                 {/* Cover Image Section */}
@@ -229,37 +228,37 @@ const EditPortfolioModal = ({
                                     Not saved yet
                                 </span>
                             )}
-                            <button
-                                type="button"
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                icon={<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>}
                                 onClick={handleRemoveCoverImage}
-                                className="absolute top-2 right-2 p-1.5 bg-black/60 text-white rounded-md hover:bg-black/80 transition-colors"
                                 title="Remove cover image"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
-                            </button>
+                                className="absolute top-2 left-2 z-20 bg-red-500 hover:bg-red-700 text-white rounded-full p-2"
+                            />
                         </div>
                     )}
 
                     {/* Snapshot mode selector */}
                     {snapshotMode === "none" && (
                         <div className="flex gap-2">
-                            <button
-                                type="button"
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                text="Generate Portfolio Snapshot"
                                 onClick={() => {
                                     setSnapshotMode("generate")
                                     console.log(portfolioSnapshot())
                                 }}
-                                className="flex-1 px-3 py-2 text-sm font-medium border border-[var(--foreground)]/20 text-[var(--foreground)] rounded-lg hover:bg-[var(--foreground)]/5 transition-colors"
-                            >
-                                Generate Portfolio Snapshot
-                            </button>
-                            <button
-                                type="button"
+                                className="flex-1"
+                            />
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                text="Upload Portfolio Snapshot"
                                 onClick={() => setSnapshotMode("upload")}
-                                className="flex-1 px-3 py-2 text-sm font-medium border border-[var(--foreground)]/20 text-[var(--foreground)] rounded-lg hover:bg-[var(--foreground)]/5 transition-colors"
-                            >
-                                Upload Portfolio Snapshot
-                            </button>
+                                className="flex-1"
+                            />
                         </div>
                     )}
 
@@ -275,30 +274,30 @@ const EditPortfolioModal = ({
                                 />
                             </div>
                             <div className="flex gap-2">
-                                <button
-                                    type="button"
+                                <Button
+                                    variant="primary"
+                                    size="sm"
+                                    text={isResolvingSnapshot ? "Loading..." : "Use This Snapshot"}
                                     onClick={handleUseGeneratedSnapshot}
                                     disabled={isResolvingSnapshot}
-                                    className="flex-1 px-3 py-2 text-sm font-medium bg-[var(--accent)] text-[var(--background)] rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {isResolvingSnapshot ? "Loading..." : "Use This Snapshot"}
-                                </button>
-                                <button
-                                    type="button"
+                                    loading={isResolvingSnapshot}
+                                    className="flex-1"
+                                />
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    text="Regenerate"
                                     onClick={handleRegenerate}
                                     disabled={isResolvingSnapshot}
-                                    className="flex-1 px-3 py-2 text-sm font-medium border border-[var(--foreground)]/20 text-[var(--foreground)] rounded-lg hover:bg-[var(--foreground)]/5 transition-colors disabled:opacity-50"
-                                >
-                                    Regenerate
-                                </button>
-                                <button
-                                    type="button"
+                                    className="flex-1"
+                                />
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    text="Cancel"
                                     onClick={() => setSnapshotMode("none")}
                                     disabled={isResolvingSnapshot}
-                                    className="px-3 py-2 text-sm font-medium border border-[var(--foreground)]/20 text-[var(--foreground)] rounded-lg hover:bg-[var(--foreground)]/5 transition-colors disabled:opacity-50"
-                                >
-                                    Cancel
-                                </button>
+                                />
                             </div>
                             {snapshotResolveError ? (
                                 <p className="text-xs text-red-500">{snapshotResolveError}</p>
@@ -313,27 +312,24 @@ const EditPortfolioModal = ({
                     {/* Upload snapshot mode */}
                     {snapshotMode === "upload" && (
                         <div className="space-y-3 rounded-lg border border-[var(--foreground)]/10 p-3">
-                            <input
-                                ref={fileInputRef}
-                                type="file"
-                                accept="image/*"
+                            <FileInput
+                                value={pendingFile}
                                 onChange={handleFileSelect}
-                                className="block w-full text-sm text-[var(--foreground)]/70 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-[var(--accent)] file:text-[var(--background)] hover:file:opacity-90"
                             />
                             <p className="text-xs text-[var(--foreground)]/50">
                                 The image uploads when you click Save Changes below.
                             </p>
                             <div className="flex gap-2">
-                                <button
-                                    type="button"
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    text="Cancel"
                                     onClick={() => setSnapshotMode("none")}
-                                    className="px-3 py-2 text-sm font-medium border border-[var(--foreground)]/20 text-[var(--foreground)] rounded-lg hover:bg-[var(--foreground)]/5 transition-colors"
-                                >
-                                    Cancel
-                                </button>
+                                />
                             </div>
                         </div>
                     )}
+
 
                     {cloudinaryError && (
                         <p className="text-sm text-red-500">{cloudinaryError}</p>
@@ -359,22 +355,23 @@ const EditPortfolioModal = ({
                 </div>
 
                 <div className="flex gap-3 pt-2">
-                    <button
-                        type="button"
+                    <Button
+                        variant="outline"
+                        size="md"
+                        text="Cancel"
                         onClick={onClose}
                         disabled={busy}
-                        className="flex-1 px-4 py-2.5 text-sm font-medium border border-[var(--foreground)]/20 text-[var(--foreground)] rounded-lg hover:bg-[var(--foreground)]/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        type="button"
+                        className="flex-1"
+                    />
+                    <Button
+                        variant="primary"
+                        size="md"
+                        text={saveLabel}
                         onClick={handleSubmit}
                         disabled={busy}
-                        className="flex-1 px-4 py-2.5 text-sm font-medium bg-[var(--accent)] text-[var(--background)] rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        {saveLabel}
-                    </button>
+                        loading={isUploading || cloudinaryLoading}
+                        className="flex-1"
+                    />
                 </div>
             </div>
         </Modal>

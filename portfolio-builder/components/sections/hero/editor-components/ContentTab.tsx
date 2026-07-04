@@ -5,9 +5,9 @@ import { HeroData, HeroFonts, HeroTypography } from "@/portfolio-builder/types/h
 import Field from './Field';
 import FontPicker from './FontPicker';
 import { inputClass } from './styles';
-import { Textinput } from "@/src/app/components/inputs/Textinput";
 import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 import TypographyControl from "./TypographyControl";
+import { PBTextInput } from "@/portfolio-builder/components/shared/ui/inputs";
 
 interface ContentTabProps {
     data: HeroData;
@@ -94,7 +94,7 @@ export default function ContentTab({ data, onChange }: ContentTabProps) {
     return (
         <div className="flex flex-col gap-4">
             {/* ── Greeting ── */}
-            <Textinput
+            <PBTextInput
                 label="Greeting"
                 id="greeting"
                 type="text"
@@ -122,7 +122,7 @@ export default function ContentTab({ data, onChange }: ContentTabProps) {
             </CollapsibleSection>
 
             {/* ── Name ── */}
-            <Textinput
+            <PBTextInput
                 label="Name"
                 id="name"
                 type="text"
@@ -151,7 +151,7 @@ export default function ContentTab({ data, onChange }: ContentTabProps) {
             </CollapsibleSection>
 
             {/* ── Title ── */}
-            <Textinput
+            <PBTextInput
                 label="Title / Role"
                 id="title"
                 type="text"

@@ -3,6 +3,8 @@
 
 import { useState } from "react";
 import { Quote, PenLine } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useTheme } from "../theme/ThemeContext";
 import Button from "../buttons/Buttons";
 import { Testimonial, TestimonialStats } from "@/lib/stores/testimonials/useTestimonial";
 import { StatsBar } from "./StatsBar";
@@ -35,6 +37,7 @@ interface PublicProfileViewProps {
     onNavigateToWrite: () => void;
     onNavigateToEdit: (testimonial: Testimonial) => void;
     isAuthenticated: boolean;
+    miniView?: boolean;
 }
 
 type TabType = "their" | "mine";
@@ -61,6 +64,7 @@ export function PublicProfileView({
     onNavigateToWrite,
     onNavigateToEdit,
     isAuthenticated,
+    miniView = false,
 }: PublicProfileViewProps) {
     const [activeTab, setActiveTab] = useState<TabType>("their");
 
@@ -70,6 +74,11 @@ export function PublicProfileView({
     const currentLoading = isTheirTab ? isLoading : isLoadingAuthored;
     const currentHasMore = isTheirTab ? hasMore : hasMoreAuthored;
     const currentOnLoadMore = isTheirTab ? onLoadMore : onLoadMoreAuthored;
+    const router = useRouter();
+    const { profileContext } = useTheme();
+    const usernamePath = profileContext?.username ? `/${profileContext.username}` : "";
+    const displayedTestimonials = miniView ? currentTestimonials.slice(0, 3) : currentTestimonials;
+    const showSeeAll = miniView && currentTestimonials.length > 0;
 
     // Show loading skeleton only on initial load (no data yet)
     if (isLoading && theirTestimonials.length === 0 && isTheirTab) {
@@ -77,7 +86,7 @@ export function PublicProfileView({
     }
 
     return (
-        <div className="min-h-screen p-6 md:p-8 lg:p-10 max-w-6xl mx-auto">
+        <div className={miniView ? "p-6 md:p-8 lg:p-10 max-w-6xl mx-auto" : "min-h-screen p-6 md:p-8 lg:p-10 max-w-6xl mx-auto"}>
             <PageHeader
                 icon={<Quote className="w-6 h-6 text-[var(--accent)]" />}
                 title={`${username}'s Testimonials`}
@@ -86,14 +95,14 @@ export function PublicProfileView({
                         ? `${totalTestimonials} testimonial${totalTestimonials !== 1 ? "s" : ""} from the community`
                         : `${myAuthoredTotal} testimonial${myAuthoredTotal !== 1 ? "s" : ""} you've written`
                 }
-                action={
+                action={!miniView ? (
                     <Button
                         onClick={onNavigateToWrite}
                         className="self-start sm:self-auto"
                         text="Write Testimonial"
                         icon={<PenLine className="w-4 h-4" />}
                     />
-                }
+                ) : undefined}
             />
 
             {!isLoading && isTheirTab && <StatsBar stats={stats} />}
@@ -105,8 +114,8 @@ export function PublicProfileView({
                 <button
                     onClick={() => setActiveTab("their")}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${isTheirTab
-                            ? "bg-[var(--background)] text-[var(--foreground)] shadow-sm"
-                            : "text-[var(--foreground)]/50 hover:text-[var(--foreground)]/70"
+                        ? "bg-[var(--background)] text-[var(--foreground)] shadow-sm"
+                        : "text-[var(--foreground)]/50 hover:text-[var(--foreground)]/70"
                         }`}
                 >
                     {`${username}'s Testimonials (${totalTestimonials})`}
@@ -115,8 +124,8 @@ export function PublicProfileView({
                     <button
                         onClick={() => setActiveTab("mine")}
                         className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${!isTheirTab
-                                ? "bg-[var(--background)] text-[var(--foreground)] shadow-sm"
-                                : "text-[var(--foreground)]/50 hover:text-[var(--foreground)]/70"
+                            ? "bg-[var(--background)] text-[var(--foreground)] shadow-sm"
+                            : "text-[var(--foreground)]/50 hover:text-[var(--foreground)]/70"
                             }`}
                     >
                         My Testimonials ({myAuthoredTotal})
@@ -126,7 +135,7 @@ export function PublicProfileView({
 
             {/* Testimonials Grid with Infinite Scroll */}
             <TestimonialsGrid
-                testimonials={currentTestimonials}
+                testimonials={displayedTestimonials}
                 isLoading={currentLoading && currentTestimonials.length === 0}
                 onEdit={!isTheirTab ? onNavigateToEdit : undefined}
                 onDelete={!isTheirTab ? onDeleteTestimonialChange : undefined}
@@ -159,8 +168,19 @@ export function PublicProfileView({
                 isOwner={!isTheirTab}
             />
 
+            {showSeeAll && (
+                <div className="mt-6 flex justify-end">
+                    <button
+                        onClick={() => router.push(usernamePath ? `/${usernamePath}/testimonials` : `/${username}/testimonials`)}
+                        className="rounded-full border border-[var(--accent)]/30 px-4 py-2 text-sm font-medium text-[var(--accent)] transition hover:bg-[var(--accent)]/10"
+                    >
+                        See all
+                    </button>
+                </div>
+            )}
+
             {/* Infinite Scroll Trigger */}
-            {currentTestimonials.length > 0 && (
+            {!miniView && currentTestimonials.length > 0 && (
                 <InfiniteScrollTrigger
                     hasMore={currentHasMore}
                     isLoading={currentLoading}

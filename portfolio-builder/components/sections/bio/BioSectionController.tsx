@@ -5,7 +5,8 @@
 import { useState, useEffect } from "react";
 import BioRenderer from "@/portfolio-builder/components/sections/bio/BioRenderer";
 import BioEditor from "@/portfolio-builder/components/sections/bio/BioEditor";
-import { BioData, getEmptyBioData } from "@/portfolio-builder/types/bio";
+import { BioData, getDefaultBioData } from "@/portfolio-builder/types/bio";
+import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 
 // ---------------------------------------------------------------------------
 // Props
@@ -23,6 +24,7 @@ interface BioSectionControllerProps {
 
 export default function BioSectionController({ bioData, onSave, viewOnly }: BioSectionControllerProps) {
   const [isEditing, setIsEditing] = useState(false);
+  const { userInfo, profile } = useUserSettings()
 
   // ── Optimistic local state ─────────────────────────────────────────────
   const [localData, setLocalData] = useState<BioData | null>(bioData);
@@ -69,7 +71,12 @@ export default function BioSectionController({ bioData, onSave, viewOnly }: BioS
   if (isEditing) {
     return (
       <BioEditor
-        initialData={localData || getEmptyBioData()}
+        initialData={localData || getDefaultBioData({
+          bio: profile?.bio,
+          location: profile?.location,
+          yearsExperience: profile?.years_of_experience,
+          headline: profile?.profession
+        })}
         onSave={handleSave}
         onCancel={handleCancel}
         setFullScreen={handleSetFullscreen}

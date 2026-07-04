@@ -16,96 +16,96 @@ const LAYOUT_OPTIONS: {
   description: string;
   preview: React.ReactNode;
 }[] = [
-  {
-    value: "badge-grid",
-    label: "Badge Grid",
-    description: "Responsive grid of certification badges",
-    preview: (
-      <svg viewBox="0 0 48 32" fill="none" className="w-full h-full">
-        <rect x="2" y="2" width="14" height="12" rx="1" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.3" />
-        <rect x="18" y="2" width="14" height="12" rx="1" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.3" />
-        <rect x="34" y="2" width="12" height="12" rx="1" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.3" />
-        <rect x="2" y="17" width="14" height="12" rx="1" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.3" />
-        <rect x="18" y="17" width="14" height="12" rx="1" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.3" />
-        <rect x="34" y="17" width="12" height="12" rx="1" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.3" />
-      </svg>
-    ),
-  },
-  {
-    value: "credential-wall",
-    label: "Credential Wall",
-    description: "Masonry-style wall of credentials",
-    preview: (
-      <svg viewBox="0 0 48 32" fill="none" className="w-full h-full">
-        <rect x="2" y="2" width="14" height="14" rx="1" fill="currentColor" opacity="0.2" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.4" />
-        <rect x="18" y="2" width="14" height="10" rx="1" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.3" />
-        <rect x="34" y="2" width="12" height="16" rx="1" fill="currentColor" opacity="0.2" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.4" />
-        <rect x="2" y="19" width="14" height="10" rx="1" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.3" />
-        <rect x="18" y="15" width="14" height="14" rx="1" fill="currentColor" opacity="0.2" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.4" />
-        <rect x="34" y="21" width="12" height="8" rx="1" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.3" />
-      </svg>
-    ),
-  },
-  {
-    value: "verification-list",
-    label: "Verification List",
-    description: "Vertical stack, full-width cards",
-    preview: (
-      <svg viewBox="0 0 48 32" fill="none" className="w-full h-full">
-        <rect x="4" y="2" width="40" height="5" rx="1" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.3" />
-        <rect x="4" y="9" width="40" height="5" rx="1" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.3" />
-        <rect x="4" y="16" width="40" height="5" rx="1" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.3" />
-        <rect x="4" y="23" width="40" height="5" rx="1" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.3" />
-      </svg>
-    ),
-  },
-  {
-    value: "certificate-carousel",
-    label: "Certificate Carousel",
-    description: "Paginated cards with navigation",
-    preview: (
-      <svg viewBox="0 0 48 32" fill="none" className="w-full h-full">
-        <rect x="2" y="4" width="12" height="20" rx="1" fill="currentColor" opacity="0.1" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.2" />
-        <rect x="16" y="2" width="16" height="24" rx="1" fill="currentColor" opacity="0.2" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.4" />
-        <rect x="34" y="4" width="12" height="20" rx="1" fill="currentColor" opacity="0.1" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.2" />
-        <circle cx="24" cy="30" r="1" fill="currentColor" opacity="0.5" />
-        <circle cx="28" cy="30" r="1" fill="currentColor" opacity="0.2" />
-        <circle cx="20" cy="30" r="1" fill="currentColor" opacity="0.2" />
-      </svg>
-    ),
-  },
-  {
-    value: "cert-timeline",
-    label: "Certification Timeline",
-    description: "Vertical chronological timeline with nodes",
-    preview: (
-      <svg viewBox="0 0 48 32" fill="none" className="w-full h-full">
-        <line x1="24" y1="2" x2="24" y2="30" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.3" />
-        <circle cx="24" cy="6" r="2" fill="currentColor" opacity="0.3" />
-        <rect x="4" y="2" width="16" height="8" rx="1" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.3" />
-        <circle cx="24" cy="16" r="2" fill="currentColor" opacity="0.3" />
-        <rect x="28" y="12" width="16" height="8" rx="1" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.3" />
-        <circle cx="24" cy="26" r="2" fill="currentColor" opacity="0.3" />
-        <rect x="4" y="22" width="16" height="8" rx="1" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.3" />
-      </svg>
-    ),
-  },
-  {
-    value: "cert-masonry",
-    label: "Cert Masonry",
-    description: "Multi-column masonry layout",
-    preview: (
-      <svg viewBox="0 0 48 32" fill="none" className="w-full h-full">
-        <rect x="2" y="2" width="14" height="10" rx="1" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.3" />
-        <rect x="18" y="2" width="14" height="14" rx="1" fill="currentColor" opacity="0.2" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.4" />
-        <rect x="34" y="2" width="12" height="8" rx="1" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.3" />
-        <rect x="2" y="14" width="14" height="14" rx="1" fill="currentColor" opacity="0.2" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.4" />
-        <rect x="18" y="19" width="14" height="10" rx="1" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.3" />
-        <rect x="34" y="13" width="12" height="16" rx="1" fill="currentColor" opacity="0.2" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.4" />
-      </svg>
-    ),
-  },
-];
+    {
+      value: "badge-grid",
+      label: "Badge Grid",
+      description: "Responsive grid of certification badges",
+      preview: (
+        <svg viewBox="0 0 48 32" fill="none" className="w-full h-full">
+          <rect x="2" y="2" width="14" height="12" rx="1" fill="var(--pb-foreground)" opacity="0.15" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.3" />
+          <rect x="18" y="2" width="14" height="12" rx="1" fill="var(--pb-foreground)" opacity="0.15" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.3" />
+          <rect x="34" y="2" width="12" height="12" rx="1" fill="var(--pb-foreground)" opacity="0.15" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.3" />
+          <rect x="2" y="17" width="14" height="12" rx="1" fill="var(--pb-foreground)" opacity="0.15" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.3" />
+          <rect x="18" y="17" width="14" height="12" rx="1" fill="var(--pb-foreground)" opacity="0.15" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.3" />
+          <rect x="34" y="17" width="12" height="12" rx="1" fill="var(--pb-foreground)" opacity="0.15" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.3" />
+        </svg>
+      ),
+    },
+    {
+      value: "credential-wall",
+      label: "Credential Wall",
+      description: "Masonry-style wall of credentials",
+      preview: (
+        <svg viewBox="0 0 48 32" fill="none" className="w-full h-full">
+          <rect x="2" y="2" width="14" height="14" rx="1" fill="var(--pb-foreground)" opacity="0.2" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.4" />
+          <rect x="18" y="2" width="14" height="10" rx="1" fill="var(--pb-foreground)" opacity="0.15" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.3" />
+          <rect x="34" y="2" width="12" height="16" rx="1" fill="var(--pb-foreground)" opacity="0.2" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.4" />
+          <rect x="2" y="19" width="14" height="10" rx="1" fill="var(--pb-foreground)" opacity="0.15" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.3" />
+          <rect x="18" y="15" width="14" height="14" rx="1" fill="var(--pb-foreground)" opacity="0.2" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.4" />
+          <rect x="34" y="21" width="12" height="8" rx="1" fill="var(--pb-foreground)" opacity="0.15" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.3" />
+        </svg>
+      ),
+    },
+    {
+      value: "verification-list",
+      label: "Verification List",
+      description: "Vertical stack, full-width cards",
+      preview: (
+        <svg viewBox="0 0 48 32" fill="none" className="w-full h-full">
+          <rect x="4" y="2" width="40" height="5" rx="1" fill="var(--pb-foreground)" opacity="0.15" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.3" />
+          <rect x="4" y="9" width="40" height="5" rx="1" fill="var(--pb-foreground)" opacity="0.15" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.3" />
+          <rect x="4" y="16" width="40" height="5" rx="1" fill="var(--pb-foreground)" opacity="0.15" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.3" />
+          <rect x="4" y="23" width="40" height="5" rx="1" fill="var(--pb-foreground)" opacity="0.15" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.3" />
+        </svg>
+      ),
+    },
+    {
+      value: "certificate-carousel",
+      label: "Certificate Carousel",
+      description: "Paginated cards with navigation",
+      preview: (
+        <svg viewBox="0 0 48 32" fill="none" className="w-full h-full">
+          <rect x="2" y="4" width="12" height="20" rx="1" fill="var(--pb-foreground)" opacity="0.1" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.2" />
+          <rect x="16" y="2" width="16" height="24" rx="1" fill="var(--pb-foreground)" opacity="0.2" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.4" />
+          <rect x="34" y="4" width="12" height="20" rx="1" fill="var(--pb-foreground)" opacity="0.1" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.2" />
+          <circle cx="24" cy="30" r="1" fill="var(--pb-foreground)" opacity="0.5" />
+          <circle cx="28" cy="30" r="1" fill="var(--pb-foreground)" opacity="0.2" />
+          <circle cx="20" cy="30" r="1" fill="var(--pb-foreground)" opacity="0.2" />
+        </svg>
+      ),
+    },
+    {
+      value: "cert-timeline",
+      label: "Certification Timeline",
+      description: "Vertical chronological timeline with nodes",
+      preview: (
+        <svg viewBox="0 0 48 32" fill="none" className="w-full h-full">
+          <line x1="24" y1="2" x2="24" y2="30" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.3" />
+          <circle cx="24" cy="6" r="2" fill="var(--pb-foreground)" opacity="0.3" />
+          <rect x="4" y="2" width="16" height="8" rx="1" fill="var(--pb-foreground)" opacity="0.15" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.3" />
+          <circle cx="24" cy="16" r="2" fill="var(--pb-foreground)" opacity="0.3" />
+          <rect x="28" y="12" width="16" height="8" rx="1" fill="var(--pb-foreground)" opacity="0.15" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.3" />
+          <circle cx="24" cy="26" r="2" fill="var(--pb-foreground)" opacity="0.3" />
+          <rect x="4" y="22" width="16" height="8" rx="1" fill="var(--pb-foreground)" opacity="0.15" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.3" />
+        </svg>
+      ),
+    },
+    {
+      value: "cert-masonry",
+      label: "Cert Masonry",
+      description: "Multi-column masonry layout",
+      preview: (
+        <svg viewBox="0 0 48 32" fill="none" className="w-full h-full">
+          <rect x="2" y="2" width="14" height="10" rx="1" fill="var(--pb-foreground)" opacity="0.15" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.3" />
+          <rect x="18" y="2" width="14" height="14" rx="1" fill="var(--pb-foreground)" opacity="0.2" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.4" />
+          <rect x="34" y="2" width="12" height="8" rx="1" fill="var(--pb-foreground)" opacity="0.15" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.3" />
+          <rect x="2" y="14" width="14" height="14" rx="1" fill="var(--pb-foreground)" opacity="0.2" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.4" />
+          <rect x="18" y="19" width="14" height="10" rx="1" fill="var(--pb-foreground)" opacity="0.15" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.3" />
+          <rect x="34" y="13" width="12" height="16" rx="1" fill="var(--pb-foreground)" opacity="0.2" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.4" />
+        </svg>
+      ),
+    },
+  ];
 
 const ALIGNMENT_OPTIONS = [
   { value: "left", label: "Left" },
@@ -177,26 +177,42 @@ export default function CertificationLayoutTab({ data, onChange }: Certification
                 key={value}
                 type="button"
                 onClick={() => onChange("layout", value)}
-                className={[
-                  "flex flex-col items-center gap-2 rounded-xl border-2 p-3",
-                  "transition-all duration-150 focus-visible:outline-none",
-                  "focus-visible:ring-2 focus-visible:ring-ring hover:border-primary/60",
-                  active
-                    ? "border-foreground bg-foreground/5 text-foreground"
-                    : "border-foreground/15 bg-background text-foreground/50 hover:bg-foreground/5",
-                ].join(" ")}
+                className="flex flex-col items-center gap-2 rounded-xl border-2 p-3 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pb-input-border-focus)] hover:border-[var(--pb-border-hover)]"
+                style={{
+                  borderColor: active
+                    ? 'var(--pb-text-primary)'
+                    : 'var(--pb-border)',
+                  backgroundColor: active
+                    ? 'var(--pb-surface-elevated)'
+                    : 'var(--pb-background)',
+                  color: active
+                    ? 'var(--pb-text-primary)'
+                    : 'var(--pb-text-muted)',
+                }}
+                onMouseEnter={(e) => {
+                  if (!active) {
+                    e.currentTarget.style.backgroundColor = 'var(--pb-surface)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!active) {
+                    e.currentTarget.style.backgroundColor = 'var(--pb-background)';
+                  }
+                }}
               >
                 <div className="h-10 w-full">{preview}</div>
                 <div className="flex flex-col items-center gap-0.5 text-center">
                   <span
-                    className={[
-                      "text-xs font-semibold",
-                      active ? "text-foreground" : "text-foreground/70",
-                    ].join(" ")}
+                    className="text-xs font-semibold"
+                    style={{
+                      color: active
+                        ? 'var(--pb-text-primary)'
+                        : 'var(--pb-text-secondary)',
+                    }}
                   >
                     {label}
                   </span>
-                  <span className="text-[10px] leading-tight text-foreground/40">{description}</span>
+                  <span className="text-[10px] leading-tight text-[var(--pb-text-muted)]">{description}</span>
                 </div>
               </button>
             );
@@ -224,7 +240,6 @@ export default function CertificationLayoutTab({ data, onChange }: Certification
           </h3>
           <SliderField
             label={data.layout === "certificate-carousel" ? "Cards per page" : "Number of columns"}
-            htmlFor="columns"
             value={data.columns}
             min={1}
             max={4}
@@ -268,12 +283,10 @@ export default function CertificationLayoutTab({ data, onChange }: Certification
         <h3 className={sectionTitleClass}>Content Width</h3>
         <SliderField
           label="Max Width"
-          htmlFor="maxWidth"
           value={data.maxWidth}
           min={600}
           max={1400}
           step={50}
-          unit="px"
           onChange={(v) => onChange("maxWidth", v)}
         />
       </div>
@@ -281,25 +294,21 @@ export default function CertificationLayoutTab({ data, onChange }: Certification
       {/* ── Padding ── */}
       <div className={sectionClass}>
         <h3 className={sectionTitleClass}>Section Padding</h3>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3">
           <SliderField
             label="Top"
-            htmlFor="paddingTop"
             value={data.padding?.top ?? 80}
             min={0}
             max={200}
             step={10}
-            unit="px"
             onChange={(v) => handlePaddingChange("top", v)}
           />
           <SliderField
             label="Bottom"
-            htmlFor="paddingBottom"
             value={data.padding?.bottom ?? 80}
             min={0}
             max={200}
             step={10}
-            unit="px"
             onChange={(v) => handlePaddingChange("bottom", v)}
           />
         </div>

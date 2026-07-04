@@ -4,7 +4,6 @@
 
 import { useEffect, useRef } from "react";
 import { EducationData, EducationFilterConfig } from "@/portfolio-builder/types/education";
-import { Textinput } from "@/src/app/components/inputs/Textinput";
 import Dropdown from "@/src/app/components/inputs/DynamicDropdown";
 import { sectionClass, sectionTitleClass } from "../../bio/editor-components/styles";
 import Toggle from "../../bio/editor-components/Toggle";
@@ -21,7 +20,7 @@ interface EducationFilterTabProps {
 export default function EducationFilterTab({ data, onUpdate }: EducationFilterTabProps) {
   const { userInfo } = useUserSettings();
   const { educations: allEducations, fetchAllEducations } = useEducation();
-  const filters = data.filters;
+  const filters = data.filters ?? ({} as EducationFilterConfig)
 
   const isLoading = false;
 

@@ -22,12 +22,12 @@ const LAYOUT_OPTIONS: {
       description: "Responsive columns, equal height cards",
       preview: (
         <svg viewBox="0 0 48 32" fill="none" className="w-full h-full">
-          <rect x="2" y="2" width="14" height="12" rx="1" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.3" />
-          <rect x="18" y="2" width="14" height="12" rx="1" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.3" />
-          <rect x="34" y="2" width="12" height="12" rx="1" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.3" />
-          <rect x="2" y="17" width="14" height="12" rx="1" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.3" />
-          <rect x="18" y="17" width="14" height="12" rx="1" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.3" />
-          <rect x="34" y="17" width="12" height="12" rx="1" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.3" />
+          <rect x="2" y="2" width="14" height="12" rx="1" fill="var(--pb-foreground)" opacity="0.15" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.3" />
+          <rect x="18" y="2" width="14" height="12" rx="1" fill="var(--pb-foreground)" opacity="0.15" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.3" />
+          <rect x="34" y="2" width="12" height="12" rx="1" fill="var(--pb-foreground)" opacity="0.15" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.3" />
+          <rect x="2" y="17" width="14" height="12" rx="1" fill="var(--pb-foreground)" opacity="0.15" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.3" />
+          <rect x="18" y="17" width="14" height="12" rx="1" fill="var(--pb-foreground)" opacity="0.15" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.3" />
+          <rect x="34" y="17" width="12" height="12" rx="1" fill="var(--pb-foreground)" opacity="0.15" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.3" />
         </svg>
       ),
     },
@@ -37,12 +37,12 @@ const LAYOUT_OPTIONS: {
       description: "Pinterest-style staggered columns",
       preview: (
         <svg viewBox="0 0 48 32" fill="none" className="w-full h-full">
-          <rect x="2" y="2" width="14" height="10" rx="1" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.3" />
-          <rect x="2" y="14" width="14" height="14" rx="1" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.3" />
-          <rect x="18" y="2" width="14" height="16" rx="1" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.3" />
-          <rect x="18" y="20" width="14" height="8" rx="1" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.3" />
-          <rect x="34" y="2" width="12" height="12" rx="1" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.3" />
-          <rect x="34" y="16" width="12" height="12" rx="1" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.3" />
+          <rect x="2" y="2" width="14" height="10" rx="1" fill="var(--pb-foreground)" opacity="0.15" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.3" />
+          <rect x="2" y="14" width="14" height="14" rx="1" fill="var(--pb-foreground)" opacity="0.15" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.3" />
+          <rect x="18" y="2" width="14" height="16" rx="1" fill="var(--pb-foreground)" opacity="0.15" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.3" />
+          <rect x="18" y="20" width="14" height="8" rx="1" fill="var(--pb-foreground)" opacity="0.15" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.3" />
+          <rect x="34" y="2" width="12" height="12" rx="1" fill="var(--pb-foreground)" opacity="0.15" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.3" />
+          <rect x="34" y="16" width="12" height="12" rx="1" fill="var(--pb-foreground)" opacity="0.15" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.3" />
         </svg>
       ),
     },
@@ -52,10 +52,10 @@ const LAYOUT_OPTIONS: {
       description: "Auto-scrolling horizontal testimonial strip",
       preview: (
         <svg viewBox="0 0 48 32" fill="none" className="w-full h-full">
-          <rect x="2" y="6" width="14" height="20" rx="1" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.3" />
-          <rect x="18" y="6" width="14" height="20" rx="1" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.3" />
-          <rect x="34" y="6" width="14" height="20" rx="1" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.3" />
-          <path d="M44 14l4-2v8l-4-2z" fill="currentColor" opacity="0.3" />
+          <rect x="2" y="6" width="14" height="20" rx="1" fill="var(--pb-foreground)" opacity="0.15" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.3" />
+          <rect x="18" y="6" width="14" height="20" rx="1" fill="var(--pb-foreground)" opacity="0.15" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.3" />
+          <rect x="34" y="6" width="14" height="20" rx="1" fill="var(--pb-foreground)" opacity="0.15" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.3" />
+          <path d="M44 14l4-2v8l-4-2z" fill="var(--pb-foreground)" opacity="0.3" />
         </svg>
       ),
     },
@@ -65,10 +65,10 @@ const LAYOUT_OPTIONS: {
       description: "Vertical stack, full-width cards",
       preview: (
         <svg viewBox="0 0 48 32" fill="none" className="w-full h-full">
-          <rect x="4" y="2" width="40" height="5" rx="1" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.3" />
-          <rect x="4" y="9" width="40" height="5" rx="1" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.3" />
-          <rect x="4" y="16" width="40" height="5" rx="1" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.3" />
-          <rect x="4" y="23" width="40" height="5" rx="1" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.3" />
+          <rect x="4" y="2" width="40" height="5" rx="1" fill="var(--pb-foreground)" opacity="0.15" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.3" />
+          <rect x="4" y="9" width="40" height="5" rx="1" fill="var(--pb-foreground)" opacity="0.15" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.3" />
+          <rect x="4" y="16" width="40" height="5" rx="1" fill="var(--pb-foreground)" opacity="0.15" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.3" />
+          <rect x="4" y="23" width="40" height="5" rx="1" fill="var(--pb-foreground)" opacity="0.15" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.3" />
         </svg>
       ),
     },
@@ -78,12 +78,12 @@ const LAYOUT_OPTIONS: {
       description: "Paginated cards with dot navigation",
       preview: (
         <svg viewBox="0 0 48 32" fill="none" className="w-full h-full">
-          <rect x="2" y="4" width="12" height="20" rx="1" fill="currentColor" opacity="0.1" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.2" />
-          <rect x="16" y="2" width="16" height="24" rx="1" fill="currentColor" opacity="0.2" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.4" />
-          <rect x="34" y="4" width="12" height="20" rx="1" fill="currentColor" opacity="0.1" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.2" />
-          <circle cx="24" cy="30" r="1" fill="currentColor" opacity="0.5" />
-          <circle cx="28" cy="30" r="1" fill="currentColor" opacity="0.2" />
-          <circle cx="20" cy="30" r="1" fill="currentColor" opacity="0.2" />
+          <rect x="2" y="4" width="12" height="20" rx="1" fill="var(--pb-foreground)" opacity="0.1" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.2" />
+          <rect x="16" y="2" width="16" height="24" rx="1" fill="var(--pb-foreground)" opacity="0.2" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.4" />
+          <rect x="34" y="4" width="12" height="20" rx="1" fill="var(--pb-foreground)" opacity="0.1" stroke="var(--pb-foreground)" strokeWidth="0.5" strokeOpacity="0.2" />
+          <circle cx="24" cy="30" r="1" fill="var(--pb-foreground)" opacity="0.5" />
+          <circle cx="28" cy="30" r="1" fill="var(--pb-foreground)" opacity="0.2" />
+          <circle cx="20" cy="30" r="1" fill="var(--pb-foreground)" opacity="0.2" />
         </svg>
       ),
     },
@@ -138,19 +138,46 @@ export default function TestimonialsLayoutTab({ data, onChange }: TestimonialsLa
           {LAYOUT_OPTIONS.map(({ value, label, description, preview }) => {
             const active = data.layout === value;
             return (
-              <button key={value} type="button" onClick={() => onChange("layout", value)}
-                className={[
-                  "flex flex-col items-center gap-2 rounded-xl border-2 p-3",
-                  "transition-all duration-150 focus-visible:outline-none",
-                  "focus-visible:ring-2 focus-visible:ring-ring hover:border-primary/60",
-                  active
-                    ? "border-foreground bg-foreground/5 text-foreground"
-                    : "border-foreground/15 bg-background text-foreground/50 hover:bg-foreground/5",
-                ].join(" ")}>
+              <button
+                key={value}
+                type="button"
+                onClick={() => onChange("layout", value)}
+                className="flex flex-col items-center gap-2 rounded-xl border-2 p-3 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pb-input-border-focus)] hover:border-[var(--pb-border-hover)]"
+                style={{
+                  borderColor: active
+                    ? 'var(--pb-text-primary)'
+                    : 'var(--pb-border)',
+                  backgroundColor: active
+                    ? 'var(--pb-surface-elevated)'
+                    : 'var(--pb-background)',
+                  color: active
+                    ? 'var(--pb-text-primary)'
+                    : 'var(--pb-text-muted)',
+                }}
+                onMouseEnter={(e) => {
+                  if (!active) {
+                    e.currentTarget.style.backgroundColor = 'var(--pb-surface)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!active) {
+                    e.currentTarget.style.backgroundColor = 'var(--pb-background)';
+                  }
+                }}
+              >
                 <div className="h-10 w-full">{preview}</div>
                 <div className="flex flex-col items-center gap-0.5 text-center">
-                  <span className={["text-xs font-semibold", active ? "text-foreground" : "text-foreground/70"].join(" ")}>{label}</span>
-                  <span className="text-[10px] leading-tight text-foreground/40">{description}</span>
+                  <span
+                    className="text-xs font-semibold"
+                    style={{
+                      color: active
+                        ? 'var(--pb-text-primary)'
+                        : 'var(--pb-text-secondary)',
+                    }}
+                  >
+                    {label}
+                  </span>
+                  <span className="text-[10px] leading-tight text-[var(--pb-text-muted)]">{description}</span>
                 </div>
               </button>
             );
@@ -167,7 +194,7 @@ export default function TestimonialsLayoutTab({ data, onChange }: TestimonialsLa
       {!SINGLE_COLUMN_LAYOUTS.includes(data.layout) && (
         <div className={sectionClass}>
           <h3 className={sectionTitleClass}>{data.layout === "slider" ? "Cards per Page" : "Columns"}</h3>
-          <SliderField label={data.layout === "slider" ? "Cards per page" : "Number of columns"} htmlFor="columns"
+          <SliderField label={data.layout === "slider" ? "Cards per page" : "Number of columns"}
             value={data.columns} min={1} max={6} step={1} onChange={(v) => onChange("columns", v)} />
         </div>
       )}
@@ -191,14 +218,14 @@ export default function TestimonialsLayoutTab({ data, onChange }: TestimonialsLa
 
       <div className={sectionClass}>
         <h3 className={sectionTitleClass}>Content Width</h3>
-        <SliderField label="Max Width" htmlFor="maxWidth" value={data.maxWidth} min={600} max={1400} step={50} unit="px" onChange={(v) => onChange("maxWidth", v)} />
+        <SliderField label="Max Width" value={data.maxWidth} min={600} max={1400} step={50} onChange={(v) => onChange("maxWidth", v)} />
       </div>
 
       <div className={sectionClass}>
         <h3 className={sectionTitleClass}>Section Padding</h3>
-        <div className="grid grid-cols-2 gap-3">
-          <SliderField label="Top" htmlFor="paddingTop" value={data.padding?.top ?? 80} min={0} max={200} step={10} unit="px" onChange={(v) => handlePaddingChange("top", v)} />
-          <SliderField label="Bottom" htmlFor="paddingBottom" value={data.padding?.bottom ?? 80} min={0} max={200} step={10} unit="px" onChange={(v) => handlePaddingChange("bottom", v)} />
+        <div className="grid grid-cols-1 gap-3">
+          <SliderField label="Top" value={data.padding?.top ?? 80} min={0} max={200} step={10} onChange={(v) => handlePaddingChange("top", v)} />
+          <SliderField label="Bottom" value={data.padding?.bottom ?? 80} min={0} max={200} step={10} onChange={(v) => handlePaddingChange("bottom", v)} />
         </div>
       </div>
     </div>

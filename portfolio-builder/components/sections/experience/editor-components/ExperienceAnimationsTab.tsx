@@ -75,23 +75,19 @@ export default function ExperienceAnimationsTab({ data, onUpdate }: ExperienceAn
 
             <SliderField
               label="Duration"
-              htmlFor="animDuration"
               value={duration}
               min={0.1}
               max={2}
               step={0.05}
-              unit="s"
               onChange={(v) => onUpdate({ duration: v })}
             />
 
             <SliderField
               label="Initial Delay"
-              htmlFor="animDelay"
               value={delay}
               min={0}
               max={2}
               step={0.05}
-              unit="s"
               onChange={(v) => onUpdate({ delay: v })}
             />
           </>
@@ -112,12 +108,10 @@ export default function ExperienceAnimationsTab({ data, onUpdate }: ExperienceAn
           {staggerChildren && (
             <SliderField
               label="Delay between cards"
-              htmlFor="staggerDelay"
               value={staggerDelay}
               min={0.02}
               max={0.5}
               step={0.01}
-              unit="s"
               onChange={(v) => onUpdate({ staggerDelay: v })}
             />
           )}
@@ -158,12 +152,10 @@ export default function ExperienceAnimationsTab({ data, onUpdate }: ExperienceAn
         {parallax && (
           <SliderField
             label="Parallax intensity"
-            htmlFor="parallaxIntensity"
             value={parallaxIntensity}
             min={5}
             max={100}
             step={5}
-            unit="px"
             onChange={(v) => onUpdate({ parallaxIntensity: v })}
           />
         )}
@@ -182,12 +174,10 @@ export default function ExperienceAnimationsTab({ data, onUpdate }: ExperienceAn
           {textReveal && (
             <SliderField
               label="Reveal delay"
-              htmlFor="textRevealDelay"
               value={textRevealDelay}
               min={0}
               max={1}
               step={0.05}
-              unit="s"
               onChange={(v) => onUpdate({ textRevealDelay: v })}
             />
           )}
@@ -212,7 +202,6 @@ export default function ExperienceAnimationsTab({ data, onUpdate }: ExperienceAn
         {hoverEffect === "scale" && (
           <SliderField
             label="Scale amount"
-            htmlFor="hoverScale"
             value={hoverScale}
             min={1.01}
             max={1.1}

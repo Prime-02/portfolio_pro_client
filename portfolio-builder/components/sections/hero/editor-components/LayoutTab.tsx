@@ -10,7 +10,7 @@ import {
 } from "@/portfolio-builder/types/hero";
 import SelectField from "./SelectField";
 import Switch from "@/src/app/components/inputs/Switch";
-import { Textinput } from "@/src/app/components/inputs/Textinput";
+import { PBRangeInput, PBSwitch } from "@/portfolio-builder/components/shared/ui/inputs";
 
 interface LayoutTabProps {
     data: HeroData;
@@ -139,7 +139,7 @@ function Toggle({
                 <span className="text-sm font-medium text-[var(--pb-text-primary)]">{label}</span>
                 {hint && <span className="text-xs text-[var(--pb-text-muted)]">{hint}</span>}
             </div>
-            <Switch
+            <PBSwitch
                 isSwitched={checked}
                 onSwitch={onChange}
             />
@@ -149,18 +149,14 @@ function Toggle({
 
 function NumberField({
     label,
-    hint,
     value,
-    unit,
     min,
     max,
     step,
     onChange,
 }: {
     label: string;
-    hint?: string;
     value: number;
-    unit?: string;
     min?: number;
     max?: number;
     step?: number;
@@ -168,11 +164,9 @@ function NumberField({
 }) {
     return (
         <div className="flex flex-col gap-1">
-            <Textinput
-                type="number"
-                value={`${value} ${unit ?? ""}`}
+            <PBRangeInput
+                value={value ?? 1}
                 min={min}
-                desc={hint}
                 label={label}
                 max={max}
                 step={step ?? 1}
@@ -280,11 +274,10 @@ export default function LayoutTab({ data, onChange }: LayoutTabProps) {
             {/* ── Padding ───────────────────────────────────────────── */}
             <SectionDivider label="Padding" />
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3">
                 <NumberField
                     label="Top"
                     value={data.padding?.top ?? 0}
-                    unit="px"
                     min={0}
                     max={400}
                     step={4}
@@ -293,7 +286,6 @@ export default function LayoutTab({ data, onChange }: LayoutTabProps) {
                 <NumberField
                     label="Bottom"
                     value={data.padding?.bottom ?? 0}
-                    unit="px"
                     min={0}
                     max={400}
                     step={4}

@@ -64,12 +64,13 @@ export default function ExperienceRenderer({ data, username, animationKey }: Exp
     filters,
   } = data;
 
+  const safeFilters = filters ?? ({} as ExperienceData["filters"]);
   const anim: BioAnimations = { ...DEFAULT_ANIM, ...(animations ?? {}) };
   const isAnimated = anim.preset !== "none";
 
   // ── Experience fetch ──────────────────────────────────────────────────────
-  const { rendererExperiences, isLoadingExperiences } = useDebouncedExperiencesFetch(username, filters);
-  const sortedExperiences = sortExperiences(rendererExperiences, filters._sortBy || "default");
+  const { rendererExperiences, isLoadingExperiences } = useDebouncedExperiencesFetch(username, safeFilters);
+  const sortedExperiences = sortExperiences(rendererExperiences, safeFilters._sortBy || "default");
 
   // ── Scroll / parallax refs ──────────────────────────────────────────────
   const sectionRef = useRef<HTMLElement>(null);

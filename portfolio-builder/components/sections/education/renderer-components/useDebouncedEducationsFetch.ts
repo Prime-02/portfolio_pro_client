@@ -9,7 +9,7 @@ const DEBOUNCE_MS = 400;
 
 export function useDebouncedEducationsFetch(
   username: string,
-  filters: EducationFilterConfig,
+  filters?: EducationFilterConfig,
 ) {
   // Pull only the action — NOT userPublicEducations.
   // This prevents executeFetch from recreating every time the store updates.
@@ -17,16 +17,16 @@ export function useDebouncedEducationsFetch(
     (s) => s.fetchPublicUserEducations,
   );
 
-  const [rendererEducations, setRendererEducations] = useState<
-    EducationItem[]
-  >([]);
+  const [rendererEducations, setRendererEducations] = useState<EducationItem[]>(
+    [],
+  );
   const [isLoadingEducations, setIsLoadingEducations] = useState(true);
   const [isStale, setIsStale] = useState(false);
 
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
-  const latestFiltersRef = useRef(filters);
-  latestFiltersRef.current = filters;
+  const latestFiltersRef = useRef(filters ?? ({} as EducationFilterConfig));
+  latestFiltersRef.current = filters ?? ({} as EducationFilterConfig);
 
   const executeFetch = useCallback(() => {
     if (!username) return;
@@ -42,12 +42,12 @@ export function useDebouncedEducationsFetch(
     setIsStale(false);
 
     fetchPublicUserEducations(username, {
-      is_current: latestFiltersRef.current.is_current,
-      institution: latestFiltersRef.current.institution,
-      degree: latestFiltersRef.current.degree,
-      field_of_study: latestFiltersRef.current.field_of_study,
-      ids: latestFiltersRef.current.ids,
-      merge_filters: latestFiltersRef.current.merge_filters,
+      is_current: latestFiltersRef.current.is_current ?? undefined,
+      institution: latestFiltersRef.current.institution ?? undefined,
+      degree: latestFiltersRef.current.degree ?? undefined,
+      field_of_study: latestFiltersRef.current.field_of_study ?? undefined,
+      ids: latestFiltersRef.current.ids ?? undefined,
+      merge_filters: latestFiltersRef.current.merge_filters ?? undefined,
     })
       .then(() => {
         if (!controller.signal.aborted) {
@@ -56,9 +56,7 @@ export function useDebouncedEducationsFetch(
           // from deps (which was causing the infinite loop).
           const storeEducations =
             useEducation.getState().publicEducations || [];
-          setRendererEducations(
-            storeEducations as unknown as EducationItem[],
-          );
+          setRendererEducations(storeEducations as unknown as EducationItem[]);
         }
       })
       .catch(() => {
@@ -91,13 +89,13 @@ export function useDebouncedEducationsFetch(
     };
   }, [
     username,
-    filters.is_current,
-    filters.institution,
-    filters.degree,
-    filters.field_of_study,
+    filters?.is_current,
+    filters?.institution,
+    filters?.degree,
+    filters?.field_of_study,
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    filters.ids?.join(","),
-    filters.merge_filters,
+    filters?.ids?.join(","),
+    filters?.merge_filters,
     executeFetch,
   ]);
 

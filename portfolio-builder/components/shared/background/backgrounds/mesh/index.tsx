@@ -1,6 +1,6 @@
 // portfolio-builder/components/shared/background/backgrounds/mesh/index.ts
 
-import { MeshBackground } from "@/portfolio-builder/components/sections/hero/renderer-components/MeshBackground";
+import { MeshBackground } from "@/components/MeshBackground";
 import { registerBackground } from "../../editor/BackgroundRegistry";
 
 registerBackground({

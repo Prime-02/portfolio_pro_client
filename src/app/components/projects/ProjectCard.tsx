@@ -140,9 +140,9 @@ export function ProjectCard({
         </div>
 
         {/* Description */}
-        {project.project_description && (
+        {project.project_summary && (
           <p className={`mt-2 text-[var(--foreground)]/50 ${featured ? "text-sm line-clamp-3" : "text-xs line-clamp-2"}`}>
-            {project.project_description}
+            {project.project_summary}
           </p>
         )}
 

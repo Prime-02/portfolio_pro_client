@@ -22,6 +22,7 @@ export type PortfoliosResponseData = PortfolioItem[];
 export interface ProjectItem {
   project_name: string;
   project_description: string;
+  project_summary: string;
   project_category: string;
   id: string;
   project_url: string | null;
@@ -46,6 +47,7 @@ export type ProjectStatusProps = "active" | "inactive" | "cancelled";
 export interface ProjectCreateFormData {
   project_name: string;
   project_description: string;
+  project_summary: string;
   project_platform: SupportedPlatforms;
   project_category: string;
   contribution_description: string;
@@ -102,6 +104,7 @@ export interface AllProjectsDisplayCardProps {
   id: string;
   project_name: string;
   project_description: string;
+  project_summary: string;
   project_platform: string;
   project_category: string;
   project_url: string;

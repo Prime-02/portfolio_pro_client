@@ -12,6 +12,7 @@ interface MotionContainerProps {
   parallax?: boolean;
   parallaxY?: MotionValue<number>;
   className?: string;
+  style?: React.CSSProperties;
   /** Changing this key forces Framer Motion to replay the entrance animation */
   motionKey?: string | number;
 }
@@ -24,6 +25,7 @@ export function MotionContainer({
   parallax,
   parallaxY,
   className,
+  style,
   motionKey,
 }: MotionContainerProps) {
   const containerVariants = buildContainerVariants(anim);
@@ -35,7 +37,10 @@ export function MotionContainer({
       initial={isAnimated ? "hidden" : false}
       animate={shouldAnimate ? "visible" : "hidden"}
       className={className}
-      style={parallax ? { y: parallaxY } : undefined}
+      style={{
+        ...style,
+        ...(parallax ? { y: parallaxY } : {}),
+      }}
     >
       {children}
     </motion.div>

@@ -40,7 +40,7 @@ export function resolveCardOverride(
   overrides: BlogsData["cardOverrides"],
   defaults: Defaults,
 ): CardConfig {
-  for (const override of overrides) {
+  for (const override of overrides ?? []) {
     const target = override.target;
     let matches = false;
 
@@ -49,8 +49,13 @@ export function resolveCardOverride(
     if (target.tags?.some((t) => blog.tags?.includes(t))) matches = true;
     if (target.statuses?.includes(blog.status || "")) matches = true;
     if (target.content_types?.includes(blog.content_type || "")) matches = true;
-    if (target.is_featured !== undefined && blog.is_featured === target.is_featured) matches = true;
-    if (target.is_pinned !== undefined && blog.is_pinned === target.is_pinned) matches = true;
+    if (
+      target.is_featured !== undefined &&
+      blog.is_featured === target.is_featured
+    )
+      matches = true;
+    if (target.is_pinned !== undefined && blog.is_pinned === target.is_pinned)
+      matches = true;
 
     if (matches) {
       return {

@@ -18,6 +18,32 @@ import {
 } from "./editor-components";
 import ProjectsRenderer from "./ProjectsRenderer";
 
+// ---------------------------------------------------------------------------
+// Deep merge with defaults to handle missing/legacy keys
+// ---------------------------------------------------------------------------
+function mergeWithDefaults(partial: ProjectsData): ProjectsData {
+  const defaults = getEmptyProjectsData();
+
+  return {
+    ...defaults,
+    ...partial,
+    // Deep merge nested objects to preserve new default fields
+    filters: { ...defaults.filters, ...partial.filters },
+    padding: partial.padding
+      ? { ...defaults.padding, ...partial.padding }
+      : defaults.padding,
+    background: partial.background
+      ? { ...defaults.background, ...partial.background }
+      : defaults.background,
+    animations: partial.animations
+      ? { ...defaults.animations, ...partial.animations }
+      : defaults.animations,
+    // Arrays are preserved as-is (no merge needed)
+    cardOverrides: partial.cardOverrides ?? defaults.cardOverrides,
+    ctaButtons: partial.ctaButtons ?? defaults.ctaButtons,
+  };
+}
+
 interface ProjectsEditorProps {
   initialData: ProjectsData;
   onSave: (data: ProjectsData) => Promise<void>;
@@ -33,7 +59,13 @@ export default function ProjectsEditor({
   setFullScreen,
   username,
 }: ProjectsEditorProps) {
-  const [data, setData] = useState<ProjectsData>(() => structuredClone(initialData));
+  // ── Resolve data with defaults ─────────────────────────────────────────
+  const resolvedInitialData = mergeWithDefaults(initialData);
+  const usingDefaultsRef = useRef(
+    JSON.stringify(resolvedInitialData) !== JSON.stringify(initialData)
+  );
+
+  const [data, setData] = useState<ProjectsData>(() => structuredClone(resolvedInitialData));
   const [activeTab, setActiveTab] = useState<
     "filters" | "card-layout" | "layout" | "background" | "animations" | "cta"
   >("filters");
@@ -43,7 +75,11 @@ export default function ProjectsEditor({
   const [animationKey, setAnimationKey] = useState(0);
 
   // ── Stable serialised baseline ───────────────────────────────────────────
-  const savedSnapshotRef = useRef(JSON.stringify(initialData));
+  // Left blank when defaults were used so the mount-save effect below forces
+  // an initial persist instead of treating unsaved defaults as already saved.
+  const savedSnapshotRef = useRef(
+    usingDefaultsRef.current ? "" : JSON.stringify(resolvedInitialData)
+  );
   const hasChanges = JSON.stringify(data) !== savedSnapshotRef.current;
 
   // ── Save orchestration refs ──────────────────────────────────────────────
@@ -106,6 +142,15 @@ export default function ProjectsEditor({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
+
+  // ── Persist defaults right away when they weren't already saved ──────────
+  useEffect(() => {
+    if (usingDefaultsRef.current) {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      executeSave(data);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── Prevent accidental page unload ───────────────────────────────────────
   useEffect(() => {

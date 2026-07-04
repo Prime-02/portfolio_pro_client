@@ -7,9 +7,9 @@ import type { SocialLink } from "@/lib/stores/social_links/useSocialLinks";
 import { LoadingSkeleton } from "./LoadingSkeleton";
 import { PublicProfileView } from "./PublicProfileView";
 import { OwnProfileView } from "./OwnProfileView";
-import { useTheme } from "../theme/ThemeContext ";
+import { useTheme } from "../theme/ThemeContext";
 
-export default function SocialLinksPage() {
+export default function SocialLinksPage({ miniView = false }: { miniView?: boolean }) {
     const {
         socialLinks,
         isLoading,
@@ -70,6 +70,7 @@ export default function SocialLinksPage() {
         return (
             <PublicProfileView
                 username={publicUsername}
+                miniView={miniView}
                 error={error}
                 onClearError={clearError}
             />
@@ -80,6 +81,7 @@ export default function SocialLinksPage() {
     return (
         <OwnProfileView
             links={displayLinks}
+            miniView={miniView}
             isLoading={isLoading}
             error={error}
             onClearError={clearError}

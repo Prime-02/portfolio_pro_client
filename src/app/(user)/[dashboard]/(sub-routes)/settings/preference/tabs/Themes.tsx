@@ -1,5 +1,5 @@
 import { useUIStore } from "@/lib/stores/ui/useUIStore";
-import { useTheme } from "@/src/app/components/theme/ThemeContext ";
+import { useTheme } from "@/src/app/components/theme/ThemeContext";
 import { useCallback } from "react";
 import { themePresets } from "@/lib/utilities/indices/Themes";
 import { Moon, Sun } from "lucide-react";
@@ -17,7 +17,7 @@ export interface ThemePreset {
   light: ThemeColors;
   dark: ThemeColors;
   accent: string;
-  themeVariant?: ThemeVariant; 
+  themeVariant?: ThemeVariant;
 
 }
 

@@ -26,6 +26,8 @@ const SHAPE_OPTIONS: { value: HeroMediaShape; label: string }[] = [
     { value: "circle", label: "Circle" },
     { value: "rounded", label: "Rounded" },
     { value: "square", label: "Square" },
+    { value: "portrait", label: "Portrait (3:4)" },
+    { value: "landscape", label: "Landscape (16:9)" },
 ];
 
 const SIZE_OPTIONS: { value: HeroMediaSize; label: string }[] = [
@@ -177,18 +179,6 @@ export default function MediaTab({ data, onUpdate }: MediaTabProps) {
                         accept={mediaType}
                     />
                 </Field>
-            )}
-
-            {/* ── Alt text (image only) ──────────────────────────────── */}
-            {mediaType === "image" && (
-                <Textinput
-                    id="imageAlt"
-                    label="Alt Text"
-                    type="text"
-                    value={data.media?.imageAlt || ""}
-                    onChange={(e) => onUpdate({ imageAlt: e })}
-                    placeholder="A photo of me"
-                />
             )}
 
             {/* ── Shape & Size (when media is active) ───────────────── */}

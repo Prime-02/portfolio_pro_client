@@ -2,6 +2,8 @@ import { useCallback, useMemo } from "react";
 import PortfolioThemePicker, { PortfolioThemeValues } from "@/src/app/components/portfolio/PortfolioThemePicker";
 import { PortfolioThemeData } from "@/portfolio-builder/hooks/usePortfolioTheme";
 import { usePortfolioStore } from "@/portfolio-builder/store/usePortfolioStore";
+import { useTheme } from "@/src/app/components/theme/ThemeContext";
+import { themePresets } from "@/lib/utilities/indices/Themes";
 
 interface ThemeTabProps { }
 
@@ -12,18 +14,18 @@ export default function ThemeTab({ }: ThemeTabProps) {
     );
     const updateThemeLocally = usePortfolioStore((s) => s.updateThemeLocally);
 
-    const themeValues = useMemo((): PortfolioThemeValues => ({
-        themeVariant: themeData?.themeVariant ?? "system",
-        lightBg: themeData?.lightTheme?.background ?? "#ffffff",
-        lightFg: themeData?.lightTheme?.foreground ?? "#0a0a0a",
-        darkBg: themeData?.darkTheme?.background ?? "#0a0a0a",
-        darkFg: themeData?.darkTheme?.foreground ?? "#ededed",
-        accent: themeData?.accent ?? "#737373",
-    }), [themeData]);
+    // Get current app theme from ThemeContext for default values
+    const { lightTheme, darkTheme, accentColor, themeVariant: appThemeVariant } = useTheme();
 
-    // PortfolioThemePicker always calls onChange with the full PortfolioThemeValues
-    // object (via `onChange({ ...values, [key]: value })`), so we can map all
-    // fields directly — no partial merging or fallback store reads needed.
+    const themeValues = useMemo((): PortfolioThemeValues => ({
+        themeVariant: themeData?.themeVariant ?? appThemeVariant ?? "system",
+        lightBg: themeData?.lightTheme?.background ?? lightTheme.background ?? themePresets[0].light.background,
+        lightFg: themeData?.lightTheme?.foreground ?? lightTheme.foreground ?? themePresets[0].light.foreground,
+        darkBg: themeData?.darkTheme?.background ?? darkTheme.background ?? themePresets[0].dark.background,
+        darkFg: themeData?.darkTheme?.foreground ?? darkTheme.foreground ?? themePresets[0].dark.foreground,
+        accent: themeData?.accent ?? accentColor.color ?? themePresets[0].accent,
+    }), [themeData, lightTheme, darkTheme, accentColor, appThemeVariant]);
+
     const handleThemeChange = useCallback((values: PortfolioThemeValues) => {
         if (!portfolioSlug) return;
         updateThemeLocally(portfolioSlug, {
@@ -44,7 +46,7 @@ export default function ThemeTab({ }: ThemeTabProps) {
         <PortfolioThemePicker
             values={themeValues}
             onChange={handleThemeChange}
-            description="Customize the colors and mode of your portfolio."
+            description="Customize the colors and mode of your portfolio. Defaults to your current app theme settings."
         />
     );
 }

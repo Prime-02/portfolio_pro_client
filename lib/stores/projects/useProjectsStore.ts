@@ -43,6 +43,7 @@ function buildCreateFormData(data: PortfolioProjectCreate): FormData {
 
   appendIfDefined("project_name", data.project_name);
   appendIfDefined("project_description", data.project_description);
+  appendIfDefined("project_summary", data.project_summary);
   appendIfDefined("project_platform", data.project_platform);
   appendIfDefined("project_category", data.project_category);
   appendIfDefined("contribution_description", data.contribution_description);
@@ -89,6 +90,7 @@ function buildUpdateFormData(data: PortfolioProjectUpdate): FormData {
 
   appendIfDefined("project_name", data.project_name);
   appendIfDefined("project_description", data.project_description);
+  appendIfDefined("project_summary", data.project_summary);
   appendIfDefined("project_category", data.project_category);
   appendIfDefined("project_url", data.project_url);
   appendIfDefined("project_image_url", data.project_image_url);

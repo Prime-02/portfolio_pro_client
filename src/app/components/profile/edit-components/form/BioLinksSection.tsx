@@ -3,8 +3,6 @@
 import React from "react";
 import { SectionHeader } from "../../SectionHeader";
 import MarkdownEditor from "../../../markdown/MarkdownEditor";
-import { Textinput } from "../../../inputs/Textinput";
-import { FieldWrapper } from "./FieldWrapper";
 import { InlineSaveButton } from "../InlineSaveButton";
 import type { ProfileForm, FieldStatus } from "./types";
 
@@ -28,8 +26,8 @@ export const BioLinksSection = ({
         <section className="card rounded-2xl p-6 sm:p-8 space-y-6">
             <div className="flex items-center justify-between">
                 <SectionHeader
-                    title="Bio & Links"
-                    subtitle="Tell your story and share your presence"
+                    title="Bio"
+                    subtitle="Tell your story"
                 />
                 {modifiedFields.has("profile.bio") && (
                     <InlineSaveButton
@@ -47,25 +45,6 @@ export const BioLinksSection = ({
                     showCopy={false}
                     showDownload={false}
                 />
-            </div>
-            <div className="grid grid-cols-1 gap-4 pt-2">
-                {[
-                    { field: "website_url", label: "Website", placeholder: "https://yoursite.com", type: "url" },
-                ].map(({ field, label, placeholder, type }) => (
-                    <FieldWrapper
-                        key={field}
-                        status={fieldStatuses[`profile.${field}`]}
-                        onSave={() => onSaveField("profile", field)}
-                    >
-                        <Textinput
-                            label={label}
-                            value={String(profileForm[field as keyof typeof profileForm])}
-                            onChange={(v) => onUpdateProfile(field, v)}
-                            placeholder={placeholder}
-                            type={type as any}
-                        />
-                    </FieldWrapper>
-                ))}
             </div>
         </section>
     );

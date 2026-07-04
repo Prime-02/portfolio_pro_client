@@ -61,6 +61,7 @@ export const FileInput: React.FC<FileInputProps> = ({
   const [textContent, setTextContent] = useState<string | null>(null);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [isHovering, setIsHovering] = useState<boolean>(false);
   const dragCounter = useRef<number>(0);
   const uid = useId();
   const inputId = `file_input_${uid}`;
@@ -306,6 +307,8 @@ export const FileInput: React.FC<FileInputProps> = ({
           onDragLeave={handleDragLeave}
           onDragOver={handleDragOver}
           onDrop={handleDrop}
+          onMouseEnter={() => setIsHovering(true)}
+          onMouseLeave={() => setIsHovering(false)}
           className={`relative w-full rounded-lg border-2 border-dashed transition-all duration-200 overflow-hidden
             ${isDragging
               ? "border-[var(--accent)] scale-[1.02]"
@@ -326,19 +329,19 @@ export const FileInput: React.FC<FileInputProps> = ({
           {/* Dark overlay when image is loaded, stronger on drag */}
           {hasImagePreview && (
             <div
-              className={`absolute inset-0 transition-all duration-200 ${isDragging ? "bg-black/60" : "bg-black/35"
+              className={`absolute inset-0 transition-all duration-200 pointer-events-none ${isDragging ? "bg-black/60" : "bg-black/35"
                 }`}
             />
           )}
 
           {/* PDF state background tint */}
           {hasPdfSelected && !hasImagePreview && (
-            <div className="absolute inset-0 bg-[var(--accent)]/5" />
+            <div className="absolute inset-0 bg-[var(--accent)]/5 pointer-events-none" />
           )}
 
           {/* Drag overlay highlight */}
           {isDragging && !hasImagePreview && (
-            <div className="absolute inset-0 bg-[var(--accent)]/10" />
+            <div className="absolute inset-0 bg-[var(--accent)]/10 pointer-events-none" />
           )}
 
           {/* Loading state */}
@@ -362,16 +365,29 @@ export const FileInput: React.FC<FileInputProps> = ({
                   <span className="text-sm font-medium text-white drop-shadow">
                     {fileName}
                   </span>
-                  <span className="text-xs text-white/70 drop-shadow">
-                    Click or drop to replace
-                  </span>
+                  {isHovering && (
+                    <span className="text-xs text-white drop-shadow font-semibold bg-blue-600 px-3 py-1.5 rounded">
+                      ✎ Replace File
+                    </span>
+                  )}
+                  {!isHovering && (
+                    <span className="text-xs text-white/70 drop-shadow">
+                      Click or drop to replace
+                    </span>
+                  )}
                 </>
               ) : hasPdfSelected ? (
                 /* PDF loaded — compact info UI */
                 <>
                   <FileText className={`w-8 h-8 transition-colors duration-200 ${isDragging ? "text-[var(--accent)]" : "text-gray-400 dark:text-gray-500"}`} />
                   <span className="text-sm font-medium text-[var(--accent)]">{fileName}</span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">Click or drop to replace</span>
+                  {isHovering ? (
+                    <span className="text-xs text-white font-semibold bg-blue-600 px-3 py-1.5 rounded">
+                      ✎ Replace File
+                    </span>
+                  ) : (
+                    <span className="text-xs text-gray-500 dark:text-gray-400">Click or drop to replace</span>
+                  )}
                 </>
               ) : (
                 /* Empty state */
@@ -394,11 +410,11 @@ export const FileInput: React.FC<FileInputProps> = ({
           {(hasImagePreview || hasPdfSelected) && !disabled && (
             <button
               onClick={handleClear}
-              className="absolute top-2 right-2 z-20 p-1 rounded-full bg-black/40 hover:bg-black/60 text-white transition-colors duration-150"
+              className="absolute top-3 right-3 z-30 p-2 rounded-full bg-red-500 hover:bg-red-700 text-white transition-all duration-150 shadow-lg hover:shadow-xl hover:scale-110 pointer-events-auto"
               aria-label="Remove file"
               type="button"
             >
-              <X className="w-3.5 h-3.5" />
+              <X className="w-5 h-5" />
             </button>
           )}
         </div>

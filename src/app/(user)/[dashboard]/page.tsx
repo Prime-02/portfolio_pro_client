@@ -1,11 +1,10 @@
-"use client";
+import { UserProfilePage } from '@/src/app/components/profile/UserProfilePage'
+import React from 'react'
 
-import { useUserSettings } from "@/lib/stores/user/useUserSettings";
-import React from "react";
+const UserDashboard = () => {
+  return (
+    <UserProfilePage/>
+  )
+}
 
-const UsersDashboard = () => {
-  const {userInfo} = useUserSettings()
-  return <div>UsersDashboard: {userInfo?.username ?? "User"}</div>;
-};
-
-export default UsersDashboard;
+export default UserDashboard

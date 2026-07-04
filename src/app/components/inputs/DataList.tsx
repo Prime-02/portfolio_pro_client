@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Textinput } from "./Textinput";
-import { useTheme } from "../theme/ThemeContext ";
+import { useTheme } from "../theme/ThemeContext";
 import { getLoader } from "../loaders/Loader";
 import Button from "../buttons/Buttons";
 import { Accent, Theme } from "../types and interfaces/loaderTypes";
@@ -100,7 +100,7 @@ const DropdownContent: React.FC<DropdownContentProps> = ({
   displayKeys,
   valueKeys,
 }) => {
-  const {isLoading} = useUIStore()
+  const { isLoading } = useUIStore()
   const { theme, loader, accentColor } = useTheme();
   const LoaderComponent = getLoader(loader);
   const [position, setPosition] = useState<"top" | "bottom">("bottom");

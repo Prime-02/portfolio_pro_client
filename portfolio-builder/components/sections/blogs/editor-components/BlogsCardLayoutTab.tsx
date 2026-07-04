@@ -148,8 +148,7 @@ export default function BlogsCardLayoutTab({ data, onChange }: BlogsCardLayoutTa
         <div className="space-y-3">
           <Toggle label="Show cover image" checked={data.showImage} onChange={(v) => onChange("showImage", v)} />
           <Toggle label="Show title" checked={data.showTitle} onChange={(v) => onChange("showTitle", v)} />
-          <Toggle label="Show excerpt" checked={data.showExcerpt} onChange={(v) => onChange("showExcerpt", v)} />
-          <Toggle label="Show body/content" checked={data.showBody} onChange={(v) => onChange("showBody", v)} />
+          <Toggle label="Show summary/excerpt" checked={data.showExcerpt} onChange={(v) => onChange("showExcerpt", v)} />
           <Toggle label="Show author" checked={data.showAuthor} onChange={(v) => onChange("showAuthor", v)} />
           <Toggle label="Show dates" checked={data.showDates} onChange={(v) => onChange("showDates", v)} />
           <Toggle label="Show status" checked={data.showStatus} onChange={(v) => onChange("showStatus", v)} />
@@ -324,8 +323,7 @@ export default function BlogsCardLayoutTab({ data, onChange }: BlogsCardLayoutTa
                   <div className="space-y-2">
                     <Toggle label="Show image (override)" checked={override.showImage ?? data.showImage} onChange={(v) => updateOverride(index, { showImage: v })} />
                     <Toggle label="Show title (override)" checked={override.showTitle ?? data.showTitle} onChange={(v) => updateOverride(index, { showTitle: v })} />
-                    <Toggle label="Show excerpt (override)" checked={override.showExcerpt ?? data.showExcerpt} onChange={(v) => updateOverride(index, { showExcerpt: v })} />
-                    <Toggle label="Show body (override)" checked={override.showBody ?? data.showBody} onChange={(v) => updateOverride(index, { showBody: v })} />
+                    <Toggle label="Show summary/excerpt (override)" checked={override.showExcerpt ?? data.showExcerpt} onChange={(v) => updateOverride(index, { showExcerpt: v })} />
                     <Toggle label="Show author (override)" checked={override.showAuthor ?? data.showAuthor} onChange={(v) => updateOverride(index, { showAuthor: v })} />
                     <Toggle label="Show dates (override)" checked={override.showDates ?? data.showDates} onChange={(v) => updateOverride(index, { showDates: v })} />
                     <Toggle label="Show status (override)" checked={override.showStatus ?? data.showStatus} onChange={(v) => updateOverride(index, { showStatus: v })} />

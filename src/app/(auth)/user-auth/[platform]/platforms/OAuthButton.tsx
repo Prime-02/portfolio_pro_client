@@ -2,7 +2,7 @@ import { api } from "@/lib/client/api";
 import { useRouting } from "@/lib/hooks/routing/useRouting";
 import { useUIStore } from "@/lib/stores/ui/useUIStore";
 import Button from "@/src/app/components/buttons/Buttons";
-import { useTheme } from "@/src/app/components/theme/ThemeContext ";
+import { useTheme } from "@/src/app/components/theme/ThemeContext";
 import { toast } from "@/src/app/components/toastify/Toastify";
 import Image from "next/image";
 import React from "react";

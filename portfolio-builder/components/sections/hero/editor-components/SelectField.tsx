@@ -1,7 +1,7 @@
 // portfolio-builder/components/sections/hero/editor-components/SelectField.tsx
 
+import { PBDropdown } from '@/portfolio-builder/components/shared/ui/inputs';
 import Field from './Field';
-import Dropdown from '@/src/app/components/inputs/DynamicDropdown';
 
 interface SelectOption {
     value: string;
@@ -23,7 +23,7 @@ export default function SelectField({ label, id, value, onChange, options }: Sel
     }));
     return (
         <Field label={label} htmlFor={id}>
-            <Dropdown
+            <PBDropdown
                 options={modifiedOptions}
                 value={value}
                 onSelect={(val) => onChange(val as string)}

@@ -1,5 +1,7 @@
 // components/education/OwnProfileView.tsx
 import { GraduationCap, Plus, Share2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useTheme } from "../theme/ThemeContext";
 import Button from "../buttons/Buttons";
 import { StatsBar } from "./StatsBar";
 import { EducationsGrid } from "./EducationsGrid";
@@ -22,6 +24,7 @@ interface OwnProfileViewProps {
     onDeleteEduChange: (edu: Education | null) => void;
     isDeleting: boolean;
     onDeleteConfirm: () => Promise<void>;
+    miniView?: boolean;
 }
 
 export function OwnProfileView({
@@ -37,15 +40,21 @@ export function OwnProfileView({
     onDeleteEduChange,
     isDeleting,
     onDeleteConfirm,
+    miniView = false,
 }: OwnProfileViewProps) {
+    const router = useRouter();
+    const { profileContext } = useTheme();
+    const usernamePath = profileContext?.username ? `/${profileContext.username}` : "";
+    const displayedEducations = miniView ? educations.slice(0, 3) : educations;
+    const showSeeAll = miniView && educations.length > 0;
 
     return (
-        <div className="min-h-screen p-6 md:p-8 lg:p-10 max-w-6xl mx-auto">
+        <div className={miniView ? "p-6 md:p-8 lg:p-10 max-w-6xl mx-auto" : "min-h-screen p-6 md:p-8 lg:p-10 max-w-6xl mx-auto"}>
             <PageHeader
                 icon={<GraduationCap className="w-6 h-6 text-[var(--accent)]" />}
                 title="My Education"
                 description="Manage your academic background and qualifications"
-                action={
+                action={!miniView ? (
                     <div className="flex items-center gap-x-2">
                         <Button
                             onClick={handleShareProfile}
@@ -61,7 +70,7 @@ export function OwnProfileView({
                             icon={<Plus className="w-4 h-4" />}
                         />
                     </div>
-                }
+                ) : undefined}
             />
 
             {!isLoading && <StatsBar educations={educations} />}
@@ -69,13 +78,24 @@ export function OwnProfileView({
             {error && <ErrorMessage message={error} onDismiss={onClearError} />}
 
             <EducationsGrid
-                educations={educations}
+                educations={displayedEducations}
                 isLoading={isLoading}
                 onEdit={onEditEduChange}
                 onDelete={onDeleteEduChange}
                 onAddClick={() => onAddDialogChange(true)}
                 isOwner={true}
             />
+
+            {showSeeAll && (
+                <div className="mt-6 flex justify-end">
+                    <button
+                        onClick={() => router.push(usernamePath ? `/${usernamePath}/education` : "/education")}
+                        className="rounded-full border border-[var(--accent)]/30 px-4 py-2 text-sm font-medium text-[var(--accent)] transition hover:bg-[var(--accent)]/10"
+                    >
+                        See all
+                    </button>
+                </div>
+            )}
 
             <EducationDialogs
                 addDialogOpen={addDialogOpen}

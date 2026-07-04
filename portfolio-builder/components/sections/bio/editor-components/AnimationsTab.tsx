@@ -68,23 +68,19 @@ export default function AnimationsTab({ data, onUpdate }: AnimationsTabProps) {
 
             <SliderField
               label="Duration"
-              htmlFor="animDuration"
               value={duration}
               min={0.1}
               max={2}
               step={0.05}
-              unit="s"
               onChange={(v) => onUpdate({ duration: v })}
             />
 
             <SliderField
               label="Initial Delay"
-              htmlFor="animDelay"
               value={delay}
               min={0}
               max={2}
               step={0.05}
-              unit="s"
               onChange={(v) => onUpdate({ delay: v })}
             />
           </>
@@ -105,12 +101,10 @@ export default function AnimationsTab({ data, onUpdate }: AnimationsTabProps) {
           {staggerChildren && (
             <SliderField
               label="Delay between elements"
-              htmlFor="staggerDelay"
               value={staggerDelay}
               min={0.02}
               max={0.5}
               step={0.01}
-              unit="s"
               onChange={(v) => onUpdate({ staggerDelay: v })}
             />
           )}

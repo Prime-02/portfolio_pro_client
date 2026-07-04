@@ -2,7 +2,7 @@ import React from "react";
 import { RefreshCw } from "lucide-react";
 import Image from "next/image";
 import Button from "../../buttons/Buttons";
-import { useTheme } from "../../theme/ThemeContext ";
+import { useTheme } from "../../theme/ThemeContext";
 
 interface ErrorDisplayProps {
   error?: Error | string | null;
@@ -22,7 +22,7 @@ const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
   className = "",
 }) => {
   const { isDarkMode } = useTheme();
-  
+
   const getErrorMessage = () => {
     if (description) return description;
     if (error instanceof Error) return error.message;
@@ -33,16 +33,16 @@ const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
   const errorMessage = getErrorMessage();
 
   // Theme-specific styles
-  const containerStyles = isDarkMode 
-    ? "bg-red-900/20 border-red-700" 
+  const containerStyles = isDarkMode
+    ? "bg-red-900/20 border-red-700"
     : "bg-red-50 border-red-500";
 
-  const titleStyles = isDarkMode 
-    ? "text-red-100" 
+  const titleStyles = isDarkMode
+    ? "text-red-100"
     : "text-red-900";
 
-  const textStyles = isDarkMode 
-    ? "text-red-200" 
+  const textStyles = isDarkMode
+    ? "text-red-200"
     : "text-red-700";
 
   return (

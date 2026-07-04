@@ -64,12 +64,13 @@ export default function EducationRenderer({ data, username, animationKey }: Educ
     filters,
   } = data;
 
+  const safeFilters = filters ?? ({} as EducationData["filters"]);
   const anim: BioAnimations = { ...DEFAULT_ANIM, ...(animations ?? {}) };
   const isAnimated = anim.preset !== "none";
 
   // ── Education fetch ─────────────────────────────────────────────────────
-  const { rendererEducations, isLoadingEducations } = useDebouncedEducationsFetch(username, filters);
-  const sortedEducations = sortEducations(rendererEducations, filters._sortBy || "default");
+  const { rendererEducations, isLoadingEducations } = useDebouncedEducationsFetch(username, safeFilters);
+  const sortedEducations = sortEducations(rendererEducations, safeFilters._sortBy || "default");
 
   // ── Scroll / parallax refs ──────────────────────────────────────────────
   const sectionRef = useRef<HTMLElement>(null);

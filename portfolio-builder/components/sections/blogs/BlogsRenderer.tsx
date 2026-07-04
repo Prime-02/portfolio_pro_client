@@ -63,12 +63,13 @@ export default function BlogsRenderer({ data, username, animationKey }: BlogsRen
     filters,
   } = data;
 
+  const safeFilters = filters ?? ({} as BlogsData["filters"]);
   const anim: BioAnimations = { ...DEFAULT_ANIM, ...(animations ?? {}) };
   const isAnimated = anim.preset !== "none";
 
   // ── Blogs fetch ──────────────────────────────────────────────────────────
-  const { rendererBlogs, isLoadingBlogs } = useDebouncedBlogsFetch(username, filters);
-  const sortedBlogs = sortBlogs(rendererBlogs, filters._sortBy || "default");
+  const { rendererBlogs, isLoadingBlogs } = useDebouncedBlogsFetch(username, safeFilters);
+  const sortedBlogs = sortBlogs(rendererBlogs, safeFilters._sortBy || "default");
 
   // ── Scroll / parallax refs ────────────────────────────────────────────────
   const sectionRef = useRef<HTMLElement>(null);

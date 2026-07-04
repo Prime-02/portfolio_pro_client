@@ -7,9 +7,9 @@ import type { Certification } from "@/lib/stores/certifications/useCertification
 import { LoadingSkeleton } from "./LoadingSkeleton";
 import { PublicProfileView } from "./PublicProfileView";
 import { OwnProfileView } from "./OwnProfileView";
-import { useTheme } from "../theme/ThemeContext ";
+import { useTheme } from "../theme/ThemeContext";
 
-export default function CertificationsPage() {
+export default function CertificationsPage({ miniView = false }: { miniView?: boolean }) {
     const {
         certifications,
         isLoading,
@@ -73,6 +73,7 @@ export default function CertificationsPage() {
             <PublicProfileView
                 username={publicUsername}
                 certifications={displayCerts}
+                miniView={miniView}
                 isLoading={displayLoading}
                 error={error}
                 onClearError={clearError}
@@ -84,6 +85,7 @@ export default function CertificationsPage() {
     return (
         <OwnProfileView
             certifications={displayCerts}
+            miniView={miniView}
             isLoading={displayLoading}
             error={error}
             onClearError={clearError}

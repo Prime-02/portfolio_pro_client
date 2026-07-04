@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { useTheme } from "../../theme/ThemeContext ";
+import { useTheme } from "../../theme/ThemeContext";
 import { useRouting } from "@/lib/hooks/routing/useRouting";
 import { getColorShade } from "@/lib/utilities/syncFunctions/syncs";
 

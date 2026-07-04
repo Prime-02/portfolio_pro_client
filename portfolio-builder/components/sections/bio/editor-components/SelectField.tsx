@@ -1,8 +1,5 @@
 // portfolio-builder/components/sections/bio/editor-components/SelectField.tsx
-
-import { inputClass } from "./styles";
-import Field from "./Field";
-import Dropdown from "@/src/app/components/inputs/DynamicDropdown";
+import { PBDropdown } from "@/portfolio-builder/components/shared/ui/inputs";
 
 interface SelectOption {
   value: string;
@@ -24,7 +21,7 @@ export default function SelectField({ label, id, value, onChange, options, hint 
     code: opt.label,
   }));
   return (
-    <Dropdown
+    <PBDropdown
       options={formattedArray}
       value={value}
       onSelect={(e) => onChange(e as string)}

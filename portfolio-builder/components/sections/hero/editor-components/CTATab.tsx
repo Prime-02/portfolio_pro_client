@@ -4,9 +4,9 @@ import { useState } from "react";
 import { HeroData, HeroCTA, CTAVariant, CTAColorOverride } from "@/portfolio-builder/types/hero";
 import Field from './Field';
 import ColorPicker from './ColorPicker';
-import Dropdown from "@/src/app/components/inputs/DynamicDropdown";
 import { Textinput } from "@/src/app/components/inputs/Textinput";
 import { useUserSettings } from "@/lib/stores/user/useUserSettings";
+import { PBDropdown, PBTextInput } from "@/portfolio-builder/components/shared/ui/inputs";
 
 interface CTATabProps {
     data: HeroData;
@@ -205,7 +205,6 @@ function UrlPicker({
         { id: `/${username}/projects`, code: "Your Projects" },
         { id: `/${username}/socials`, code: "Your Social Media Handles" },
         { id: `/${username}/experience`, code: "Your Experiences" },
-        { id: `/${username}/resume`, code: "Your CV/Resume" },
         { id: `/${username}/certification`, code: "Your Certifications" },
         { id: `/${username}/education`, code: "Your Education" },
         { id: `/${username}/skills`, code: "Your Skills" },
@@ -235,7 +234,7 @@ function UrlPicker({
 
     return (
         <div className="space-y-3">
-            <Dropdown
+            <PBDropdown
                 options={allOptions}
                 label="Link Destination"
                 value={dropdownValue}
@@ -256,7 +255,7 @@ function UrlPicker({
 
             {/* Show text input when in external mode */}
             {mode === "external" && (
-                <Textinput
+                <PBTextInput
                     label="External URL"
                     value={value}
                     onChange={(e) => onChange(e)}
@@ -381,7 +380,7 @@ export default function CTATab({ data, onAdd, onUpdate, onRemove, onReorder }: C
                         {!isCollapsed && (
                             <div className="p-4 space-y-4">
                                 <div className="w-full">
-                                    <Textinput
+                                    <PBTextInput
                                         label="Label"
                                         value={btn.label}
                                         onChange={(e) => onUpdate(index, { label: e })}
@@ -397,7 +396,7 @@ export default function CTATab({ data, onAdd, onUpdate, onRemove, onReorder }: C
                                 />
 
                                 <div className="w-full">
-                                    <Dropdown
+                                    <PBDropdown
                                         options={CTA_VARIANT_OPTIONS}
                                         label="Variant"
                                         value={btn.variant}

@@ -11,6 +11,8 @@ import SelectField from "./SelectField";
 import Field from "./Field";
 import { inputClass } from "./styles";
 import { Textinput } from "@/src/app/components/inputs/Textinput";
+import { PBRangeInput } from "@/portfolio-builder/components/shared/ui/inputs";
+import { SliderField } from "../../bio/editor-components";
 
 interface AnimationsTabProps {
     data: HeroData;
@@ -105,48 +107,6 @@ function Toggle({
     );
 }
 
-function SliderField({
-    label,
-    htmlFor,
-    value,
-    min,
-    max,
-    step,
-    unit,
-    onChange,
-}: {
-    label: string;
-    htmlFor: string;
-    value: number;
-    min: number;
-    max: number;
-    step: number;
-    unit?: string;
-    onChange: (v: number) => void;
-}) {
-    return (
-        <div className="flex items-center gap-3 w-full">
-            <div className="flex-1">
-                <Textinput
-                    id={htmlFor}
-                    type="range"
-                    min={min}
-                    max={max}
-                    step={step}
-                    label={label}
-                    value={value}
-                    onChange={(e) => onChange(Number(e))}
-                    className="w-full h-1.5 appearance-none bg-[var(--pb-foreground-20)] rounded-full accent-[var(--pb-foreground)] cursor-pointer"
-                />
-            </div>
-            <span className="text-sm text-[var(--pb-text-secondary)] tabular-nums min-w-[4rem] text-right font-medium">
-                {value}
-                {unit}
-            </span>
-        </div>
-    );
-}
-
 export default function AnimationsTab({ data, onUpdate }: AnimationsTabProps) {
     const anim = data.animations ?? ({} as Partial<HeroAnimations>);
 
@@ -191,23 +151,19 @@ export default function AnimationsTab({ data, onUpdate }: AnimationsTabProps) {
 
                         <SliderField
                             label="Duration"
-                            htmlFor="animDuration"
                             value={duration}
                             min={0.1}
                             max={2}
                             step={0.05}
-                            unit="s"
                             onChange={(v) => onUpdate({ duration: v })}
                         />
 
                         <SliderField
                             label="Initial Delay"
-                            htmlFor="animDelay"
                             value={delay}
                             min={0}
                             max={2}
                             step={0.05}
-                            unit="s"
                             onChange={(v) => onUpdate({ delay: v })}
                         />
                     </>
@@ -227,12 +183,10 @@ export default function AnimationsTab({ data, onUpdate }: AnimationsTabProps) {
                     {staggerChildren && (
                         <SliderField
                             label="Delay between elements"
-                            htmlFor="staggerDelay"
                             value={staggerDelay}
                             min={0.02}
                             max={0.5}
                             step={0.01}
-                            unit="s"
                             onChange={(v) => onUpdate({ staggerDelay: v })}
                         />
                     )}
@@ -272,12 +226,10 @@ export default function AnimationsTab({ data, onUpdate }: AnimationsTabProps) {
                 {parallax && (
                     <SliderField
                         label="Intensity"
-                        htmlFor="parallaxIntensity"
                         value={parallaxIntensity}
                         min={5}
                         max={100}
                         step={5}
-                        unit="px"
                         onChange={(v) => onUpdate({ parallaxIntensity: v })}
                     />
                 )}
@@ -295,12 +247,10 @@ export default function AnimationsTab({ data, onUpdate }: AnimationsTabProps) {
                 {textReveal && (
                     <SliderField
                         label="Reveal delay"
-                        htmlFor="textRevealDelay"
                         value={textRevealDelay}
                         min={0}
                         max={1.5}
                         step={0.05}
-                        unit="s"
                         onChange={(v) => onUpdate({ textRevealDelay: v })}
                     />
                 )}
@@ -319,12 +269,10 @@ export default function AnimationsTab({ data, onUpdate }: AnimationsTabProps) {
                 {(hoverEffect === "scale" || hoverEffect === "lift") && (
                     <SliderField
                         label="Scale amount"
-                        htmlFor="hoverScale"
                         value={hoverScale}
                         min={1.01}
                         max={1.15}
                         step={0.01}
-                        unit="×"
                         onChange={(v) => onUpdate({ hoverScale: v })}
                     />
                 )}

@@ -2,13 +2,13 @@
 
 import { useEffect, useRef } from "react";
 import { CertificationData, CertificationFilterConfig } from "@/portfolio-builder/types/certification";
-import Dropdown from "@/src/app/components/inputs/DynamicDropdown";
 import { sectionClass, sectionTitleClass } from "../../bio/editor-components/styles";
 import Toggle from "../../bio/editor-components/Toggle";
 import Link from "next/link";
 import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 import { RefreshCcwDot } from "lucide-react";
 import { useCertifications } from "@/lib/stores/certifications/useCertifications";
+import { PBDropdown } from "@/portfolio-builder/components/shared/ui/inputs";
 
 interface CertificationFilterTabProps {
   data: CertificationData;
@@ -18,7 +18,7 @@ interface CertificationFilterTabProps {
 export default function CertificationFilterTab({ data, onUpdate }: CertificationFilterTabProps) {
   const { userInfo } = useUserSettings();
   const { certifications: allCertifications, fetchAllCertifications } = useCertifications();
-  const filters = data.filters;
+  const filters = data.filters ?? ({} as CertificationFilterConfig)
 
   const isLoading = false;
 
@@ -135,7 +135,7 @@ export default function CertificationFilterTab({ data, onUpdate }: Certification
 
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Dropdown
+            <PBDropdown
               id="filter-organization"
               label="Issuing Organization"
               value={filters.issuing_organization || ""}
@@ -144,7 +144,7 @@ export default function CertificationFilterTab({ data, onUpdate }: Certification
               placeholder="All organizations"
               clearable
             />
-            <Dropdown
+            <PBDropdown
               id="filter-cert-name"
               label="Certification Name"
               value={filters.certification_name || ""}

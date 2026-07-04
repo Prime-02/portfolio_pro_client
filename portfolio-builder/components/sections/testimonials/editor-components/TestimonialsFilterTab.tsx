@@ -3,13 +3,13 @@
 
 import { useEffect, useRef } from "react";
 import { TestimonialsData, TestimonialsFilterConfig } from "@/portfolio-builder/types/testimonials";
-import Dropdown from "@/src/app/components/inputs/DynamicDropdown";
 import { sectionClass, sectionTitleClass } from "../../bio/editor-components/styles";
 import Toggle from "../../bio/editor-components/Toggle";
 import Link from "next/link";
 import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 import { RefreshCcwDot } from "lucide-react";
 import { useTestimonialsStore } from "@/lib/stores/testimonials/useTestimonial";
+import { PBDropdown } from "@/portfolio-builder/components/shared/ui/inputs";
 
 interface TestimonialsFilterTabProps {
   data: TestimonialsData;
@@ -19,7 +19,7 @@ interface TestimonialsFilterTabProps {
 export default function TestimonialsFilterTab({ data, onUpdate }: TestimonialsFilterTabProps) {
   const { userTestimonials, fetchMyAuthoredTestimonials, myAuthoredTestimonialsLoading } = useTestimonialsStore();
   const { userInfo } = useUserSettings();
-  const filters = data.filters;
+  const filters = data.filters ?? ({} as TestimonialsFilterConfig)
 
   const allTestimonials = userTestimonials;
 
@@ -111,15 +111,15 @@ export default function TestimonialsFilterTab({ data, onUpdate }: TestimonialsFi
         </div>
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Dropdown id="filter-company" label="Company" value={filters.author_company || ""}
+            <PBDropdown id="filter-company" label="Company" value={filters.author_company || ""}
               onSelect={(val) => onUpdate({ author_company: val as string || undefined })}
               options={companyOptions} placeholder="All companies" clearable />
-            <Dropdown id="filter-relationship" label="Relationship" value={filters.author_relationship || ""}
+            <PBDropdown id="filter-relationship" label="Relationship" value={filters.author_relationship || ""}
               onSelect={(val) => onUpdate({ author_relationship: val as string || undefined })}
               options={relationshipOptions} placeholder="All relationships" clearable />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Dropdown id="filter-rating" label="Minimum Rating" value={filters.min_rating?.toString() || ""}
+            <PBDropdown id="filter-rating" label="Minimum Rating" value={filters.min_rating?.toString() || ""}
               onSelect={(val) => onUpdate({ min_rating: val ? Number(val) : undefined })}
               options={[
                 { id: "5", code: "5 Stars" },

@@ -4,8 +4,7 @@
 
 import { useCallback } from "react";
 import type { HeroTypography } from "@/portfolio-builder/types/hero";
-import Dropdown from "@/src/app/components/inputs/DynamicDropdown";
-import { Textinput } from "@/src/app/components/inputs/Textinput";
+import { PBDropdown, PBRangeInput } from "@/portfolio-builder/components/shared/ui/inputs";
 
 interface TypographyControlProps {
   label: string;
@@ -14,15 +13,15 @@ interface TypographyControlProps {
 }
 
 const WEIGHT_OPTIONS = [
-  { id: 100, code: "100 — Thin" },
-  { id: 200, code: "200 — Extra Light" },
-  { id: 300, code: "300 — Light" },
-  { id: 400, code: "400 — Regular" },
-  { id: 500, code: "500 — Medium" },
-  { id: 600, code: "600 — Semi Bold" },
-  { id: 700, code: "700 — Bold" },
-  { id: 800, code: "800 — Extra Bold" },
-  { id: 900, code: "900 — Black" },
+  { id: 100, code: "Thin" },
+  { id: 200, code: "Extra Light" },
+  { id: 300, code: "Light" },
+  { id: 400, code: "Regular" },
+  { id: 500, code: "Medium" },
+  { id: 600, code: "Semi Bold" },
+  { id: 700, code: "Bold" },
+  { id: 800, code: "Extra Bold" },
+  { id: 900, code: "Black" },
 ];
 
 const TRANSFORM_OPTIONS = [
@@ -59,19 +58,18 @@ export default function TypographyControl({
 
       {/* Size */}
       <div className={rowClass}>
-        <Textinput
-          type="number"
+        <PBRangeInput
           label="Size"
           min={8}
           max={200}
           value={value.size ?? 16}
-          onChange={(e) => update({ size: Number(e) })}
+          onChange={(val) => update({ size: val })}
         />
       </div>
 
       {/* Weight */}
       <div className={rowClass}>
-        <Dropdown
+        <PBDropdown
           options={WEIGHT_OPTIONS}
           label="Weight"
           value={value.weight ?? 400}
@@ -85,33 +83,31 @@ export default function TypographyControl({
 
       {/* Line Height */}
       <div className={rowClass}>
-        <Textinput
-          type="number"
+        <PBRangeInput
           label="Line Height (em)"
           min={0.5}
           max={3}
           step={0.05}
           value={value.lineHeight ?? 1.5}
-          onChange={(e) => update({ lineHeight: Number(e) })}
+          onChange={(val) => update({ lineHeight: val })}
         />
       </div>
 
       {/* Letter Spacing */}
       <div className={rowClass}>
-        <Textinput
-          label=" Letter Spacing (px)"
-          type="number"
+        <PBRangeInput
+          label="Letter Spacing (px)"
           min={-5}
           max={20}
           step={0.1}
           value={value.letterSpacing ?? 0}
-          onChange={(e) => update({ letterSpacing: Number(e) })}
+          onChange={(val) => update({ letterSpacing: val })}
         />
       </div>
 
       {/* Transform */}
       <div className={rowClass}>
-        <Dropdown
+        <PBDropdown
           options={TRANSFORM_OPTIONS}
           label="Transform"
           value={value.transform ?? "none"}

@@ -182,6 +182,7 @@ export interface PortfolioProjectBase {
   id: string;
   platform_project_id?: string | null;
   project_name: string;
+  project_summary?: string | null;
   project_description?: string | null;
   project_platform: string;
   project_category?: string | null;
@@ -229,6 +230,7 @@ export interface PortfolioProjectResponse extends PortfolioProjectBase {
 
 export interface PortfolioProjectCreate {
   project_name: string;
+  project_summary?: string | null;
   project_description?: string | null;
   project_platform?: string;
   project_category?: string | null;
@@ -252,6 +254,7 @@ export interface PortfolioProjectCreate {
 
 export interface PortfolioProjectUpdate {
   project_name?: string | null;
+  project_summary?: string | null;
   project_description?: string | null;
   project_category?: string | null;
   project_url?: string | null;

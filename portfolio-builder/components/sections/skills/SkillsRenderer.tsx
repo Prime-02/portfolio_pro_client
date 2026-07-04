@@ -63,12 +63,13 @@ export default function SkillsRenderer({ data, username, animationKey }: SkillsR
     filters,
   } = data;
 
+  const safeFilters = filters ?? ({} as SkillsData["filters"]);
   const anim: BioAnimations = { ...DEFAULT_ANIM, ...(animations ?? {}) };
   const isAnimated = anim.preset !== "none";
 
   // ── Skills fetch ──────────────────────────────────────────────────────────
-  const { rendererSkills, isLoadingSkills } = useDebouncedSkillsFetch(username, filters);
-  const sortedSkills = sortSkills(rendererSkills, filters._sortBy || "default");
+  const { rendererSkills, isLoadingSkills } = useDebouncedSkillsFetch(username, safeFilters);
+  const sortedSkills = sortSkills(rendererSkills, safeFilters._sortBy || "default");
 
   // ── Scroll / parallax refs ────────────────────────────────────────────────
   const sectionRef = useRef<HTMLElement>(null);

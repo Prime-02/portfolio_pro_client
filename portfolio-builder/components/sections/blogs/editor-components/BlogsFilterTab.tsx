@@ -36,7 +36,7 @@ const STATUS_OPTIONS: { id: ContentStatus; code: string }[] = [
 export default function BlogsFilterTab({ data, onUpdate }: BlogsFilterTabProps) {
   const { publicItems, fetchPublicContent, isLoading } = useContentStore();
   const { userInfo } = useUserSettings();
-  const filters = data.filters;
+  const filters = data.filters ?? ({} as BlogsFilterConfig)
 
   const allBlogs = publicItems;
 

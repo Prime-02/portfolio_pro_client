@@ -3,7 +3,8 @@
 import type { SectionBackground } from "../types/sectionBackground";
 import type { BackgroundModule, FieldType } from "./BackgroundRegistry.tsx";
 import ColorPicker from "@/src/app/components/inputs/ColorPicker";
-import { PBDropdown } from "../../ui/inputs";
+import { PBCheckBox, PBDropdown, PBRangeInput } from "../../ui/inputs";
+import CheckBox from "@/src/app/components/inputs/CheckBox";
 
 interface AutoBackgroundFieldsProps {
   module: BackgroundModule;
@@ -47,21 +48,13 @@ function FieldRenderer({
       const val = (bg as any)[field.key] ?? field.defaultValue;
       return (
         <div>
-          <div className="flex justify-between mb-1">
-            <label className="text-xs text-[var(--pb-text-muted)]">{field.label}</label>
-            <span className="text-xs text-[var(--pb-text-muted)] tabular-nums">
-              {val}
-              {field.unit ?? ""}
-            </span>
-          </div>
-          <input
-            type="range"
+          <PBRangeInput
+            label={field.label}
             min={field.min}
             max={field.max}
             step={field.step}
             value={val}
-            onChange={(e) => onUpdate({ [field.key]: Number(e.target.value) })}
-            className="w-full h-1.5 appearance-none bg-[var(--pb-foreground-20)] rounded-full accent-[#ffffff] cursor-pointer"
+            onChange={(v) => onUpdate({ [field.key]: v })}
           />
         </div>
       );
@@ -84,11 +77,9 @@ function FieldRenderer({
     case "checkbox":
       return (
         <label className="flex items-center gap-2 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={(bg as any)[field.key] ?? field.defaultValue}
-            onChange={(e) => onUpdate({ [field.key]: e.target.checked })}
-            className="rounded"
+          <PBCheckBox
+            isChecked={(bg as any)[field.key] ?? field.defaultValue}
+            setIsChecked={(e: boolean) => onUpdate({ [field.key]: e })}
           />
           <span className="text-sm text-[var(--pb-text-secondary)]">{field.label}</span>
         </label>
@@ -150,7 +141,6 @@ export function SliderField({
   min,
   max,
   step,
-  unit = "",
   onChange,
 }: {
   label: string;
@@ -158,25 +148,17 @@ export function SliderField({
   min: number;
   max: number;
   step: number;
-  unit?: string;
   onChange: (v: number) => void;
 }) {
   return (
     <div>
-      <div className="flex justify-between mb-1">
-        <label className="text-xs text-[var(--pb-text-muted)]">{label}</label>
-        <span className="text-xs text-[var(--pb-text-muted)] tabular-nums">
-          {value}
-          {unit}
-        </span>
-      </div>
-      <input
-        type="range"
+      <PBRangeInput
+        label={label}
         min={min}
         max={max}
         step={step}
         value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
+        onChange={(e) => onChange(Number(e))}
         className="w-full h-1.5 appearance-none bg-[var(--pb-foreground-20)] rounded-full accent-[#ffffff] cursor-pointer"
       />
     </div>
@@ -219,7 +201,7 @@ export function CheckboxField({
 }) {
   return (
     <label className="flex items-center gap-2 cursor-pointer">
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="rounded" />
+      <CheckBox isChecked={checked} setIsChecked={onChange} />
       <span className="text-sm text-[var(--pb-text-secondary)]">{label}</span>
     </label>
   );

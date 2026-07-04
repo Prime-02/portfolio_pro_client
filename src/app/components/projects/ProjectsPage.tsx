@@ -5,11 +5,11 @@ import { useProjectStore } from "@/lib/stores/projects/useProjectsStore";
 import { LoadingSkeleton } from "./LoadingSkeleton";
 import { OwnProjectsView } from "./OwnProjectsView";
 import { PublicProjectsView } from "./PublicProjectsView";
-import { useTheme } from "../theme/ThemeContext ";
+import { useTheme } from "../theme/ThemeContext";
 
 const PAGE_SIZE = 20;
 
-export default function ProjectsPage() {
+export default function ProjectsPage({ miniView = false }: { miniView?: boolean }) {
   const {
     projects,
     totalProjects,
@@ -125,6 +125,7 @@ export default function ProjectsPage() {
       <PublicProjectsView
         username={publicUsername}
         projects={filteredProjects}
+        miniView={miniView}
         totalProjects={totalFilteredProjects}
         isLoading={isLoading || false}
         hasMore={filteredHasMore}
@@ -139,6 +140,7 @@ export default function ProjectsPage() {
   return (
     <OwnProjectsView
       projects={projects}
+      miniView={miniView}
       totalProjects={totalProjects}
       projectStats={projectStats}
       isLoading={isLoading || false}

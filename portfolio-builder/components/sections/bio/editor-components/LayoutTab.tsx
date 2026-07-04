@@ -212,18 +212,21 @@ export default function LayoutTab({ data, onChange }: LayoutTabProps) {
                 className={[
                   "flex flex-col items-center gap-2 rounded-xl border-2 p-3",
                   "transition-all duration-150 focus-visible:outline-none",
-                  "focus-visible:ring-2 focus-visible:ring-ring hover:border-primary/60",
+                  "focus-visible:ring-2 focus-visible:ring-[var(--pb-border-hover)]",
                   active
-                    ? "border-foreground bg-foreground/5 text-foreground"
-                    : "border-foreground/15 bg-background text-foreground/50 hover:bg-foreground/5",
+                    ? "border-[var(--pb-text-primary)] bg-[var(--pb-surface-elevated)] text-[var(--pb-text-primary)]"
+                    : "border-[var(--pb-border)] bg-[var(--pb-surface)] text-[var(--pb-text-secondary)] hover:border-[var(--pb-border-hover)] hover:bg-[var(--pb-surface-hover)]",
                 ].join(" ")}
               >
                 <div className="h-10 w-full">{preview}</div>
                 <div className="flex flex-col items-center gap-0.5 text-center">
-                  <span className={["text-xs font-semibold", active ? "text-foreground" : "text-foreground/70"].join(" ")}>
+                  <span className={[
+                    "text-xs font-semibold",
+                    active ? "text-[var(--pb-text-primary)]" : "text-[var(--pb-text-secondary)]"
+                  ].join(" ")}>
                     {label}
                   </span>
-                  <span className="text-[10px] leading-tight text-foreground/40">{description}</span>
+                  <span className="text-[10px] leading-tight text-[var(--pb-text-muted)]">{description}</span>
                 </div>
               </button>
             );
@@ -260,12 +263,10 @@ export default function LayoutTab({ data, onChange }: LayoutTabProps) {
         <h3 className={sectionTitleClass}>Content Width</h3>
         <SliderField
           label="Max Width"
-          htmlFor="maxWidth"
           value={data.maxWidth ?? 800}
           min={400}
           max={1200}
           step={50}
-          unit="px"
           onChange={(v) => onChange("maxWidth", v)}
         />
       </div>
@@ -273,25 +274,21 @@ export default function LayoutTab({ data, onChange }: LayoutTabProps) {
       {/* ── Padding ───────────────────────────────────────────── */}
       <div className={sectionClass}>
         <h3 className={sectionTitleClass}>Section Padding</h3>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3">
           <SliderField
             label="Top"
-            htmlFor="paddingTop"
             value={data.padding?.top ?? 80}
             min={0}
             max={200}
             step={10}
-            unit="px"
             onChange={(v) => handlePaddingChange("top", v)}
           />
           <SliderField
             label="Bottom"
-            htmlFor="paddingBottom"
             value={data.padding?.bottom ?? 80}
             min={0}
             max={200}
             step={10}
-            unit="px"
             onChange={(v) => handlePaddingChange("bottom", v)}
           />
         </div>

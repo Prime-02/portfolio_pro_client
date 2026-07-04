@@ -4,6 +4,7 @@ import { HeroData } from "@/portfolio-builder/types/hero";
 import Field from "./Field";
 import { inputClass } from "./styles";
 import { Textinput } from "@/src/app/components/inputs/Textinput";
+import { PBRangeInput, PBSwitch } from "@/portfolio-builder/components/shared/ui/inputs";
 
 interface EffectsTabProps {
     data: HeroData;
@@ -20,24 +21,10 @@ export default function EffectsTab({ data, onUpdate }: EffectsTabProps) {
                 </h3>
 
                 <label className="flex items-start gap-3 cursor-pointer group">
-                    <div className="relative mt-0.5 flex-shrink-0">
-                        <input
-                            type="checkbox"
-                            checked={data.effects?.typewriter || false}
-                            onChange={(e) => onUpdate({ typewriter: e.target.checked })}
-                            className="sr-only"
-                        />
-                        <div
-                            className={`w-9 h-5 rounded-full transition-colors ${data.effects?.typewriter
-                                    ? "bg-[var(--foreground)]"
-                                    : "bg-[color-mix(in_srgb,var(--foreground)_20%,transparent)]"
-                                }`}
-                        />
-                        <div
-                            className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-[var(--background)] transition-transform ${data.effects?.typewriter ? "translate-x-4" : "translate-x-0"
-                                }`}
-                        />
-                    </div>
+                    <PBSwitch
+                        isSwitched={data.effects?.typewriter || false}
+                        onSwitch={(e) => onUpdate({ typewriter: e })}
+                    />
                     <div>
                         <p className="text-sm text-[var(--foreground)] group-hover:text-[color-mix(in_srgb,var(--foreground)_80%,transparent)] transition-colors">
                             Typewriter effect on title
@@ -49,12 +36,12 @@ export default function EffectsTab({ data, onUpdate }: EffectsTabProps) {
                 </label>
 
                 {data.effects?.typewriter && (
-                    <Textinput
+                    <PBRangeInput
                         id="typewriterSpeed"
-                        type="number"
                         label="Speed (ms per character)"
                         min={10}
                         max={500}
+                        step={5}
                         value={data.effects?.typewriterSpeed ?? 50}
                         onChange={(e) => onUpdate({ typewriterSpeed: Number(e) })}
                         className={inputClass}
@@ -69,24 +56,10 @@ export default function EffectsTab({ data, onUpdate }: EffectsTabProps) {
                 </h3>
 
                 <label className="flex items-start gap-3 cursor-pointer group">
-                    <div className="relative mt-0.5 flex-shrink-0">
-                        <input
-                            type="checkbox"
-                            checked={data.effects?.scrollIndicator ?? true}
-                            onChange={(e) => onUpdate({ scrollIndicator: e.target.checked })}
-                            className="sr-only"
-                        />
-                        <div
-                            className={`w-9 h-5 rounded-full transition-colors ${data.effects?.scrollIndicator !== false
-                                    ? "bg-[var(--foreground)]"
-                                    : "bg-[color-mix(in_srgb,var(--foreground)_20%,transparent)]"
-                                }`}
-                        />
-                        <div
-                            className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-[var(--background)] transition-transform ${data.effects?.scrollIndicator !== false ? "translate-x-4" : "translate-x-0"
-                                }`}
-                        />
-                    </div>
+                    <PBSwitch
+                        onSwitch={(e) => onUpdate({ scrollIndicator: e })}
+                        isSwitched={data.effects?.scrollIndicator ?? true}
+                    />
                     <div>
                         <p className="text-sm text-[var(--foreground)] group-hover:text-[color-mix(in_srgb,var(--foreground)_80%,transparent)] transition-colors">
                             Show scroll-down indicator

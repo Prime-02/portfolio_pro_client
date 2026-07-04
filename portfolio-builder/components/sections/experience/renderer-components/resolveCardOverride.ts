@@ -1,6 +1,11 @@
 // portfolio-builder/components/sections/experience/renderer-components/resolveCardOverride.ts
 
-import type { ExperienceData, ExperienceCardOverride, EmploymentType, LocationType } from "@/portfolio-builder/types/experience";
+import type {
+  ExperienceData,
+  ExperienceCardOverride,
+  EmploymentType,
+  LocationType,
+} from "@/portfolio-builder/types/experience";
 import type { ExperienceItem } from "./layoutProps";
 
 export interface CardConfig {
@@ -24,7 +29,7 @@ export function resolveCardOverride(
   overrides: ExperienceData["cardOverrides"],
   defaults: Defaults,
 ): CardConfig {
-  for (const override of overrides) {
+  for (const override of overrides ?? []) {
     const target = override.target;
     let matches = false;
 
@@ -40,7 +45,10 @@ export function resolveCardOverride(
       target.location_types.includes(exp.location_type as LocationType)
     )
       matches = true;
-    if (target.is_featured !== undefined && exp.is_featured === target.is_featured)
+    if (
+      target.is_featured !== undefined &&
+      exp.is_featured === target.is_featured
+    )
       matches = true;
     if (target.is_current !== undefined && exp.is_current === target.is_current)
       matches = true;
@@ -50,8 +58,10 @@ export function resolveCardOverride(
         style: override.style,
         showCompanyLogo: override.showCompanyLogo ?? defaults.showCompanyLogo,
         showDescription: override.showDescription ?? defaults.showDescription,
-        showEmploymentType: override.showEmploymentType ?? defaults.showEmploymentType,
-        showLocationType: override.showLocationType ?? defaults.showLocationType,
+        showEmploymentType:
+          override.showEmploymentType ?? defaults.showEmploymentType,
+        showLocationType:
+          override.showLocationType ?? defaults.showLocationType,
         showDuration: override.showDuration ?? defaults.showDuration,
         showSkills: override.showSkills ?? defaults.showSkills,
         showCompanyName: override.showCompanyName ?? defaults.showCompanyName,

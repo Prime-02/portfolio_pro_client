@@ -13,14 +13,35 @@ function getShapeClass(shape: HeroMediaShape): string {
         case "circle": return "rounded-full";
         case "rounded": return "rounded-2xl";
         case "square": return "rounded-none";
+        case "portrait": return "rounded-2xl";
+        case "landscape": return "rounded-2xl";
     }
 }
 
-function getSizeClasses(size: HeroMediaSize): string {
+function getAspectRatioClass(shape: HeroMediaShape): string {
+    switch (shape) {
+        case "portrait": return "aspect-[3/4]";
+        case "landscape": return "aspect-[16/9]";
+        default: return "";
+    }
+}
+
+function getSizeClasses(size: HeroMediaSize, shape?: HeroMediaShape): string {
+    // For portrait/landscape, width is controlled and height comes from aspect ratio
+    if (shape === "portrait" || shape === "landscape") {
+        switch (size) {
+            case "sm": return "w-48";
+            case "md": return "w-72";
+            case "lg": return "w-96";
+            default: return "w-72";
+        }
+    }
+
+    // Larger sizes for circle/rounded/square
     switch (size) {
-        case "sm": return "w-20 h-20";
-        case "md": return "w-24 h-24 md:w-32 md:h-32";
-        case "lg": return "w-64 h-64 md:w-80 md:h-80";
+        case "sm": return "w-32 h-32";
+        case "md": return "w-48 h-48 md:w-56 md:h-56";
+        case "lg": return "w-80 h-80 md:w-96 md:h-96";
     }
 }
 
@@ -33,12 +54,13 @@ export function MediaDisplay({
     const shape = media?.shape ?? (size === "lg" ? "rounded" : "circle");
 
     const shapeClass = getShapeClass(shape);
-    const sizeClass = getSizeClasses(size);
+    const aspectRatioClass = getAspectRatioClass(shape);
+    const sizeClass = getSizeClasses(size, shape);
 
     if (!media || media.type === "none") {
         return (
             <div
-                className={`${sizeClass} ${shapeClass} border border-dashed border-[var(--pb-border)] flex items-center justify-center text-[var(--pb-text-muted)] text-sm ${className ?? ""}`}
+                className={`${sizeClass} ${aspectRatioClass} ${shapeClass} border border-dashed border-[var(--pb-border)] flex items-center justify-center text-[var(--pb-text-muted)] text-sm ${className ?? ""}`}
             >
                 No media
             </div>
@@ -50,7 +72,7 @@ export function MediaDisplay({
             <img
                 src={media.imageUrl}
                 alt={media.imageAlt || ""}
-                className={`${sizeClass} ${shapeClass} object-cover border-2 border-[var(--pb-border)] mx-auto shadow-lg ${className ?? ""}`}
+                className={`${sizeClass} ${aspectRatioClass} ${shapeClass} object-cover border-2 border-[var(--pb-border)] mx-auto shadow-lg ${className ?? ""}`}
             />
         );
     }
@@ -58,7 +80,7 @@ export function MediaDisplay({
     if (media.type === "lottie" && media.lottieUrl) {
         return (
             <div
-                className={`${sizeClass} ${shapeClass} mx-auto text-[var(--pb-text-muted)] text-sm flex items-center justify-center border border-dashed border-[var(--pb-border)] ${className ?? ""}`}
+                className={`${sizeClass} ${aspectRatioClass} ${shapeClass} mx-auto text-[var(--pb-text-muted)] text-sm flex items-center justify-center border border-dashed border-[var(--pb-border)] ${className ?? ""}`}
             >
                 {size === "lg" ? "Lottie Animation" : "Lottie"}
             </div>
@@ -73,7 +95,7 @@ export function MediaDisplay({
                 muted
                 loop
                 playsInline
-                className={`${sizeClass} ${shapeClass} object-cover mx-auto border-2 border-[var(--pb-border)] shadow-lg ${className ?? ""}`}
+                className={`${sizeClass} ${aspectRatioClass} ${shapeClass} object-cover mx-auto border-2 border-[var(--pb-border)] shadow-lg ${className ?? ""}`}
             />
         );
     }

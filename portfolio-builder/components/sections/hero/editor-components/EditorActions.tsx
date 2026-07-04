@@ -7,6 +7,7 @@ interface EditorActionsProps {
     saveStatusColor: string;
     onSave: () => void;
     onCancel: () => void;
+    isSaving: boolean
 }
 
 const saveButtonClass =
@@ -15,7 +16,7 @@ const saveButtonClass =
 const cancelButtonClass =
     "px-4 py-2 bg-[var(--pb-surface)] text-[var(--pb-text-secondary)] text-sm font-medium rounded-lg hover:bg-[var(--pb-surface-elevated)] transition-colors border border-[var(--pb-border)]";
 
-export default function EditorActions({ hasChanges, isValid, saveStatus, saveStatusColor, onSave, onCancel }: EditorActionsProps) {
+export default function EditorActions({ hasChanges, isValid, saveStatus, saveStatusColor, onSave, onCancel, isSaving }: EditorActionsProps) {
     return (
         <div className="flex items-center justify-between px-6 py-4 border-t border-[var(--pb-border)] bg-[var(--pb-surface)]">
             <p className={`text-xs ${saveStatusColor}`}>

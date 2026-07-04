@@ -1,5 +1,7 @@
 // components/skills/OwnProfileView.tsx
 import { Zap, Plus, Share2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useTheme } from "../theme/ThemeContext";
 import Button from "../buttons/Buttons";
 import { StatsBar } from "./StatsBar";
 import { SkillsGrid } from "./SkillsGrid";
@@ -22,6 +24,7 @@ interface OwnProfileViewProps {
     onDeleteSkillChange: (skill: ProfessionalSkill | null) => void;
     isDeleting: boolean;
     onDeleteConfirm: () => Promise<void>;
+    miniView?: boolean;
 }
 
 export function OwnProfileView({
@@ -37,14 +40,21 @@ export function OwnProfileView({
     onDeleteSkillChange,
     isDeleting,
     onDeleteConfirm,
+    miniView = false,
 }: OwnProfileViewProps) {
+    const router = useRouter();
+    const { profileContext } = useTheme();
+    const usernamePath = profileContext?.username ? `/${profileContext.username}` : "";
+    const displayedSkills = miniView ? skills.slice(0, 3) : skills;
+    const showSeeAll = miniView && skills.length > 0;
+
     return (
-        <div className="min-h-screen p-6 md:p-8 lg:p-10 max-w-6xl mx-auto">
+        <div className={miniView ? "p-6 md:p-8 lg:p-10 max-w-6xl mx-auto" : "min-h-screen p-6 md:p-8 lg:p-10 max-w-6xl mx-auto"}>
             <PageHeader
                 icon={<Zap className="w-6 h-6 text-[var(--accent)]" />}
                 title="My Skills"
                 description="Showcase your expertise and professional abilities"
-                action={
+                action={!miniView ? (
                     <div className="flex items-center gap-x-2">
                         <Button
                             onClick={handleShareProfile}
@@ -60,7 +70,7 @@ export function OwnProfileView({
                             icon={<Plus className="w-4 h-4" />}
                         />
                     </div>
-                }
+                ) : undefined}
             />
 
             {!isLoading && <StatsBar skills={skills} />}
@@ -68,13 +78,24 @@ export function OwnProfileView({
             {error && <ErrorMessage message={error} onDismiss={onClearError} />}
 
             <SkillsGrid
-                skills={skills}
+                skills={displayedSkills}
                 isLoading={isLoading}
                 onEdit={onEditSkillChange}
                 onDelete={onDeleteSkillChange}
                 onAddClick={() => onAddDialogChange(true)}
                 isOwner={true}
             />
+
+            {showSeeAll && (
+                <div className="mt-6 flex justify-end">
+                    <button
+                        onClick={() => router.push(usernamePath ? `/${usernamePath}/skills` : "/skills")}
+                        className="rounded-full border border-[var(--accent)]/30 px-4 py-2 text-sm font-medium text-[var(--accent)] transition hover:bg-[var(--accent)]/10"
+                    >
+                        See all
+                    </button>
+                </div>
+            )}
 
             <SkillDialogs
                 addDialogOpen={addDialogOpen}

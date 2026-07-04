@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { useProjectStore } from "@/lib/stores/projects/useProjectsStore";
@@ -28,11 +28,16 @@ export default function EditProjectPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [clearedSlots, setClearedSlots] = useState<Record<string, boolean>>({});
 
-  const project = currentProject || projects.find((p) => p.id === projectId);
+  // Find project from store (check currentProject first, then projects array)
+  const project = useMemo(() => {
+    if (currentProject?.id === projectId) return currentProject;
+    return projects.find((p) => p.id === projectId) || currentProject;
+  }, [currentProject, projects, projectId]);
 
   const [form, setForm] = useState<FormState>({
     project_name: "",
     project_description: null,
+    project_summary: null,
     project_category: null,
     project_url: null,
     project_image_url: null,
@@ -50,17 +55,20 @@ export default function EditProjectPage() {
     mediaSlots: { hero_media: null, media_1: null, media_2: null, media_3: null },
   });
 
+  // Only fetch if project is not in store
   useEffect(() => {
-    if (!project && projectId) {
-      (async () => { await fetchProject(projectId); })();
+    if (projectId && !project) {
+      fetchProject(projectId);
     }
-  }, [project, projectId, fetchProject]);
+  }, [projectId, project, fetchProject]);
 
+  // Sync form state when the project data is available and matches current projectId
   useEffect(() => {
-    if (project) {
+    if (project && project.id === projectId) {
       setForm({
         project_name: project.project_name,
         project_description: project.project_description ?? null,
+        project_summary: project.project_summary ?? null,
         project_category: project.project_category ?? null,
         project_url: project.project_url ?? null,
         project_image_url: project.project_image_url ?? null,
@@ -77,8 +85,12 @@ export default function EditProjectPage() {
         featured_in: project.featured_in ?? [],
         mediaSlots: { hero_media: null, media_1: null, media_2: null, media_3: null },
       });
+      // Reset cleared slots when switching projects
+      setClearedSlots({});
+      // Clear any previous errors
+      setError(null);
     }
-  }, [project]);
+  }, [project, projectId]);
 
   const set = (key: keyof FormState, value: unknown) =>
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -116,6 +128,7 @@ export default function EditProjectPage() {
     const payload: PortfolioProjectUpdate = {
       project_name: form.project_name,
       project_description: form.project_description,
+      project_summary: form.project_summary,
       project_category: form.project_category,
       project_url: form.project_url,
       project_image_url: form.project_image_url,
@@ -146,7 +159,8 @@ export default function EditProjectPage() {
     }
   };
 
-  if (loading.fetchProjectById) {
+  // Show loading state only when we're actually fetching (project not in store)
+  if (!project && loading.fetchProjectById) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-[var(--foreground)]/30">Loading Project Data</div>
@@ -154,13 +168,16 @@ export default function EditProjectPage() {
     );
   }
 
-  if (!project) {
+  // Show not found only after fetch attempt completed and still no project
+  if (!project && !loading.fetchProjectById) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-[var(--foreground)]/30">Project not found</div>
       </div>
     );
   }
+
+  if (!project) return null;
 
   const mediaSlots = [
     {
@@ -170,11 +187,11 @@ export default function EditProjectPage() {
       onChange: (file: File | null) => handleSlotChange("hero_media", file),
     },
     ...["media_1", "media_2", "media_3"].map((slot) => {
-      const slotKey = slot as MediaSlotKey; // ← was `keyof typeof form.mediaSlots`
+      const slotKey = slot as MediaSlotKey;
       const existingUrl =
         project.other_project_image_url?.[slotKey as keyof typeof project.other_project_image_url]?.url;
       return {
-        key: slotKey,           // ← now typed as MediaSlotKey, not string
+        key: slotKey,
         label: slot.replace("_", " ").replace(/\b\w/g, (c) => c.toUpperCase()),
         value: getSlotValue(slotKey, existingUrl),
         onChange: (file: File | null) => handleSlotChange(slotKey, file),

@@ -9,11 +9,11 @@ import { Testimonial } from "@/lib/stores/testimonials/useTestimonial";
 import { LoadingSkeleton } from "./LoadingSkeleton";
 import { PublicProfileView } from "./PublicProfileView";
 import { OwnProfileView } from "./OwnProfileView";
-import { useTheme } from "../theme/ThemeContext ";
+import { useTheme } from "../theme/ThemeContext";
 
 const PAGE_SIZE = 20;
 
-export default function TestimonialsPage() {
+export default function TestimonialsPage({ miniView = false }: { miniView?: boolean }) {
     const {
         // User testimonials by username (public view)
         userTestimonials,
@@ -227,6 +227,7 @@ export default function TestimonialsPage() {
     if (!isOwnProfile && profileContext.kind === "public") {
         return (
             <PublicProfileView
+                miniView={miniView}
                 username={currentUsername || ""}
                 theirTestimonials={userTestimonials}
                 totalTestimonials={userTestimonialsTotal}
@@ -255,6 +256,7 @@ export default function TestimonialsPage() {
     // Own profile view
     return (
         <OwnProfileView
+            miniView={miniView}
             receivedTestimonials={myReceivedTestimonials}
             totalReceived={myReceivedTestimonialsTotal}
             isLoadingReceived={myReceivedTestimonialsLoading}

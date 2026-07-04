@@ -14,6 +14,9 @@ interface SectionLinksTabProps {
     scrollBehavior: ScrollBehavior;
     onChange: (links: SectionLink[]) => void;
     onScrollBehaviorChange: (behavior: ScrollBehavior) => void;
+    missingSections: string[];
+    onAddSection: (sectionType: string) => void;
+    onRemoveSection: (sectionType: string) => void;
 }
 
 const SCROLL_BEHAVIORS = [
@@ -28,6 +31,9 @@ export default function SectionLinksTab({
     scrollBehavior,
     onChange,
     onScrollBehaviorChange,
+    missingSections,
+    onAddSection,
+    onRemoveSection,
 }: SectionLinksTabProps) {
     // Parent is responsible for ensuring sectionLinks are synced and populated.
     // We just use them as-is.
@@ -169,6 +175,16 @@ export default function SectionLinksTab({
                             <span className="text-[10px] uppercase tracking-wider text-[var(--pb-text-muted)] bg-[var(--pb-surface-hover)] px-2 py-1 rounded shrink-0">
                                 #{link.sectionType}
                             </span>
+
+                            {/* Remove section */}
+                            <button
+                                type="button"
+                                onClick={() => onRemoveSection(link.sectionType)}
+                                title={`Remove ${link.label}`}
+                                className="text-[var(--pb-text-muted)] hover:text-[var(--pb-error)] text-sm leading-none shrink-0 w-5 h-5 flex items-center justify-center rounded hover:bg-[var(--pb-foreground-5)] transition-colors"
+                            >
+                                ×
+                            </button>
                         </div>
                     ))}
                     {links.length === 0 && (
@@ -177,6 +193,28 @@ export default function SectionLinksTab({
                         </div>
                     )}
                 </div>
+
+                {/* Add Section — sections not yet part of the portfolio */}
+                {missingSections.length > 0 && (
+                    <div className="mt-4">
+                        <label className="text-sm font-medium text-[var(--pb-text-secondary)] mb-2 block">
+                            Add Section
+                        </label>
+                        <div className="flex flex-wrap gap-2">
+                            {missingSections.map((type) => (
+                                <button
+                                    key={type}
+                                    type="button"
+                                    onClick={() => onAddSection(type)}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dashed border-[var(--pb-border)] text-xs text-[var(--pb-text-secondary)] hover:border-[var(--pb-foreground)] hover:text-[var(--pb-text-primary)] transition-colors"
+                                >
+                                    <span className="text-sm leading-none">+</span>
+                                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

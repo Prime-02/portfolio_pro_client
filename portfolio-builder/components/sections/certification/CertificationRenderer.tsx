@@ -63,18 +63,19 @@ export default function CertificationRenderer({ data, username, animationKey }: 
     filters,
   } = data;
 
+  const safeFilters = filters ?? ({} as CertificationData["filters"]);
   const anim: BioAnimations = { ...DEFAULT_ANIM, ...(animations ?? {}) };
   const isAnimated = anim.preset !== "none";
 
   // ── Certification fetch ─────────────────────────────────────────────────
   const publicFilters = {
-    issuing_organization: filters.issuing_organization,
-    ids: filters.ids,
-    merge_filters: filters.merge_filters,
+    issuing_organization: safeFilters.issuing_organization,
+    ids: safeFilters.ids,
+    merge_filters: safeFilters.merge_filters,
   };
 
   const { rendererCertifications, isLoadingCertifications } = useDebouncedCertificationsFetch(username, publicFilters);
-  const sortedCertifications = sortCertifications(rendererCertifications, filters._sortBy || "default");
+  const sortedCertifications = sortCertifications(rendererCertifications, safeFilters._sortBy || "default");
 
   // ── Scroll / parallax refs ──────────────────────────────────────────────
   const sectionRef = useRef<HTMLElement>(null);

@@ -13,8 +13,7 @@ import SelectField from "./SelectField";
 import { inputClass, textareaClass, sectionClass, sectionTitleClass } from "./styles";
 import MarkdownEditor from "@/src/app/components/markdown/MarkdownEditor";
 import { useUserSettings } from "@/lib/stores/user/useUserSettings";
-import { Textinput } from "@/src/app/components/inputs/Textinput";
-import Dropdown from "@/src/app/components/inputs/DynamicDropdown";
+import { PBDropdown, PBTextInput } from "@/portfolio-builder/components/shared/ui/inputs";
 
 
 interface ContentTabProps {
@@ -43,7 +42,6 @@ const CONTACT_TYPE_OPTIONS = [
   { id: "email", code: "Email" },
   { id: "phone", code: "Phone" },
   { id: "website", code: "Website" },
-  { id: "calendly", code: "Calendly" },
 ];
 
 // ─── Collapsible Section ───────────────────────────────────────────────────
@@ -262,7 +260,7 @@ export default function ContentTab({ data, onChange }: ContentTabProps) {
   return (
     <div className="flex flex-col gap-5">
       {/* ── Headline ── */}
-      <Textinput
+      <PBTextInput
         label="Headline"
         id="headline"
         value={data.headline || ""}
@@ -282,7 +280,7 @@ export default function ContentTab({ data, onChange }: ContentTabProps) {
       />
 
       {/* ── Location ── */}
-      <Textinput
+      <PBTextInput
         label="Location"
         id="location"
         value={data.location || ""}
@@ -292,7 +290,7 @@ export default function ContentTab({ data, onChange }: ContentTabProps) {
       />
 
       {/* ── Years of Experience ── */}
-      <Textinput
+      <PBTextInput
         label="Years of Experience"
         id="yearsExperience"
         type="number"
@@ -307,7 +305,7 @@ export default function ContentTab({ data, onChange }: ContentTabProps) {
       <div className={sectionClass}>
         <h3 className={sectionTitleClass}>Availability Status</h3>
 
-        <Dropdown
+        <PBDropdown
           id="statusType"
           label="Status"
           value={data.status?.type || "open-to-work"}
@@ -316,7 +314,7 @@ export default function ContentTab({ data, onChange }: ContentTabProps) {
           placeholder="Select availability status"
         />
 
-        <Textinput
+        <PBTextInput
           label="Custom Label (optional)"
           id="statusLabel"
           value={data.status?.label || ""}
@@ -335,7 +333,7 @@ export default function ContentTab({ data, onChange }: ContentTabProps) {
           {(data.languages || []).map((lang, index) => (
             <div key={index} className="flex gap-2 items-start">
               <div className="flex-1">
-                <Textinput
+                <PBTextInput
                   label="Language"
                   id={`lang-${index}`}
                   value={lang.language}
@@ -344,7 +342,7 @@ export default function ContentTab({ data, onChange }: ContentTabProps) {
                 />
               </div>
               <div className="w-32">
-                <Dropdown
+                <PBDropdown
                   id={`lang-level-${index}`}
                   label="Level"
                   value={lang.proficiency}
@@ -382,7 +380,7 @@ export default function ContentTab({ data, onChange }: ContentTabProps) {
             <div key={index} className="border border-foreground/15 rounded-lg p-3 space-y-3">
               <div className="flex gap-2 items-start">
                 <div className="w-28">
-                  <Dropdown
+                  <PBDropdown
                     id={`contact-type-${index}`}
                     label="Type"
                     value={contact.type}
@@ -392,7 +390,7 @@ export default function ContentTab({ data, onChange }: ContentTabProps) {
                   />
                 </div>
                 <div className="flex-1">
-                  <Textinput
+                  <PBTextInput
                     label="Value"
                     id={`contact-value-${index}`}
                     type={contact.type === "phone" ? "text" : contact.type === "email" ? "email" : "text"}
@@ -441,7 +439,7 @@ export default function ContentTab({ data, onChange }: ContentTabProps) {
           {(data.metadata || []).map((meta, index) => (
             <div key={index} className="flex gap-2 items-start">
               <div className="w-1/3">
-                <Textinput
+                <PBTextInput
                   label="Label"
                   id={`meta-key-${index}`}
                   value={meta.key}
@@ -451,7 +449,7 @@ export default function ContentTab({ data, onChange }: ContentTabProps) {
                 />
               </div>
               <div className="flex-1">
-                <Textinput
+                <PBTextInput
                   label="Value"
                   id={`meta-value-${index}`}
                   value={meta.value}

@@ -35,10 +35,11 @@ export default function SocialLinksTab({ data, onUpdate }: SocialLinksTabProps) 
     } = useSocialLinks();
 
     useEffect(() => {
+        if (userSocialLinks.length > 0) return
         fetchAllSocialLinks().catch(() => {
             // Error handled in store
         });
-    }, [fetchAllSocialLinks]);
+    }, []);
 
     const getPlatformConfig = (platformName: string) => {
         const normalizedName = platformName.toLowerCase().trim();

@@ -9,7 +9,7 @@ const DEBOUNCE_MS = 400;
 
 export function useDebouncedSkillsFetch(
   username: string,
-  filters: SkillsData["filters"],
+  filters?: SkillsData["filters"],
 ) {
   const { fetchPublicSkillsByUsername } = useSkills();
   const [rendererSkills, setRendererSkills] = useState<ProfessionalSkill[]>([]);
@@ -18,8 +18,8 @@ export function useDebouncedSkillsFetch(
 
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
-  const latestFiltersRef = useRef(filters);
-  latestFiltersRef.current = filters;
+  const latestFiltersRef = useRef(filters ?? ({} as SkillsData["filters"]));
+  latestFiltersRef.current = filters ?? ({} as SkillsData["filters"]);
 
   const executeFetch = useCallback(() => {
     if (!username) return;
@@ -35,12 +35,12 @@ export function useDebouncedSkillsFetch(
     setIsStale(false);
 
     fetchPublicSkillsByUsername(username, {
-      category: latestFiltersRef.current.category,
-      subcategory: latestFiltersRef.current.subcategory,
-      difficulty_level: latestFiltersRef.current.difficulty_level,
-      is_major: latestFiltersRef.current.is_major,
-      ids: latestFiltersRef.current.ids,
-      merge_filters: latestFiltersRef.current.merge_filters,
+      category: latestFiltersRef.current.category ?? undefined,
+      subcategory: latestFiltersRef.current.subcategory ?? undefined,
+      difficulty_level: latestFiltersRef.current.difficulty_level ?? undefined,
+      is_major: latestFiltersRef.current.is_major ?? undefined,
+      ids: latestFiltersRef.current.ids ?? undefined,
+      merge_filters: latestFiltersRef.current.merge_filters ?? undefined,
     })
       .then((skills) => {
         if (!controller.signal.aborted) {
@@ -77,13 +77,13 @@ export function useDebouncedSkillsFetch(
     };
   }, [
     username,
-    filters.category,
-    filters.subcategory,
-    filters.difficulty_level,
-    filters.is_major,
+    filters?.category,
+    filters?.subcategory,
+    filters?.difficulty_level,
+    filters?.is_major,
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    filters.ids?.join(","),
-    filters.merge_filters,
+    filters?.ids?.join(","),
+    filters?.merge_filters,
     executeFetch,
   ]);
 

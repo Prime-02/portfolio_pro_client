@@ -5,7 +5,7 @@ import { Zap, Info } from "lucide-react";
 import Themes from "./tabs/Themes";
 import Loaders from "./tabs/Loaders";
 import Pro from "./tabs/Pro";
-import { useTheme } from "@/src/app/components/theme/ThemeContext ";
+import { useTheme } from "@/src/app/components/theme/ThemeContext";
 import { tabConfig } from "@/lib/utilities/indices/Themes";
 import SideBar from "@/src/app/(user)/components/SideBar";
 

@@ -27,7 +27,10 @@ export function resolveCardOverride(
   overrides: SkillsData["cardOverrides"],
   defaults: Defaults,
 ): CardConfig {
-  for (const override of overrides) {
+  // Saved portfolios created before cardOverrides existed have no such key in
+  // their stored JSONB layout, so this can arrive as undefined at runtime
+  // even though SkillsData types it as a required array.
+  for (const override of overrides ?? []) {
     const target = override.target;
     let matches = false;
 

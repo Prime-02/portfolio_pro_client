@@ -8,10 +8,10 @@ import SelectField from "../../bio/editor-components/SelectField";
 import Toggle from "../../bio/editor-components/Toggle";
 import ColorPicker from "../../bio/editor-components/ColorPicker";
 import { sectionClass, sectionTitleClass } from "../../bio/editor-components/styles";
-import { Textinput } from "@/src/app/components/inputs/Textinput";
 import Dropdown from "@/src/app/components/inputs/DynamicDropdown";
 import { useSkills } from "@/lib/stores/skills/useSkills";
 import { difficultyLevels } from "@/lib/utilities/indices/DropDownItems";
+import { PBDropdown } from "@/portfolio-builder/components/shared/ui/inputs";
 
 interface CardLayoutTabProps {
   data: SkillsData;
@@ -57,6 +57,8 @@ const OVERRIDE_TARGET_OPTIONS = [
 export default function CardLayoutTab({ data, onChange }: CardLayoutTabProps) {
   const [expandedOverride, setExpandedOverride] = useState<number | null>(null);
   const { skills } = useSkills();
+  const cardOverrides = data.cardOverrides ?? [];
+
 
   // ── Dropdown option arrays derived from the skills store ──────────────────
 
@@ -84,13 +86,13 @@ export default function CardLayoutTab({ data, onChange }: CardLayoutTabProps) {
   // ─────────────────────────────────────────────────────────────────────────
 
   const updateOverride = (index: number, updates: Partial<SkillCardOverride>) => {
-    const updated = [...data.cardOverrides];
+    const updated = [...cardOverrides];
     updated[index] = { ...updated[index], ...updates };
     onChange("cardOverrides", updated);
   };
 
   const removeOverride = (index: number) => {
-    onChange("cardOverrides", data.cardOverrides.filter((_, i) => i !== index));
+    onChange("cardOverrides", cardOverrides.filter((_, i) => i !== index));
   };
 
   const addOverride = () => {
@@ -98,8 +100,8 @@ export default function CardLayoutTab({ data, onChange }: CardLayoutTabProps) {
       target: {},
       style: "detailed",
     };
-    onChange("cardOverrides", [...data.cardOverrides, newOverride]);
-    setExpandedOverride(data.cardOverrides.length);
+    onChange("cardOverrides", [...cardOverrides, newOverride]);
+    setExpandedOverride(cardOverrides.length);
   };
 
   return (
@@ -199,11 +201,11 @@ export default function CardLayoutTab({ data, onChange }: CardLayoutTabProps) {
           Style specific skills differently based on category, difficulty, or hand-picked IDs.
         </p>
 
-        {data.cardOverrides.length === 0 && (
+        {cardOverrides.length === 0 && (
           <p className="text-xs text-[var(--pb-text-muted)]">No overrides configured.</p>
         )}
 
-        {data.cardOverrides.map((override, index) => {
+        {cardOverrides.map((override, index) => {
           const isExpanded = expandedOverride === index;
           const targetDesc =
             Object.entries(override.target)
@@ -308,7 +310,7 @@ export default function CardLayoutTab({ data, onChange }: CardLayoutTabProps) {
                       <label className="block text-xs font-medium text-[var(--pb-text-secondary)] mb-1.5">
                         Skill IDs
                       </label>
-                      <Dropdown
+                      <PBDropdown
                         id={`override-ids-${index}`}
                         options={skillsOptions}
                         multiple
@@ -336,7 +338,7 @@ export default function CardLayoutTab({ data, onChange }: CardLayoutTabProps) {
                       <label className="block text-xs font-medium text-[var(--pb-text-secondary)] mb-1.5">
                         Categories
                       </label>
-                      <Dropdown
+                      <PBDropdown
                         id={`override-categories-${index}`}
                         options={categoryOptions}
                         multiple
@@ -364,7 +366,7 @@ export default function CardLayoutTab({ data, onChange }: CardLayoutTabProps) {
                       <label className="block text-xs font-medium text-[var(--pb-text-secondary)] mb-1.5">
                         Subcategories
                       </label>
-                      <Dropdown
+                      <PBDropdown
                         id={`override-subcategories-${index}`}
                         options={subcategoryOptions}
                         multiple
@@ -403,7 +405,7 @@ export default function CardLayoutTab({ data, onChange }: CardLayoutTabProps) {
                       <label className="block text-xs font-medium text-[var(--pb-text-secondary)] mb-1.5">
                         Difficulty Level
                       </label>
-                      <Dropdown
+                      <PBDropdown
                         id={`override-difficulty-${index}`}
                         options={difficultyLevels}
                         multiple

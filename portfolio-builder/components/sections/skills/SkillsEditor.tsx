@@ -18,8 +18,25 @@ import {
 } from "./editor-components";
 import SkillsRenderer from "./SkillsRenderer";
 
+// Field-level merge so missing/legacy keys fall back to defaults, whether
+// initialData is absent entirely or just missing newer fields.
+function mergeWithDefaults(partial?: SkillsData | null): SkillsData {
+  const defaults = getEmptySkillsData();
+  if (!partial) return defaults;
+
+  return {
+    ...defaults,
+    ...partial,
+    filters: { ...defaults.filters, ...partial.filters },
+    background: { ...defaults.background, ...partial.background },
+    animations: { ...defaults.animations, ...partial.animations },
+    padding: { ...defaults.padding, ...partial.padding },
+    cardOverrides: partial.cardOverrides ?? defaults.cardOverrides,
+  };
+}
+
 interface SkillsEditorProps {
-  initialData: SkillsData;
+  initialData?: SkillsData | null;
   onSave: (data: SkillsData) => Promise<void>;
   onCancel: () => void;
   setFullScreen: (latestData: SkillsData) => void;
@@ -33,7 +50,13 @@ export default function SkillsEditor({
   setFullScreen,
   username,
 }: SkillsEditorProps) {
-  const [data, setData] = useState<SkillsData>(() => structuredClone(initialData));
+  const resolvedInitialData = mergeWithDefaults(initialData);
+  // Did defaulting actually add anything not yet persisted?
+  const usingDefaultsRef = useRef(
+    initialData == null || JSON.stringify(resolvedInitialData) !== JSON.stringify(initialData)
+  );
+
+  const [data, setData] = useState<SkillsData>(() => structuredClone(resolvedInitialData));
   const [activeTab, setActiveTab] = useState<
     "filters" | "card-layout" | "layout" | "background" | "animations" | "cta"
   >("filters");
@@ -43,7 +66,11 @@ export default function SkillsEditor({
   const [animationKey, setAnimationKey] = useState(0);
 
   // ── Stable serialised baseline ───────────────────────────────────────────
-  const savedSnapshotRef = useRef(JSON.stringify(initialData));
+  // Left blank when defaults were used so the mount-save effect below forces
+  // an initial persist instead of treating unsaved defaults as already saved.
+  const savedSnapshotRef = useRef(
+    usingDefaultsRef.current ? "" : JSON.stringify(resolvedInitialData)
+  );
   const hasChanges = JSON.stringify(data) !== savedSnapshotRef.current;
 
   // ── Save orchestration refs ──────────────────────────────────────────────
@@ -106,6 +133,16 @@ export default function SkillsEditor({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
+
+  // Persist defaults right away when they weren't already saved, instead of
+  // waiting on the debounce (which the user could cancel out of first).
+  useEffect(() => {
+    if (usingDefaultsRef.current) {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      executeSave(data);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── Prevent accidental page unload ───────────────────────────────────────
   useEffect(() => {
@@ -182,8 +219,7 @@ export default function SkillsEditor({
   };
 
   // ── Fullscreen ───────────────────────────────────────────────────────────
-  // Pass current editor data to the controller so it can update its optimistic
-  // state.  We do NOT call onSave here — preview is not persistence.
+  // Preview only — does not call onSave.
   const handleFullscreen = () => {
     setFullScreen(data);
   };

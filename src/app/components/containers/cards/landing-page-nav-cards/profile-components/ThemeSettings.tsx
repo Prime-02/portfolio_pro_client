@@ -2,7 +2,7 @@ import Link from "next/link";
 import React from "react";
 import { Sun, Moon, Monitor } from "lucide-react";
 import { IconType } from "react-icons";
-import { useTheme } from "@/src/app/components/theme/ThemeContext ";
+import { useTheme } from "@/src/app/components/theme/ThemeContext";
 import { ThemeVariant } from "@/src/app/components/types and interfaces/loaderTypes";
 import Button from "@/src/app/components/buttons/Buttons";
 import { useUserSettings } from "@/lib/stores/user/useUserSettings";
@@ -41,24 +41,22 @@ const ThemeSettings = () => {
         {themes.map(({ theme, name, icon: Icon }) => (
           <div
             key={theme}
-            className={`p-3 rounded-lg cursor-pointer transition-colors w-full ${
-              themeVariant === theme
+            className={`p-3 rounded-lg cursor-pointer transition-colors w-full ${themeVariant === theme
                 ? "text-[var(--accent)] dark:text-[var(--accent)]"
                 : "hover:bg-[var(--background)]"
-            }`}
+              }`}
             onClick={() => {
               setThemeVariant(theme);
             }}
           >
             <div className="flex items-center">
               <div
-                className={`mr-3 ${
-                  themeVariant === theme
+                className={`mr-3 ${themeVariant === theme
                     ? "text-[var(--accent)]"
                     : "opacity-65"
-                }`}
+                  }`}
               >
-                <Icon/>
+                <Icon />
               </div>
               <span>{name}</span>
             </div>

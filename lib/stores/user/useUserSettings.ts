@@ -14,6 +14,7 @@ import {
   Theme,
   ThemeVariant,
 } from "@/src/app/components/types and interfaces/loaderTypes";
+import { themePresets } from "@/lib/utilities/indices/Themes";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -157,7 +158,7 @@ const defaultDarkTheme: Theme = {
   background: "#0a0a0a",
   foreground: "#ededed",
 };
-const defaultAccent: Accent = { color: "#737373" };
+const defaultAccent: Accent = { color: themePresets[0].accent };
 const defaultLanguage: LanguageProps = { name: "English", code: "en" };
 const defaultLoader: Loader = "spin-loader";
 

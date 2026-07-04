@@ -7,9 +7,9 @@ import type { ProfessionalSkill } from "@/lib/stores/skills/useSkills";
 import { LoadingSkeleton } from "./LoadingSkeleton";
 import { PublicProfileView } from "./PublicProfileView";
 import { OwnProfileView } from "./OwnProfileView";
-import { useTheme } from "../theme/ThemeContext ";
+import { useTheme } from "../theme/ThemeContext";
 
-export default function SkillsPage() {
+export default function SkillsPage({ miniView = false }: { miniView?: boolean }) {
     const {
         skills,
         isLoading,
@@ -73,6 +73,7 @@ export default function SkillsPage() {
             <PublicProfileView
                 username={publicUsername}
                 skills={displaySkills}
+                miniView={miniView}
                 isLoading={displayLoading}
                 error={error}
                 onClearError={clearError}
@@ -84,6 +85,7 @@ export default function SkillsPage() {
     return (
         <OwnProfileView
             skills={displaySkills}
+            miniView={miniView}
             isLoading={displayLoading}
             error={error}
             onClearError={clearError}

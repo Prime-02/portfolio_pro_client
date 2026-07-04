@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Heart,
@@ -30,23 +30,40 @@ interface ProjectHeroProps {
 export function ProjectHero({ project, engagement }: ProjectHeroProps) {
   const [activeMediaIndex, setActiveMediaIndex] = useState(0);
   const { toggleLike, userLikedByProject, loading } = useProjectEngagementStore();
-  const { userInfo } = useUserSettings()
+  const { userInfo } = useUserSettings();
 
-  const mediaSlots = [
-    project.other_project_image_url?.hero_media,
-    project.other_project_image_url?.media_1,
-    project.other_project_image_url?.media_2,
-    project.other_project_image_url?.media_3,
-  ].filter((media) => media?.url); // Filter for media objects that have a url property
+  // Memoize media slots to prevent recalculation and ensure they're keyed by project id
+  const mediaSlots = useMemo(() => {
+    const slots = [
+      project.other_project_image_url?.hero_media,
+      project.other_project_image_url?.media_1,
+      project.other_project_image_url?.media_2,
+      project.other_project_image_url?.media_3,
+    ].filter((media) => media?.url); // Filter for media objects that have a url property
+
+    return slots;
+  }, [project.id, project.other_project_image_url]);
+
+  // Reset activeMediaIndex when project changes or media slots change
+  useEffect(() => {
+    setActiveMediaIndex(0);
+  }, [project.id]);
+
+  // Safety check: if activeMediaIndex is out of bounds, reset to 0
+  useEffect(() => {
+    if (mediaSlots.length > 0 && activeMediaIndex >= mediaSlots.length) {
+      setActiveMediaIndex(0);
+    }
+  }, [mediaSlots.length, activeMediaIndex]);
 
   const hasLiked = userLikedByProject[project.id] ?? engagement?.user_has_liked ?? false;
   const likesCount = engagement?.statistics?.likes_count ?? project.likes_count ?? 0;
   const commentsCount = engagement?.statistics?.comments_count ?? project.comments_count ?? 0;
 
   const handleLike = async () => {
-    if (!userInfo?.username){
-      toast.warning("You must be logged in to like projects")
-      return
+    if (!userInfo?.username) {
+      toast.warning("You must be logged in to like projects");
+      return;
     }
     await toggleLike(project.id);
   };
@@ -72,7 +89,7 @@ export function ProjectHero({ project, engagement }: ProjectHeroProps) {
             <AnimatePresence mode="wait">
               {currentMedia?.url && (
                 <motion.img
-                  key={activeMediaIndex}
+                  key={`${project.id}-${activeMediaIndex}`}
                   src={currentMedia.url}
                   alt={`${project.project_name} - ${activeMediaIndex + 1}`}
                   initial={{ opacity: 0 }}
@@ -198,7 +215,16 @@ export function ProjectHero({ project, engagement }: ProjectHeroProps) {
         </div>
       </div>
 
-      {/* Description */}
+
+      {/* Summary */}
+      {project.project_summary && (
+        <p className="text-sm text-[var(--foreground)]/50 line-clamp-2">
+          {project.project_summary}
+        </p>
+      )}
+
+
+      {/* Full Description */}
       {project.project_description && (
         <MarkdownRenderer markdown={project.project_description} />
       )}

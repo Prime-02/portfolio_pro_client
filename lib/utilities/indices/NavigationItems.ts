@@ -78,10 +78,10 @@ export const privateRoutes: Route[] = [
   },
   {
     slug: "resume",
-    link: "/resume",
-    name: "Resume",
+    link: "/cv",
+    name: "Professional CV",
     icon: FaFileAlt,
-    description: "Upload and manage your professional resume/CV documents",
+    description: "Generate professional CV from your profile data or existing portfolios",
   },
   {
     slug: "certification",

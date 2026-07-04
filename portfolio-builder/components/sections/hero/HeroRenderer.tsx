@@ -354,9 +354,6 @@ export default function HeroRenderer({ data, theme }: HeroRendererProps) {
                     <div key={animKey}>{textContent}</div>
                 </MotionContainer>
             )}
-
-            {/* Scroll Indicator */}
-            {effects?.scrollIndicator && <ScrollIndicator />}
         </section>
     );
 }

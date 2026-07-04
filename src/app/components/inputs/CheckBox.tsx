@@ -1,8 +1,8 @@
 import React, { useRef, useMemo } from "react";
 import { FaCheck, FaInfoCircle } from "react-icons/fa";
-import { useTheme } from "../theme/ThemeContext ";
+import { useTheme } from "../theme/ThemeContext";
 
-interface CheckBoxProps {
+export interface CheckBoxProps {
   isChecked: boolean;
   setIsChecked: (checked: boolean) => void;
   target?: boolean;
@@ -11,6 +11,8 @@ interface CheckBoxProps {
   showDescriptionOn?: "hover" | "checked" | "always";
   direction?: "left" | "right" | "top" | "bottom";
   label?: string;
+  className?: string;
+  labelClassName?: string;
 }
 
 const CheckBox: React.FC<CheckBoxProps> = ({
@@ -22,6 +24,8 @@ const CheckBox: React.FC<CheckBoxProps> = ({
   showDescriptionOn = "hover",
   direction = "right",
   label = "",
+  className = "",
+  labelClassName = "",
 }) => {
   const { theme, accentColor } = useTheme();
   const descriptionRef = useRef<HTMLDivElement>(null);
@@ -57,9 +61,9 @@ const CheckBox: React.FC<CheckBoxProps> = ({
     const baseStyles: React.CSSProperties = {
       position: "absolute",
       padding: "8px 12px",
-      background: theme.background,
-      color: theme.foreground,
-      border: `1px solid ${accentColor.color}`,
+      background: "var(--background, " + theme.background + ")",
+      color: "var(--foreground, " + theme.foreground + ")",
+      border: "1px solid var(--accent, " + accentColor.color + ")",
       borderRadius: "4px",
       boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
       minWidth: "200px",
@@ -111,72 +115,17 @@ const CheckBox: React.FC<CheckBoxProps> = ({
     }
   };
 
-  const checkboxStyles: React.CSSProperties = {
-    backgroundColor: isChecked ? accentColor.color : theme.background,
-    borderRadius: "5px",
-    width: "25px",
-    height: "25px",
-    border: `2px solid ${accentColor.color}`,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    cursor: "pointer",
-    transition: "background-color 0.3s ease, transform 0.5s ease-out",
-    position: "relative",
-    overflow: "hidden",
-    transform: isChecked ? "scale(1)" : "scale(1)",
-    animation: isChecked ? `${uniqueId}-bounce 0.5s ease-out` : undefined,
-  };
-
-  const checkIconStyles: React.CSSProperties = {
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    color: "white",
-    fontSize: "14px",
-    opacity: isChecked ? 1 : 0,
-    animation: isChecked
-      ? `${uniqueId}-checkAppear 0.3s ease-out 0.1s both`
-      : "none",
-    pointerEvents: "none",
-  };
-
-  const containerStyles: React.CSSProperties = {
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-    position: "relative",
-    maxWidth: "400px",
-    width: "auto",
-  };
-
-  const checkboxWrapperStyles: React.CSSProperties = {
-    position: "relative",
-  };
-
-  const inputStyles: React.CSSProperties = {
-    position: "absolute",
-    opacity: 0,
-    cursor: "pointer",
-    width: "25px",
-    height: "25px",
-    margin: 0,
-    zIndex: 10,
-  };
-
-  const infoIconWrapperStyles: React.CSSProperties = {
-    display: "flex",
-    alignItems: "center",
-    height: "25px",
-    position: "relative",
-  };
-
-  const infoIconStyles: React.CSSProperties = {
-    color: accentColor.color,
-    cursor: "help",
-    fontSize: "16px",
-    transition: "color 0.2s ease, opacity 0.2s ease",
+  // Modify popup styles for hover behavior
+  const getHoverPopupStyles = (): React.CSSProperties => {
+    const baseStyles = getPopupStyles();
+    if (showDescriptionOn === "hover") {
+      return {
+        ...baseStyles,
+        opacity: 0,
+        visibility: "hidden",
+      };
+    }
+    return baseStyles;
   };
 
   // Create scoped styles for this specific instance
@@ -211,51 +160,94 @@ const CheckBox: React.FC<CheckBoxProps> = ({
     }
   `;
 
-  // Modify popup styles for hover behavior
-  const getHoverPopupStyles = (): React.CSSProperties => {
-    const baseStyles = getPopupStyles();
-    if (showDescriptionOn === "hover") {
-      return {
-        ...baseStyles,
-        opacity: 0,
-        visibility: "hidden",
-      };
-    }
-    return baseStyles;
-  };
-
   return (
     <>
       <style>{scopedStyles}</style>
-      <div className="flex items-center gap-x-2">
-        <div style={containerStyles}>
-          <div style={checkboxWrapperStyles}>
+      <div className={`flex items-center gap-x-2 ${className}`}>
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+          position: "relative",
+          maxWidth: "400px",
+          width: "auto",
+        }}>
+          <div style={{ position: "relative" }}>
             <input
               id={id}
               type="checkbox"
-              style={inputStyles}
+              style={{
+                position: "absolute",
+                opacity: 0,
+                cursor: "pointer",
+                width: "25px",
+                height: "25px",
+                margin: 0,
+                zIndex: 10,
+              }}
               checked={isChecked}
               onChange={target ? handleCheckboxTarget : handleCheckboxChange}
               aria-checked={isChecked}
               aria-describedby={description ? `${id}-description` : undefined}
             />
-            <div style={checkboxStyles}>
-              <FaCheck style={checkIconStyles} />
+            <div
+              style={{
+                backgroundColor: isChecked ? "var(--accent, " + accentColor.color + ")" : "var(--background, " + theme.background + ")",
+                borderRadius: "5px",
+                width: "25px",
+                height: "25px",
+                border: "2px solid var(--accent, " + accentColor.color + ")",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                transition: "background-color 0.3s ease, transform 0.5s ease-out",
+                position: "relative",
+                overflow: "hidden",
+                transform: isChecked ? "scale(1)" : "scale(1)",
+                animation: isChecked ? `${uniqueId}-bounce 0.5s ease-out` : undefined,
+              }}
+            >
+              <FaCheck
+                style={{
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  color: "var(--background, white)",
+                  fontSize: "14px",
+                  opacity: isChecked ? 1 : 0,
+                  animation: isChecked
+                    ? `${uniqueId}-checkAppear 0.3s ease-out 0.1s both`
+                    : "none",
+                  pointerEvents: "none",
+                }}
+              />
             </div>
           </div>
 
           {description && (
             <div
               className={`${uniqueId}-info-wrapper`}
-              style={infoIconWrapperStyles}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                height: "25px",
+                position: "relative",
+              }}
             >
               {(showDescriptionOn === "hover" ||
                 showDescriptionOn === "always") && (
-                <FaInfoCircle
-                  className={`${uniqueId}-info-icon`}
-                  style={infoIconStyles}
-                />
-              )}
+                  <FaInfoCircle
+                    className={`${uniqueId}-info-icon`}
+                    style={{
+                      color: "var(--accent, " + accentColor.color + ")",
+                      cursor: "help",
+                      fontSize: "16px",
+                      transition: "color 0.2s ease, opacity 0.2s ease",
+                    }}
+                  />
+                )}
               <div
                 id={`${id}-description`}
                 className={
@@ -271,7 +263,14 @@ const CheckBox: React.FC<CheckBoxProps> = ({
             </div>
           )}
         </div>
-        <span className="text-xs text-[var(--accent)] ">{label}</span>
+        {label && (
+          <span
+            className={`text-xs ${labelClassName}`}
+            style={{ color: "var(--accent, " + accentColor.color + ")" }}
+          >
+            {label}
+          </span>
+        )}
       </div>
     </>
   );

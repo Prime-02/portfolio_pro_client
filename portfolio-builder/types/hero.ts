@@ -65,7 +65,12 @@ export type HeroMediaType = "image" | "lottie" | "video" | "none";
  * - rounded       : Rounded rectangle
  * - square        : No border radius
  */
-export type HeroMediaShape = "circle" | "rounded" | "square";
+export type HeroMediaShape =
+  | "circle"
+  | "rounded"
+  | "square"
+  | "portrait"
+  | "landscape";
 
 /**
  * Display size of the media element.

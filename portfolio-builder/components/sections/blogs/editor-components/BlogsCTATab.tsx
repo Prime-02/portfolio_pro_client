@@ -49,7 +49,6 @@ function UrlPicker({ value, username, onChange }: { value: string; username?: st
     { id: `/${username}/content`, code: "Your Content" },
     { id: `/${username}/socials`, code: "Your Social Media Handles" },
     { id: `/${username}/experience`, code: "Your Experiences" },
-    { id: `/${username}/resume`, code: "Your CV/Resume" },
     { id: `/${username}/certification`, code: "Your Certifications" },
     { id: `/${username}/education`, code: "Your Education" },
     { id: `/${username}/skills`, code: "Your Skills" },

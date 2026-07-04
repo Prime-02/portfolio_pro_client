@@ -53,14 +53,12 @@ function Toggle({
           className="sr-only"
         />
         <div
-          className={`w-9 h-5 rounded-full transition-colors ${
-            checked ? "bg-[var(--pb-foreground)]" : "bg-[var(--pb-foreground-20)]"
-          }`}
+          className={`w-9 h-5 rounded-full transition-colors ${checked ? "bg-[var(--pb-foreground)]" : "bg-[var(--pb-foreground-20)]"
+            }`}
         />
         <div
-          className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-[var(--pb-background)] transition-transform ${
-            checked ? "translate-x-4" : "translate-x-0"
-          }`}
+          className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-[var(--pb-background)] transition-transform ${checked ? "translate-x-4" : "translate-x-0"
+            }`}
         />
       </div>
       <span className="text-sm text-[var(--pb-text-secondary)]">{label}</span>
@@ -84,7 +82,6 @@ function UrlPicker({
     { id: `/${username}/projects`, code: "Your Projects" },
     { id: `/${username}/socials`, code: "Your Social Media Handles" },
     { id: `/${username}/experience`, code: "Your Experience" },
-    { id: `/${username}/resume`, code: "Your CV/Resume" },
     { id: `/${username}/certification`, code: "Your Certifications" },
     { id: `/${username}/education`, code: "Your Education" },
     { id: `/${username}/skills`, code: "Your Skills" },
@@ -102,8 +99,8 @@ function UrlPicker({
     mode === "internal" && isInternalUrl
       ? value
       : mode === "external"
-      ? EXTERNAL_LINK_ID
-      : "";
+        ? EXTERNAL_LINK_ID
+        : "";
 
   const allOptions = [
     ...internalOptions,
@@ -198,11 +195,10 @@ export default function EducationCTATab({ data, onChange }: EducationCTATabProps
           type="button"
           onClick={addButton}
           disabled={atLimit}
-          className={`text-sm transition-colors px-3 py-1 rounded-md ${
-            atLimit
+          className={`text-sm transition-colors px-3 py-1 rounded-md ${atLimit
               ? "text-[var(--pb-text-disabled)] cursor-not-allowed"
               : "text-[var(--pb-text-primary)] hover:bg-[var(--pb-surface-hover)] border border-[var(--pb-border)]"
-          }`}
+            }`}
           title={atLimit ? `Maximum of ${MAX_BUTTONS} buttons allowed` : undefined}
         >
           + Add Button

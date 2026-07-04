@@ -63,11 +63,12 @@ export default function TestimonialsRenderer({ data, username, animationKey }: T
     filters,
   } = data;
 
+  const safeFilters = filters ?? ({} as TestimonialsData["filters"]);
   const anim: BioAnimations = { ...DEFAULT_ANIM, ...(animations ?? {}) };
   const isAnimated = anim.preset !== "none";
 
-  const { rendererTestimonials, isLoadingTestimonials } = useDebouncedTestimonialsFetch(username, filters);
-  const sortedTestimonials = sortTestimonials(rendererTestimonials, filters._sortBy || "default");
+  const { rendererTestimonials, isLoadingTestimonials } = useDebouncedTestimonialsFetch(username, safeFilters);
+  const sortedTestimonials = sortTestimonials(rendererTestimonials, safeFilters._sortBy || "default");
 
   const sectionRef = useRef<HTMLElement>(null);
   const isInView = useInView(sectionRef, { once: anim.scrollOnce, amount: 0.15 });

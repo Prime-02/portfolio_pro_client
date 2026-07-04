@@ -9,7 +9,7 @@ const DEBOUNCE_MS = 400;
 
 export function useDebouncedTestimonialsFetch(
   username: string,
-  filters: TestimonialsData["filters"],
+  filters?: TestimonialsData["filters"],
 ) {
   const { fetchUserTestimonials } = useTestimonialsStore();
   const [rendererTestimonials, setRendererTestimonials] = useState<
@@ -20,8 +20,10 @@ export function useDebouncedTestimonialsFetch(
 
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
-  const latestFiltersRef = useRef(filters);
-  latestFiltersRef.current = filters;
+  const latestFiltersRef = useRef(
+    filters ?? ({} as TestimonialsData["filters"]),
+  );
+  latestFiltersRef.current = filters ?? ({} as TestimonialsData["filters"]);
 
   const executeFetch = useCallback(() => {
     if (!username) return;
@@ -40,12 +42,13 @@ export function useDebouncedTestimonialsFetch(
       username,
       skip: 0,
       limit: 100,
-      is_featured: latestFiltersRef.current.is_featured,
-      author_company: latestFiltersRef.current.author_company,
-      author_relationship: latestFiltersRef.current.author_relationship,
-      rating: latestFiltersRef.current.min_rating,
-      ids: latestFiltersRef.current.ids,
-      merge_filters: latestFiltersRef.current.merge_filters,
+      is_featured: latestFiltersRef.current.is_featured ?? undefined,
+      author_company: latestFiltersRef.current.author_company ?? undefined,
+      author_relationship:
+        latestFiltersRef.current.author_relationship ?? undefined,
+      rating: latestFiltersRef.current.min_rating ?? undefined,
+      ids: latestFiltersRef.current.ids ?? undefined,
+      merge_filters: latestFiltersRef.current.merge_filters ?? undefined,
     })
       .then(() => {
         if (!controller.signal.aborted) {
@@ -83,13 +86,13 @@ export function useDebouncedTestimonialsFetch(
     };
   }, [
     username,
-    filters.is_featured,
-    filters.author_company,
-    filters.author_relationship,
-    filters.min_rating,
+    filters?.is_featured,
+    filters?.author_company,
+    filters?.author_relationship,
+    filters?.min_rating,
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    filters.ids?.join(","),
-    filters.merge_filters,
+    filters?.ids?.join(","),
+    filters?.merge_filters,
     executeFetch,
   ]);
 

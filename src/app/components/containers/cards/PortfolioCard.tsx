@@ -9,7 +9,7 @@ import {
   MapPin,
   Calendar,
 } from "lucide-react";
-import { useTheme } from "../../theme/ThemeContext ";
+import { useTheme } from "../../theme/ThemeContext";
 import Button from "../../buttons/Buttons";
 import Image from "next/image";
 import { getColorShade, getImageSrc } from "@/lib/utilities/syncFunctions/syncs";
@@ -111,11 +111,10 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({
           {(portfolio.is_public || portfolio.is_default) && (
             <div className="absolute top-2 left-2">
               <span
-                className={`px-2 py-0.5 text-xs font-medium rounded-full ${
-                  portfolio.is_default
+                className={`px-2 py-0.5 text-xs font-medium rounded-full ${portfolio.is_default
                     ? "bg-purple-100 text-purple-700"
                     : "bg-green-100 text-green-700"
-                }`}
+                  }`}
               >
                 {portfolio.is_default ? "Default" : "Public"}
               </span>

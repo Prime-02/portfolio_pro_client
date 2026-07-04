@@ -35,6 +35,7 @@ interface DropdownProps {
   multiple?: boolean;
   maxSelections?: number;
   selectAll?: boolean;
+  style?: React.CSSProperties;
 }
 
 const Dropdown: React.FC<DropdownProps> = ({
@@ -62,6 +63,7 @@ const Dropdown: React.FC<DropdownProps> = ({
   multiple = false,
   maxSelections,
   selectAll = false,
+  style,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState<DropdownOption | null>(null);
@@ -75,10 +77,12 @@ const Dropdown: React.FC<DropdownProps> = ({
   } | null>(null);
   const [activeIndex, setActiveIndex] = useState(-1);
   const [mounted, setMounted] = useState(false);
+  const [portalVariables, setPortalVariables] = useState<Record<string, string>>({});
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  const portalRef = useRef<HTMLDivElement>(null);
   const [dropdownId] = useState(() => `dropdown-${Math.random().toString(36).substr(2, 9)}`);
 
   // Size classes
@@ -97,6 +101,72 @@ const Dropdown: React.FC<DropdownProps> = ({
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Create portal container
+  useEffect(() => {
+    if (!mounted) return;
+
+    const portalContainer = document.createElement('div');
+    portalContainer.id = `${dropdownId}-portal`;
+    document.body.appendChild(portalContainer);
+    portalRef.current = portalContainer;
+
+    return () => {
+      if (portalContainer && document.body.contains(portalContainer)) {
+        document.body.removeChild(portalContainer);
+      }
+    };
+  }, [dropdownId, mounted]);
+
+  // Extract CSS variables from the trigger element when dropdown opens
+  const extractCSSVariables = useCallback(() => {
+    if (!dropdownRef.current) return;
+
+    const computedStyle = getComputedStyle(dropdownRef.current);
+    const variables: Record<string, string> = {};
+
+    // Extract theme variables
+    const variableNames = [
+      '--foreground',
+      '--background',
+      '--accent',
+      '--pb-foreground',
+      '--pb-background',
+      '--pb-accent',
+      '--pb-input-bg',
+      '--pb-input-border',
+      '--pb-border-hover'
+    ];
+
+    variableNames.forEach(name => {
+      const value = computedStyle.getPropertyValue(name).trim();
+      if (value) {
+        variables[name] = value;
+      }
+    });
+
+    // Also check for any CSS custom properties that start with --
+    // This captures any other theme variables
+    for (let i = 0; i < computedStyle.length; i++) {
+      const prop = computedStyle[i];
+      if (prop.startsWith('--') && !variables[prop]) {
+        const value = computedStyle.getPropertyValue(prop).trim();
+        if (value) {
+          variables[prop] = value;
+        }
+      }
+    }
+
+    setPortalVariables(variables);
+
+    // Apply variables to portal container
+    if (portalRef.current) {
+      const cssText = Object.entries(variables)
+        .map(([key, value]) => `${key}: ${value}`)
+        .join('; ');
+      portalRef.current.style.cssText = cssText;
+    }
+  }, [dropdownId]);
 
   // Initialize selected option(s) based on value prop
   useEffect(() => {
@@ -136,7 +206,7 @@ const Dropdown: React.FC<DropdownProps> = ({
       if (
         dropdownRef.current &&
         !dropdownRef.current.contains(event.target as Node) &&
-        !document.querySelector(`[data-dropdown-portal="${dropdownId}"]`)?.contains(event.target as Node)
+        !portalRef.current?.contains(event.target as Node)
       ) {
         handleClose();
       }
@@ -222,7 +292,6 @@ const Dropdown: React.FC<DropdownProps> = ({
     return selectedOption ? String(selectedOption[valueKey]) === String(option[valueKey]) : false;
   };
 
-
   const handleSelect = useCallback((option: DropdownOption) => {
     if (multiple) {
       setSelectedOptions(prev => {
@@ -236,27 +305,23 @@ const Dropdown: React.FC<DropdownProps> = ({
             (selected) => String(selected[valueKey]) !== String(option[valueKey])
           );
         } else {
-          // Check max selections
           if (maxSelections && prev.length >= maxSelections) {
-            return prev; // Don't add if max reached
+            return prev;
           }
           newSelected = [...prev, option];
         }
 
-        // Schedule the onSelect callback for after the render
         Promise.resolve().then(() => {
           onSelect?.(newSelected.map(opt => String(opt[valueKey])));
         });
 
         return newSelected;
       });
-      // Don't close dropdown on multi-select
       setSearchQuery("");
     } else {
       setSelectedOption(option);
       setSearchQuery("");
 
-      // Schedule the onSelect callback for after the render
       Promise.resolve().then(() => {
         onSelect?.(String(option[valueKey]));
       });
@@ -265,12 +330,11 @@ const Dropdown: React.FC<DropdownProps> = ({
     }
   }, [onSelect, valueKey, multiple, maxSelections]);
 
-
   const handleSelectAll = useCallback(() => {
     if (!multiple) return;
 
     const allFilteredOptions = filteredOptions.filter(
-      option => String(option[valueKey]) !== "" // Exclude "None" option
+      option => String(option[valueKey]) !== ""
     );
 
     const allSelected = allFilteredOptions.every(option =>
@@ -279,14 +343,12 @@ const Dropdown: React.FC<DropdownProps> = ({
 
     let newSelected: DropdownOption[];
     if (allSelected) {
-      // Deselect all
       newSelected = selectedOptions.filter(
         selected => !allFilteredOptions.some(
           option => String(option[valueKey]) === String(selected[valueKey])
         )
       );
     } else {
-      // Select all (respect max selections)
       const optionsToAdd = allFilteredOptions.filter(
         option => !selectedOptions.some(
           selected => String(selected[valueKey]) === String(option[valueKey])
@@ -300,12 +362,10 @@ const Dropdown: React.FC<DropdownProps> = ({
 
     setSelectedOptions(newSelected);
 
-    // Schedule the onSelect callback for after the render
     Promise.resolve().then(() => {
       onSelect?.(newSelected.map(opt => String(opt[valueKey])));
     });
   }, [multiple, filteredOptions, selectedOptions, maxSelections, onSelect, valueKey]);
-
 
   const handleClose = useCallback(() => {
     setIsOpen(false);
@@ -346,6 +406,7 @@ const Dropdown: React.FC<DropdownProps> = ({
     if (!isOpen && dropdownRef.current) {
       const rect = dropdownRef.current.getBoundingClientRect();
       setTriggerRect({ top: rect.top, bottom: rect.bottom, left: rect.left, width: rect.width });
+      extractCSSVariables(); // Extract variables when opening
       onFocus();
     }
     setIsOpen(!isOpen);
@@ -417,7 +478,6 @@ const Dropdown: React.FC<DropdownProps> = ({
     return [...result, ...filteredOptions];
   };
 
-  // Check if all filtered options are selected (for select all)
   const areAllFilteredSelected = multiple && filteredOptions.length > 0 &&
     filteredOptions.every(option =>
       selectedOptions.some(selected => String(selected[valueKey]) === String(option[valueKey]))
@@ -429,7 +489,7 @@ const Dropdown: React.FC<DropdownProps> = ({
   }
 
   return (
-    <div id={id} className={`flex flex-col gap-1 ${containerClassName}`}>
+    <div id={id} className={`flex flex-col gap-1 ${containerClassName}`} style={style}>
       {/* Trigger Button */}
       <div
         ref={dropdownRef}
@@ -539,7 +599,7 @@ const Dropdown: React.FC<DropdownProps> = ({
       )}
 
       {/* Portal Dropdown Menu */}
-      {mounted && typeof document !== "undefined" && isOpen && triggerRect && createPortal(
+      {mounted && typeof document !== "undefined" && isOpen && triggerRect && portalRef.current && createPortal(
         <DropdownMenu
           dropdownId={dropdownId}
           triggerRect={triggerRect}
@@ -570,7 +630,7 @@ const Dropdown: React.FC<DropdownProps> = ({
           selectedOption={selectedOption}
           selectedOptions={selectedOptions}
         />,
-        document.body
+        portalRef.current
       )}
     </div>
   );
@@ -731,7 +791,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
     <div
       ref={menuRef}
       style={menuStyle}
-      className="card border border-[var(--foreground)] border-opacity-20 rounded-xl shadow-2xl overflow-hidden"
+      className="card border border-[var(--foreground)] border-opacity-20 rounded-xl shadow-2xl overflow-hidden bg-[var(--background)]"
       data-dropdown-portal={dropdownId}
       role="listbox"
       id={`${dropdownId}-listbox`}
@@ -780,7 +840,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
             `}>
               {areAllSelected && <Check className="w-3 h-3 text-white" />}
             </div>
-            <span className="font-medium">
+            <span className="font-medium text-[var(--foreground)]">
               {areAllSelected ? 'Deselect All' : 'Select All'}
             </span>
           </button>
@@ -834,7 +894,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
                     New
                   </span>
                 )}
-                <span className="truncate flex-1">{item.option[displayKey]}</span>
+                <span className="truncate flex-1 text-[var(--foreground)]">{item.option[displayKey]}</span>
 
                 {multiple && selected && (
                   <Check className="w-3 h-3 text-[var(--accent)] flex-shrink-0" />

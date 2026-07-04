@@ -47,5 +47,5 @@ registerBackground({
             ]}
         />
     ),
-    supportsOverlay: false,
+    supportsOverlay: true,
 });

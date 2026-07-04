@@ -7,9 +7,9 @@ import type { Education } from "@/lib/stores/education/useEducation";
 import { LoadingSkeleton } from "./LoadingSkeleton";
 import { PublicProfileView } from "./PublicProfileView";
 import { OwnProfileView } from "./OwnProfileView";
-import { useTheme } from "../theme/ThemeContext ";
+import { useTheme } from "../theme/ThemeContext";
 
-export default function EducationPage() {
+export default function EducationPage({ miniView = false }: { miniView?: boolean }) {
     const {
         educations,
         isLoading,
@@ -93,6 +93,7 @@ export default function EducationPage() {
             <PublicProfileView
                 username={publicUsername}
                 educations={displayEducations}
+                miniView={miniView}
                 isLoading={displayLoading}
                 error={error}
                 onClearError={clearError}
@@ -104,6 +105,7 @@ export default function EducationPage() {
     return (
         <OwnProfileView
             educations={displayEducations}
+            miniView={miniView}
             isLoading={displayLoading}
             error={error}
             onClearError={clearError}

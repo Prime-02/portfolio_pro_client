@@ -5,7 +5,7 @@ import VercelButton from "./vercel/VercelButton";
 import { useRouting } from "@/lib/hooks/routing/useRouting";
 import { useUserStore } from "@/lib/stores/user/userStore";
 import { useUIStore } from "@/lib/stores/ui/useUIStore";
-import { useTheme } from "@/src/app/components/theme/ThemeContext ";
+import { useTheme } from "@/src/app/components/theme/ThemeContext";
 import { PathUtil } from "@/lib/utilities/syncFunctions/syncs";
 import { api } from "@/lib/client/api";
 import { toast } from "@/src/app/components/toastify/Toastify";

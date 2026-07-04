@@ -57,6 +57,13 @@ interface MotionItemProps {
     shouldAnimate: boolean;
     anim: HeroAnimations;
     className?: string;
+    // Set to false for text blocks that may wrap onto multiple lines
+    // (e.g. title/description copy). `w-fit` shrink-wraps the box to its
+    // content, which works fine for short/single-line items (name, greeting,
+    // CTA buttons, social links) but produces unreliable centering once the
+    // text wraps, since the box width ends up tied to whichever line happens
+    // to be widest rather than the container's available width.
+    fitWidth?: boolean;
 }
 
 export function MotionItem({
@@ -65,9 +72,12 @@ export function MotionItem({
     shouldAnimate,
     anim,
     className,
+    fitWidth = true,
 }: MotionItemProps) {
+    const widthClass = fitWidth ? "w-fit" : "w-full";
+
     if (!isAnimated) {
-        return <div className={`w-fit ${className ?? ""}`}>{children}</div>;
+        return <div className={`${widthClass} ${className ?? ""}`}>{children}</div>;
     }
 
     const itemVariants = buildVariants(anim);
@@ -83,7 +93,7 @@ export function MotionItem({
         <motion.div
             initial={hidden}
             animate={shouldAnimate ? { ...visible, transition } : hidden}
-            className={`w-fit ${className ?? ""}`}
+            className={`${widthClass} ${className ?? ""}`}
         >
             {children}
         </motion.div>

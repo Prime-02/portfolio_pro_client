@@ -163,7 +163,6 @@ function UrlPicker({
         { id: `/${username}/projects`, code: "Your Projects" },
         { id: `/${username}/socials`, code: "Your Social Media" },
         { id: `/${username}/experience`, code: "Your Experience" },
-        { id: `/${username}/resume`, code: "Your CV / Resume" },
         { id: `/${username}/skills`, code: "Your Skills" },
         { id: `/${username}/testimonials`, code: "Your Testimonials" },
     ];

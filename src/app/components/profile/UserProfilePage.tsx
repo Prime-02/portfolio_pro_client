@@ -10,7 +10,7 @@ import { EmptyProfile } from "@/src/app/components/profile/EmptyProfile";
 import { UserNotFoundNotice } from "@/src/app/components/profile/UserNotFoundNotice";
 import { ProfileViewPage } from "./ProfileViewPage";
 import { ProfileSkeleton } from "./view/ProfileSkeleton";
-import { useTheme } from "../theme/ThemeContext ";
+import { useTheme } from "../theme/ThemeContext";
 
 export const UserProfilePage = () => {
     const {
@@ -149,7 +149,7 @@ export const UserProfilePage = () => {
 
     // ─── Main Render ──────────────────────────────────────────────────────────
     return (
-        <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
             {/* User Not Found Notice for authenticated users viewing missing profiles */}
             {showUserNotFound && (
                 <UserNotFoundNotice username={userInfo?.username ?? ""} />

@@ -1,7 +1,7 @@
-import { useEffect, useRef } from 'react';
-import { Renderer, Program, Mesh, Triangle, Color } from 'ogl';
+import { useEffect, useRef } from "react";
+import { Renderer, Program, Mesh, Triangle, Color } from "ogl";
 
-import './Threads.css';
+import "./Threads.css";
 
 const vertexShader = `
 attribute vec2 position;
@@ -120,13 +120,30 @@ void main() {
 }
 `;
 
-const Threads = ({ color = [1, 1, 1], amplitude = 1, distance = 0, enableMouseInteraction = false, ...rest }) => {
+// Convert a hex color string (e.g. "#ffffff") to a [r, g, b] array of 0-1 floats
+const hexToVec3 = (hex) => {
+  const c = new Color(hex);
+  return [c.r, c.g, c.b];
+};
+
+const Threads = ({
+  color = "#ffffff",
+  amplitude = 1,
+  distance = 0,
+  enableMouseInteraction = false,
+  ...rest
+}) => {
   const containerRef = useRef(null);
   const animationFrameId = useRef(0);
 
   // Keep the latest props in a ref so updating them mutates the live shader
   // uniforms instead of tearing down and rebuilding the whole WebGL context.
-  const propsRef = useRef({ color, amplitude, distance, enableMouseInteraction });
+  const propsRef = useRef({
+    color,
+    amplitude,
+    distance,
+    enableMouseInteraction,
+  });
   propsRef.current = { color, amplitude, distance, enableMouseInteraction };
 
   useEffect(() => {
@@ -147,13 +164,17 @@ const Threads = ({ color = [1, 1, 1], amplitude = 1, distance = 0, enableMouseIn
       uniforms: {
         iTime: { value: 0 },
         iResolution: {
-          value: new Color(gl.canvas.width, gl.canvas.height, gl.canvas.width / gl.canvas.height)
+          value: new Color(
+            gl.canvas.width,
+            gl.canvas.height,
+            gl.canvas.width / gl.canvas.height,
+          ),
         },
-        uColor: { value: new Color(...propsRef.current.color) },
+        uColor: { value: new Color(propsRef.current.color) },
         uAmplitude: { value: propsRef.current.amplitude },
         uDistance: { value: propsRef.current.distance },
-        uMouse: { value: new Float32Array([0.5, 0.5]) }
-      }
+        uMouse: { value: new Float32Array([0.5, 0.5]) },
+      },
     });
 
     const mesh = new Mesh(gl, { geometry, program });
@@ -167,7 +188,10 @@ const Threads = ({ color = [1, 1, 1], amplitude = 1, distance = 0, enableMouseIn
       const { clientWidth, clientHeight } = container;
       const baseDpr = Math.min(window.devicePixelRatio || 1, 2);
       const longestSide = Math.max(clientWidth, clientHeight) * baseDpr;
-      const dpr = longestSide > MAX_RENDER_DIM ? (baseDpr * MAX_RENDER_DIM) / longestSide : baseDpr;
+      const dpr =
+        longestSide > MAX_RENDER_DIM
+          ? (baseDpr * MAX_RENDER_DIM) / longestSide
+          : baseDpr;
       renderer.dpr = dpr;
       renderer.setSize(clientWidth, clientHeight);
       program.uniforms.iResolution.value.r = gl.canvas.width;
@@ -177,7 +201,7 @@ const Threads = ({ color = [1, 1, 1], amplitude = 1, distance = 0, enableMouseIn
 
     const resizeObserver = new ResizeObserver(resize);
     resizeObserver.observe(container);
-    window.addEventListener('resize', resize);
+    window.addEventListener("resize", resize);
     resize();
 
     const currentMouse = [0.5, 0.5];
@@ -192,17 +216,17 @@ const Threads = ({ color = [1, 1, 1], amplitude = 1, distance = 0, enableMouseIn
     function handleMouseLeave() {
       targetMouse = [0.5, 0.5];
     }
-    container.addEventListener('mousemove', handleMouseMove);
-    container.addEventListener('mouseleave', handleMouseLeave);
+    container.addEventListener("mousemove", handleMouseMove);
+    container.addEventListener("mouseleave", handleMouseLeave);
 
     // Only animate while the canvas is on screen and the tab is visible, so the
     // shader never burns GPU/CPU for something the user can't see.
     let isVisible = true;
     const intersectionObserver = new IntersectionObserver(
-      entries => {
+      (entries) => {
         isVisible = entries[0].isIntersecting;
       },
-      { threshold: 0 }
+      { threshold: 0 },
     );
     intersectionObserver.observe(container);
 
@@ -210,9 +234,10 @@ const Threads = ({ color = [1, 1, 1], amplitude = 1, distance = 0, enableMouseIn
       animationFrameId.current = requestAnimationFrame(update);
       if (!isVisible || document.hidden) return;
 
-      const { color, amplitude, distance, enableMouseInteraction } = propsRef.current;
+      const { color, amplitude, distance, enableMouseInteraction } =
+        propsRef.current;
 
-      program.uniforms.uColor.value.set(...color);
+      program.uniforms.uColor.value.set(...hexToVec3(color));
       program.uniforms.uAmplitude.value = amplitude;
       program.uniforms.uDistance.value = distance;
 
@@ -233,14 +258,15 @@ const Threads = ({ color = [1, 1, 1], amplitude = 1, distance = 0, enableMouseIn
     animationFrameId.current = requestAnimationFrame(update);
 
     return () => {
-      if (animationFrameId.current) cancelAnimationFrame(animationFrameId.current);
+      if (animationFrameId.current)
+        cancelAnimationFrame(animationFrameId.current);
       resizeObserver.disconnect();
       intersectionObserver.disconnect();
-      window.removeEventListener('resize', resize);
-      container.removeEventListener('mousemove', handleMouseMove);
-      container.removeEventListener('mouseleave', handleMouseLeave);
+      window.removeEventListener("resize", resize);
+      container.removeEventListener("mousemove", handleMouseMove);
+      container.removeEventListener("mouseleave", handleMouseLeave);
       if (container.contains(gl.canvas)) container.removeChild(gl.canvas);
-      gl.getExtension('WEBGL_lose_context')?.loseContext();
+      gl.getExtension("WEBGL_lose_context")?.loseContext();
     };
   }, []);
 

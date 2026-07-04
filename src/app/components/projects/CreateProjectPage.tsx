@@ -27,6 +27,7 @@ export default function CreateProjectPage() {
   const [form, setForm] = useState<FormState>({
     project_name: "",
     project_description: "",
+    project_summary: "",
     project_platform: "",
     project_category: "",
     contribution_description: "",
@@ -59,6 +60,7 @@ export default function CreateProjectPage() {
     const payload: PortfolioProjectCreate = {
       project_name: form.project_name,
       project_description: form.project_description || undefined,
+      project_summary: form.project_summary || undefined,
       project_platform: form.project_platform,
       project_category: form.project_category || undefined,
       contribution_description: form.contribution_description || undefined,

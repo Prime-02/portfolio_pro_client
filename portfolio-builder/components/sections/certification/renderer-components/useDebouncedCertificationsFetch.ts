@@ -9,7 +9,7 @@ const DEBOUNCE_MS = 400;
 
 export function useDebouncedCertificationsFetch(
   username: string,
-  filters: PublicCertificationFilters,
+  filters?: PublicCertificationFilters,
 ) {
   // Pull only the action — NOT publicCertifications.
   // This prevents executeFetch from recreating every time the store updates.
@@ -25,8 +25,10 @@ export function useDebouncedCertificationsFetch(
 
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
-  const latestFiltersRef = useRef(filters);
-  latestFiltersRef.current = filters;
+  const latestFiltersRef = useRef(
+    filters ?? ({} as PublicCertificationFilters),
+  );
+  latestFiltersRef.current = filters ?? ({} as PublicCertificationFilters);
 
   const executeFetch = useCallback(() => {
     if (!username) return;
@@ -42,9 +44,10 @@ export function useDebouncedCertificationsFetch(
     setIsStale(false);
 
     fetchPublicCertifications(username, {
-      issuing_organization: latestFiltersRef.current.issuing_organization,
-      ids: latestFiltersRef.current.ids,
-      merge_filters: latestFiltersRef.current.merge_filters,
+      issuing_organization:
+        latestFiltersRef.current.issuing_organization ?? undefined,
+      ids: latestFiltersRef.current.ids ?? undefined,
+      merge_filters: latestFiltersRef.current.merge_filters ?? undefined,
     })
       .then(() => {
         if (!controller.signal.aborted) {
@@ -88,10 +91,10 @@ export function useDebouncedCertificationsFetch(
     };
   }, [
     username,
-    filters.issuing_organization,
+    filters?.issuing_organization,
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    filters.ids?.join(","),
-    filters.merge_filters,
+    filters?.ids?.join(","),
+    filters?.merge_filters,
     executeFetch,
   ]);
 

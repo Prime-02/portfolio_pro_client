@@ -62,50 +62,46 @@ const STYLES = `
 .mde2-tbtn:active { transform: scale(0.93); }
 .mde2-tbtn:disabled { opacity: 0.35; cursor: not-allowed; }
 
-/* Rich content styles — shared between the MDXEditor contentEditable
-   (via contentEditableClassName="mde2-editor") and the live preview pane.
-   Unchanged from before: MDXEditor's DOM output for these elements matches
-   standard HTML tags, so the same rules still apply. */
 .mde2-editor { padding: 20px 24px; font-family: 'Lora', Georgia, serif; font-size: 1rem; line-height: 1.8; color: var(--foreground); min-height: var(--mde2-min-height, 420px); }
-.mde2-editor h1, .mde2-editor h2, .mde2-editor h3,
-.mde2-editor h4, .mde2-editor h5, .mde2-editor h6 {
+.mde2-mdx-pane .mde2-editor h1, .mde2-mdx-pane .mde2-editor h2, .mde2-mdx-pane .mde2-editor h3,
+.mde2-mdx-pane .mde2-editor h4, .mde2-mdx-pane .mde2-editor h5, .mde2-mdx-pane .mde2-editor h6 {
   font-family: 'Lora', serif; font-weight: 700;
   color: var(--foreground); margin: 0.9em 0 0.3em; line-height: 1.25;
 }
-.mde2-editor h1 { font-size: 2rem; border-bottom: 2px solid var(--foreground); padding-bottom: 6px; }
-.mde2-editor h2 { font-size: 1.5rem; border-bottom: 1px solid var(--foreground); padding-bottom: 4px; }
-.mde2-editor h3 { font-size: 1.2rem; }
-.mde2-editor h4 { font-size: 1.05rem; }
-.mde2-editor p  { margin: 0.4em 0; }
-.mde2-editor strong, .mde2-editor b { font-weight: 700; }
-.mde2-editor em, .mde2-editor i { font-style: italic; }
-.mde2-editor del, .mde2-editor s { text-decoration: line-through; opacity: 0.65; }
-.mde2-editor a { color: var(--foreground); text-decoration: underline; }
-.mde2-editor hr { border: none; border-top: 2px solid var(--foreground); margin: 1.2em 0; }
-.mde2-editor blockquote {
+.mde2-mdx-pane .mde2-editor h1 { font-size: 2rem; border-bottom: 2px solid var(--foreground); padding-bottom: 6px; }
+.mde2-mdx-pane .mde2-editor h2 { font-size: 1.5rem; border-bottom: 1px solid var(--foreground); padding-bottom: 4px; }
+.mde2-mdx-pane .mde2-editor h3 { font-size: 1.2rem; }
+.mde2-mdx-pane .mde2-editor h4 { font-size: 1.05rem; }
+.mde2-mdx-pane .mde2-editor p  { margin: 0.4em 0; color: var(--foreground); }
+.mde2-mdx-pane .mde2-editor strong, .mde2-mdx-pane .mde2-editor b { font-weight: 700; color: var(--foreground); }
+.mde2-mdx-pane .mde2-editor em, .mde2-mdx-pane .mde2-editor i { font-style: italic; }
+.mde2-mdx-pane .mde2-editor del, .mde2-mdx-pane .mde2-editor s { text-decoration: line-through; opacity: 0.65; }
+.mde2-mdx-pane .mde2-editor a { color: var(--foreground); text-decoration: underline; }
+.mde2-mdx-pane .mde2-editor hr { border: none; border-top: 2px solid var(--foreground); margin: 1.2em 0; }
+.mde2-mdx-pane .mde2-editor blockquote {
   border-left: 3px solid var(--foreground); margin: 0.7em 0; padding: 4px 16px;
   background: color-mix(in srgb, var(--foreground) 6%, transparent);
   border-radius: 0 8px 8px 0; color: var(--foreground); font-style: italic;
 }
-.mde2-editor ul, .mde2-editor ol { margin: 0.4em 0; padding-left: 2em; list-style-position: outside; }
-.mde2-editor ul { list-style-type: disc; }
-.mde2-editor ol { list-style-type: decimal; }
-.mde2-editor li { margin: 0.2em 0; }
-.mde2-editor code {
+.mde2-mdx-pane .mde2-editor ul, .mde2-mdx-pane .mde2-editor ol { margin: 0.4em 0; padding-left: 2em; list-style-position: outside; }
+.mde2-mdx-pane .mde2-editor ul { list-style-type: disc; }
+.mde2-mdx-pane .mde2-editor ol { list-style-type: decimal; }
+.mde2-mdx-pane .mde2-editor li { margin: 0.2em 0; color: var(--foreground); }
+.mde2-mdx-pane .mde2-editor code {
   font-family: 'DM Mono', monospace; font-size: 0.85em;
   background: color-mix(in srgb, var(--foreground) 10%, transparent);
   color: var(--foreground); padding: 1px 5px; border-radius: 4px;
 }
-.mde2-editor pre {
+.mde2-mdx-pane .mde2-editor pre {
   background: color-mix(in srgb, var(--foreground) 7%, var(--background));
   border: 1.5px solid var(--foreground); border-radius: 8px;
   padding: 12px 16px; margin: 0.8em 0; overflow-x: auto;
 }
-.mde2-editor pre code { font-family: 'DM Mono', monospace; font-size: 0.85em; background: none; color: var(--foreground); padding: 0; line-height: 1.5; }
-.mde2-editor table { border-collapse: collapse; width: 100%; margin: 0.8em 0; font-size: 0.9em; }
-.mde2-editor th, .mde2-editor td { border: 1px solid var(--foreground); padding: 7px 12px; text-align: left; }
-.mde2-editor th { background: color-mix(in srgb, var(--foreground) 8%, transparent); font-weight: 700; }
-.mde2-editor img { max-width: 100%; border-radius: 6px; margin: 4px 0; }
+.mde2-mdx-pane .mde2-editor pre code { font-family: 'DM Mono', monospace; font-size: 0.85em; background: none; color: var(--foreground); padding: 0; line-height: 1.5; }
+.mde2-mdx-pane .mde2-editor table { border-collapse: collapse; width: 100%; margin: 0.8em 0; font-size: 0.9em; }
+.mde2-mdx-pane .mde2-editor th, .mde2-mdx-pane .mde2-editor td { border: 1px solid var(--foreground); padding: 7px 12px; text-align: left; color: var(--foreground); }
+.mde2-mdx-pane .mde2-editor th { background: color-mix(in srgb, var(--foreground) 8%, transparent); font-weight: 700; }
+.mde2-mdx-pane .mde2-editor img { max-width: 100%; border-radius: 6px; margin: 4px 0; }
 
 /* Footer */
 .mde2-footer {
@@ -162,9 +158,31 @@ const STYLES = `
   z-index: 30;
 }
 .mde2-mdx-pane .mde2-mdx-toolbar button,
-.mde2-mdx-pane .mde2-mdx-toolbar [role="button"] {
+.mde2-mdx-pane .mde2-mdx-toolbar [role="button"],
+.mde2-mdx-pane .mde2-mdx-toolbar [role="combobox"] {
   font-family: 'DM Mono', monospace;
   color: var(--foreground);
+  background: transparent;
+}
+.mde2-mdx-pane .mde2-mdx-toolbar [role="combobox"]:hover {
+  background: color-mix(in srgb, var(--foreground) 10%, transparent);
+}
+.mde2-mdx-pane .mde2-mdx-toolbar select {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.76rem;
+  color: var(--foreground);
+  background: var(--background);
+  border: 1.5px solid var(--foreground);
+  border-radius: 5px;
+  padding: 2px 6px;
+  color-scheme: light dark;
+}
+.mde2-mdx-pane .mde2-mdx-toolbar select:hover {
+  background: color-mix(in srgb, var(--foreground) 10%, transparent);
+}
+.mde2-mdx-pane .mde2-mdx-toolbar select option {
+  color: var(--foreground);
+  background: var(--background);
 }
 .mde2-mdx-pane .mde2-mdx-toolbar svg {
   color: var(--foreground);
@@ -180,6 +198,30 @@ const STYLES = `
 .mdxeditor-select-content,
 .mdxeditor-popup-container {
   font-family: 'Lora', Georgia, serif;
+  background: var(--background) !important;
+  color: var(--foreground) !important;
+  border: 1.5px solid var(--foreground) !important;
+  border-radius: 8px !important;
+}
+.mdxeditor-select-content [role="option"] {
+  color: var(--foreground) !important;
+  background: transparent !important;
+}
+.mdxeditor-select-content [role="option"]:hover,
+.mdxeditor-select-content [role="option"][data-highlighted] {
+  background: color-mix(in srgb, var(--foreground) 12%, transparent) !important;
+  color: var(--foreground) !important;
+}
+.mdxeditor-popup-container .mdxeditor-select-content [role="option"][data-state="checked"],
+.mdxeditor-select-content[data-state] [role="option"][data-state="checked"] {
+  background: color-mix(in srgb, var(--foreground) 18%, transparent) !important;
+  color: var(--foreground) !important;
+}
+.mdxeditor-popup-container .mdxeditor-select-content [role="option"][data-state="checked"] *,
+.mdxeditor-select-content[data-state] [role="option"][data-state="checked"] * {
+  color: var(--foreground) !important;
+  fill: currentColor !important;
+  stroke: currentColor !important;
 }
 `;
 

@@ -35,7 +35,6 @@ interface PublicProfileViewProps {
     onDeleteConfirm: () => Promise<void>;
     stats?: TestimonialStats;
     onNavigateToWrite: () => void;
-    onNavigateToEdit: (testimonial: Testimonial) => void;
     isAuthenticated: boolean;
     miniView?: boolean;
 }
@@ -62,7 +61,6 @@ export function PublicProfileView({
     onDeleteConfirm,
     stats,
     onNavigateToWrite,
-    onNavigateToEdit,
     isAuthenticated,
     miniView = false,
 }: PublicProfileViewProps) {
@@ -137,7 +135,6 @@ export function PublicProfileView({
             <TestimonialsGrid
                 testimonials={displayedTestimonials}
                 isLoading={currentLoading && currentTestimonials.length === 0}
-                onEdit={!isTheirTab ? onNavigateToEdit : undefined}
                 onDelete={!isTheirTab ? onDeleteTestimonialChange : undefined}
                 showApprovalStatus={false}
                 emptyTitle={

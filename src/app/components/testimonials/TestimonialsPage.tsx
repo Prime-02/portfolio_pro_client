@@ -49,6 +49,7 @@ export default function TestimonialsPage({ miniView = false }: { miniView?: bool
         // Mutations
         deleteTestimonial: deleteTestimonialAction,
         approveTestimonial,
+        updateTestimonial,
         deleting,
         approving,
         createError,
@@ -64,6 +65,8 @@ export default function TestimonialsPage({ miniView = false }: { miniView?: bool
     const [deleteTestimonialState, setDeleteTestimonialState] = useState<Testimonial | null>(null);
     const [localError, setLocalError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<"received" | "authored">("received");
+    const [featuringIds, setFeaturingIds] = useState<Set<string>>(new Set());
+    const [approvingIds, setApprovingIds] = useState<Set<string>>(new Set());
 
     // Derived state from profileContext
     const isOwnProfile = profileContext.kind === "own";
@@ -192,10 +195,33 @@ export default function TestimonialsPage({ miniView = false }: { miniView?: bool
 
     const handleApprove = async (testimonial: Testimonial) => {
         if (!testimonial.id) return;
+        setApprovingIds((prev) => new Set(prev).add(testimonial.id));
         try {
             await approveTestimonial(testimonial.id);
         } catch (err) {
             setLocalError(err instanceof Error ? err.message : "Failed to approve testimonial");
+        } finally {
+            setApprovingIds((prev) => {
+                const next = new Set(prev);
+                next.delete(testimonial.id);
+                return next;
+            });
+        }
+    };
+
+    const handleToggleFeature = async (testimonial: Testimonial) => {
+        if (!testimonial.id) return;
+        setFeaturingIds((prev) => new Set(prev).add(testimonial.id));
+        try {
+            await updateTestimonial(testimonial.id, { is_featured: !testimonial.is_featured });
+        } catch (err) {
+            setLocalError(err instanceof Error ? err.message : "Failed to update testimonial");
+        } finally {
+            setFeaturingIds((prev) => {
+                const next = new Set(prev);
+                next.delete(testimonial.id);
+                return next;
+            });
         }
     };
 
@@ -203,11 +229,6 @@ export default function TestimonialsPage({ miniView = false }: { miniView?: bool
         if (!currentUsername) return;
         const query = `?for=${encodeURIComponent(currentUsername)}`;
         router.push(`/${currentUsername}/testimonials/write${query}`);
-    };
-
-    const handleNavigateToEdit = (testimonial: Testimonial) => {
-        if (!currentUsername) return;
-        router.push(`/${currentUsername}/testimonials/edit/${testimonial.id}`);
     };
 
     // ── Loading state ────────────────────────────────────────────────────
@@ -247,7 +268,6 @@ export default function TestimonialsPage({ miniView = false }: { miniView?: bool
                 onDeleteConfirm={handleDelete}
                 stats={stats}
                 onNavigateToWrite={handleNavigateToWrite}
-                onNavigateToEdit={handleNavigateToEdit}
                 isAuthenticated={isAuthenticated()}
             />
         );
@@ -277,8 +297,10 @@ export default function TestimonialsPage({ miniView = false }: { miniView?: bool
             onDeleteConfirm={handleDelete}
             stats={stats}
             onNavigateToWrite={handleNavigateToWrite}
-            onNavigateToEdit={handleNavigateToEdit}
+            onToggleFeature={handleToggleFeature}
             onApproveTestimonial={handleApprove}
+            featuringIds={featuringIds}
+            approvingIds={approvingIds}
         />
     );
 }

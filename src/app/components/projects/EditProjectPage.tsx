@@ -222,7 +222,7 @@ export default function EditProjectPage() {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.2 }}
-            className="space-y-6"
+            className="space-y-6 mb-5"
           >
             {activeTab === "basic" && (
               <EditBasicInfoTab form={form} projectPlatform={project.project_platform} set={set} />
@@ -230,6 +230,7 @@ export default function EditProjectPage() {
             {activeTab === "media" && <EditMediaTab projectId={projectId} slots={mediaSlots} />}
             {activeTab === "settings" && <EditSettingsTab form={form} set={set} />}
           </motion.div>
+          <EditProjectTabs activeTab={activeTab} onChange={setActiveTab} />
         </motion.div>
       </div>
     </div>

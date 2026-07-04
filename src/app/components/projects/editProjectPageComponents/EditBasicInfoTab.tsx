@@ -7,6 +7,8 @@ import { TagInput } from "../createProjectPageComponents/TagInput";
 import { toast } from "../../toastify/Toastify";
 import type { PortfolioProjectUpdate } from "@/lib/stores/projects/types/project.types";
 import { TextArea } from "../../inputs/TextArea";
+import Dropdown from "../../inputs/DynamicDropdown";
+import { projectCategory } from "@/lib/utilities/indices/projects-JSONs/projectCreate";
 
 type FormState = PortfolioProjectUpdate & { mediaSlots: Record<string, File | null> };
 
@@ -35,9 +37,14 @@ export function EditBasicInfoTab({ form, projectPlatform, set }: EditBasicInfoTa
         setTagInput("");
     };
 
+    const formattedCategory = () => projectCategory.map((category) => ({
+        id: category.code,
+        code: category.code
+    }))
+
     return (
         <>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
                 <Textinput
                     label="Project Name"
                     value={form.project_name ?? ""}
@@ -45,21 +52,16 @@ export function EditBasicInfoTab({ form, projectPlatform, set }: EditBasicInfoTa
                     required
                     maxLength={500}
                 />
-                <Textinput
-                    label="Platform"
-                    value={projectPlatform}
-                    disabled
-                    desc="Cannot change platform"
-                    onChange={() => toast.info("Cannot change platform")}
-                    maxLength={100}
-                />
             </div>
 
-            <Textinput
+            <Dropdown
                 label="Category"
                 value={form.project_category ?? ""}
-                onChange={(v) => set("project_category", v)}
-                maxLength={100}
+                onSelect={(v) => set("project_category", v)}
+                type="datalist"
+                options={formattedCategory()}
+                includeNoneOption={false}
+                includeQueryAsOption
             />
 
             <TextArea
@@ -68,7 +70,7 @@ export function EditBasicInfoTab({ form, projectPlatform, set }: EditBasicInfoTa
                 onChange={(v) => set("project_summary", v)}
                 maxLength={500}
             />
-    
+
 
             <MarkdownEditor
                 label="Description"

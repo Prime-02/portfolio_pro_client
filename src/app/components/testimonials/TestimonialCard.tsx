@@ -2,16 +2,18 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Quote, Star, Pencil, Trash2, CheckCircle2, Clock, User } from "lucide-react";
+import { Quote, Star, Trash2, CheckCircle2, Clock, User, Loader2 } from "lucide-react";
 import { Testimonial } from "@/lib/stores/testimonials/useTestimonial";
 
 interface TestimonialCardProps {
     testimonial: Testimonial;
-    onEdit?: () => void;
+    onToggleFeature?: () => void;
     onDelete?: () => void;
     onApprove?: () => void;
     showApprovalStatus?: boolean;
     isOwner?: boolean;
+    isTogglingFeature?: boolean;
+    isApproving?: boolean;
 }
 
 function StarRating({ rating }: { rating?: number }) {
@@ -33,11 +35,13 @@ function StarRating({ rating }: { rating?: number }) {
 
 export function TestimonialCard({
     testimonial,
-    onEdit,
+    onToggleFeature,
     onDelete,
     onApprove,
     showApprovalStatus = false,
-    isOwner = false
+    isOwner = false,
+    isTogglingFeature = false,
+    isApproving = false,
 }: TestimonialCardProps) {
     const [isExpanded, setIsExpanded] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
@@ -152,7 +156,7 @@ export function TestimonialCard({
                 {/* Actions — only for owner */}
                 {isOwner && (
                     <AnimatePresence>
-                        {isHovered && (onEdit || onDelete || onApprove) && (
+                        {(isHovered || isTogglingFeature || isApproving) && (onToggleFeature || onDelete || onApprove) && (
                             <motion.div
                                 initial={{ opacity: 0, y: 5 }}
                                 animate={{ opacity: 1, y: 0 }}
@@ -162,21 +166,44 @@ export function TestimonialCard({
                                 {onApprove && !testimonial.is_approved && (
                                     <button
                                         onClick={onApprove}
+                                        disabled={isApproving}
                                         className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg
-                                                 text-xs font-medium text-green-600 hover:bg-green-500/5 transition-colors"
+                                                 text-xs font-medium text-green-600 hover:bg-green-500/5 transition-colors
+                                                 disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
-                                        <CheckCircle2 className="w-3.5 h-3.5" />
-                                        Approve
+                                        {isApproving ? (
+                                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                        ) : (
+                                            <CheckCircle2 className="w-3.5 h-3.5" />
+                                        )}
+                                        {isApproving ? "Approving..." : "Approve"}
                                     </button>
                                 )}
-                                {onEdit && (
+                                {onToggleFeature && (
                                     <button
-                                        onClick={onEdit}
-                                        className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg
-                                                 text-xs font-medium hover:bg-[var(--foreground)]/5 transition-colors"
+                                        onClick={onToggleFeature}
+                                        disabled={isTogglingFeature}
+                                        className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg
+                                                 text-xs font-medium transition-colors
+                                                 disabled:opacity-50 disabled:cursor-not-allowed
+                                                 ${testimonial.is_featured
+                                                ? "text-[var(--accent)] hover:bg-[var(--accent)]/5"
+                                                : "hover:bg-[var(--foreground)]/5"
+                                            }`}
                                     >
-                                        <Pencil className="w-3.5 h-3.5" />
-                                        Edit
+                                        {isTogglingFeature ? (
+                                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                        ) : (
+                                            <Star
+                                                className={`w-3.5 h-3.5 ${testimonial.is_featured ? "fill-[var(--accent)]" : ""
+                                                    }`}
+                                            />
+                                        )}
+                                        {isTogglingFeature
+                                            ? "Updating..."
+                                            : testimonial.is_featured
+                                                ? "Unfeature"
+                                                : "Feature"}
                                     </button>
                                 )}
                                 {onDelete && (

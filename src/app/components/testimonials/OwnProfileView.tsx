@@ -36,8 +36,10 @@ interface OwnProfileViewProps {
     onDeleteConfirm: () => Promise<void>;
     stats?: TestimonialStats;
     onNavigateToWrite: () => void;
-    onNavigateToEdit: (testimonial: Testimonial) => void;
+    onToggleFeature: (testimonial: Testimonial) => Promise<void>;
     onApproveTestimonial: (testimonial: Testimonial) => Promise<void>;
+    featuringIds?: Set<string>;
+    approvingIds?: Set<string>;
     miniView?: boolean;
 }
 
@@ -62,8 +64,10 @@ export function OwnProfileView({
     onDeleteConfirm,
     stats,
     onNavigateToWrite,
-    onNavigateToEdit,
+    onToggleFeature,
     onApproveTestimonial,
+    featuringIds,
+    approvingIds,
     miniView = false,
 }: OwnProfileViewProps) {
     const router = useRouter();
@@ -150,10 +154,12 @@ export function OwnProfileView({
             <TestimonialsGrid
                 testimonials={displayedTestimonials}
                 isLoading={currentLoading && currentTestimonials.length === 0}
-                onEdit={onNavigateToEdit}
+                onToggleFeature={isReceivedTab ? onToggleFeature : undefined}
                 onDelete={onDeleteTestimonialChange}
                 onApprove={isReceivedTab ? onApproveTestimonial : undefined}
                 showApprovalStatus={isReceivedTab}
+                featuringIds={featuringIds}
+                approvingIds={approvingIds}
                 emptyTitle={
                     isReceivedTab
                         ? "No testimonials received yet"

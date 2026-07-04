@@ -19,6 +19,8 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { PortfolioProjectResponse } from "@/lib/stores/projects/types/project.types";
+import { useTheme } from "../theme/ThemeContext";
+import { useProjectEngagementStore } from "@/lib/stores/projects/useProjectEngagementStore";
 
 interface ProjectCardProps {
   project: PortfolioProjectResponse;
@@ -38,6 +40,8 @@ export function ProjectCard({
   onDelete,
 }: ProjectCardProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const {} = useTheme()
+  const {} = useProjectEngagementStore()
   const router = useRouter();
 
   const hasHeroMedia = project.other_project_image_url?.hero_media?.url;

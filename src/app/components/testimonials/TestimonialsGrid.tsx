@@ -7,7 +7,7 @@ import { EmptyTestimonialsState } from "./EmptyTestimonialsState";
 interface TestimonialsGridProps {
     testimonials: Testimonial[];
     isLoading: boolean;
-    onEdit?: (testimonial: Testimonial) => void;
+    onToggleFeature?: (testimonial: Testimonial) => void;
     onDelete?: (testimonial: Testimonial) => void;
     onApprove?: (testimonial: Testimonial) => void;
     showApprovalStatus?: boolean;
@@ -15,12 +15,14 @@ interface TestimonialsGridProps {
     emptyTitle?: string;
     emptyDescription?: string;
     isOwner?: boolean;
+    featuringIds?: Set<string>;
+    approvingIds?: Set<string>;
 }
 
 export function TestimonialsGrid({
     testimonials,
     isLoading,
-    onEdit,
+    onToggleFeature,
     onDelete,
     onApprove,
     showApprovalStatus = false,
@@ -28,6 +30,8 @@ export function TestimonialsGrid({
     emptyTitle,
     emptyDescription,
     isOwner = false,
+    featuringIds,
+    approvingIds,
 }: TestimonialsGridProps) {
     if (isLoading) return <LoadingSkeleton />;
 
@@ -48,11 +52,13 @@ export function TestimonialsGrid({
                 <TestimonialCard
                     key={testimonial.id}
                     testimonial={testimonial}
-                    onEdit={onEdit ? () => onEdit(testimonial) : undefined}
+                    onToggleFeature={onToggleFeature ? () => onToggleFeature(testimonial) : undefined}
                     onDelete={onDelete ? () => onDelete(testimonial) : undefined}
                     onApprove={onApprove ? () => onApprove(testimonial) : undefined}
                     showApprovalStatus={showApprovalStatus}
                     isOwner={isOwner}
+                    isTogglingFeature={featuringIds?.has(testimonial.id) ?? false}
+                    isApproving={approvingIds?.has(testimonial.id) ?? false}
                 />
             ))}
         </div>

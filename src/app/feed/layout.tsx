@@ -1,4 +1,5 @@
 import React from 'react'
+import NavBar from '../components/feed/NavBar';
 
 const PublicLayout = ({
     children,
@@ -6,7 +7,8 @@ const PublicLayout = ({
     children: React.ReactNode;
 }>) => {
     return (
-        <div>
+        <div className='max-h-screen h-screen overflow-auto custom-scrollbar'>
+            <NavBar />
             {children}
         </div>
     )

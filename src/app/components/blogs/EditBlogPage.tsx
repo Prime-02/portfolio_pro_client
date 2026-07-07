@@ -23,6 +23,7 @@ export default function EditBlogPage() {
 
   const { userInfo } = useUserSettings();
   const { currentContent, fetchContentById, updateContent, isLoading, isSubmitting, error, clearError } = useContentStore();
+  const isPost = currentContent?.content_type === "POST"
 
   const [activeTab, setActiveTab] = useState<EditTab>("basic");
   const [pageError, setPageError] = useState<string | null>(null);
@@ -165,13 +166,8 @@ export default function EditBlogPage() {
           animate={{ opacity: 1, y: 0 }}
         >
           <h1
-            onClick={() => {
-              console.log(currentContent)
-            }}
-            className="text-3xl font-league-700 mb-2">Edit Post</h1>
-          <p className="text-[var(--foreground)]/50 mb-8">
-            Update {currentContent?.title}
-          </p>
+
+            className="text-3xl font-league-700 capitalize mb-2">Edit {currentContent?.content_type || "POST"}</h1>
 
           {pageError && <ErrorMessage message={pageError} onDismiss={() => { setPageError(null); clearError(); }} />}
 
@@ -203,34 +199,47 @@ export default function EditBlogPage() {
           >
             {activeTab === "basic" && (
               <>
-                <Textinput
-                  label="Title"
-                  value={form.title ?? ""}
-                  onChange={(v) => set("title", v)}
-                  required
-                />
+                {/* Only show title, category, excerpt, and meta fields for blogs */}
+                {!isPost && (
+                  <>
+                    <Textinput
+                      label="Title"
+                      value={form.title ?? ""}
+                      onChange={(v) => set("title", v)}
+                      required
+                    />
 
-                <Textinput
-                  label="Category"
-                  value={form.category ?? ""}
-                  onChange={(v) => set("category", v)}
-                />
+                    <Textinput
+                      label="Category"
+                      value={form.category ?? ""}
+                      onChange={(v) => set("category", v)}
+                    />
 
-                <TextArea
-                  label="Summary/Excerpt"
-                  value={form.excerpt ?? ""}
-                  onChange={(v) => set("excerpt", v)}
-                />
+                    <TextArea
+                      label="Summary/Excerpt"
+                      value={form.excerpt ?? ""}
+                      onChange={(v) => set("excerpt", v)}
+                    />
+                  </>
+                )}
 
-                <MarkdownEditor
-                  label="Content"
-                  value={form.body ?? ""}
-                  onChange={(v) => set("body", v)}
-                  minHeight="200px"
-                />
+                {/* Body - MarkdownEditor for blogs, TextArea for posts */}
+                {isPost ? (
+                  <TextArea
+                    label="Content"
+                    value={form.body ?? ""}
+                    onChange={(v) => set("body", v)}
+                  />
+                ) : (
+                  <MarkdownEditor
+                    label="Content"
+                    value={form.body ?? ""}
+                    onChange={(v) => set("body", v)}
+                    minHeight="200px"
+                  />
+                )}
 
-
-                {/* Tags */}
+                {/* Tags - always shown */}
                 <div>
                   <label className="block text-sm font-medium mb-2">Tags</label>
                   <div className="flex gap-2 mb-2">
@@ -272,19 +281,21 @@ export default function EditBlogPage() {
                   </div>
                 </div>
 
-                {/* Meta */}
-                <div className="space-y-4">
-                  <Textinput
-                    label="Meta Title"
-                    value={form.meta_title ?? ""}
-                    onChange={(v) => set("meta_title", v)}
-                  />
-                  <Textinput
-                    label="Meta Description"
-                    value={form.meta_description ?? ""}
-                    onChange={(v) => set("meta_description", v)}
-                  />
-                </div>
+                {/* Meta - only show for blogs */}
+                {!isPost && (
+                  <div className="space-y-4">
+                    <Textinput
+                      label="Meta Title"
+                      value={form.meta_title ?? ""}
+                      onChange={(v) => set("meta_title", v)}
+                    />
+                    <Textinput
+                      label="Meta Description"
+                      value={form.meta_description ?? ""}
+                      onChange={(v) => set("meta_description", v)}
+                    />
+                  </div>
+                )}
               </>
             )}
 
@@ -313,81 +324,89 @@ export default function EditBlogPage() {
 
             {activeTab === "settings" && (
               <div className="space-y-6">
-                {/* Status */}
-                <Textinput
-                  type="dropdown"
-                  label="Status"
-                  options={[
-                    { id: "DRAFT", code: "Draft" },
-                    { id: "PUBLISHED", code: "Published" },
-                    { id: "SCHEDULED", code: "Scheduled" },
-                    { id: "ARCHIVED", code: "Archived" },
-                  ]}
-                  value={form.status ?? "DRAFT"}
-                  onChange={(v) => set("status", v as ContentStatus)}
-                />
+                {/* Status - only show for blogs */}
+                {!isPost && (
+                  <Textinput
+                    type="dropdown"
+                    label="Status"
+                    options={[
+                      { id: "DRAFT", code: "Draft" },
+                      { id: "PUBLISHED", code: "Published" },
+                      { id: "SCHEDULED", code: "Scheduled" },
+                      { id: "ARCHIVED", code: "Archived" },
+                    ]}
+                    value={form.status ?? "DRAFT"}
+                    onChange={(v) => set("status", v as ContentStatus)}
+                  />
+                )}
 
-                {/* Visibility */}
-                <div className="flex items-center justify-between p-4 rounded-xl border border-[var(--foreground)]/10">
-                  <div>
-                    <p className="text-sm font-medium">Public Post</p>
-                    <p className="text-xs text-[var(--foreground)]/40 mt-0.5">
-                      Visible to everyone on your profile
-                    </p>
+                {/* Visibility - only show for blogs */}
+                {!isPost && (
+                  <div className="flex items-center justify-between p-4 rounded-xl border border-[var(--foreground)]/10">
+                    <div>
+                      <p className="text-sm font-medium">Public Post</p>
+                      <p className="text-xs text-[var(--foreground)]/40 mt-0.5">
+                        Visible to everyone on your profile
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      title="is public button"
+                      onClick={() => set("is_public", !form.is_public)}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors
+                        ${form.is_public ? "bg-[var(--accent)]" : "bg-[var(--foreground)]/20"}`}
+                    >
+                      <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform
+                        ${form.is_public ? "translate-x-6" : "translate-x-1"}`} />
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    title="is public button"
-                    onClick={() => set("is_public", !form.is_public)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors
-                      ${form.is_public ? "bg-[var(--accent)]" : "bg-[var(--foreground)]/20"}`}
-                  >
-                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform
-                      ${form.is_public ? "translate-x-6" : "translate-x-1"}`} />
-                  </button>
-                </div>
+                )}
 
-                {/* Featured */}
-                <div className="flex items-center justify-between p-4 rounded-xl border border-[var(--foreground)]/10">
-                  <div>
-                    <p className="text-sm font-medium">Featured Post</p>
-                    <p className="text-xs text-[var(--foreground)]/40 mt-0.5">
-                      Highlight this post in your portfolio
-                    </p>
+                {/* Featured - only show for blogs */}
+                {!isPost && (
+                  <div className="flex items-center justify-between p-4 rounded-xl border border-[var(--foreground)]/10">
+                    <div>
+                      <p className="text-sm font-medium">Featured Post</p>
+                      <p className="text-xs text-[var(--foreground)]/40 mt-0.5">
+                        Highlight this post in your portfolio
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      title="is featured button"
+                      onClick={() => set("is_featured", !form.is_featured)}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors
+                        ${form.is_featured ? "bg-amber-500" : "bg-[var(--foreground)]/20"}`}
+                    >
+                      <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform
+                        ${form.is_featured ? "translate-x-6" : "translate-x-1"}`} />
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    title="is featured button"
-                    onClick={() => set("is_featured", !form.is_featured)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors
-                      ${form.is_featured ? "bg-amber-500" : "bg-[var(--foreground)]/20"}`}
-                  >
-                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform
-                      ${form.is_featured ? "translate-x-6" : "translate-x-1"}`} />
-                  </button>
-                </div>
+                )}
 
-                {/* Pinned */}
-                <div className="flex items-center justify-between p-4 rounded-xl border border-[var(--foreground)]/10">
-                  <div>
-                    <p className="text-sm font-medium">Pinned Post</p>
-                    <p className="text-xs text-[var(--foreground)]/40 mt-0.5">
-                      Keep this post at the top of your list
-                    </p>
+                {/* Pinned - only show for blogs */}
+                {!isPost && (
+                  <div className="flex items-center justify-between p-4 rounded-xl border border-[var(--foreground)]/10">
+                    <div>
+                      <p className="text-sm font-medium">Pinned Post</p>
+                      <p className="text-xs text-[var(--foreground)]/40 mt-0.5">
+                        Keep this post at the top of your list
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      title="is pinned button"
+                      onClick={() => set("is_pinned", !form.is_pinned)}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors
+                        ${form.is_pinned ? "bg-blue-500" : "bg-[var(--foreground)]/20"}`}
+                    >
+                      <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform
+                        ${form.is_pinned ? "translate-x-6" : "translate-x-1"}`} />
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    title="is pinned button"
-                    onClick={() => set("is_pinned", !form.is_pinned)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors
-                      ${form.is_pinned ? "bg-blue-500" : "bg-[var(--foreground)]/20"}`}
-                  >
-                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform
-                      ${form.is_pinned ? "translate-x-6" : "translate-x-1"}`} />
-                  </button>
-                </div>
+                )}
 
-                {/* Allow Comments */}
+                {/* Allow Comments - always shown */}
                 <div className="flex items-center justify-between p-4 rounded-xl border border-[var(--foreground)]/10">
                   <div>
                     <p className="text-sm font-medium">Allow Comments</p>
@@ -407,7 +426,7 @@ export default function EditBlogPage() {
                   </button>
                 </div>
 
-                {/* Allow Likes */}
+                {/* Allow Likes - always shown */}
                 <div className="flex items-center justify-between p-4 rounded-xl border border-[var(--foreground)]/10">
                   <div>
                     <p className="text-sm font-medium">Allow Likes</p>
@@ -427,7 +446,7 @@ export default function EditBlogPage() {
                   </button>
                 </div>
 
-                {/* Allow Reshare */}
+                {/* Allow Reshare - always shown */}
                 <div className="flex items-center justify-between p-4 rounded-xl border border-[var(--foreground)]/10">
                   <div>
                     <p className="text-sm font-medium">Allow Reshare</p>

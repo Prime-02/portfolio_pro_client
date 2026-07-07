@@ -20,6 +20,22 @@ import { themePresets } from "@/lib/utilities/indices/Themes";
 // Types
 // ---------------------------------------------------------------------------
 
+export interface UserResponse {
+  id: string;
+  username: string | null;
+  email: string;
+  firstname: string | null;
+  middlename: string | null;
+  lastname: string | null;
+  profile_picture: string | null;
+  profile_picture_id: string | null;
+  phone_number: string | null;
+  is_active: boolean;
+  is_superuser: boolean;
+  role: string;
+}
+
+
 export interface UserSettingsBase {
   language: string | null;
   theme: string | null;
@@ -37,6 +53,7 @@ export interface UserSettings extends UserSettingsBase {
 
 export interface UserProfileRequest {
   user_id: string | null;
+  github_username: string | null;
   bio: string | null;
   profession: string | null;
   job_title: string | null;
@@ -63,20 +80,6 @@ export interface UserUpdateRequest {
   role: string | null;
 }
 
-export interface UserResponse {
-  id: string;
-  username: string | null;
-  email: string;
-  firstname: string | null;
-  middlename: string | null;
-  lastname: string | null;
-  profile_picture: string | null;
-  profile_picture_id: string | null;
-  phone_number: string | null;
-  is_active: boolean;
-  role: string;
-}
-
 export interface UpdateUserInfoPayload {
   username?: string | null;
   firstname?: string | null;
@@ -89,6 +92,7 @@ export interface UpdateUserInfoPayload {
 }
 
 export interface UpdateProfilePayload {
+  github_username?: string | null;
   bio?: string | null;
   profession?: string | null;
   job_title?: string | null;

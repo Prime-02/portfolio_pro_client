@@ -81,6 +81,16 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [optimisticLoader, setOptimisticLoader] = useState<Loader | null>(null);
 
   const isSaving = useRef(false);
+  // Tracks whether the init effect has completed at least once, so that
+  // subsequent navigations to unprotected routes can be true no-ops.
+  const hasInitializedRef = useRef(false);
+  // Mirrors profileContext without being a dependency of the init effect,
+  // so the "already resolved, skip re-init" guard below can check whether
+  // profileContext was actually resolved rather than inferring it from
+  // userInfo alone. userInfo can be populated by the background fetch that
+  // runs while on an unprotected route, before profileContext itself has
+  // ever moved off its initial "pending" value.
+  const profileContextRef = useRef<ProfileContext>(profileContext);
 
   const { setLoading } = useUIStore();
   const { checkIfOwnProfile, checkUsernameAvailability } = useValidation();
@@ -89,19 +99,15 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const usernameInUrl = checkIfOwnProfile()?.username ?? null;
   const userInfo = useUserSettings((s) => s.userInfo);
 
-  const isViewingOwnProfile = useMemo(() => {
-    if (!usernameInUrl) return true;
-    return userInfo?.username?.toLowerCase() === usernameInUrl.toLowerCase();
-  }, [usernameInUrl, userInfo]);
-
-  const settingsSource = isViewingOwnProfile ? store.settings : store.publicSettings;
-
-  const storedLightTheme = useMemo(() => store.getLightTheme(settingsSource), [settingsSource]);
-  const storedDarkTheme = useMemo(() => store.getDarkTheme(settingsSource), [settingsSource]);
-  const storedAccentColor = useMemo(() => store.getAccentColor(settingsSource), [settingsSource]);
-  const language = useMemo(() => store.getLanguage(settingsSource), [settingsSource]);
-  const storedLoader = useMemo(() => store.getLoader(settingsSource), [settingsSource]);
-  const storedThemeVariant = useMemo(() => store.getThemeVariant(settingsSource), [settingsSource]);
+  // ─── Theme source — always the current user's own settings ─────────────────
+  // Public profile settings are no longer fetched or applied; visiting
+  // someone else's portfolio no longer changes the active theme.
+  const storedLightTheme = useMemo(() => store.getLightTheme(), [store.settings]);
+  const storedDarkTheme = useMemo(() => store.getDarkTheme(), [store.settings]);
+  const storedAccentColor = useMemo(() => store.getAccentColor(), [store.settings]);
+  const language = useMemo(() => store.getLanguage(), [store.settings]);
+  const storedLoader = useMemo(() => store.getLoader(), [store.settings]);
+  const storedThemeVariant = useMemo(() => store.getThemeVariant(), [store.settings]);
 
   const themeVariant: ThemeVariant = optimisticThemeVariant ?? storedThemeVariant;
   const lightTheme: Theme = optimisticLightTheme ?? storedLightTheme;
@@ -264,7 +270,19 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     });
   }, [persist, themeVariant, applyTheme]);
 
-  // ─── getUserSettings - NOW ALSO SETS profileContext ─────────────────────────
+  // ─── Background settings load ───────────────────────────────────────────────
+  // Fetches the current user's own settings without blocking layoutLoaded.
+  // Never used for anyone else's (public) settings.
+  const loadSettingsInBackground = useCallback(() => {
+    store.fetchSettings()
+      .then(() => {
+      })
+      .catch((error) => {
+        console.error("Failed to load settings in background:", error);
+      });
+  }, [store]);
+
+  // ─── getUserSettings - determines profileContext, no longer fetches public settings ─
   const getUserSettings = useCallback(async () => {
     const authenticated = isAuthenticated();
 
@@ -273,9 +291,8 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
       if (authenticated) {
         const currentUserInfo = useUserSettings.getState().userInfo;
         const username = currentUserInfo?.username || "";
-        setLoadingText("Fetching your settings...");
         setProfileContext({ kind: "own", username }); // Authenticated user on their own page
-        await store.fetchSettings();
+        loadSettingsInBackground();
       } else {
         setProfileContext({ kind: "unauthenticated", username: null }); // Not logged in
       }
@@ -290,22 +307,20 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
 
       // Sub-case 2a: Viewing own profile
       if (isOwnProfile) {
-        setLoadingText("Loading your profile settings...");
         setProfileContext({ kind: "own", username: currentUserInfo?.username || usernameInUrl });
         store.clearPublicData();
-        await store.fetchSettings();
+        loadSettingsInBackground();
         setLayoutLoaded(true);
         return;
       }
 
-      // Sub-case 2b: Viewing someone else's profile
+      // Sub-case 2b: Viewing someone else's profile — settings/theme are never fetched
       setLoadingText(`Checking profile "${usernameInUrl}"...`);
       const { exists } = await checkUsernameAvailability(usernameInUrl);
       if (exists) {
         setLoadingText("Loading public profile data...");
         setProfileContext({ kind: "public", username: usernameInUrl });
         await Promise.all([
-          store.fetchPublicSettings(usernameInUrl),
           store.fetchPublicUserInfo(usernameInUrl),
           store.fetchPublicProfile(usernameInUrl),
         ]);
@@ -326,7 +341,6 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
       setLoadingText("Loading public profile data...");
       setProfileContext({ kind: "public", username: usernameInUrl });
       await Promise.all([
-        store.fetchPublicSettings(usernameInUrl),
         store.fetchPublicUserInfo(usernameInUrl),
         store.fetchPublicProfile(usernameInUrl),
       ]);
@@ -337,20 +351,45 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
       router.push("/");
       setLayoutLoaded(true);
     }
-  }, [usernameInUrl, checkUsernameAvailability, store, router]);
+  }, [usernameInUrl, checkUsernameAvailability, store, router, loadSettingsInBackground]);
 
   // ─── Initialization Effect ──────────────────────────────────────────────────
   useEffect(() => {
-    if (userInfo && userInfo.username === usernameInUrl) return;
+    profileContextRef.current = profileContext;
+  }, [profileContext]);
+
+  useEffect(() => {
+    if (userInfo && userInfo.username === usernameInUrl && profileContextRef.current.kind !== "pending") return;
 
     const init = async () => {
       try {
         if (unprotectedRoutes.some(route => pathname.startsWith(route))) {
-          setLoadingText("Loading theme...");
-          setProfileContext({ kind: "unauthenticated", username: null }); // Set context for unprotected routes
-          setLayoutLoaded(true);
+          // Routing between protected <-> unprotected routes should never
+          // clear or reset profileContext/settings — leave existing state as-is.
+          if (!hasInitializedRef.current) {
+            // First-ever mount landed directly on an unprotected route: just
+            // unblock rendering, don't touch profileContext.
+            setLayoutLoaded(true);
+            hasInitializedRef.current = true;
+          }
+
+          // Still fetch the logged-in user's own info/settings in the
+          // background if they happen to be authenticated on an unprotected
+          // route — but only if not already loaded, and without blocking
+          // render or touching profileContext.
+          if (isAuthenticated()) {
+            if (!useUserSettings.getState().userInfo) {
+              fetchUserInfo().catch((error) => {
+                console.error("Failed to fetch user info on unprotected route:", error);
+              });
+            }
+            if (!useUserSettings.getState().settings) {
+              loadSettingsInBackground();
+            }
+          }
           return;
         }
+
         setLoadingText("Preparing your layout...");
         setLayoutLoaded(false);
         setProfileContext({ kind: "pending", username: null }); // Reset to pending during initialization
@@ -360,11 +399,13 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
           await fetchUserInfo();
         }
         await getUserSettings();
+        hasInitializedRef.current = true;
       } catch (error) {
         console.error("Initialization error:", error);
         setLoadingText("Loading theme...");
-        setProfileContext({ kind: "unauthenticated", username: null }); // Fallback on error
+        setProfileContext({ kind: "unauthenticated", username: null });
         setLayoutLoaded(true);
+        hasInitializedRef.current = true;
       }
     };
 

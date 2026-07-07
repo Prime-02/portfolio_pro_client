@@ -333,8 +333,17 @@ export const useContentStore = create<ContentState & ContentActions>(
           params: { hard_delete: hardDelete },
         });
         set((state) => ({
+          // Remove from authenticated items
           items: state.items.filter((item) => item.id !== id),
           total: state.total - 1,
+
+          // Remove from public items if present
+          publicItems: state.publicItems.filter((item) => item.id !== id),
+          publicTotal: state.publicItems.some((item) => item.id === id)
+            ? state.publicTotal - 1
+            : state.publicTotal,
+
+          // Clear current content if it's the deleted one
           currentContent:
             state.currentContent?.id === id ? null : state.currentContent,
         }));

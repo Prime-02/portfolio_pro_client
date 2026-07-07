@@ -174,14 +174,12 @@ export default function CollaboratorManagerPage() {
         <div className="max-w-3xl mx-auto px-6 py-3 flex items-center justify-between">
           <button
             onClick={() =>
-              router.push(
-                `/${userInfo?.username || "user"}/projects/${projectId}`
-              )
+              router.back()
             }
             className="flex items-center gap-2 text-sm text-[var(--foreground)]/60 hover:text-[var(--accent)] transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to Project
+             Go Back
           </button>
           <div>
             <Button

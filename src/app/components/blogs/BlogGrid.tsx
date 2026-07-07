@@ -14,21 +14,19 @@ interface BlogGridProps {
 }
 
 export function BlogGrid({ blogs, isLoading, isOwner, onEdit, onDelete }: BlogGridProps) {
-  // Sort: pinned first, then featured, then by date
-  const sorted = useMemo(() => {
-    return [...blogs].sort((a, b) => {
-      if (a.is_pinned !== b.is_pinned) return a.is_pinned ? -1 : 1;
-      if (a.is_featured !== b.is_featured) return a.is_featured ? -1 : 1;
-      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-    });
-  }, [blogs]);
-  
+  // Order comes from the API (sort_by / sort_order). We don't re-sort here —
+  // we only pull one pinned/featured post out to render as the hero card.
+  const featuredBlog = useMemo(
+    () => blogs.find((b) => (b.is_pinned || b.is_featured) && b.cover_image_url),
+    [blogs]
+  );
+
+  const regularBlogs = useMemo(
+    () => blogs.filter((b) => b.id !== featuredBlog?.id),
+    [blogs, featuredBlog]
+  );
+
   if (isLoading) return null;
-
-
-  // First pinned or featured with cover as featured card
-  const featuredBlog = sorted.find((b) => (b.is_pinned || b.is_featured) && b.cover_image_url);
-  const regularBlogs = sorted.filter((b) => b.id !== featuredBlog?.id);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-auto">

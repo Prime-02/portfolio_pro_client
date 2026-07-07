@@ -6,8 +6,9 @@ import { LoadingSkeletonBlogs } from "./LoadingSkeletonBlogs";
 import { OwnBlogsView } from "./OwnBlogsView";
 import { PublicBlogsView } from "./PublicBlogsView";
 import { useTheme } from "../theme/ThemeContext";
+import { ContentType } from "@/lib/stores/contents";
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 10;
 
 export default function BlogsPage({ miniView = false }: { miniView?: boolean }) {
   const {
@@ -34,6 +35,7 @@ export default function BlogsPage({ miniView = false }: { miniView?: boolean }) 
     query: "",
     status: "" as "" | "PUBLISHED" | "DRAFT" | "ARCHIVED",
     sort: "date" as "date" | "name" | "views" | "likes",
+    type: "" as ContentType,
     sortDirection: "desc" as "asc" | "desc",
   });
 
@@ -50,16 +52,15 @@ export default function BlogsPage({ miniView = false }: { miniView?: boolean }) 
     const fetchData = async () => {
       if (profileContext.kind === "public") {
         await fetchPublicUserContent(profileContext.username, {
-          content_type: "BLOG",
           status: "PUBLISHED",
           page: 1,
           page_size: PAGE_SIZE,
         });
       } else if (profileContext.kind === "own") {
         await fetchContent({
-          content_type: "BLOG",
           search: filterParams.query || undefined,
           status: filterParams.status || undefined,
+          content_type: filterParams.type || undefined,
           sort_by: filterParams.sort === "date" ? "created_at" : filterParams.sort,
           sort_order: filterParams.sortDirection,
           page: 1,
@@ -74,6 +75,7 @@ export default function BlogsPage({ miniView = false }: { miniView?: boolean }) 
     publicUsername,
     filterParams.query,
     filterParams.status,
+    filterParams.type,
     filterParams.sort,
     filterParams.sortDirection,
   ]);
@@ -88,9 +90,9 @@ export default function BlogsPage({ miniView = false }: { miniView?: boolean }) 
     if (!has_next || isLoading) return;
     const nextPage = page + 1;
     await fetchContent({
-      content_type: "BLOG",
       search: filterParams.query || undefined,
       status: filterParams.status || undefined,
+      content_type: filterParams.type || undefined,
       sort_by: filterParams.sort === "date" ? "created_at" : filterParams.sort,
       sort_order: filterParams.sortDirection,
       page: nextPage,
@@ -102,7 +104,6 @@ export default function BlogsPage({ miniView = false }: { miniView?: boolean }) 
     if (!publicHasNext || isLoading || !publicUsername) return;
     const nextPage = publicPage + 1;
     await fetchPublicUserContent(publicUsername, {
-      content_type: "BLOG",
       status: "PUBLISHED",
       page: nextPage,
       page_size: PAGE_SIZE,

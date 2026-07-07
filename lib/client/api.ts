@@ -15,9 +15,12 @@ import { toast } from "@/src/app/components/toastify/Toastify";
 // ---------------------------------------------------------------------------
 // URLS
 // ---------------------------------------------------------------------------
+// All requests now go through the Next.js server-side proxy route
+// (app/api/proxy/[...path]/route.ts). The proxy attaches the real API key
+// using a non-NEXT_PUBLIC_ env var, so the key never reaches the browser.
+// The proxy forwards to FastAPI's /api/v1/* internally.
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-const V1_BASE_URL = `${BASE_URL}/api/v1`;
+const PROXY_BASE_URL = "/api/proxy";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -96,14 +99,6 @@ export const tokenStore = {
     localStorage.removeItem(TOKEN_KEYS.EXPIRES_AT);
     localStorage.removeItem(TOKEN_KEYS.SESSION_ID);
   },
-};
-
-// ---------------------------------------------------------------------------
-// API Key
-// ---------------------------------------------------------------------------
-
-const getApiKey = (): string => {
-  return process.env.NEXT_PUBLIC_X_API_KEY || "";
 };
 
 // ---------------------------------------------------------------------------
@@ -191,19 +186,16 @@ export function getToken(): string | null {
 
 const REFRESH_URL = "/sessions/refresh";
 
+// Builds a full proxy URL for the one-off axios.post call used during
+// refresh (which runs outside the `api` instance, so it needs its own
+// baseURL resolution). Everything now targets PROXY_BASE_URL instead of
+// the FastAPI URL directly.
 const normaliseUrl = (url: string): string => {
-  if (
-    url.includes("/api/") ||
-    url.startsWith("http://") ||
-    url.startsWith("https://")
-  ) {
+  if (url.startsWith("http://") || url.startsWith("https://")) {
     return url;
   }
   const cleanUrl = url.startsWith("/") ? url.slice(1) : url;
-  const base = V1_BASE_URL.endsWith("/")
-    ? V1_BASE_URL.slice(0, -1)
-    : V1_BASE_URL;
-  return `${base}/${cleanUrl}`;
+  return `${PROXY_BASE_URL}/${cleanUrl}`;
 };
 
 const urlContains = (fullUrl: string, fragment: string): boolean =>
@@ -285,9 +277,9 @@ async function refreshSession(): Promise<string> {
     }
 
     try {
+      // No API key header here — the proxy attaches it server-side.
       const headers: Record<string, string> = {
         "ngrok-skip-browser-warning": "true",
-        "X_Api_Key": getApiKey(),
       };
 
       if (sessionId) {
@@ -325,19 +317,21 @@ async function refreshSession(): Promise<string> {
 // ---------------------------------------------------------------------------
 // Axios instance
 // ---------------------------------------------------------------------------
+// baseURL now points at the same-origin proxy route rather than FastAPI
+// directly. No API key header is set here — the proxy injects it server-side
+// where it can't be read from devtools/network tab on the client.
 
 const api: AxiosInstance = axios.create({
-  baseURL: V1_BASE_URL,
+  baseURL: PROXY_BASE_URL,
   headers: {
     "Content-Type": "application/json",
     "ngrok-skip-browser-warning": "true",
-    X_Api_Key: getApiKey(),
   },
   paramsSerializer: (params) => qs.stringify(params, { arrayFormat: "repeat" }),
 });
 
 // ---------------------------------------------------------------------------
-// REQUEST interceptor — inject token, API key, session ID, refresh if expired
+// REQUEST interceptor — inject token, session ID, refresh if expired
 // ---------------------------------------------------------------------------
 
 api.interceptors.request.use(
@@ -347,9 +341,7 @@ api.interceptors.request.use(
     const requestUrl = config.url ?? "";
     const isRefreshEndpoint = urlContains(requestUrl, REFRESH_URL);
 
-    // Add API key to every request
     config.headers = config.headers ?? {};
-    config.headers["X_Api_Key"] = getApiKey();
 
     // Add session ID if available
     const sessionId = tokenStore.getSessionId();
@@ -414,8 +406,7 @@ api.interceptors.response.use(
         const newToken = await refreshSession();
         originalRequest.headers = originalRequest.headers ?? {};
         originalRequest.headers.Authorization = `Bearer ${newToken}`;
-        // Ensure API key and session ID are preserved on retry
-        originalRequest.headers["X_Api_Key"] = getApiKey();
+        // Ensure session ID is preserved on retry (API key is added by proxy)
         const sessionId = tokenStore.getSessionId();
         if (sessionId) {
           originalRequest.headers["X-Session-Id"] = sessionId;

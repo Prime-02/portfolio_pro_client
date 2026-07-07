@@ -2,7 +2,7 @@
 
 import { UserResponse } from "../../user/useUserSettings";
 
-export type ContentType = "POST" | "BLOG" | "ARTICLE" | "POLL";
+export type ContentType = "" | "POST" | "BLOG" | "ARTICLE" | "POLL";
 
 export type ContentStatus =
   | "DRAFT"
@@ -159,7 +159,7 @@ export interface ContentLikeResponse {
   id: string;
   user_id: string;
   content_id: string;
-  user?: UserResponse;
+  user?: UserSummary;
   reaction_type: ReactionType;
   created_at: string;
 }
@@ -217,6 +217,7 @@ export interface ContentCommentResponse extends ContentCommentBase {
 export interface ContentCommentWithUser extends ContentCommentResponse {
   user?: UserSummary | null;
   replies?: ContentCommentWithUser[];
+  is_liked?: boolean;
 }
 
 export interface ContentCommentListResponse {
@@ -451,11 +452,30 @@ export type TrendingPeriod = "last_24_hours" | "last_7_days" | "last_30_days";
 
 // ==================== Shared ====================
 
+/**
+ * UserSummary represents a lightweight user object used across content types.
+ * It accepts both display_name (frontend convention) and firstname/lastname (backend UserResponse).
+ * Use getDisplayName() helper to safely derive a display name from any shape.
+ */
 export interface UserSummary {
   id: string;
   username: string;
   display_name?: string | null;
+  firstname?: string | null;
+  lastname?: string | null;
+  middlename?: string | null;
   profile_picture?: string | null;
+}
+
+/** Derive a display name from a UserSummary, handling both display_name and firstname/lastname */
+export function getDisplayName(user?: UserSummary | null): string {
+  if (!user) return "Anonymous";
+  if (user.display_name) return user.display_name;
+  const parts = [user.firstname, user.middlename, user.lastname].filter(
+    Boolean,
+  );
+  if (parts.length > 0) return parts.join(" ");
+  return user.username || "Anonymous";
 }
 
 export interface PaginationParams {

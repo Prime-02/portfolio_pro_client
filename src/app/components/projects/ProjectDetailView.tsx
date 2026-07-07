@@ -22,7 +22,7 @@ import { LoadingSkeletonDetail } from "./LoadingSkeletonDetail";
 
 type DetailTab = "overview" | "engagement" | "collaborators" | "activity";
 
-export default function ProjectDetailPage() {
+export default function ProjectDetailPage({ isPublicView }: { isPublicView?: boolean }) {
   const params = useParams();
   const router = useRouter();
   const projectId = params.project as string;
@@ -122,9 +122,9 @@ export default function ProjectDetailPage() {
       <Button
         variant="ghost"
         size="sm"
-        onClick={() => router.push(`/${userInfo?.username || "user"}/projects`)}
+        onClick={() => router.back()}
         className="mt-4"
-        text="Back to Projects"
+        text="Go Back"
       />
     </div>
   );
@@ -139,35 +139,37 @@ export default function ProjectDetailPage() {
   return (
     <div className="min-h-screen">
       {/* Sticky header */}
-      <div className="sticky top-0 z-40 bg-[var(--background)]/80 backdrop-blur-xl border-b border-[var(--foreground)]/5">
-        <div className="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between">
-          <button
-            onClick={() => router.push(`/${userInfo?.username || publicUserInfo?.username || "user"}/projects`)}
-            className="flex items-center gap-2 text-sm text-[var(--foreground)]/60 hover:text-[var(--accent)] transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back
-          </button>
+      {
+        !isPublicView && <div className="sticky top-0 z-40 bg-[var(--background)]/80 backdrop-blur-xl border-b border-[var(--foreground)]/5">
+          <div className="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between">
+            <button
+              onClick={() => router.push(`/${userInfo?.username || publicUserInfo?.username || "user"}/projects`)}
+              className="flex items-center gap-2 text-sm text-[var(--foreground)]/60 hover:text-[var(--accent)] transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back
+            </button>
 
-          {isOwner && project && (
-            <div className="flex gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => router.push(`/${userInfo?.username || "user"}/projects/${projectId}/collaborators`)}
-                icon={<Users className="w-4 h-4" />}
-                text="Manage Team"
-              />
-              <Button
-                size="sm"
-                onClick={() => router.push(`/${userInfo?.username || "user"}/projects/${projectId}/edit`)}
-                icon={<Pencil className="w-4 h-4" />}
-                text="Edit"
-              />
-            </div>
-          )}
+            {isOwner && project && (
+              <div className="flex gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => router.push(`/${userInfo?.username || "user"}/projects/${projectId}/collaborators`)}
+                  icon={<Users className="w-4 h-4" />}
+                  text="Manage Team"
+                />
+                <Button
+                  size="sm"
+                  onClick={() => router.push(`/${userInfo?.username || "user"}/projects/${projectId}/edit`)}
+                  icon={<Pencil className="w-4 h-4" />}
+                  text="Edit"
+                />
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      }
 
       <div className="max-w-5xl mx-auto px-6 py-8">
         {error && <ErrorMessage message={error} onDismiss={() => setError(null)} />}

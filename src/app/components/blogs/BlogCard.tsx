@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { ContentWithAuthor, ContentStatus } from "@/lib/stores/contents/types/content.types";
+import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 
 interface BlogCardProps {
   blog: ContentWithAuthor;
@@ -46,12 +47,15 @@ export function BlogCard({
   onDelete,
 }: BlogCardProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const { userInfo } = useUserSettings()
   const router = useRouter();
 
   const hasCover = blog.cover_image_url;
   const isPublic = blog.is_public;
   const status = blog.status;
   const statusConfig = STATUS_CONFIG[status] || STATUS_CONFIG.DRAFT;
+  const isOwn = blog.user_id === userInfo?.id || false
+  const isPost = blog.content_type === "POST"
 
   const readTime = blog.body ? Math.ceil(blog.body.split(/\s+/).length / 200) : 0;
 
@@ -123,9 +127,12 @@ export function BlogCard({
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
-            <h3 className={`font-league-600 leading-tight ${featured ? "text-xl" : "text-base"} truncate`}>
-              {blog.title}
-            </h3>
+            {
+              !isPost &&
+              <h3 className={`font-league-600 leading-tight ${featured ? "text-xl" : "text-base"} truncate`}>
+                {blog.title}
+              </h3>
+            }
             <div className="flex items-center gap-2 mt-1.5">
               {blog.author && (
                 <span className="flex items-center gap-1.5 text-xs text-[var(--foreground)]/50">
@@ -180,10 +187,6 @@ export function BlogCard({
         {/* Footer meta */}
         <div className="flex items-center justify-between mt-4 pt-3 border-t border-[var(--foreground)]/5">
           <div className="flex items-center gap-3 text-[var(--foreground)]/40">
-            <span className="flex items-center gap-1 text-xs">
-              <Eye className="w-3.5 h-3.5" />
-              {blog.views_count ?? 0}
-            </span>
             <span className="flex items-center gap-1 text-xs">
               <Heart className="w-3.5 h-3.5" />
               {blog.likes_count ?? 0}

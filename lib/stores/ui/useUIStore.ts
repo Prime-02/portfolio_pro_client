@@ -6,9 +6,15 @@ interface UIStore {
   loadingCounts: Record<LoadingKey, number>;
   viewportWidth: number;
 
+  // Viewport breakpoint booleans
+  isMobile: boolean; // < 640px
+  isTablet: boolean; // >= 640px && < 1024px
+  isDesktop: boolean; // >= 1024px
+  isSmallMobile: boolean; // < 375px
+
   startLoading: (key: LoadingKey) => void;
   stopLoading: (key: LoadingKey) => void;
-  setLoading: (key: LoadingKey, isLoading: boolean) => void; // Convenience
+  setLoading: (key: LoadingKey, isLoading: boolean) => void;
   isLoading: (key: LoadingKey | LoadingKey[]) => boolean;
   isAnythingLoading: () => boolean;
   setViewportWidth: (value: number) => void;
@@ -17,6 +23,12 @@ interface UIStore {
 export const useUIStore = create<UIStore>((set, get) => ({
   loadingCounts: {},
   viewportWidth: 0,
+
+  // Initialize breakpoints
+  isMobile: false,
+  isTablet: false,
+  isDesktop: true, // Default to desktop
+  isSmallMobile: false,
 
   startLoading: (key) =>
     set((state) => ({
@@ -29,11 +41,10 @@ export const useUIStore = create<UIStore>((set, get) => ({
   stopLoading: (key) =>
     set((state) => {
       const current = state.loadingCounts[key] || 0;
-      if (current <= 0) return state; // Prevent negative counts
+      if (current <= 0) return state;
 
       const newCount = current - 1;
       if (newCount === 0) {
-        // Remove key entirely to keep state clean
         const { [key]: _, ...rest } = state.loadingCounts;
         return { loadingCounts: rest };
       }
@@ -46,7 +57,6 @@ export const useUIStore = create<UIStore>((set, get) => ({
       };
     }),
 
-  // Convenience method for simple toggle cases
   setLoading: (key, isLoading) => {
     if (isLoading) {
       get().startLoading(key);
@@ -65,5 +75,12 @@ export const useUIStore = create<UIStore>((set, get) => ({
     return Object.values(get().loadingCounts).some((count) => count > 0);
   },
 
-  setViewportWidth: (value) => set({ viewportWidth: value }),
+  setViewportWidth: (value) =>
+    set({
+      viewportWidth: value,
+      isMobile: value < 640,
+      isTablet: value >= 640 && value < 1024,
+      isDesktop: value >= 1024,
+      isSmallMobile: value < 375,
+    }),
 }));

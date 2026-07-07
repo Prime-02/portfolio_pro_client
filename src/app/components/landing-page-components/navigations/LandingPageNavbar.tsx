@@ -62,7 +62,7 @@ const LandingPageNavbar = () => {
       {/* Mobile Top Bar */}
       {isMobile && (
         <div className="fixed top-0 left-0 right-0 z-50 h-16 border-b bg-[var(--background)] border-[var(--accent)]/20 flex items-center justify-between px-4">
-          <Link href="/">
+          <Link href="/feed">
             <PortfolioProLogo variant="banner" scale={0.3} />
           </Link>
           {mobileMenuOpen ? (
@@ -97,7 +97,7 @@ const LandingPageNavbar = () => {
           {!isMobile && (
             <Link
               className={`${isExpanded ? "w-full flex items-center justify-between " : "mx-auto"}`}
-              href="/"
+              href="/feed"
             >
               <PortfolioProLogo
                 variant={isExpanded ? "banner" : "logo"}

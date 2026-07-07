@@ -5,7 +5,6 @@ import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowLeft, Pencil, Share2, Flag } from "lucide-react";
 import { useContentStore } from "@/lib/stores/contents/useContentStore";
-import { useContentAnalyticsStore } from "@/lib/stores/contents/useContentAnalyticsStore";
 import { BlogHero } from "./BlogHero";
 import { BlogContent } from "./BlogContent";
 import { BlogEngagement } from "./BlogEngagement";
@@ -17,7 +16,7 @@ import { LoadingSkeletonBlogDetail } from "./LoadingSkeletonBlogDetail";
 import { useContentReportStore } from "@/lib/stores/contents/useContentReportStore";
 import Modal from "../containers/modals/Modal";
 
-export default function BlogDetailPage() {
+export default function BlogDetailPage({ isPublicView = false }: { isPublicView?: boolean }) {
   const params = useParams();
   const router = useRouter();
   const contentId = params.blog as string;
@@ -25,6 +24,7 @@ export default function BlogDetailPage() {
   const { currentContent, fetchContentById, isLoading, error, clearError } = useContentStore();
   const { reportContent, isSubmitting: reportSubmitting } = useContentReportStore();
   const { userInfo, publicUserInfo } = useUserSettings();
+  const isPost = currentContent?.content_type === "POST"
 
   const [pageError, setPageError] = useState<string | null>(null);
   const [isOwner, setIsOwner] = useState(false);
@@ -89,9 +89,9 @@ export default function BlogDetailPage() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => router.push(`/${userInfo?.username || publicUserInfo?.username || "user"}/blogs`)}
+            onClick={() => router.back()}
             className="mt-4"
-            text="Back to Posts"
+            text=" Go Back"
           />
         </div>
       </div>
@@ -104,47 +104,49 @@ export default function BlogDetailPage() {
   return (
     <div className="min-h-screen">
       {/* Sticky header */}
-      <div className="sticky top-0 z-40 bg-[var(--background)]/80 backdrop-blur-xl border-b border-[var(--foreground)]/5">
-        <div className="max-w-4xl mx-auto px-6 py-3 flex items-center justify-between">
-          <button
-            onClick={() => router.push(`/${userInfo?.username || publicUserInfo?.username || "user"}/blogs`)}
-            className="flex items-center gap-2 text-sm text-[var(--foreground)]/60 hover:text-[var(--accent)] transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back
-          </button>
+      {
+        !isPublicView && <div className="sticky top-0 z-40 bg-[var(--background)]/80 backdrop-blur-xl border-b border-[var(--foreground)]/5">
+          <div className="max-w-4xl mx-auto px-6 py-3 flex items-center justify-between">
+            <button
+              onClick={() => router.push(`/${userInfo?.username || publicUserInfo?.username || "user"}/blogs`)}
+              className="flex items-center gap-2 text-sm text-[var(--foreground)]/60 hover:text-[var(--accent)] transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back
+            </button>
 
-          <div className="flex gap-2">
-            {!isOwner && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowReportModal(true)}
-                icon={<Flag className="w-4 h-4" />}
-                text="Report"
-              />
-            )}
-            {isOwner && (
-              <Button
-                size="sm"
-                onClick={() => router.push(`/${userInfo?.username || publicUserInfo?.username || "user"}/blogs/${contentId}/edit`)}
-                icon={<Pencil className="w-4 h-4" />}
-                text="Edit"
-              />
-            )}
+            <div className="flex gap-2">
+              {!isOwner && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowReportModal(true)}
+                  icon={<Flag className="w-4 h-4" />}
+                  text="Report"
+                />
+              )}
+              {isOwner && (
+                <Button
+                  size="sm"
+                  onClick={() => router.push(`/${userInfo?.username || publicUserInfo?.username || "user"}/blogs/${contentId}/edit`)}
+                  icon={<Pencil className="w-4 h-4" />}
+                  text="Edit"
+                />
+              )}
+            </div>
           </div>
         </div>
-      </div>
 
+      }
       <div className="max-w-4xl mx-auto px-6 py-8">
         {pageError && <ErrorMessage message={pageError} onDismiss={() => { setPageError(null); clearError(); }} />}
 
         {/* Hero */}
-        <BlogHero blog={blog} />
+        <BlogHero isPost={isPost} blog={blog} />
 
         {/* Content */}
         <div className="mt-8">
-          <BlogContent blog={blog} />
+          <BlogContent isPost={isPost} blog={blog} />
         </div>
 
         {/* Engagement */}

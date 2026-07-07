@@ -214,7 +214,7 @@ const Button = ({
   const baseClasses = useMemo(
     () =>
       `
-    cursor-pointer w-full max-w-full flex items-center justify-center rounded-lg 
+    cursor-pointer max-w-full flex items-center justify-center rounded-lg 
     focus:outline-none transition-all duration-200 font-medium border 
     disabled:cursor-not-allowed active:scale-95 transform
   `

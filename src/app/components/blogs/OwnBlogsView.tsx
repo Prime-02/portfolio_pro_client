@@ -11,7 +11,7 @@ import { EmptyBlogsState } from "./EmptyBlogsState";
 import { LoadingSkeletonBlogs } from "./LoadingSkeletonBlogs";
 import { DeleteBlogDialog } from "./DeleteBlogDialog";
 import { InfiniteScrollTrigger } from "./InfiniteScrollTrigger";
-import type { ContentWithAuthor } from "@/lib/stores/contents/types/content.types";
+import type { ContentType, ContentWithAuthor } from "@/lib/stores/contents/types/content.types";
 import { PageHeader } from "../ui/PageHeader";
 import Button from "../buttons/Buttons";
 import { ErrorMessage } from "../ui/ErrorMessage";
@@ -31,6 +31,7 @@ interface OwnBlogsViewProps {
     status: "" | "PUBLISHED" | "DRAFT" | "ARCHIVED";
     sort: "date" | "name" | "views" | "likes";
     sortDirection: "asc" | "desc";
+    type: ContentType
   };
   onFilterChange: (params: OwnBlogsViewProps["filterParams"]) => void;
   onDelete: (contentIds: string[]) => Promise<void>;
@@ -112,6 +113,8 @@ export function OwnBlogsView({
           onQueryChange={(query) => onFilterChange({ ...filterParams, query })}
           status={filterParams.status}
           onStatusChange={(status) => onFilterChange({ ...filterParams, status })}
+          type={filterParams.type}
+          onTypeChange={(type) => onFilterChange({ ...filterParams, type })}
           sort={filterParams.sort}
           onSortChange={(sort) => onFilterChange({ ...filterParams, sort })}
           sortDirection={filterParams.sortDirection}

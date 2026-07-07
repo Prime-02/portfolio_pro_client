@@ -6,6 +6,7 @@ export type SortField = "name" | "date";
 export type SortDirection = "asc" | "desc";
 export type ProjectStatus = "active" | "archived" | "draft";
 export type ProjectRole = "creator" | "owner" | "collaborator";
+export type ReactionType = "LIKE" | "LOVE" | "CELEBRATE" | "INSIGHTFUL";
 
 export interface MediaSlotData {
   url: string;
@@ -27,6 +28,18 @@ export interface ProjectUser {
   id: string;
   username: string;
   email: string;
+  profile_picture?: string | null;
+  display_name?: string | null;
+}
+
+// ============================================================
+// AUTHOR (public feed shape — mirrors ContentWithAuthor pattern)
+// ============================================================
+
+export interface ProjectAuthor {
+  id: string;
+  username: string;
+  display_name?: string | null;
   profile_picture?: string | null;
 }
 
@@ -81,12 +94,12 @@ export interface ProjectComment {
   user: ProjectUser;
   replies?: ProjectComment[];
   replies_count?: number;
+  is_liked?: boolean;
+  likes_count?: number;
 }
 
 /**
  * Recursive tree returned by GET /projects/comments/{comment_id}/thread.
- * The backend returns Dict[str, Any] with nested replies at arbitrary depth,
- * so this is intentionally separate from the flat ProjectComment shape.
  */
 export interface CommentThread {
   comment_id: string;
@@ -228,6 +241,15 @@ export interface PortfolioProjectResponse extends PortfolioProjectBase {
   comments_count: number;
 }
 
+/**
+ * Project with author info for public feed consumption.
+ * Derived from PortfolioProjectResponse by extracting the creator from user_associations.
+ */
+export interface ProjectWithAuthor extends PortfolioProjectResponse {
+  author: ProjectAuthor | null;
+  is_liked?: boolean;
+}
+
 export interface PortfolioProjectCreate {
   project_name: string;
   project_summary?: string | null;
@@ -272,7 +294,6 @@ export interface PortfolioProjectUpdate {
   status?: string;
   featured_in?: string[];
   last_updated?: string | null;
-  // Media is handled as FormData separately
   hero_media?: File | null;
   media_1?: File | null;
   media_2?: File | null;
@@ -283,6 +304,10 @@ export interface PortfolioProjectUpdate {
 // PAGINATED RESPONSE WRAPPERS
 // ============================================================
 
+export interface PaginatedProjectsWithAuthor {
+  projects: ProjectWithAuthor[];
+  total: number;
+}
 export interface PaginatedProjects {
   projects: PortfolioProjectResponse[];
   total: number;
@@ -410,7 +435,6 @@ export interface ProjectStats {
 // ============================================================
 
 export type LoadingKey =
-  // project
   | "fetchProjects"
   | "fetchProjectById"
   | "fetchProjectsByUser"
@@ -420,12 +444,11 @@ export type LoadingKey =
   | "createProject"
   | "updateProject"
   | "deleteProjects"
-  // collaborator
+  | "fetchPublicProjects"
   | "fetchCollaborators"
   | "addCollaborator"
   | "updateCollaborator"
   | "removeCollaborator"
-  // engagement
   | "fetchLikes"
   | "fetchUserLikes"
   | "toggleLike"
@@ -440,7 +463,6 @@ export type LoadingKey =
   | "fetchEngagementStats"
   | "fetchFullEngagement"
   | "fetchUserEngagement"
-  // audit
   | "fetchAuditLog"
   | "fetchProjectAuditLogs"
   | "fetchUserAuditLogs"

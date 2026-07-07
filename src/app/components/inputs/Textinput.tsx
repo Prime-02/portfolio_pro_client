@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, forwardRef } from "react";
 import Dropdown from "./DynamicDropdown";
 import PhoneInputComponent from "./PhoneInput";
 import { Eye, EyeOff, XCircle } from "lucide-react";
@@ -22,7 +22,7 @@ export interface TextInputProps extends Omit<React.InputHTMLAttributes<HTMLInput
   required?: boolean;
 }
 
-export const Textinput: React.FC<TextInputProps> = ({
+export const Textinput = forwardRef<HTMLInputElement, TextInputProps>(({
   label,
   type = "text",
   value,
@@ -39,17 +39,32 @@ export const Textinput: React.FC<TextInputProps> = ({
   disabled,
   required,
   ...inputProps
-}) => {
+}, ref) => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [showDesc, setShowDesc] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const localInputRef = useRef<HTMLInputElement>(null);
 
   const hasValue = value !== undefined && value !== "";
   const isDropdownType = type === "dropdown" || type === "datalist";
   const isPhoneType = type === "phone" || type === "tel";
+
+  // Merge refs callback
+  const setRefs = React.useCallback(
+    (element: HTMLInputElement | null) => {
+      // Update local ref
+      (localInputRef as React.MutableRefObject<HTMLInputElement | null>).current = element;
+      // Update forwarded ref
+      if (typeof ref === 'function') {
+        ref(element);
+      } else if (ref) {
+        (ref as React.MutableRefObject<HTMLInputElement | null>).current = element;
+      }
+    },
+    [ref]
+  );
 
   // Handle click outside to close description
   useEffect(() => {
@@ -122,7 +137,7 @@ export const Textinput: React.FC<TextInputProps> = ({
       <div className="relative">
         <input
           {...inputProps}
-          ref={inputRef}
+          ref={setRefs}
           value={value || ""}
           type={
             type === "password"
@@ -241,4 +256,6 @@ export const Textinput: React.FC<TextInputProps> = ({
       )}
     </div>
   );
-};
+});
+
+Textinput.displayName = 'Textinput';

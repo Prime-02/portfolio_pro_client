@@ -2,12 +2,15 @@
 
 import { Search, ArrowUpDown, Filter } from "lucide-react";
 import Dropdown from "../inputs/DynamicDropdown";
+import { ContentType } from "@/lib/stores/contents";
 
 interface BlogFiltersProps {
   query: string;
   onQueryChange: (query: string) => void;
   status: "" | "PUBLISHED" | "DRAFT" | "ARCHIVED";
   onStatusChange: (status: "" | "PUBLISHED" | "DRAFT" | "ARCHIVED") => void;
+  type: ContentType;
+  onTypeChange: (type: ContentType) => void;
   sort: "date" | "name" | "views" | "likes";
   onSortChange: (sort: "date" | "name" | "views" | "likes") => void;
   sortDirection: "asc" | "desc";
@@ -28,10 +31,18 @@ const STATUS_OPTIONS = [
   { id: "ARCHIVED", code: "Archived" },
 ];
 
+const CONTENT_TYPE_OPTION = [
+  { id: "", code: "All Contents" },
+  { id: "POST", code: "Posts" },
+  { id: "BLOG", code: "Blogs" },
+]
+
 export function BlogFilters({
   query,
   onQueryChange,
   status,
+  type,
+  onTypeChange,
   onStatusChange,
   sort,
   onSortChange,
@@ -56,10 +67,21 @@ export function BlogFilters({
       <div className="flex gap-2">
         <Dropdown
           type="dropdown"
+          options={CONTENT_TYPE_OPTION}
+          value={type}
+          onSelect={(v) => onTypeChange(v as ContentType)}
+          className="w-36"
+          placeholder="Type"
+          includeNoneOption={false}
+        />
+        <Dropdown
+          type="dropdown"
           options={STATUS_OPTIONS}
           value={status}
           onSelect={(v) => onStatusChange(v as "" | "PUBLISHED" | "DRAFT" | "ARCHIVED")}
           className="w-36"
+          placeholder="Status"
+          includeNoneOption={false}
         />
         <Dropdown
           type="dropdown"
@@ -67,6 +89,7 @@ export function BlogFilters({
           value={sort}
           onSelect={(v) => onSortChange(v as "date" | "name" | "views" | "likes")}
           className="w-32"
+          includeNoneOption={false}
         />
         <button
           title="Sort By Icon"

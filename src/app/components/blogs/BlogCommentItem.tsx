@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronDown,
@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useContentCommentStore } from "@/lib/stores/contents/useContentCommentStore";
 import type { ContentCommentWithUser } from "@/lib/stores/contents/types/content.types";
+import { getDisplayName } from "@/lib/stores/contents/types/content.types";
 import Button from "../buttons/Buttons";
 import { TextArea } from "../inputs/TextArea";
 import { useUserSettings } from "@/lib/stores/user/useUserSettings";
@@ -42,13 +43,15 @@ export function BlogCommentItem({
   const [editContent, setEditContent] = useState(comment.body);
   const [showActions, setShowActions] = useState(false);
   const [showRepliesLoading, setShowRepliesLoading] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [isTogglingLike, setIsTogglingLike] = useState(false);
   const [repliesPage, setRepliesPage] = useState(1);
 
   const {
     createComment,
     deleteComment,
     updateComment,
+    likeComment,
+    unlikeComment,
     fetchCommentThread,
     threadsByComment,
     threadTotalsByComment,
@@ -61,6 +64,10 @@ export function BlogCommentItem({
   const totalReplies = threadTotalsByComment[comment.id] ?? comment.replies_count ?? replies.length;
   const hasMoreReplies = replies.length < totalReplies;
 
+  // Ownership check: must be logged in AND be the author
+  const currentUserId = userInfo?.id ?? null;
+  const isOwn = !!currentUserId && comment.user_id === currentUserId;
+
   const handleReply = async () => {
     if (!userInfo?.username) {
       toast.warning("You must be logged in to comment");
@@ -68,39 +75,56 @@ export function BlogCommentItem({
     }
     if (!replyContent.trim()) return;
 
-    const data = {
-      content_id: contentId,
-      body: replyContent,
-      parent_comment_id: comment.id,
-    };
-
-    const result = await createComment(data);
-    if (result) {
+    try {
+      await createComment({
+        content_id: contentId,
+        body: replyContent.trim(),
+        parent_comment_id: comment.id,
+      });
       setReplyContent("");
       setIsReplying(false);
       setIsExpanded(true);
       setHasFetchedReplies(true);
+    } catch {
+      // Error handled by store; optimistic update already rolled back
     }
   };
 
-  const handleUpdate = async () => {
+  const handleUpdate = useCallback(async () => {
     if (!editContent.trim() || editContent === comment.body) {
       setIsEditing(false);
       return;
     }
-
-    const success = await updateComment(comment.id, { body: editContent });
-    if (success) {
+    try {
+      await updateComment(comment.id, { body: editContent.trim() });
       setIsEditing(false);
+    } catch {
+      // Error handled by store; optimistic update already rolled back
     }
-  };
+  }, [editContent, comment.id, comment.body, updateComment]);
 
-  const handleDelete = async () => {
-    setIsDeleting(true);
-    setShowActions(false);
-    await deleteComment(comment.id, false);
-    setIsDeleting(false);
-  };
+  const handleDelete = useCallback(async () => {
+    try {
+      await deleteComment(comment.id);
+    } catch {
+      // Error handled by store; optimistic update already rolled back
+    }
+  }, [comment.id, deleteComment]);
+
+  const handleToggleLike = useCallback(async () => {
+    setIsTogglingLike(true);
+    try {
+      if (comment.is_liked) {
+        await unlikeComment(comment.id);
+      } else {
+        await likeComment(comment.id);
+      }
+    } catch {
+      // Error handled by store; optimistic update already rolled back
+    } finally {
+      setIsTogglingLike(false);
+    }
+  }, [comment.id, comment.is_liked, likeComment, unlikeComment]);
 
   const handleLoadMoreReplies = async () => {
     setShowRepliesLoading(true);
@@ -110,7 +134,16 @@ export function BlogCommentItem({
     setShowRepliesLoading(false);
   };
 
-  const isDeleted = comment.is_deleted;
+  const handleToggleReplies = async () => {
+    const opening = !isExpanded;
+    setIsExpanded(opening);
+    if (opening && !hasFetchedReplies) {
+      setShowRepliesLoading(true);
+      await fetchCommentThread(comment.id, 1, 10);
+      setHasFetchedReplies(true);
+      setShowRepliesLoading(false);
+    }
+  };
 
   return (
     <motion.div
@@ -130,12 +163,12 @@ export function BlogCommentItem({
             {comment.user?.profile_picture ? (
               <img
                 src={comment.user.profile_picture}
-                alt={comment.user.username || "User"}
+                alt={getDisplayName(comment.user)}
                 className="w-full h-full object-cover"
               />
             ) : (
               <span className="text-xs font-medium text-[var(--accent)]">
-                {comment.user?.username?.[0]?.toUpperCase() ?? "?"}
+                {getDisplayName(comment.user)[0]?.toUpperCase() ?? "?"}
               </span>
             )}
           </div>
@@ -145,7 +178,7 @@ export function BlogCommentItem({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <span className="text-sm font-medium">
-              {comment.user?.username ?? "Unknown"}
+              {getDisplayName(comment.user)}
             </span>
             <span className="text-[10px] text-[var(--foreground)]/30">
               {new Date(comment.created_at).toLocaleDateString("en-US", {
@@ -155,9 +188,6 @@ export function BlogCommentItem({
             </span>
             {comment.is_edited && (
               <span className="text-[10px] text-[var(--foreground)]/20">(edited)</span>
-            )}
-            {isDeleted && (
-              <span className="text-[10px] text-red-400">[deleted]</span>
             )}
           </div>
 
@@ -195,14 +225,27 @@ export function BlogCommentItem({
               )}
             </div>
           ) : (
-            <p className={`text-sm leading-relaxed ${isDeleted ? "text-[var(--foreground)]/30 italic" : "text-[var(--foreground)]/60"}`}>
+            <p className="text-sm leading-relaxed text-[var(--foreground)]/60">
               {comment.body}
             </p>
           )}
 
           {/* Actions */}
-          {!isEditing && !isDeleted && (
+          {!isEditing && (
             <div className="flex items-center gap-3 mt-2">
+              {/* Like */}
+              <button
+                onClick={handleToggleLike}
+                disabled={isTogglingLike}
+                className={`flex items-center gap-1 text-xs transition-colors ${comment.is_liked
+                    ? "text-[var(--accent)]"
+                    : "text-[var(--foreground)]/40 hover:text-[var(--accent)]"
+                  }`}
+              >
+                <Heart className={`w-3.5 h-3.5 ${comment.is_liked ? "fill-current" : ""}`} />
+                {comment.likes_count > 0 && comment.likes_count}
+              </button>
+
               <button
                 onClick={() => setIsReplying(!isReplying)}
                 className="text-xs text-[var(--foreground)]/40 hover:text-[var(--accent)] transition-colors"
@@ -212,16 +255,7 @@ export function BlogCommentItem({
 
               {(replies.length > 0 || (comment.replies_count ?? 0) > 0) && (
                 <button
-                  onClick={async () => {
-                    const opening = !isExpanded;
-                    setIsExpanded(opening);
-                    if (opening && !hasFetchedReplies) {
-                      setShowRepliesLoading(true);
-                      await fetchCommentThread(comment.id, 1, 10);
-                      setHasFetchedReplies(true);
-                      setShowRepliesLoading(false);
-                    }
-                  }}
+                  onClick={handleToggleReplies}
                   className="text-xs text-[var(--foreground)]/40 hover:text-[var(--accent)] transition-colors flex items-center gap-1"
                 >
                   {isExpanded ? (
@@ -237,9 +271,9 @@ export function BlogCommentItem({
                 </button>
               )}
 
-              {/* More actions (edit/delete) - shown on hover */}
+              {/* Edit/Delete - shown on hover, only for owner */}
               <AnimatePresence>
-                {showActions && (
+                {showActions && isOwn && (
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -258,15 +292,10 @@ export function BlogCommentItem({
                     </button>
                     <button
                       onClick={handleDelete}
-                      disabled={isDeleting}
                       className="p-1 rounded hover:bg-red-500/10 transition-colors"
                       title="Delete comment"
                     >
-                      {isDeleting ? (
-                        <Loader2 className="w-3 h-3 animate-spin text-red-500" />
-                      ) : (
-                        <Trash2 className="w-3 h-3 text-red-400/50 hover:text-red-500" />
-                      )}
+                      <Trash2 className="w-3 h-3 text-red-400/50 hover:text-red-500" />
                     </button>
                   </motion.div>
                 )}
@@ -288,7 +317,7 @@ export function BlogCommentItem({
                     <TextArea
                       value={replyContent}
                       onChange={setReplyContent}
-                      placeholder="Write a reply..."
+                      placeholder={`Reply to ${getDisplayName(comment.user)}...`}
                       className="w-full min-h-[60px]"
                     />
                   </div>

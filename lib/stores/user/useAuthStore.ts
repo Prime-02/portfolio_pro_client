@@ -12,6 +12,7 @@ import { useSkills } from "../skills/useSkills";
 import { useSocialLinks } from "../social_links/useSocialLinks";
 import { useTestimonialsStore } from "../testimonials/useTestimonial";
 import { useUserSettings } from "./useUserSettings";
+import { UserResponse } from "./useUserAccountStore";
 
 export const logoutAll = async (revokeSession: boolean = true) => {
   useCertifications.getState().reset();
@@ -39,20 +40,6 @@ export interface SessionData {
   ip_address: string | null;
   user_agent: string;
   created_at: string;
-}
-
-export interface UserResponse {
-  id: string; // UUID as string
-  username: string | null;
-  email: string;
-  firstname: string | null;
-  middlename: string | null;
-  lastname: string | null;
-  profile_picture: string | null;
-  profile_picture_id: string | null;
-  phone_number: string | null;
-  is_active: boolean;
-  role: string;
 }
 
 export interface LoginResponse {

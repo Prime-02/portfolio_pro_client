@@ -38,6 +38,8 @@ export const unprotectedRoutes = [
   "/public",
   "/welcome",
   "/feed",
+  "/blogs",
+  "/projects",
   "test-endpoints",
 ];
 
@@ -82,7 +84,8 @@ export const privateRoutes: Route[] = [
     link: "/cv",
     name: "Professional CV",
     icon: FaFileAlt,
-    description: "Generate professional CV from your profile data or existing portfolios",
+    description:
+      "Generate professional CV from your profile data or existing portfolios",
   },
   {
     slug: "certification",

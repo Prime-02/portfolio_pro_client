@@ -7,13 +7,14 @@ import MarkdownRenderer from "../markdown/MarkdownRenderer";
 
 interface BlogContentProps {
   blog: ContentWithAuthor;
+  isPost: boolean
 }
 
-export function BlogContent({ blog }: BlogContentProps) {
+export function BlogContent({ blog, isPost }: BlogContentProps) {
   return (
     <div className="space-y-8">
       {/* Excerpt */}
-      {blog.excerpt && (
+      {blog.excerpt && !isPost && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -34,12 +35,30 @@ export function BlogContent({ blog }: BlogContentProps) {
           transition={{ delay: 0.2 }}
           className="prose prose-invert max-w-none"
         >
-          <MarkdownRenderer markdown={blog.body} />
+          {
+            isPost ? <p>
+              {blog.body}
+            </p> :
+              <MarkdownRenderer markdown={blog.body} />
+          }
+          {blog.tags && blog.tags.length > 0 && isPost && (
+            <span className="flex flex-wrap gap-2">
+              {
+                blog.tags.map((tag, i) => (
+                  <p key={i}>
+                    #{tag}
+                  </p>
+                ))
+              }
+            </span>
+          )
+
+          }
         </motion.div>
       )}
 
       {/* Tags */}
-      {blog.tags && blog.tags.length > 0 && (
+      {blog.tags && blog.tags.length > 0 && !isPost && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

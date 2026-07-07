@@ -18,9 +18,10 @@ import { toast } from "../toastify/Toastify";
 
 interface BlogHeroProps {
   blog: ContentWithAuthor;
+  isPost: boolean
 }
 
-export function BlogHero({ blog }: BlogHeroProps) {
+export function BlogHero({ blog, isPost }: BlogHeroProps) {
   const { likeContent, unlikeContent, userLikedStatus, isSubmitting } = useContentLikeStore();
   const { userInfo } = useUserSettings();
 
@@ -87,11 +88,12 @@ export function BlogHero({ blog }: BlogHeroProps) {
       )}
 
       {/* Title & Meta Row */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-3 flex-wrap">
+      {
+        !isPost && <div className="flex items-center gap-3 flex-wrap">
           <h1 className="text-3xl md:text-4xl font-league-700 leading-tight">{blog.title}</h1>
         </div>
-
+      }
+      <div className="space-y-4">
         <div className="flex items-center gap-3 flex-wrap text-sm text-[var(--foreground)]/50">
           {blog.author && (
             <span className="flex items-center gap-2">
@@ -108,11 +110,12 @@ export function BlogHero({ blog }: BlogHeroProps) {
 
           <span className="text-[var(--foreground)]/20">·</span>
 
-          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium ${status.bg} ${status.color}`}>
-            {status.label}
-          </span>
-
-          {!blog.is_public && (
+          {
+            !isPost && <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium ${status.bg} ${status.color}`}>
+              {status.label}
+            </span>
+          }
+          {!blog.is_public && !isPost && (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-[var(--foreground)]/10 text-[var(--foreground)]/50">
               <Lock className="w-3 h-3" />
               Private
@@ -142,7 +145,7 @@ export function BlogHero({ blog }: BlogHeroProps) {
             </span>
           )}
 
-          {readTime > 0 && (
+          {readTime > 0 && !isPost && (
             <>
               <span className="text-[var(--foreground)]/20">·</span>
               <span className="flex items-center gap-1">
@@ -185,7 +188,7 @@ export function BlogHero({ blog }: BlogHeroProps) {
             hover:border-[var(--accent)]/30 hover:bg-[var(--accent)]/5 transition-all text-[var(--foreground)]/60"
         >
           <Share2 className="w-5 h-5" />
-          <span className="text-sm font-medium">Share</span>
+          <span className="text-sm font-medium">Reshare</span>
         </button>
       </div>
     </div>

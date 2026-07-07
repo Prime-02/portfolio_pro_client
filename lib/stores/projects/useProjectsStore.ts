@@ -6,7 +6,9 @@ import type {
   PortfolioProjectResponse,
   PortfolioProjectCreate,
   PortfolioProjectUpdate,
+  ProjectWithAuthor,
   PaginatedProjects,
+  PaginatedProjectsWithAuthor,
   PaginatedProjectBase,
   ProjectStats,
   LoadingState,
@@ -117,10 +119,10 @@ function buildUpdateFormData(data: PortfolioProjectUpdate): FormData {
 }
 
 /** Append incoming items, skipping duplicates by id */
-function dedupeAppend(
-  existing: PortfolioProjectResponse[],
-  incoming: PortfolioProjectResponse[],
-): PortfolioProjectResponse[] {
+function dedupeAppend<T extends { id: string }>(
+  existing: T[],
+  incoming: T[],
+): T[] {
   const existingIds = new Set(existing.map((p) => p.id));
   return [...existing, ...incoming.filter((p) => !existingIds.has(p.id))];
 }
@@ -141,6 +143,12 @@ interface ProjectState {
   totalFilteredProjects: number;
   filteredPage: number;
   filteredHasMore: boolean;
+
+  // Public feed (all public projects, no username)
+  publicProjects: ProjectWithAuthor[];
+  totalPublicProjects: number;
+  publicProjectsPage: number;
+  publicProjectsHasMore: boolean;
 
   currentProject: PortfolioProjectResponse | null;
 
@@ -169,6 +177,18 @@ interface ProjectState {
     username: string,
     params?: PublicProjectsByUsernameFilters,
   ) => Promise<void>;
+
+  /**
+   * Fetch all public projects (no username required).
+   * Used by the public projects feed at /feed/projects.
+   */
+  fetchPublicProjects: (params?: {
+    page?: number;
+    size?: number;
+    search?: string;
+    sort_by?: string;
+    sort_order?: SortDirection;
+  }) => Promise<void>;
 
   fetchRecentProjects: (params?: {
     days?: number;
@@ -225,6 +245,11 @@ export const useProjectStore = create<ProjectState>()(
       totalFilteredProjects: 0,
       filteredPage: 1,
       filteredHasMore: false,
+
+      publicProjects: [],
+      totalPublicProjects: 0,
+      publicProjectsPage: 1,
+      publicProjectsHasMore: false,
 
       currentProject: null,
       recentProjects: [],
@@ -359,6 +384,57 @@ export const useProjectStore = create<ProjectState>()(
         } finally {
           set((s) => ({
             loading: { ...s.loading, fetchProjectsByUser: false },
+          }));
+        }
+      },
+
+      // ── GET /projects/public ───────────────────────────────
+      fetchPublicProjects: async (params = {}) => {
+        set((s) => ({
+          loading: { ...s.loading, fetchPublicProjects: true },
+          errors: { ...s.errors, fetchPublicProjects: null },
+        }));
+        try {
+          const page = params.page ?? 1;
+          const size = params.size ?? PAGE_SIZE;
+
+          const query = new URLSearchParams();
+          query.set("page", String(page));
+          query.set("size", String(size));
+          if (params.search) query.set("search", params.search);
+          if (params.sort_by) query.set("sort_by", params.sort_by);
+          if (params.sort_order) query.set("sort_order", params.sort_order);
+
+          const { data } = await api.get<PaginatedProjectsWithAuthor>(
+            `/projects/public?${query.toString()}`,
+          );
+
+          const incoming = data.projects;
+          const total = data.total;
+
+          set((s) => ({
+            publicProjects:
+              page > 1
+                ? dedupeAppend(s.publicProjects, incoming)
+                : incoming,
+            totalPublicProjects: total,
+            publicProjectsPage: page,
+            publicProjectsHasMore:
+              page > 1
+                ? s.publicProjects.length + incoming.length < total
+                : incoming.length < total,
+          }));
+        } catch (err: unknown) {
+          const message =
+            err instanceof Error
+              ? err.message
+              : "Failed to fetch public projects";
+          set((s) => ({
+            errors: { ...s.errors, fetchPublicProjects: message },
+          }));
+        } finally {
+          set((s) => ({
+            loading: { ...s.loading, fetchPublicProjects: false },
           }));
         }
       },
@@ -503,6 +579,9 @@ export const useProjectStore = create<ProjectState>()(
             projects: s.projects.map((p) =>
               p.id === projectId ? { ...p, ...updated } : p,
             ),
+            publicProjects: s.publicProjects.map((p) =>
+              p.id === projectId ? { ...p, ...updated } : p,
+            ),
             currentProject:
               s.currentProject?.id === projectId
                 ? { ...s.currentProject, ...updated }
@@ -579,11 +658,18 @@ export const useProjectStore = create<ProjectState>()(
               const next = s.projects.filter(
                 (p) => !project_ids.includes(p.id),
               );
+              const nextPublic = s.publicProjects.filter(
+                (p) => !project_ids.includes(p.id),
+              );
               return {
                 projects: next,
+                publicProjects: nextPublic,
                 totalProjects: s.totalProjects - project_ids.length,
+                totalPublicProjects: s.totalPublicProjects - project_ids.length,
                 projectsHasMore:
                   next.length < s.totalProjects - project_ids.length,
+                publicProjectsHasMore:
+                  nextPublic.length < s.totalPublicProjects - project_ids.length,
               };
             });
           } else {

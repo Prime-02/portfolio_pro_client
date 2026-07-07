@@ -56,7 +56,10 @@ export default function ProjectReplyItem({ reply }: ProjectReplyItemProps) {
 
   return (
     <div className="flex gap-2">
-      <ProjectCommentAvatar user={reply.user} size="sm" />
+      <ProjectCommentAvatar user={{
+        username: reply.username || "",
+        profile_picture: reply.profile_picture || ""
+      }} size="sm" />
       <div className="flex-1 min-w-0">
         {isEditing ? (
           <ProjectCommentComposer

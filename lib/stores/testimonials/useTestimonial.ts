@@ -29,6 +29,26 @@ export interface Testimonial {
   author_info?: AuthorInfo;
 }
 
+export interface TestimonialResponse {
+  id: string;
+  user_id: string;
+  author_user_id?: string;
+  author_name: string;
+  author_title?: string;
+  author_company?: string;
+  author_relationship?: string;
+  content: string;
+  rating?: number;
+  avatar_url?: string;
+  avatar_url_id?: string;
+  is_approved: boolean;
+  is_featured: boolean;
+  display_order: number;
+  created_at: string;
+  updated_at: string;
+  author_info?: AuthorInfo;
+}
+
 export interface TestimonialCreate {
   username: string;
   author_name: string;
@@ -87,6 +107,42 @@ export interface PublicTestimonialsByUsernameFilters {
   merge_filters?: boolean;
 }
 
+// Ranking types
+export interface UserRatingRanking {
+  id: string;
+  username?: string;
+  email: string;
+  firstname?: string;
+  middlename?: string;
+  lastname?: string;
+  profile_picture?: string;
+  profile_picture_id?: string;
+  phone_number?: string;
+  is_active: boolean;
+  is_superuser: boolean;
+  role: string;
+  average_rating: number;
+  profession: string;
+  job_title: string;
+  location: string;
+  total_testimonials: number;
+  highest_rated_testimonial?: TestimonialResponse;
+}
+
+export interface PaginatedUserRankingResponse {
+  users: UserRatingRanking[];
+  total: number;
+  skip: number;
+  limit: number;
+}
+
+export interface RankingFilters {
+  skip?: number;
+  limit?: number;
+  min_testimonials?: number;
+  search?: string;
+}
+
 const DEFAULT_PAGE_SIZE = 20;
 
 // ============================================================
@@ -120,6 +176,14 @@ function buildTestimonialFormData(
 // ============================================================
 
 interface TestimonialsState {
+  // Rankings
+  rankings: UserRatingRanking[];
+  rankingsTotal: number;
+  rankingsPage: number;
+  rankingsHasMore: boolean;
+  rankingsLoading: boolean;
+  rankingsError: string | null;
+
   // Public testimonials (paginated)
   publicTestimonials: Testimonial[];
   publicTestimonialsTotal: number;
@@ -227,6 +291,9 @@ interface TestimonialsState {
   adminDeletingUserTestimonials: boolean;
   adminDeleteUserTestimonialsError: string | null;
 
+  // Ranking actions
+  fetchRankings: (params?: RankingFilters) => Promise<void>;
+
   // Public actions
   fetchPublicTestimonials: (params?: {
     skip?: number;
@@ -297,6 +364,14 @@ interface TestimonialsState {
 }
 
 const initialState = {
+  // Rankings
+  rankings: [],
+  rankingsTotal: 0,
+  rankingsPage: 1,
+  rankingsHasMore: false,
+  rankingsLoading: false,
+  rankingsError: null,
+
   // Public
   publicTestimonials: [],
   publicTestimonialsTotal: 0,
@@ -405,6 +480,56 @@ const initialState = {
 
 export const useTestimonialsStore = create<TestimonialsState>()((set, get) => ({
   ...initialState,
+
+  // ==================== RANKING ACTIONS ====================
+
+  fetchRankings: async (params = {}) => {
+    set({ rankingsLoading: true, rankingsError: null });
+    try {
+      const skip = params.skip ?? 0;
+      const limit = params.limit ?? DEFAULT_PAGE_SIZE;
+      const page = Math.floor(skip / limit) + 1;
+
+      const queryParams = new URLSearchParams();
+      queryParams.append("skip", skip.toString());
+      queryParams.append("limit", limit.toString());
+
+      if (params.min_testimonials !== undefined) {
+        queryParams.append(
+          "min_testimonials",
+          params.min_testimonials.toString(),
+        );
+      }
+
+      if (params.search) {
+        queryParams.append("search", params.search);
+      }
+
+      const response = await api.get<PaginatedUserRankingResponse>(
+        `/testimonials/rankings?${queryParams.toString()}`,
+      );
+
+      const incoming = response.data.users || [];
+      const total = response.data.total || 0;
+
+      set((s) => ({
+        rankings: page > 1 ? [...s.rankings, ...incoming] : incoming,
+        rankingsTotal: total,
+        rankingsPage: page,
+        rankingsHasMore:
+          page > 1
+            ? s.rankings.length + incoming.length < total
+            : incoming.length < total,
+        rankingsLoading: false,
+      }));
+    } catch (error: any) {
+      set({
+        rankingsError:
+          error.response?.data?.detail || "Failed to fetch rankings",
+        rankingsLoading: false,
+      });
+    }
+  },
 
   // ==================== PUBLIC ACTIONS ====================
 

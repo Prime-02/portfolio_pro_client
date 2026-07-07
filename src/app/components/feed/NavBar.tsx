@@ -40,7 +40,7 @@ const NavBar = () => {
   const tabs = [
     { id: "", label: "FYP", icon: Home },
     { id: "projects", label: "Projects", icon: Briefcase },
-    { id: "professionals", label: "Professionals", icon: Users },
+    { id: "professionals", label: "Top Professionals", icon: Users },
   ]
 
   const handleSearch = (e: React.FormEvent) => {

@@ -283,7 +283,7 @@ export const useContentStore = create<ContentState & ContentActions>(
           { headers: { "Content-Type": "multipart/form-data" } },
         );
         set((state) => ({
-          items: [{ ...response.data, author: null }, ...state.items],
+          items: [{ ...response.data, author: null, reaction_type: "LIKE" }, ...state.items],
           total: state.total + 1,
         }));
         return response.data;

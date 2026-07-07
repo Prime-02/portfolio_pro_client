@@ -1,10 +1,14 @@
 "use client";
 
 import React from "react";
-import type { ProjectUser } from "@/lib/stores/projects/types/project.types";
+
+interface AvatarUserProps {
+  username: string,
+  profile_picture: string,
+}
 
 interface ProjectCommentAvatarProps {
-  user?: ProjectUser | null;
+  user?: AvatarUserProps;
   size?: "sm" | "md";
 }
 
@@ -19,7 +23,7 @@ const TEXT_SIZE_CLASSES: Record<NonNullable<ProjectCommentAvatarProps["size"]>, 
 };
 
 export default function ProjectCommentAvatar({ user, size = "md" }: ProjectCommentAvatarProps) {
-  const initial = (user?.display_name || user?.username || "U").charAt(0).toUpperCase();
+  const initial = (user?.username || "U").charAt(0).toUpperCase();
 
   return (
     <div
@@ -28,7 +32,7 @@ export default function ProjectCommentAvatar({ user, size = "md" }: ProjectComme
       {user?.profile_picture ? (
         <img
           src={user.profile_picture}
-          alt={user.display_name || user.username}
+          alt={user.username || ""}
           className="w-full h-full object-cover"
         />
       ) : (

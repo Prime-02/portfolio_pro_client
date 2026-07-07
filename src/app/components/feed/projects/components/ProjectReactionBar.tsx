@@ -24,24 +24,16 @@ export default function ProjectReactionBar({
   onToggleComments,
 }: ProjectReactionBarProps) {
   const toggleLike = useProjectEngagementStore((s) => s.toggleLike);
-  const checkUserLiked = useProjectEngagementStore((s) => s.checkUserLiked);
-  const userLikedByProject = useProjectEngagementStore((s) => s.userLikedByProject);
   const likesTotalByProject = useProjectEngagementStore((s) => s.likesTotalByProject);
 
   const [optimisticLiked, setOptimisticLiked] = useState(project.is_liked ?? false);
   const [optimisticLikesCount, setOptimisticLikesCount] = useState(project.likes_count);
 
-  const storeLiked = userLikedByProject[project.id];
   const storeCount = likesTotalByProject[project.id];
 
   useEffect(() => {
-    if (storeLiked !== undefined) setOptimisticLiked(storeLiked);
     if (storeCount !== undefined) setOptimisticLikesCount(storeCount);
-  }, [storeLiked, storeCount]);
-
-  useEffect(() => {
-    checkUserLiked(project.id);
-  }, [project.id, checkUserLiked]);
+  }, [storeCount]);
 
   const handleToggleLike = useCallback(async () => {
     const wasLiked = optimisticLiked;
@@ -64,7 +56,6 @@ export default function ProjectReactionBar({
       <div className="flex items-center justify-between text-xs text-[var(--foreground)]/50 mb-3 px-1">
         <span>{optimisticLikesCount.toLocaleString()} likes</span>
         <span>{project.comments_count.toLocaleString()} comments</span>
-        <span>0 shares</span>
       </div>
 
       {/* Interaction Bar */}
@@ -73,11 +64,10 @@ export default function ProjectReactionBar({
         <div className="relative flex-1">
           <button
             onClick={handleToggleLike}
-            className={`w-full flex items-center justify-center gap-2 py-2 rounded-xl transition-colors ${
-              optimisticLiked
+            className={`w-full flex items-center justify-center gap-2 py-2 rounded-xl transition-colors ${optimisticLiked
                 ? "text-[var(--accent)] bg-[var(--accent)]/10"
                 : "text-[var(--foreground)]/60 hover:bg-[var(--foreground)]/5"
-            }`}
+              }`}
           >
             <Heart size={18} fill={optimisticLiked ? "currentColor" : "none"} />
             <span className="text-sm font-medium">
@@ -90,11 +80,10 @@ export default function ProjectReactionBar({
         <button
           onClick={onToggleComments}
           disabled={isLoadingComments}
-          className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl transition-colors ${
-            showComments
+          className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl transition-colors ${showComments
               ? "text-[var(--accent)] bg-[var(--accent)]/10"
               : "text-[var(--foreground)]/60 hover:bg-[var(--foreground)]/5"
-          } ${isLoadingComments ? "opacity-70 cursor-wait" : ""}`}
+            } ${isLoadingComments ? "opacity-70 cursor-wait" : ""}`}
         >
           {isLoadingComments ? (
             <Loader2 size={18} className="animate-spin" />

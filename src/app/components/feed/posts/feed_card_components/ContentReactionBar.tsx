@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import {
   Heart,
   MessageCircle,
@@ -40,6 +40,13 @@ export default function ContentReactionBar({
 
   const likeContent = useContentLikeStore((s) => s.likeContent);
   const unlikeContent = useContentLikeStore((s) => s.unlikeContent);
+
+  // Sync with prop changes when content updates from parent
+  useEffect(() => {
+    setOptimisticLiked(content.is_liked ?? false);
+    setOptimisticReaction(content.reaction_type ?? "LIKE");
+    setOptimisticLikesCount(content.likes_count);
+  }, [content.is_liked, content.reaction_type, content.likes_count]);
 
   const handleReaction = useCallback(
     async (reactionType: ReactionType) => {
@@ -92,11 +99,10 @@ export default function ContentReactionBar({
         <div className="relative flex-1">
           <button
             onClick={() => setShowReactionPicker((prev) => !prev)}
-            className={`w-full flex items-center justify-center gap-2 py-2 rounded-xl transition-colors ${
-              optimisticLiked
+            className={`w-full flex items-center justify-center gap-2 py-2 rounded-xl transition-colors ${optimisticLiked
                 ? "text-[var(--accent)] bg-[var(--accent)]/10"
                 : "text-[var(--foreground)]/60 hover:bg-[var(--foreground)]/5"
-            }`}
+              }`}
           >
             {currentReaction ? (
               <>
@@ -121,11 +127,10 @@ export default function ContentReactionBar({
                 <button
                   key={reaction.type}
                   onClick={() => handleReaction(reaction.type)}
-                  className={`p-2.5 rounded-xl transition-all hover:scale-110 ${
-                    optimisticLiked && optimisticReaction === reaction.type
+                  className={`p-2.5 rounded-xl transition-all hover:scale-110 ${optimisticLiked && optimisticReaction === reaction.type
                       ? "bg-[var(--accent)]/20 text-[var(--accent)]"
                       : "hover:bg-[var(--foreground)]/5 text-[var(--foreground)]/70"
-                  }`}
+                    }`}
                   title={reaction.label}
                 >
                   {reaction.icon}
@@ -139,11 +144,10 @@ export default function ContentReactionBar({
         <button
           onClick={onToggleComments}
           disabled={isLoadingComments}
-          className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl transition-colors ${
-            showComments
+          className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl transition-colors ${showComments
               ? "text-[var(--accent)] bg-[var(--accent)]/10"
               : "text-[var(--foreground)]/60 hover:bg-[var(--foreground)]/5"
-          } ${isLoadingComments ? "opacity-70 cursor-wait" : ""}`}
+            } ${isLoadingComments ? "opacity-70 cursor-wait" : ""}`}
         >
           {isLoadingComments ? (
             <Loader2 size={18} className="animate-spin" />

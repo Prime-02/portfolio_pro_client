@@ -22,7 +22,6 @@ function getDisplayName(user?: { display_name?: string | null; username?: string
 export default function ProjectCommentItem({ comment, projectId }: ProjectCommentItemProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(comment.content);
-  const [isTogglingLike, setIsTogglingLike] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [isReplying, setIsReplying] = useState(false);
   const [replyText, setReplyText] = useState("");
@@ -106,7 +105,10 @@ export default function ProjectCommentItem({ comment, projectId }: ProjectCommen
 
   return (
     <div className="flex gap-3">
-      <ProjectCommentAvatar user={comment.user} size="md" />
+      <ProjectCommentAvatar user={{
+        username: comment.username || "",
+        profile_picture: comment.profile_picture || "",
+      }} size="md" />
       <div className="flex-1 min-w-0">
         {isEditing ? (
           <ProjectCommentComposer
@@ -124,7 +126,10 @@ export default function ProjectCommentItem({ comment, projectId }: ProjectCommen
         ) : (
           <div className="rounded-xl px-3 py-2 bg-[var(--foreground)]/5">
             <p className="text-xs font-semibold text-[var(--foreground)]/80 mb-0.5">
-              {getDisplayName(comment.user)}
+              {getDisplayName({
+                display_name: comment.username,
+                username: comment.username,
+              })}
             </p>
             <p className="text-sm text-[var(--foreground)] whitespace-pre-wrap">
               {comment.content}

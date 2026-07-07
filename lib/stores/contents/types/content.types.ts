@@ -59,6 +59,7 @@ export interface ContentResponse extends ContentBase {
 export interface ContentWithAuthor extends ContentResponse {
   author?: UserSummary | null;
   is_liked?: boolean;
+  reaction_type: ReactionType;
   is_shared?: boolean;
 }
 

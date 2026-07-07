@@ -30,6 +30,10 @@ async function proxy(req: NextRequest, path: string[]) {
   });
 
   const resHeaders = new Headers(res.headers);
+  resHeaders.delete("content-encoding");
+  resHeaders.delete("content-length");
+  resHeaders.delete("transfer-encoding");
+
   return new NextResponse(res.body, {
     status: res.status,
     headers: resHeaders,

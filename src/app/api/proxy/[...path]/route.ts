@@ -22,12 +22,28 @@ async function proxy(req: NextRequest, path: string[]) {
       ? undefined
       : await req.arrayBuffer();
 
-  const res = await fetch(targetUrl, {
-    method: req.method,
-    headers,
-    body,
-    redirect: "follow",
-  });
+  let res: Response;
+  try {
+    res = await fetch(targetUrl, {
+      method: req.method,
+      headers,
+      body,
+      redirect: "follow",
+    });
+  } catch (err) {
+    // fetch() throws on network-level failures: backend down, wrong host,
+    // DNS failure, TLS error, connection refused, etc. This is almost
+    // always the cause of an opaque 500 with no JSON body reaching the client.
+    console.error(`[proxy] fetch failed for ${targetUrl}:`, err);
+    return NextResponse.json(
+      {
+        message: "Failed to reach backend",
+        targetUrl,
+        cause: err instanceof Error ? err.message : String(err),
+      },
+      { status: 502 },
+    );
+  }
 
   const resHeaders = new Headers(res.headers);
   resHeaders.delete("content-encoding");

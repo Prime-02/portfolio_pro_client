@@ -1,8 +1,7 @@
 "use client";
 
-import { api } from "@/lib/client/api";
 import { useRouting } from "@/lib/hooks/routing/useRouting";
-import { useUIStore } from "@/lib/stores/ui/useUIStore";
+import { useAuthStore } from "@/lib/stores/user/useAuthStore";
 import Button from "@/src/app/components/buttons/Buttons";
 import BasicHeader from "@/src/app/components/containers/divs/header/BasicHeader";
 import { Textinput } from "@/src/app/components/inputs/Textinput";
@@ -10,8 +9,7 @@ import { toast } from "@/src/app/components/toastify/Toastify";
 import React, { useState } from "react";
 
 const PasswordRetrieval = () => {
-  const { isLoading, startLoading, stopLoading } = useUIStore()
-  const { checkParams, router } = useRouting()
+  const { checkParams, router } = useRouting();
   const token = checkParams("token");
   const [email, setEmail] = useState("");
   const [resetPassword, setResetPassword] = useState({
@@ -19,14 +17,16 @@ const PasswordRetrieval = () => {
     confirmPassword: "",
   });
 
+  const { forgottenPassword, resetPassword: resetPasswordStore, isLoading: authLoading, error: authError } = useAuthStore();
+
   const requestPasswordReset = async () => {
     if (!email.includes("@")) {
       toast.error("Please enter a valid email.");
       return;
     }
-    startLoading("requesting_password_reset");
+
     try {
-      const requestRes: { message: string } = await api.post("/auth/forgotten-password", { email: email });
+      const requestRes = await forgottenPassword(email);
       if (requestRes.message) {
         toast.success(requestRes.message, {
           title: "Password Reset Requested",
@@ -34,8 +34,7 @@ const PasswordRetrieval = () => {
       }
     } catch (error) {
       console.log("Error requesting password reset:", error);
-    } finally {
-      stopLoading("requesting_password_reset");
+      toast.error(authError || "Failed to request password reset");
     }
   };
 
@@ -44,22 +43,30 @@ const PasswordRetrieval = () => {
       toast.error("Passwords do not match.");
       return;
     }
-    startLoading("resetting_password");
+
     try {
-      const resetRes: { message: string } = await api.post("/auth/reset-password", { token: token, new_password: resetPassword.password });
-      if (resetRes.message) {
-        toast.success(
-          `${resetRes.message}. Please login with your new credentials to access your account.`,
-          {
-            title: "Password Reset Successful",
-          }
-        );
-        router.push("/user-auth?auth_mode=login");
+      // Store the token in tokenStore or pass it as needed
+      // The resetPassword function in the store expects to use the current auth session
+      // You may need to modify the store to accept a token parameter
+      if (!token) {
+        toast.error("Something went wrong, please request for a new reset link", {
+          title: "Invalid or missing token"
+        })
+      } else {
+        const resetRes = await resetPasswordStore(resetPassword.password, token);
+        if (resetRes.message) {
+          toast.success(
+            `${resetRes.message}. Please login with your new credentials to access your account.`,
+            {
+              title: "Password Reset Successful",
+            }
+          );
+          router.push("/user-auth?auth_mode=login");
+        }
       }
     } catch (error) {
       console.log("Error resetting password:", error);
-    } finally {
-      stopLoading("resetting_password");
+      toast.error(authError || "Failed to reset password");
     }
   };
 
@@ -93,12 +100,12 @@ const PasswordRetrieval = () => {
           className="w-full"
           onClick={resetPasswordFunc}
           disabled={
-            isLoading("resetting_password") ||
+            authLoading ||
             !resetPassword.password ||
             !resetPassword.confirmPassword ||
             resetPassword.password !== resetPassword.confirmPassword
           }
-          loading={isLoading("resetting_password")}
+          loading={authLoading}
         />
       </div>
     );
@@ -124,8 +131,8 @@ const PasswordRetrieval = () => {
           size="sm"
           className="w-full"
           onClick={requestPasswordReset}
-          disabled={isLoading("requesting_password_reset") || !email}
-          loading={isLoading("requesting_password_reset")}
+          disabled={authLoading || !email}
+          loading={authLoading}
         />
       </div>
     );

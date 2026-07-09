@@ -123,9 +123,12 @@ export const useContentStore = create<ContentState & ContentActions>(
       set({ isLoading: true, error: null });
       try {
         const params = { ...get().activeFilters, ...filters };
-        const response = await api.get<ContentListResponse>("/content/core/", {
-          params,
-        });
+        const response = await api.get<ContentListResponse>(
+          "/content/core/me",
+          {
+            params,
+          },
+        );
         const { items, total, page, page_size, has_next } = response.data;
 
         // Append when loading page > 1 (infinite scroll); replace otherwise

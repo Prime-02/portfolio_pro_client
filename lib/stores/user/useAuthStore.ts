@@ -91,7 +91,10 @@ interface AuthState {
   signup: (payload: SignupPayload) => Promise<DBUser>;
   verifyEmail: (email: string) => Promise<{ message: string }>;
   forgottenPassword: (email: string) => Promise<{ message: string }>;
-  resetPassword: (newPassword: string) => Promise<{ message: string }>;
+  resetPassword: (
+    newPassword: string,
+    token: string,
+  ) => Promise<{ message: string }>;
   registerDevice: (
     device: Omit<UserDevicesRequest, "user_id" | "last_used">,
   ) => Promise<UserDevicesRequest>;
@@ -243,13 +246,16 @@ export const useAuthStore = create<AuthState>()(
       // Reset Password — POST /api/v1/auth/reset-password
       // Requires existing auth session (current_user dependency)
       // ------------------------------------------------------------------
-      resetPassword: async (newPassword: string) => {
+      resetPassword: async (newPassword: string, token: string) => {
         set({ isLoading: true, error: null });
 
         try {
           const response = await api.post<{ message: string }>(
             "auth/reset-password",
-            { new_password: newPassword },
+            {
+              new_password: newPassword,
+              token: token, // Add token if provided
+            },
           );
 
           set({ isLoading: false, error: null });

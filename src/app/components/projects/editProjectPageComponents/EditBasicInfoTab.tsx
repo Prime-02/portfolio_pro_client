@@ -1,14 +1,17 @@
+// components/projects/editProjectPageComponents/EditBasicInfoTab.tsx
 "use client";
 
 import { useState } from "react";
 import { Textinput } from "../../inputs/Textinput";
 import MarkdownEditor from "../../markdown/MarkdownEditor";
 import { TagInput } from "../createProjectPageComponents/TagInput";
-import { toast } from "../../toastify/Toastify";
-import type { PortfolioProjectUpdate } from "@/lib/stores/projects/types/project.types";
 import { TextArea } from "../../inputs/TextArea";
 import Dropdown from "../../inputs/DynamicDropdown";
+import AIAssistant from "../../ai/AIAsistant";
 import { projectCategory } from "@/lib/utilities/indices/projects-JSONs/projectCreate";
+import { getProjectSummaryPromptOptions, getProjectDescriptionPromptOptions } from "../projectPromptOptions";
+import type { PortfolioProjectUpdate } from "@/lib/stores/projects/types/project.types";
+import { toast } from "../../toastify/Toastify";
 
 type FormState = PortfolioProjectUpdate & { mediaSlots: Record<string, File | null> };
 
@@ -64,19 +67,70 @@ export function EditBasicInfoTab({ form, projectPlatform, set }: EditBasicInfoTa
                 includeQueryAsOption
             />
 
-            <TextArea
-                label="Summary"
-                value={form.project_summary ?? ""}
-                onChange={(v) => set("project_summary", v)}
-                maxLength={500}
-            />
+            <div className="relative">
+                <TextArea
+                    label="Summary"
+                    value={form.project_summary ?? ""}
+                    onChange={(v) => set("project_summary", v)}
+                    maxLength={500}
+                />
+                <div className="absolute bottom-3 right-3">
+                    <AIAssistant
+                        options={getProjectSummaryPromptOptions({
+                            project_name: form.project_name || "",
+                            project_category: form.project_category || "",
+                            project_summary: form.project_summary || "",
+                            project_description: form.project_description || "",
+                            project_url: form.project_url || "",
+                            start_date: form.start_date,
+                            end_date: form.end_date,
+                            client_name: form.client_name || "",
+                            budget: form.budget,
+                            stack: form.stack,
+                            tags: form.tags,
+                        }, form.project_summary ?? "")}
+                        onChange={(v) => set("project_summary", v)}
+                        onEmptyClick={() => {
+                            toast.info(
+                                "Please fill in the project name and category first to unlock AI-powered suggestions for your summary.",
+                                { title: "AI Assistant Unavailable" }
+                            );
+                        }}
+                    />
+                </div>
+            </div>
 
-
-            <MarkdownEditor
-                label="Description"
-                value={form.project_description ?? ""}
-                onChange={(v) => set("project_description", v)}
-            />
+            <div className="relative">
+                <MarkdownEditor
+                    label="Description"
+                    value={form.project_description ?? ""}
+                    onChange={(v) => set("project_description", v)}
+                />
+                <div className="absolute bottom-3 right-3 z-10">
+                    <AIAssistant
+                        options={getProjectDescriptionPromptOptions({
+                            project_name: form.project_name || "",
+                            project_category: form.project_category || "",
+                            project_summary: form.project_summary || "",
+                            project_description: form.project_description || "",
+                            project_url: form.project_url || "",
+                            start_date: form.start_date,
+                            end_date: form.end_date,
+                            client_name: form.client_name || "",
+                            budget: form.budget,
+                            stack: form.stack,
+                            tags: form.tags,
+                        }, form.project_description ?? "")}
+                        onChange={(v) => set("project_description", v)}
+                        onEmptyClick={() => {
+                            toast.info(
+                                "Please provide a project name and category to enable AI-powered description suggestions.",
+                                { title: "AI Assistant Unavailable" }
+                            );
+                        }}
+                    />
+                </div>
+            </div>
 
             <Textinput
                 label="Project URL"

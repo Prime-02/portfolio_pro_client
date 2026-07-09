@@ -3,7 +3,6 @@
 
 import { useState } from "react";
 import { useExperiencesStore } from "@/lib/stores/experiences/useExperience";
-
 import { DialogHeader, DialogTitle, DialogDescription } from "../ui/Dialog";
 import { Textinput } from "../inputs/Textinput";
 import { TextArea } from "../inputs/TextArea";
@@ -11,6 +10,8 @@ import Button from "../buttons/Buttons";
 import Modal from "../containers/modals/Modal";
 import { FileInput } from "../inputs/FileInput";
 import { Plus, Award, Briefcase } from "lucide-react";
+import AIAssistant from "../ai/AIAsistant";
+import { getExperienceAchievementsPromptOptions, getExperienceDescriptionPromptOptions } from "./experiencePromptOption";
 import {
     EmploymentType,
     LocationType,
@@ -18,6 +19,7 @@ import {
 } from "@/lib/stores/experiences/useExperience";
 import { useSkills } from "@/lib/stores/skills/useSkills";
 import Dropdown, { DropdownOption } from "../inputs/DynamicDropdown";
+import { toast } from "../toastify/Toastify";
 
 interface AddExperienceDialogProps {
     open: boolean;
@@ -67,12 +69,12 @@ const INITIAL_FORM = {
 
 export function AddExperienceDialog({ open, onOpenChange }: AddExperienceDialogProps) {
     const { createExperience, creating } = useExperiencesStore();
-    const { skills, isLoading: loadingSkills } = useSkills()
+    const { skills, isLoading: loadingSkills } = useSkills();
 
     const skillsOptions: DropdownOption[] = skills.map(skill => ({
         id: skill.skill_name,
         code: skill.skill_name.toUpperCase()
-    }))
+    }));
 
     const [form, setForm] = useState(INITIAL_FORM);
     const [companyLogo, setCompanyLogo] = useState<File | null>(null);
@@ -210,13 +212,14 @@ export function AddExperienceDialog({ open, onOpenChange }: AddExperienceDialogP
                         onChange={(v) => set("start_date", v)}
                         required
                     />
-                    <Textinput
-                        type="date"
-                        label="End Date"
-                        disabled={form.is_current}
-                        value={form.end_date}
-                        onChange={(v) => set("end_date", v)}
-                    />
+                    {!form.is_current && (
+                        <Textinput
+                            type="date"
+                            label="End Date"
+                            value={form.end_date}
+                            onChange={(v) => set("end_date", v)}
+                        />
+                    )}
                 </div>
 
                 {/* Currently working toggle */}
@@ -239,25 +242,7 @@ export function AddExperienceDialog({ open, onOpenChange }: AddExperienceDialogP
                     </button>
                 </div>
 
-                <TextArea
-                    label="Description (optional)"
-                    desc="What did you do in this role?"
-                    value={form.description}
-                    onChange={(v) => set("description", v)}
-                    maxLength={Infinity}
-                    showLimit={false}
-                />
-
-                <TextArea
-                    label="Achievements (optional)"
-                    desc="One per line — e.g., Increased performance by 40%"
-                    value={form.achievements}
-                    onChange={(v) => set("achievements", v)}
-                    maxLength={Infinity}
-                    showLimit={false}
-                />
-
-                {/* Updated Skills Dropdown with Multi-Select */}
+                {/* Skills Dropdown with Multi-Select */}
                 <Dropdown
                     type="datalist"
                     multiple={true}
@@ -294,6 +279,77 @@ export function AddExperienceDialog({ open, onOpenChange }: AddExperienceDialogP
                     onChange={(v) => set("company_website", v)}
                 />
 
+                {/* Description with AI Assistant */}
+                <div className="relative">
+                    <TextArea
+                        label="Description (optional)"
+                        desc="What did you do in this role?"
+                        value={form.description}
+                        onChange={(v) => set("description", v)}
+                        maxLength={Infinity}
+                        showLimit={false}
+                    />
+                    <div className="absolute bottom-3 right-3">
+                        <AIAssistant
+                            options={getExperienceDescriptionPromptOptions({
+                                job_title: form.job_title,
+                                company_name: form.company_name,
+                                employment_type: form.employment_type,
+                                location_type: form.location_type,
+                                location: form.location,
+                                start_date: form.start_date,
+                                end_date: form.end_date,
+                                is_current: form.is_current,
+                                industry: form.industry,
+                                company_size: form.company_size,
+                                skills_used: form.skills_used,
+                            }, form.description)}
+                            onChange={(v) => set("description", v)}
+                            onEmptyClick={() => {
+                                toast.info("Job title, company name and start date are required to generate a response", {
+                                    title: "Counld not generate a response"
+                                })
+                            }}
+                        />
+                    </div>
+                </div>
+
+                {/* Achievements with AI Assistant */}
+                <div className="relative">
+                    <TextArea
+                        label="Achievements (optional)"
+                        desc="One per line — e.g., Increased performance by 40%"
+                        value={form.achievements}
+                        onChange={(v) => set("achievements", v)}
+                        maxLength={Infinity}
+                        showLimit={false}
+                    />
+                    <div className="absolute bottom-3 right-3">
+                        <AIAssistant
+                            options={getExperienceAchievementsPromptOptions({
+                                job_title: form.job_title,
+                                company_name: form.company_name,
+                                employment_type: form.employment_type,
+                                location_type: form.location_type,
+                                location: form.location,
+                                start_date: form.start_date,
+                                end_date: form.end_date,
+                                is_current: form.is_current,
+                                industry: form.industry,
+                                company_size: form.company_size,
+                                skills_used: form.skills_used,
+                                description: form.description,
+                            }, form.achievements)}
+                            onChange={(v) => set("achievements", v)}
+                            onEmptyClick={() => {
+                                toast.info("Job title, company name and start date are required to generate a response", {
+                                    title: "Counld not generate a response"
+                                })
+                            }}
+                        />
+                    </div>
+                </div>
+
                 {/* Featured toggle */}
                 <div className="flex items-center justify-between px-3 py-2.5 rounded-xl border border-[var(--foreground)]/10">
                     <div className="flex items-center gap-2">
@@ -314,7 +370,7 @@ export function AddExperienceDialog({ open, onOpenChange }: AddExperienceDialogP
                     </button>
                 </div>
 
-                {/* Company logo */}
+                {/* Company logo - Last before buttons */}
                 <div>
                     <label className="block text-sm font-medium mb-2">
                         Company Logo (optional)

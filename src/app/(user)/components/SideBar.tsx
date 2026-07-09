@@ -34,19 +34,17 @@ const SideBar = ({
   const [isCollapsed, setIsCollapsed] = useState(true);
   const {
     setThemeVariant,
-    theme,
     themeVariant,
-    accentColor,
   } = useTheme();
 
   const toggleCollapse = () => {
     setIsCollapsed(!isCollapsed);
   };
+
   const handleVariantChange = useCallback((variant: "light" | "dark" | "system") => {
     if (variant === themeVariant) return;
     setThemeVariant(variant);
   }, [themeVariant, setThemeVariant]);
-
 
   return (
     <div
@@ -54,7 +52,12 @@ const SideBar = ({
         }`}
     >
       {/* Collapse Button - Fixed at top */}
-      <SidebarToggle className="rotate-180 border-none" onToggle={toggleCollapse} showKeyboardHints={false} isCollapsed={isCollapsed} />
+      <SidebarToggle
+        className="rotate-180 border-none"
+        onToggle={toggleCollapse}
+        showKeyboardHints={false}
+        isCollapsed={isCollapsed}
+      />
 
       <div className="p-4 overflow-y-auto flex-1">
         <div className="mb-8">
@@ -73,12 +76,12 @@ const SideBar = ({
                 style={{
                   backgroundColor:
                     themeVariant === variant
-                      ? `${accentColor.color}20`
+                      ? "var(--accent-transparent)"
                       : "transparent",
                   color:
                     themeVariant === variant
-                      ? accentColor.color
-                      : theme.foreground,
+                      ? "var(--accent)"
+                      : "var(--foreground)",
                   opacity: themeVariant === variant ? 1 : 0.7,
                 }}
               >
@@ -103,19 +106,19 @@ const SideBar = ({
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`w-full text-left  ${isCollapsed ? "h-10" : "py-2 px-3"} rounded-lg transition-colors flex items-center gap-3 ${activeTab === tab.key
+                className={`w-full text-left ${isCollapsed ? "h-10" : "py-2 px-3"} rounded-lg transition-colors flex items-center gap-3 ${activeTab === tab.key
                   ? "text-current font-medium"
                   : "opacity-60 hover:opacity-80"
                   } ${isCollapsed ? "justify-center" : ""}`}
                 style={{
                   backgroundColor:
                     activeTab === tab.key
-                      ? `${accentColor.color}20`
+                      ? "var(--accent-transparent)"
                       : "transparent",
                   color:
                     activeTab === tab.key
-                      ? accentColor.color
-                      : theme.foreground,
+                      ? "var(--accent)"
+                      : "var(--foreground)",
                 }}
               >
                 <tab.icon size={20} />

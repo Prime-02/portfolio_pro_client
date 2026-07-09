@@ -14,6 +14,9 @@ import Modal from "../containers/modals/Modal";
 import { FileInput } from "../inputs/FileInput";
 import Dropdown, { DropdownOption } from "../inputs/DynamicDropdown";
 import { Save, Briefcase, Award } from "lucide-react";
+import AIAssistant from "../ai/AIAsistant";
+import { getExperienceAchievementsPromptOptions, getExperienceDescriptionPromptOptions } from "./experiencePromptOption";
+import { toast } from "../toastify/Toastify";
 
 interface EditExperienceDialogProps {
     experience: Experience;
@@ -238,19 +241,6 @@ export function EditExperienceDialog({ experience, open, onOpenChange }: EditExp
                     </button>
                 </div>
 
-                <TextArea
-                    label="Description (optional)"
-                    value={form.description}
-                    onChange={(v) => set("description", v)}
-                />
-
-                <TextArea
-                    label="Achievements (optional)"
-                    desc="One per line"
-                    value={form.achievements}
-                    onChange={(v) => set("achievements", v)}
-                />
-
                 {/* Updated Skills Dropdown with Multi-Select */}
                 <Dropdown
                     type="datalist"
@@ -286,6 +276,71 @@ export function EditExperienceDialog({ experience, open, onOpenChange }: EditExp
                     onChange={(v) => set("company_website", v)}
                 />
 
+                {/* Description and Achievements */}
+                <div className="relative">
+                    <TextArea
+                        label="Description (optional)"
+                        value={form.description}
+                        onChange={(v) => set("description", v)}
+                    />
+                    <div className="absolute bottom-3 right-3">
+                        <AIAssistant
+                            options={getExperienceDescriptionPromptOptions({
+                                job_title: form.job_title,
+                                company_name: form.company_name,
+                                employment_type: form.employment_type,
+                                location_type: form.location_type,
+                                location: form.location,
+                                start_date: form.start_date,
+                                end_date: form.end_date,
+                                is_current: form.is_current,
+                                industry: form.industry,
+                                company_size: form.company_size,
+                                skills_used: form.skills_used,
+                            }, form.description)}
+                            onChange={(v) => set("description", v)}
+                            onEmptyClick={() => {
+                                toast.info("Job title, company name and start date are required to generate a response", {
+                                    title: "Counld not generate a response"
+                                })
+                            }}
+                        />
+                    </div>
+                </div>
+
+                <div className="relative">
+                    <TextArea
+                        label="Achievements (optional)"
+                        desc="One per line"
+                        value={form.achievements}
+                        onChange={(v) => set("achievements", v)}
+                    />
+                    <div className="absolute bottom-3 right-3">
+                        <AIAssistant
+                            options={getExperienceAchievementsPromptOptions({
+                                job_title: form.job_title,
+                                company_name: form.company_name,
+                                employment_type: form.employment_type,
+                                location_type: form.location_type,
+                                location: form.location,
+                                start_date: form.start_date,
+                                end_date: form.end_date,
+                                is_current: form.is_current,
+                                industry: form.industry,
+                                company_size: form.company_size,
+                                skills_used: form.skills_used,
+                                description: form.description,
+                            }, form.achievements)}
+                            onChange={(v) => set("achievements", v)}
+                            onEmptyClick={() => {
+                                toast.info("Job title, company name and start date are required to generate a response", {
+                                    title: "Counld not generate a response"
+                                })
+                            }}
+                        />
+                    </div>
+                </div>
+
                 {/* Featured toggle */}
                 <div className="flex items-center justify-between px-3 py-2.5 rounded-xl border border-[var(--foreground)]/10">
                     <div className="flex items-center gap-2">
@@ -306,7 +361,7 @@ export function EditExperienceDialog({ experience, open, onOpenChange }: EditExp
                     </button>
                 </div>
 
-                {/* Company logo */}
+                {/* Company logo - Last before buttons */}
                 <div>
                     <label className="block text-sm font-medium mb-2">
                         Company Logo (optional)

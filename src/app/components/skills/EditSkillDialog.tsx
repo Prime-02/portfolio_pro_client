@@ -11,6 +11,10 @@ import { DialogHeader, DialogTitle, DialogDescription } from "../ui/Dialog";
 import { FileInput } from "../inputs/FileInput";
 import { difficultyLevels } from "@/lib/utilities/indices/DropDownItems";
 import Dropdown from "../inputs/DynamicDropdown";
+import { TextArea } from "../inputs/TextArea";
+import AIAssistant from "../ai/AIAsistant";
+import { getSkillDescriptionOptions } from "./skillPromptOptions";
+import { toast } from "../toastify/Toastify";
 
 interface EditSkillDialogProps {
     skill: ProfessionalSkill;
@@ -176,11 +180,31 @@ export function EditSkillDialog({ skill, open, onOpenChange }: EditSkillDialogPr
                     onChange={(e) => setDifficultyLevel(e)}
                 />
 
-                <Textinput
-                    label="Description (optional)"
-                    value={description}
-                    onChange={(e) => setDescription(e)}
-                />
+                <div className="relative">
+                    <TextArea
+                        value={description}
+                        onChange={(e) => setDescription(e)}
+                        placeholder="Describe your experience with this skill..."
+                        label="Description (optional)"
+                    />
+                    <div className="absolute right-0 bottom-0">
+                        <AIAssistant
+                            options={getSkillDescriptionOptions(
+                                description,
+                                skillName,
+                                proficiencyLevel,
+                                category,
+                                subcategory,
+                                difficultyLevel,
+                                isMajor
+                            )}
+                            onChange={(e) => setDescription(e)}
+                            onEmptyClick={() => {
+                                toast.warning("Please enter a skill name first");
+                            }}
+                        />
+                    </div>
+                </div>
 
                 <div className="flex items-center justify-between px-3 py-2.5 rounded-xl 
                                 border border-[var(--foreground)]/10">

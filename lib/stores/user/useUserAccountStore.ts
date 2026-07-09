@@ -19,6 +19,8 @@ export interface UserResponse {
   is_active: boolean;
   is_superuser: boolean;
   role: string;
+  subscription_tier: string | null;
+  subscription_expires: string | null;
 }
 
 export interface AdminUserListResponse {

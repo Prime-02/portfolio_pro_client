@@ -2,9 +2,9 @@
 
 import { create } from "zustand";
 import { api } from "@/lib/client/api";
-import { UserResponse } from "@/lib/stores/user/useUserSettings";
 import { PortfolioThemeData } from "@/portfolio-builder/hooks/usePortfolioTheme";
 import { useCloudinaryCore } from "@/lib/stores/cloudinary";
+import { UserResponse } from "@/lib/stores/user/useUserAccountStore";
 
 // ---------------------------------------------------------------------------
 // Types — derived from schemas.py
@@ -45,7 +45,6 @@ export interface PortfolioResponse {
   creator: UserResponse | null; // UserResponse | null
   cover_image_thumbnail: string | null;
 }
-
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------

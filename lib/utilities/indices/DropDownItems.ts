@@ -1,9 +1,5 @@
 
-export const titles = [
-  {
-    code: "Custom",
-    id: "custom",
-  },
+export const suggestionTitles = [
   {
     code: "Bug",
     id: "bug",

@@ -10,6 +10,10 @@ import Button from "../buttons/Buttons";
 import Modal from "../containers/modals/Modal";
 import { DialogHeader, DialogTitle, DialogDescription } from "../ui/Dialog";
 import { urlTypes } from "@/lib/utilities/indices/DropDownItems";
+import { TextArea } from "../inputs/TextArea";
+import AIAssistant from "../ai/AIAsistant";
+import { getHeadlineOptions } from "./socialLinksPromptOptions";
+import { toast } from "../toastify/Toastify";
 
 interface EditSocialLinkDialogProps {
     link: SocialLink;
@@ -20,8 +24,8 @@ interface EditSocialLinkDialogProps {
 export function EditSocialLinkDialog({ link, open, onOpenChange }: EditSocialLinkDialogProps) {
     const { updateSocialLink, isUpdating } = useSocialLinks();
 
-    const [profileUrl, setProfileUrl] = useState(link.profile_url);
     const [headline, setHeadline] = useState(link.profile_headline || "");
+    const [profileUrl, setProfileUrl] = useState(link.profile_url);
     const [urlType, setUrlType] = useState(link.url_type || "");
 
     useEffect(() => {
@@ -67,7 +71,6 @@ export function EditSocialLinkDialog({ link, open, onOpenChange }: EditSocialLin
             <form onSubmit={handleSubmit} className="space-y-4 mt-4">
                 <div>
                     <Textinput
-                        type="url"
                         value={profileUrl}
                         onChange={(e) => setProfileUrl(e)}
                         required
@@ -75,13 +78,22 @@ export function EditSocialLinkDialog({ link, open, onOpenChange }: EditSocialLin
                     />
                 </div>
 
-                <div>
-                    <Textinput
+                <div className="relative">
+                    <TextArea
                         value={headline}
                         onChange={(e) => setHeadline(e)}
                         placeholder="Optional description..."
                         label="Bio / Headline"
                     />
+                    <div className="absolute right-0  bottom-0">
+                        <AIAssistant
+                            options={getHeadlineOptions(headline, profileUrl)}
+                            onChange={(e) => setHeadline(e)}
+                            onEmptyClick={()=> {
+                                toast.warning("Please enter a valid ")
+                            }}
+                        />
+                    </div>
                 </div>
 
                 <div>

@@ -5,13 +5,13 @@ import { Badge } from "@/src/app/components/profile/Badge";
 import { StatCard } from "./StatCard";
 import type {
     UserProfileRequest,
-    UserResponse,
     UserUpdateRequest,
 } from "@/lib/stores/user/useUserSettings";
 import MarkdownRenderer from "../../markdown/MarkdownRenderer";
 import { getImageSrc, handleShareProfile } from "@/lib/utilities/syncFunctions/syncs";
 import Button from "../../buttons/Buttons";
 import { Edit, Share2Icon } from "lucide-react";
+import { UserResponse } from "@/lib/stores/user/useUserAccountStore";
 
 interface ProfileHeroCardProps {
     profile: UserProfileRequest | null;

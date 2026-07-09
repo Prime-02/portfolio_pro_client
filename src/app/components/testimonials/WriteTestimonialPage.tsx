@@ -14,6 +14,8 @@ import { TextArea } from "../inputs/TextArea";
 import { AvatarUpload } from "../profile/AvatarUpload";
 import StarRating from "../inputs/StarRating";
 import { PageHeader } from "../ui/PageHeader";
+import AIAssistant from "../ai/AIAsistant";
+import { getTestimonialPromptOptions } from "./testimonialPromptOptions";
 
 export default function WriteTestimonialPage() {
     const router = useRouter();
@@ -163,20 +165,28 @@ export default function WriteTestimonialPage() {
                 </div>
 
                 {/* Content */}
-                <div>
-                    <label className="block text-sm font-medium mb-2">
-                        Your Testimonial *
-                    </label>
+                <div className="relative">
                     <TextArea
+                        label="Your Testimonial *"
                         value={content}
                         onChange={(e) => setContent(e)}
                         desc="Share your experience working with this person..."
                         required
-                        className="w-full px-4 py-3 rounded-xl border border-[var(--foreground)]/10 
-                                 bg-transparent focus:outline-none focus:border-[var(--accent)] 
-                                 transition-colors placeholer:text-[var(--foreground)]/40
-                                 resize-none text-sm leading-relaxed"
                     />
+                    <div className="absolute bottom-0 right-0">
+                        <AIAssistant
+                            options={getTestimonialPromptOptions({
+                                currentText: content,
+                                authorName,
+                                authorTitle,
+                                authorCompany,
+                                authorRelationship,
+                                rating,
+                                recipientUsername: username,
+                            })}
+                            onChange={(e) => setContent(e)}
+                        />
+                    </div>
                 </div>
 
                 {/* Actions */}

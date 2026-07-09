@@ -38,12 +38,6 @@ export function EducationCard({ education, onEdit, onDelete, isOwner = false }: 
                        bg-[var(--background)] hover:border-[var(--foreground)]/20 
                        transition-all duration-300 overflow-hidden"
         >
-            {/* Color accent bar */}
-            <div
-                className="absolute top-0 left-0 right-0 h-1"
-                style={{ backgroundColor: accentColor }}
-            />
-
             <div className="p-5">
                 {/* Header */}
                 <div className="flex items-start justify-between mb-4">

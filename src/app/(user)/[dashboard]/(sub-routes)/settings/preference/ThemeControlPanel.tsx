@@ -17,46 +17,57 @@ const ThemeControlPanel = ({ component }: ThemeControlPanelProp) => {
   const [activeTab, setActiveTab] = useState<string>("themes");
   const { theme, themeVariant, accentColor } = useTheme();
 
-  const loaderRef = useRef<HTMLDivElement>(null);
+  // const loaderRef = useRef<HTMLDivElement>(null);
 
   const currentTab = tabConfig.find((tab) => tab.key === activeTab);
 
   return (
-    <div className={`min-h-screen ${!component && "border"} rounded-3xl relative  border-[var(--accent)]/20 flex transition-colors duration-300`}>
+    <div className={`min-h-screen border-r max-w-6xl mx-auto relative  border-[var(--accent)]/20 flex transition-colors duration-300`}>
       {/* Main Content */}
       <div className="flex-1 p-6 mx-auto w-full overflow-auto">
         {/* Tab Header */}
-        <div className="mb-6">
-          <div className="flex justify-between items-center gap-3 mb-2">
-            <div className="flex items-center justify-between gap-x-2">
-              {currentTab && <currentTab.icon className="w-5 h-5" />}
-              <h2 className="text-2xl font-bold">
+        <div className="mb-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+            <div className="flex items-center gap-3">
+              {currentTab && (
+                <div
+                  className="flex items-center justify-center w-10 h-10 bg-[var(--background)]/10 rounded-lg"
+                >
+                  <currentTab.icon className="w-5 h-5 text-[var(--foreground)]" />
+                </div>
+              )}
+              <h2 className="text-2xl font-bold tracking-tight">
                 {currentTab?.label}
                 {activeTab === "pro" && (
-                  <span className="ml-2 text-yellow-600">
-                    <Zap size={20} />
+                  <span className="inline-flex items-center justify-center ml-2 px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800">
+                    <Zap size={14} className="mr-1" />
+                    <span className="text-xs font-semibold">PRO</span>
                   </span>
                 )}
               </h2>
             </div>
-            <div className="flex items-center gap-x-2 sticky top-0">
+
+            <div className="flex items-center gap-3 flex-shrink-0">
               {component}
             </div>
           </div>
+
           <div
-            className="flex items-start gap-3 p-3 rounded-lg bg-opacity-10"
-            style={{ backgroundColor: `${theme.foreground}05` }}
+            className="flex items-start gap-3 p-4 rounded-xl border bg-[var(--background)]/5 border-[var(--accent)]/10 "
           >
-            <Info className="w-4 h-4 mt-0.5 opacity-60" />
-            <p className="text-sm opacity-80">{currentTab?.helpText}</p>
+            <div
+              className="flex-shrink-0 p-1.5 rounded-lg bg-[var(--background)]/10"
+            >
+              <Info className="w-4 h-4 opacity-70" />
+            </div>
+            <p className="text-sm leading-relaxed opacity-80">{currentTab?.helpText}</p>
           </div>
         </div>
-
         {/* Tab Content */}
         <div className="space-y-6 p-4 min-w-md rounded-xl shadow-xl">
           {activeTab === "themes" && <Themes />}
 
-          {activeTab === "loaders" && <Loaders loaderRef={loaderRef} />}
+          {/* {activeTab === "loaders" && <Loaders loaderRef={loaderRef} />} */}
 
           {activeTab === "pro" && <Pro />}
         </div>

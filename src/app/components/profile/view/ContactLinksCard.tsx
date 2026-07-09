@@ -3,9 +3,9 @@
 import { SectionHeader } from "@/src/app/components/profile/SectionHeader";
 import type {
     UserProfileRequest,
-    UserResponse,
     UserUpdateRequest,
 } from "@/lib/stores/user/useUserSettings";
+import { UserResponse } from "@/lib/stores/user/useUserAccountStore";
 
 interface ContactLinksCardProps {
     profile: UserProfileRequest | null;

@@ -10,6 +10,10 @@ import { socialMediaPlatforms } from "@/lib/utilities/indices/DropDownItems";
 import { Plus, Search, ChevronDown, ChevronUp, CheckCircle2 } from "lucide-react";
 import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 import { useRouting } from "@/lib/hooks/routing/useRouting";
+import AIAssistant from "../ai/AIAsistant";
+import { TextArea } from "../inputs/TextArea";
+import { getHeadlineOptions } from "./socialLinksPromptOptions";
+import { toast } from "../toastify/Toastify";
 
 interface AddSocialLinkDialogProps {
     open: boolean;
@@ -325,14 +329,24 @@ export function AddSocialLinkDialog({ open, onOpenChange }: AddSocialLinkDialogP
                 )}
 
                 {/* Headline / Bio */}
-                <div>
-                    <Textinput
-                        label="Bio or Headline (optional)"
-                        placeholder="A short description..."
+                <div className="relative">
+                    <TextArea
                         value={headline}
                         onChange={(e) => setHeadline(e)}
+                        placeholder="Optional description..."
+                        label="Bio / Headline"
                     />
+                    <div className="absolute right-0  bottom-0">
+                        <AIAssistant
+                            options={getHeadlineOptions(headline, profileUrl)}
+                            onChange={(e) => setHeadline(e)}
+                            onEmptyClick={() => {
+                                toast.warning("Please enter a valid ")
+                            }}
+                        />
+                    </div>
                 </div>
+
 
                 {/* Actions */}
                 <div className="flex gap-3 justify-end pt-2">

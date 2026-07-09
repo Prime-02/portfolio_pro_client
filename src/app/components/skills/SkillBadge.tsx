@@ -86,8 +86,8 @@ export function SkillBadge({ skill, onEdit, onDelete, index, isOwner = false }: 
             onMouseLeave={() => setIsHovered(false)}
             className={`group relative rounded-2xl border transition-all duration-300 overflow-hidden
                         ${isMajor
-                    ? "border-[var(--accent)]/30 bg-[var(--accent)]/5"
-                    : "border-[var(--foreground)]/10 bg-[var(--background)]"
+                    ? "border-[var(--accent)]/15 bg-[var(--accent)]/2"
+                    : "border-[var(--foreground)]/5 bg-[var(--background)]"
                 }
                         hover:border-[var(--accent)]/40 hover:shadow-lg hover:shadow-[var(--accent)]/5`}
         >

@@ -19,11 +19,15 @@ interface FeedCardProps {
   content: ContentWithAuthor;
 }
 
+// Character limit for post body truncation
+const POST_BODY_CHAR_LIMIT = 300;
+
 export default function FeedCard({ content }: FeedCardProps) {
   const { userInfo } = useUserSettings()
   const [showComments, setShowComments] = useState(false);
   const [isLoadingComments, setIsLoadingComments] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
+  const [isPostExpanded, setIsPostExpanded] = useState(false);
 
   const fetchComments = useContentCommentStore((s) => s.fetchComments);
 
@@ -47,6 +51,13 @@ export default function FeedCard({ content }: FeedCardProps) {
   const isBlog = content.content_type === "BLOG";
   const isPost = content.content_type === "POST";
   const isOwn = content.author?.id === userInfo?.id
+
+  // Determine if post body needs truncation
+  const postBody = content.body || "";
+  const isPostLong = isPost && postBody.length > POST_BODY_CHAR_LIMIT;
+  const displayBody = isPost && !isPostExpanded && isPostLong
+    ? postBody.slice(0, POST_BODY_CHAR_LIMIT) + "..."
+    : postBody;
 
   return (
     <>
@@ -104,9 +115,20 @@ export default function FeedCard({ content }: FeedCardProps) {
         {/* Content Body */}
         <div className="mb-4">
           {isPost && content.body && (
-            <p className="text-[var(--foreground)] whitespace-pre-wrap leading-relaxed">
-              {content.body}
-            </p>
+            <div>
+              <p className="text-[var(--foreground)] whitespace-pre-wrap leading-relaxed">
+                {displayBody}
+              </p>
+              {isPostLong && (
+                <button
+                  onClick={() => setIsPostExpanded(!isPostExpanded)}
+                  className="inline-flex items-center gap-1 mt-1 text-sm font-medium text-[var(--accent)] hover:underline"
+                >
+                  {isPostExpanded ? "Show Less" : "Read More"}
+                  <Sparkles size={14} />
+                </button>
+              )}
+            </div>
           )}
 
           {isBlog && (

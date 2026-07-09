@@ -15,26 +15,12 @@ import {
   ThemeVariant,
 } from "@/src/app/components/types and interfaces/loaderTypes";
 import { themePresets } from "@/lib/utilities/indices/Themes";
+import { UserResponse } from "./useUserAccountStore";
+import { extend } from "@react-three/fiber";
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
-
-export interface UserResponse {
-  id: string;
-  username: string | null;
-  email: string;
-  firstname: string | null;
-  middlename: string | null;
-  lastname: string | null;
-  profile_picture: string | null;
-  profile_picture_id: string | null;
-  phone_number: string | null;
-  is_active: boolean;
-  is_superuser: boolean;
-  role: string;
-}
-
 
 export interface UserSettingsBase {
   language: string | null;
@@ -66,18 +52,8 @@ export interface UserProfileRequest {
   profile_picture_id: string | null;
 }
 
-export interface UserUpdateRequest {
-  id: string | null;
-  username: string | null;
-  firstname: string | null;
-  middlename: string | null;
-  lastname: string | null;
-  email: string | null;
-  profile_picture: string | null;
-  profile_picture_id: string | null;
-  phone_number: string | null;
-  is_active: boolean | null;
-  role: string | null;
+export interface UserUpdateRequest extends UserResponse {
+  updatedAt?: string | null
 }
 
 export interface UpdateUserInfoPayload {

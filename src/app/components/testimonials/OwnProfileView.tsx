@@ -109,12 +109,6 @@ export function OwnProfileView({
                             icon={<Share2 className="w-4 h-4" />}
                             variant="outline"
                         />
-                        <Button
-                            onClick={onNavigateToWrite}
-                            className="self-start sm:self-auto"
-                            text="Write Testimonial"
-                            icon={<PenLine className="w-4 h-4" />}
-                        />
                     </div>
                 ) : undefined}
             />

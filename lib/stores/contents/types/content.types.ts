@@ -1,7 +1,5 @@
 // ==================== Enums ====================
 
-import { UserResponse } from "../../user/useUserSettings";
-
 export type ContentType = "" | "POST" | "BLOG" | "ARTICLE" | "POLL";
 
 export type ContentStatus =

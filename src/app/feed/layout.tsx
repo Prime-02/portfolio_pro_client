@@ -6,10 +6,13 @@ const PublicLayout = ({
 }: Readonly<{
     children: React.ReactNode;
 }>) => {
+
     return (
         <div className='max-h-screen h-screen overflow-auto custom-scrollbar'>
             <NavBar />
-            {children}
+            <div className={`relative w-full`}>
+                {children}
+            </div>
         </div>
     )
 }

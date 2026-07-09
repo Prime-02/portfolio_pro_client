@@ -120,10 +120,22 @@ export default function MarkdownEditor({
     );
 
     // Keep the ref in sync if `value` is changed from outside the editor
-    // (e.g. loading a saved draft) without that itself triggering a
-    // spurious Cloudinary diff.
+    // (e.g. loading a saved draft, AI-generated content) without that
+    // itself triggering a spurious Cloudinary diff.
+    //
+    // IMPORTANT: MDXEditor only consumes the `markdown` prop ONCE, on
+    // mount — it does NOT re-render its content when the prop changes on
+    // subsequent renders, since it manages its own state internally via
+    // ProseMirror. So any external update to `value` (AI Assistant output,
+    // loading a draft, an undo from a parent store, etc.) needs to be
+    // pushed into the editor imperatively via the ref's setMarkdown(),
+    // or the visible editor will silently ignore it even though React
+    // state (and this `value` prop) updates correctly.
     useEffect(() => {
-        prevValueRef.current = value;
+        if (value !== prevValueRef.current) {
+            editorRef.current?.setMarkdown(value);
+            prevValueRef.current = value;
+        }
     }, [value]);
 
     // ------------------------------------------------------------------

@@ -1,3 +1,4 @@
+import { useShallow } from "zustand/react/shallow";
 import { create } from "zustand";
 import { api } from "@/lib/client/api";
 import { UserResponse } from "../user/useUserAccountStore";
@@ -19,7 +20,7 @@ export interface SuggestionCommentResponse {
   content: string;
   parent_comment_id: string | null;
   user: UserResponse;
-created_at: string;
+  created_at: string;
   replies: SuggestionCommentResponse[];
 }
 
@@ -40,6 +41,9 @@ export interface SuggestionResponse {
   created_at: string;
   updated_at: string | null;
   user: UserResponse;
+  is_voted: boolean;
+  vote_count: number;
+  comment_count: number;
   comments: SuggestionCommentResponse[];
   votes: SuggestionVoteResponse[];
 }
@@ -86,6 +90,17 @@ export interface SuggestionsOverview {
   total_votes: number;
 }
 
+// ✅ Pagination response type
+export interface PaginatedResponse<T> {
+  items: T[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+  has_next: boolean;
+  has_previous: boolean;
+}
+
 export interface ListParams {
   skip?: number;
   limit?: number;
@@ -126,8 +141,6 @@ type ActionKey =
   | "updateSuggestionStatus"
   | "searchSuggestions";
 
-// Per-item action keys (e.g. deleting suggestion X) are namespaced as
-// `${action}:${id}` so multiple cards can show independent loading states.
 type LoadingMap = Record<string, boolean>;
 type ErrorMap = Record<string, string | null>;
 
@@ -151,22 +164,71 @@ function extractErrorMessage(err: unknown): string {
 interface SuggestionsState {
   // Data
   suggestions: SuggestionResponse[];
-  suggestionsTotal: number | null;
+  suggestionsTotal: number;
+  suggestionsPage: number;
+  suggestionsTotalPages: number;
+  suggestionsHasNext: boolean;
+  suggestionsHasPrevious: boolean;
+
   currentSuggestion: SuggestionResponse | null;
+
   mySuggestions: SuggestionResponse[];
+  mySuggestionsTotal: number;
+  mySuggestionsPage: number;
+  mySuggestionsTotalPages: number;
+  mySuggestionsHasNext: boolean;
+  mySuggestionsHasPrevious: boolean;
+
   mySummary: UserSuggestionSummary | null;
-  userSuggestions: Record<string, SuggestionResponse[]>; // keyed by user_id
-  userSummaries: Record<string, UserSuggestionSummary>; // keyed by user_id
+
+  userSuggestions: Record<string, SuggestionResponse[]>;
+  userSuggestionsMeta: Record<
+    string,
+    {
+      total: number;
+      page: number;
+      total_pages: number;
+      has_next: boolean;
+      has_previous: boolean;
+    }
+  >;
+
+  userSummaries: Record<string, UserSuggestionSummary>;
   overview: SuggestionsOverview | null;
   searchResults: SuggestionResponse[];
+  searchResultsMeta: {
+    total: number;
+    page: number;
+    total_pages: number;
+    has_next: boolean;
+    has_previous: boolean;
+  } | null;
 
   commentsBySuggestion: Record<string, SuggestionCommentResponse[]>;
+  commentsMeta: Record<
+    string,
+    {
+      total: number;
+      page: number;
+      total_pages: number;
+      has_next: boolean;
+      has_previous: boolean;
+    }
+  >;
 
   voteCountBySuggestion: Record<string, number>;
   userVotedBySuggestion: Record<string, boolean>;
+  commentCountBySuggestion: Record<string, number>;
   myVotes: SuggestionVoteResponse[];
+  myVotesMeta: {
+    total: number;
+    page: number;
+    total_pages: number;
+    has_next: boolean;
+    has_previous: boolean;
+  } | null;
 
-  stats: Record<string, SuggestionStats>; // keyed by suggestion_id
+  stats: Record<string, SuggestionStats>;
 
   // Per-action loading/error
   loading: LoadingMap;
@@ -218,6 +280,7 @@ interface SuggestionsState {
 
   clearCurrentSuggestion: () => void;
   clearError: (action: ActionKey | string) => void;
+  syncVoteStateFromSuggestions: (suggestions: SuggestionResponse[]) => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -225,21 +288,41 @@ interface SuggestionsState {
 // ---------------------------------------------------------------------------
 
 export const useSuggestionsStore = create<SuggestionsState>((set, get) => ({
+  // Initial state
   suggestions: [],
-  suggestionsTotal: null,
+  suggestionsTotal: 0,
+  suggestionsPage: 1,
+  suggestionsTotalPages: 1,
+  suggestionsHasNext: false,
+  suggestionsHasPrevious: false,
+
   currentSuggestion: null,
+
   mySuggestions: [],
+  mySuggestionsTotal: 0,
+  mySuggestionsPage: 1,
+  mySuggestionsTotalPages: 1,
+  mySuggestionsHasNext: false,
+  mySuggestionsHasPrevious: false,
+
   mySummary: null,
+
   userSuggestions: {},
+  userSuggestionsMeta: {},
+
   userSummaries: {},
   overview: null,
   searchResults: [],
+  searchResultsMeta: null,
 
   commentsBySuggestion: {},
+  commentsMeta: {},
 
   voteCountBySuggestion: {},
   userVotedBySuggestion: {},
+  commentCountBySuggestion: {},
   myVotes: [],
+  myVotesMeta: null,
 
   stats: {},
 
@@ -255,13 +338,40 @@ export const useSuggestionsStore = create<SuggestionsState>((set, get) => ({
       errors: { ...s.errors, [key]: null },
     }));
     try {
-      const { data } = await api.get<SuggestionResponse[]>("/suggestions/", {
-        params,
+      const { data } = await api.get<PaginatedResponse<SuggestionResponse>>(
+        "/suggestions/", // ✅ Keep trailing slash
+        { params },
+      );
+      set((s) => {
+        const voteCountBySuggestion = { ...s.voteCountBySuggestion };
+        const userVotedBySuggestion = { ...s.userVotedBySuggestion };
+        const commentCountBySuggestion = { ...s.commentCountBySuggestion };
+
+        data.items.forEach((suggestion) => {
+          if (suggestion.is_voted !== undefined) {
+            userVotedBySuggestion[suggestion.id] = suggestion.is_voted;
+          }
+          if (suggestion.vote_count !== undefined) {
+            voteCountBySuggestion[suggestion.id] = suggestion.vote_count;
+          }
+          if (suggestion.comment_count !== undefined) {
+            commentCountBySuggestion[suggestion.id] = suggestion.comment_count;
+          }
+        });
+
+        return {
+          suggestions: data.items,
+          suggestionsTotal: data.total,
+          suggestionsPage: data.page,
+          suggestionsTotalPages: data.total_pages,
+          suggestionsHasNext: data.has_next,
+          suggestionsHasPrevious: data.has_previous,
+          voteCountBySuggestion,
+          userVotedBySuggestion,
+          commentCountBySuggestion,
+          loading: { ...s.loading, [key]: false },
+        };
       });
-      set((s) => ({
-        suggestions: data,
-        loading: { ...s.loading, [key]: false },
-      }));
     } catch (err) {
       set((s) => ({
         loading: { ...s.loading, [key]: false },
@@ -278,10 +388,29 @@ export const useSuggestionsStore = create<SuggestionsState>((set, get) => ({
     }));
     try {
       const { data } = await api.get<SuggestionResponse>(`/suggestions/${id}`);
-      set((s) => ({
-        currentSuggestion: data,
-        loading: { ...s.loading, [key]: false },
-      }));
+      set((s) => {
+        const voteCountBySuggestion = { ...s.voteCountBySuggestion };
+        const userVotedBySuggestion = { ...s.userVotedBySuggestion };
+        const commentCountBySuggestion = { ...s.commentCountBySuggestion };
+
+        if (data.is_voted !== undefined) {
+          userVotedBySuggestion[data.id] = data.is_voted;
+        }
+        if (data.vote_count !== undefined) {
+          voteCountBySuggestion[data.id] = data.vote_count;
+        }
+        if (data.comment_count !== undefined) {
+          commentCountBySuggestion[data.id] = data.comment_count;
+        }
+
+        return {
+          currentSuggestion: data,
+          voteCountBySuggestion,
+          userVotedBySuggestion,
+          commentCountBySuggestion,
+          loading: { ...s.loading, [key]: false },
+        };
+      });
       return data;
     } catch (err) {
       set((s) => ({
@@ -299,13 +428,40 @@ export const useSuggestionsStore = create<SuggestionsState>((set, get) => ({
       errors: { ...s.errors, [key]: null },
     }));
     try {
-      const { data } = await api.get<SuggestionResponse[]>("/suggestions/me", {
-        params: { skip, limit },
+      const { data } = await api.get<PaginatedResponse<SuggestionResponse>>(
+        "/suggestions/me", // ✅ No trailing slash (FastAPI redirects)
+        { params: { skip, limit } },
+      );
+      set((s) => {
+        const voteCountBySuggestion = { ...s.voteCountBySuggestion };
+        const userVotedBySuggestion = { ...s.userVotedBySuggestion };
+        const commentCountBySuggestion = { ...s.commentCountBySuggestion };
+
+        data.items.forEach((suggestion) => {
+          if (suggestion.is_voted !== undefined) {
+            userVotedBySuggestion[suggestion.id] = suggestion.is_voted;
+          }
+          if (suggestion.vote_count !== undefined) {
+            voteCountBySuggestion[suggestion.id] = suggestion.vote_count;
+          }
+          if (suggestion.comment_count !== undefined) {
+            commentCountBySuggestion[suggestion.id] = suggestion.comment_count;
+          }
+        });
+
+        return {
+          mySuggestions: data.items,
+          mySuggestionsTotal: data.total,
+          mySuggestionsPage: data.page,
+          mySuggestionsTotalPages: data.total_pages,
+          mySuggestionsHasNext: data.has_next,
+          mySuggestionsHasPrevious: data.has_previous,
+          voteCountBySuggestion,
+          userVotedBySuggestion,
+          commentCountBySuggestion,
+          loading: { ...s.loading, [key]: false },
+        };
       });
-      set((s) => ({
-        mySuggestions: data,
-        loading: { ...s.loading, [key]: false },
-      }));
     } catch (err) {
       set((s) => ({
         loading: { ...s.loading, [key]: false },
@@ -344,14 +500,17 @@ export const useSuggestionsStore = create<SuggestionsState>((set, get) => ({
     }));
     try {
       const { data: created } = await api.post<SuggestionResponse>(
-        "/suggestions/",
+        "/suggestions/", // ✅ Fixed: Added trailing slash
         data,
       );
       set((s) => ({
         suggestions: [created, ...s.suggestions],
         mySuggestions: [created, ...s.mySuggestions],
+        suggestionsTotal: s.suggestionsTotal + 1,
+        mySuggestionsTotal: s.mySuggestionsTotal + 1,
         loading: { ...s.loading, [key]: false },
       }));
+      get().fetchMySummary();
       return created;
     } catch (err) {
       set((s) => ({
@@ -368,7 +527,6 @@ export const useSuggestionsStore = create<SuggestionsState>((set, get) => ({
     const prevMy = get().mySuggestions;
     const prevCurrent = get().currentSuggestion;
 
-    // Optimistic patch
     set((s) => ({
       loading: { ...s.loading, [key]: true },
       errors: { ...s.errors, [key]: null },
@@ -402,7 +560,6 @@ export const useSuggestionsStore = create<SuggestionsState>((set, get) => ({
       }));
       return updated;
     } catch (err) {
-      // Rollback
       set((s) => ({
         loading: { ...s.loading, [key]: false },
         errors: { ...s.errors, [key]: extractErrorMessage(err) },
@@ -419,7 +576,6 @@ export const useSuggestionsStore = create<SuggestionsState>((set, get) => ({
     const prevSuggestions = get().suggestions;
     const prevMy = get().mySuggestions;
 
-    // Optimistic removal
     set((s) => ({
       loading: { ...s.loading, [key]: true },
       errors: { ...s.errors, [key]: null },
@@ -429,10 +585,14 @@ export const useSuggestionsStore = create<SuggestionsState>((set, get) => ({
 
     try {
       await api.delete(`/suggestions/${id}`);
-      set((s) => ({ loading: { ...s.loading, [key]: false } }));
+      set((s) => ({
+        loading: { ...s.loading, [key]: false },
+        suggestionsTotal: s.suggestionsTotal - 1,
+        mySuggestionsTotal: s.mySuggestionsTotal - 1,
+      }));
+      get().fetchMySummary();
       return true;
     } catch (err) {
-      // Rollback
       set((s) => ({
         loading: { ...s.loading, [key]: false },
         errors: { ...s.errors, [key]: extractErrorMessage(err) },
@@ -474,14 +634,23 @@ export const useSuggestionsStore = create<SuggestionsState>((set, get) => ({
       errors: { ...s.errors, [key]: null },
     }));
     try {
-      const { data } = await api.get<SuggestionCommentResponse[]>(
-        `/suggestions/${suggestionId}/comments`,
-        { params: { skip, limit } },
-      );
+      const { data } = await api.get<
+        PaginatedResponse<SuggestionCommentResponse>
+      >(`/suggestions/${suggestionId}/comments`, { params: { skip, limit } });
       set((s) => ({
         commentsBySuggestion: {
           ...s.commentsBySuggestion,
-          [suggestionId]: data,
+          [suggestionId]: data.items,
+        },
+        commentsMeta: {
+          ...s.commentsMeta,
+          [suggestionId]: {
+            total: data.total,
+            page: data.page,
+            total_pages: data.total_pages,
+            has_next: data.has_next,
+            has_previous: data.has_previous,
+          },
         },
         loading: { ...s.loading, [key]: false },
       }));
@@ -508,7 +677,6 @@ export const useSuggestionsStore = create<SuggestionsState>((set, get) => ({
       set((s) => {
         const existing = s.commentsBySuggestion[suggestionId] || [];
 
-        // Reply — attach under its parent instead of appending top-level
         if (created.parent_comment_id) {
           const attachReply = (
             comments: SuggestionCommentResponse[],
@@ -558,7 +726,6 @@ export const useSuggestionsStore = create<SuggestionsState>((set, get) => ({
         .filter((c) => c.id !== commentId)
         .map((c) => ({ ...c, replies: removeComment(c.replies) }));
 
-    // Optimistic removal
     set((s) => ({
       loading: { ...s.loading, [key]: true },
       errors: { ...s.errors, [key]: null },
@@ -573,7 +740,6 @@ export const useSuggestionsStore = create<SuggestionsState>((set, get) => ({
       set((s) => ({ loading: { ...s.loading, [key]: false } }));
       return true;
     } catch (err) {
-      // Rollback
       set((s) => ({
         loading: { ...s.loading, [key]: false },
         errors: { ...s.errors, [key]: extractErrorMessage(err) },
@@ -596,7 +762,6 @@ export const useSuggestionsStore = create<SuggestionsState>((set, get) => ({
       get().stats[suggestionId]?.vote_count ??
       0;
 
-    // Optimistic flip
     set((s) => ({
       loading: { ...s.loading, [key]: true },
       errors: { ...s.errors, [key]: null },
@@ -608,6 +773,23 @@ export const useSuggestionsStore = create<SuggestionsState>((set, get) => ({
         ...s.voteCountBySuggestion,
         [suggestionId]: prevVoted ? prevCount - 1 : prevCount + 1,
       },
+      suggestions: s.suggestions.map((sug) =>
+        sug.id === suggestionId
+          ? {
+              ...sug,
+              is_voted: !prevVoted,
+              vote_count: prevVoted ? prevCount - 1 : prevCount + 1,
+            }
+          : sug,
+      ),
+      currentSuggestion:
+        s.currentSuggestion?.id === suggestionId
+          ? {
+              ...s.currentSuggestion,
+              is_voted: !prevVoted,
+              vote_count: prevVoted ? prevCount - 1 : prevCount + 1,
+            }
+          : s.currentSuggestion,
     }));
 
     try {
@@ -627,9 +809,21 @@ export const useSuggestionsStore = create<SuggestionsState>((set, get) => ({
           ...s.voteCountBySuggestion,
           [suggestionId]: data.vote_count,
         },
+        suggestions: s.suggestions.map((sug) =>
+          sug.id === suggestionId
+            ? { ...sug, is_voted: data.user_voted, vote_count: data.vote_count }
+            : sug,
+        ),
+        currentSuggestion:
+          s.currentSuggestion?.id === suggestionId
+            ? {
+                ...s.currentSuggestion,
+                is_voted: data.user_voted,
+                vote_count: data.vote_count,
+              }
+            : s.currentSuggestion,
       }));
     } catch (err) {
-      // Rollback
       set((s) => ({
         loading: { ...s.loading, [key]: false },
         errors: { ...s.errors, [key]: extractErrorMessage(err) },
@@ -641,6 +835,19 @@ export const useSuggestionsStore = create<SuggestionsState>((set, get) => ({
           ...s.voteCountBySuggestion,
           [suggestionId]: prevCount,
         },
+        suggestions: s.suggestions.map((sug) =>
+          sug.id === suggestionId
+            ? { ...sug, is_voted: prevVoted, vote_count: prevCount }
+            : sug,
+        ),
+        currentSuggestion:
+          s.currentSuggestion?.id === suggestionId
+            ? {
+                ...s.currentSuggestion,
+                is_voted: prevVoted,
+                vote_count: prevCount,
+              }
+            : s.currentSuggestion,
       }));
     }
   },
@@ -704,12 +911,19 @@ export const useSuggestionsStore = create<SuggestionsState>((set, get) => ({
       errors: { ...s.errors, [key]: null },
     }));
     try {
-      const { data } = await api.get<SuggestionVoteResponse[]>(
+      const { data } = await api.get<PaginatedResponse<SuggestionVoteResponse>>(
         "/suggestions/votes/me",
         { params: { skip, limit } },
       );
       set((s) => ({
-        myVotes: data,
+        myVotes: data.items,
+        myVotesMeta: {
+          total: data.total,
+          page: data.page,
+          total_pages: data.total_pages,
+          has_next: data.has_next,
+          has_previous: data.has_previous,
+        },
         loading: { ...s.loading, [key]: false },
       }));
     } catch (err) {
@@ -751,14 +965,45 @@ export const useSuggestionsStore = create<SuggestionsState>((set, get) => ({
       errors: { ...s.errors, [key]: null },
     }));
     try {
-      const { data } = await api.get<SuggestionResponse[]>(
+      const { data } = await api.get<PaginatedResponse<SuggestionResponse>>(
         `/suggestions/users/${userId}`,
         { params: { skip, limit } },
       );
-      set((s) => ({
-        userSuggestions: { ...s.userSuggestions, [userId]: data },
-        loading: { ...s.loading, [key]: false },
-      }));
+      set((s) => {
+        const voteCountBySuggestion = { ...s.voteCountBySuggestion };
+        const userVotedBySuggestion = { ...s.userVotedBySuggestion };
+        const commentCountBySuggestion = { ...s.commentCountBySuggestion };
+
+        data.items.forEach((suggestion) => {
+          if (suggestion.is_voted !== undefined) {
+            userVotedBySuggestion[suggestion.id] = suggestion.is_voted;
+          }
+          if (suggestion.vote_count !== undefined) {
+            voteCountBySuggestion[suggestion.id] = suggestion.vote_count;
+          }
+          if (suggestion.comment_count !== undefined) {
+            commentCountBySuggestion[suggestion.id] = suggestion.comment_count;
+          }
+        });
+
+        return {
+          userSuggestions: { ...s.userSuggestions, [userId]: data.items },
+          userSuggestionsMeta: {
+            ...s.userSuggestionsMeta,
+            [userId]: {
+              total: data.total,
+              page: data.page,
+              total_pages: data.total_pages,
+              has_next: data.has_next,
+              has_previous: data.has_previous,
+            },
+          },
+          voteCountBySuggestion,
+          userVotedBySuggestion,
+          commentCountBySuggestion,
+          loading: { ...s.loading, [key]: false },
+        };
+      });
     } catch (err) {
       set((s) => ({
         loading: { ...s.loading, [key]: false },
@@ -795,7 +1040,6 @@ export const useSuggestionsStore = create<SuggestionsState>((set, get) => ({
     const prevMy = get().mySuggestions;
     const prevCurrent = get().currentSuggestion;
 
-    // Optimistic patch
     set((s) => ({
       loading: { ...s.loading, [key]: true },
       errors: { ...s.errors, [key]: null },
@@ -829,7 +1073,6 @@ export const useSuggestionsStore = create<SuggestionsState>((set, get) => ({
           s.currentSuggestion?.id === id ? updated : s.currentSuggestion,
       }));
     } catch (err) {
-      // Rollback
       set((s) => ({
         loading: { ...s.loading, [key]: false },
         errors: { ...s.errors, [key]: extractErrorMessage(err) },
@@ -847,16 +1090,42 @@ export const useSuggestionsStore = create<SuggestionsState>((set, get) => ({
       errors: { ...s.errors, [key]: null },
     }));
     try {
-      const { data } = await api.get<{
-        query: string;
-        status_filter: string | null;
-        results: SuggestionResponse[];
-        count: number;
-      }>("/suggestions/search/", { params: { q, skip, limit, status } });
-      set((s) => ({
-        searchResults: data.results,
-        loading: { ...s.loading, [key]: false },
-      }));
+      const { data } = await api.get<PaginatedResponse<SuggestionResponse>>(
+        "/suggestions/search/", // ✅ Fixed: Consistent trailing slash
+        { params: { q, skip, limit, status } },
+      );
+      set((s) => {
+        const voteCountBySuggestion = { ...s.voteCountBySuggestion };
+        const userVotedBySuggestion = { ...s.userVotedBySuggestion };
+        const commentCountBySuggestion = { ...s.commentCountBySuggestion };
+
+        data.items.forEach((suggestion) => {
+          if (suggestion.is_voted !== undefined) {
+            userVotedBySuggestion[suggestion.id] = suggestion.is_voted;
+          }
+          if (suggestion.vote_count !== undefined) {
+            voteCountBySuggestion[suggestion.id] = suggestion.vote_count;
+          }
+          if (suggestion.comment_count !== undefined) {
+            commentCountBySuggestion[suggestion.id] = suggestion.comment_count;
+          }
+        });
+
+        return {
+          searchResults: data.items,
+          searchResultsMeta: {
+            total: data.total,
+            page: data.page,
+            total_pages: data.total_pages,
+            has_next: data.has_next,
+            has_previous: data.has_previous,
+          },
+          voteCountBySuggestion,
+          userVotedBySuggestion,
+          commentCountBySuggestion,
+          loading: { ...s.loading, [key]: false },
+        };
+      });
     } catch (err) {
       set((s) => ({
         loading: { ...s.loading, [key]: false },
@@ -869,30 +1138,105 @@ export const useSuggestionsStore = create<SuggestionsState>((set, get) => ({
 
   clearError: (action) =>
     set((s) => ({ errors: { ...s.errors, [action]: null } })),
+
+  syncVoteStateFromSuggestions: (suggestions) => {
+    set((s) => {
+      const voteCountBySuggestion = { ...s.voteCountBySuggestion };
+      const userVotedBySuggestion = { ...s.userVotedBySuggestion };
+      const commentCountBySuggestion = { ...s.commentCountBySuggestion };
+
+      suggestions.forEach((suggestion) => {
+        if (suggestion.is_voted !== undefined) {
+          userVotedBySuggestion[suggestion.id] = suggestion.is_voted;
+        }
+        if (suggestion.vote_count !== undefined) {
+          voteCountBySuggestion[suggestion.id] = suggestion.vote_count;
+        }
+        if (suggestion.comment_count !== undefined) {
+          commentCountBySuggestion[suggestion.id] = suggestion.comment_count;
+        }
+      });
+
+      return {
+        voteCountBySuggestion,
+        userVotedBySuggestion,
+        commentCountBySuggestion,
+      };
+    });
+  },
 }));
 
 // ---------------------------------------------------------------------------
-// Convenience selectors (granular — avoid over-subscribing components)
+// Convenience selectors
 // ---------------------------------------------------------------------------
 
 export const useSuggestions = () => useSuggestionsStore((s) => s.suggestions);
+export const useSuggestionsPagination = () =>
+  useSuggestionsStore(
+    useShallow((s) => ({
+      total: s.suggestionsTotal,
+      page: s.suggestionsPage,
+      totalPages: s.suggestionsTotalPages,
+      hasNext: s.suggestionsHasNext,
+      hasPrevious: s.suggestionsHasPrevious,
+    })),
+  );
+
+export const useMySuggestionsPagination = () =>
+  useSuggestionsStore(
+    useShallow((s) => ({
+      total: s.mySuggestionsTotal,
+      page: s.mySuggestionsPage,
+      totalPages: s.mySuggestionsTotalPages,
+      hasNext: s.mySuggestionsHasNext,
+      hasPrevious: s.mySuggestionsHasPrevious,
+    })),
+  );
 export const useCurrentSuggestion = () =>
   useSuggestionsStore((s) => s.currentSuggestion);
+
 export const useMySuggestions = () =>
   useSuggestionsStore((s) => s.mySuggestions);
+
 export const useMySummary = () => useSuggestionsStore((s) => s.mySummary);
 
+const EMPTY_COMMENTS: SuggestionCommentResponse[] = [];
+
 export const useSuggestionComments = (suggestionId: string) =>
-  useSuggestionsStore((s) => s.commentsBySuggestion[suggestionId] ?? []);
+  useSuggestionsStore(
+    (s) => s.commentsBySuggestion[suggestionId] ?? EMPTY_COMMENTS,
+  );
+
+export const useSuggestionCommentsMeta = (suggestionId: string) =>
+  useSuggestionsStore((s) => s.commentsMeta[suggestionId] ?? null);
 
 export const useSuggestionVoteState = (suggestionId: string) =>
-  useSuggestionsStore((s) => ({
-    voted: s.userVotedBySuggestion[suggestionId] ?? false,
-    count:
-      s.voteCountBySuggestion[suggestionId] ??
-      s.stats[suggestionId]?.vote_count ??
+  useSuggestionsStore(
+    useShallow((s) => ({
+      voted: s.userVotedBySuggestion[suggestionId] ?? false,
+      count:
+        s.voteCountBySuggestion[suggestionId] ??
+        s.stats[suggestionId]?.vote_count ??
+        0,
+    })),
+  );
+
+export const useSuggestionCommentCount = (suggestionId: string) =>
+  useSuggestionsStore(
+    (s) =>
+      s.commentCountBySuggestion[suggestionId] ??
+      s.stats[suggestionId]?.comment_count ??
       0,
-  }));
+  );
+
+export const useMyVotes = () => useSuggestionsStore((s) => s.myVotes);
+export const useMyVotesPagination = () =>
+  useSuggestionsStore((s) => s.myVotesMeta);
+
+export const useSearchResults = () =>
+  useSuggestionsStore((s) => s.searchResults);
+export const useSearchResultsMeta = () =>
+  useSuggestionsStore((s) => s.searchResultsMeta);
 
 export const useSuggestionLoading = (action: ActionKey | string) =>
   useSuggestionsStore((s) => s.loading[action] ?? false);

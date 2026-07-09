@@ -7,12 +7,17 @@ import { Send, Hash, ImagePlus, X } from "lucide-react";
 import type { ContentTagResponse } from "@/lib/stores/contents/types/content.types";
 import { TextArea } from "../../inputs/TextArea";
 import Button from "../../buttons/Buttons";
+import AIAssistant from "../../ai/AIAsistant";
+import { getPromptOptions } from "./postPromptOptions";
+import { useRouting } from "@/lib/hooks/routing/useRouting";
+import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 
 interface CreatePostBarProps {
   onPostCreated?: () => void;
 }
-
 export default function CreatePostBar({ onPostCreated }: CreatePostBarProps) {
+  const { router } = useRouting()
+  const { userInfo } = useUserSettings()
   const [text, setText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showTagDropdown, setShowTagDropdown] = useState(false);
@@ -107,6 +112,20 @@ export default function CreatePostBar({ onPostCreated }: CreatePostBarProps) {
     [fetchTags]
   );
 
+  // Handle AI response
+  const handleAIResponse = useCallback((response: string) => {
+    setText(response);
+    // Focus back on textarea after replacement
+    setTimeout(() => {
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+        // Set cursor at the end of the new text
+        const length = response.length;
+        textareaRef.current.setSelectionRange(length, length);
+      }
+    }, 0);
+  }, []);
+
   // Handle tag selection
   const handleTagSelect = useCallback(
     (tag: ContentTagResponse) => {
@@ -155,6 +174,10 @@ export default function CreatePostBar({ onPostCreated }: CreatePostBarProps) {
     },
     [showTagDropdown, tags, selectedTagIndex, handleTagSelect]
   );
+
+  const handleRouteToBlog = () => {
+    router.push(`/${userInfo?.username}/blogs/create`)
+  }
 
   // Submit post
   const handleSubmit = useCallback(async () => {
@@ -218,14 +241,24 @@ export default function CreatePostBar({ onPostCreated }: CreatePostBarProps) {
       >
         <div className="flex items-start gap-3">
           <div className="flex-1 relative">
-            <TextArea
-              ref={textareaRef}
-              value={text}
-              onChange={handleTextChange}
-              onKeyDown={handleKeyDown}
-              placeholder="What's on your mind?"
-              className="modText min-h-[80px] resize-none"
-            />
+            <div className="relative">
+              <TextArea
+                ref={textareaRef}
+                value={text}
+                onChange={handleTextChange}
+                onKeyDown={handleKeyDown}
+                placeholder="What's on your mind?"
+                className="modText min-h-[80px] resize-none pr-12"
+              />
+
+              {/* AI Assistant positioned absolutely within the textarea container */}
+              <div className="absolute bottom-2 right-2">
+                <AIAssistant
+                  options={getPromptOptions(text)}
+                  onChange={handleAIResponse}
+                />
+              </div>
+            </div>
 
             {/* Tag Autocomplete Dropdown */}
             {showTagDropdown && (
@@ -326,7 +359,14 @@ export default function CreatePostBar({ onPostCreated }: CreatePostBarProps) {
               for tags
             </span>
           </div>
-          <div>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              text="Write a Blog/Article"
+              onClick={handleRouteToBlog}
+              size="sm"
+              variant="outline"
+              className="w-auto px-5"
+            />
             <Button
               icon={<Send size={16} />}
               text="Post"

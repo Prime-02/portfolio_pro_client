@@ -83,14 +83,14 @@ export const tabConfig = [
     helpText:
       "Choose from beautiful pre-designed themes or create your own custom color combinations for light and dark modes.",
   },
-  {
-    key: "loaders",
-    label: "Loaders",
-    icon: Loader,
-    description: "Loading animations",
-    helpText:
-      "Select from various loading animations that will be displayed while your app processes data or loads content.",
-  },
+  // {
+  //   key: "loaders",
+  //   label: "Loaders",
+  //   icon: Loader,
+  //   description: "Loading animations",
+  //   helpText:
+  //     "Select from various loading animations that will be displayed while your app processes data or loads content.",
+  // },
   {
     key: "pro",
     label: "Go-Pro",

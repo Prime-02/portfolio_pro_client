@@ -1,11 +1,13 @@
 // src/app/components/profile/edit-components/form/BioLinksSection.tsx
 
-import React from "react";
+import React, { useState } from "react";
 import { SectionHeader } from "../../SectionHeader";
 import MarkdownEditor from "../../../markdown/MarkdownEditor";
 import { InlineSaveButton } from "../InlineSaveButton";
 import type { ProfileForm, FieldStatus } from "./types";
-
+import AIAssistant from "../../../ai/AIAsistant";
+import { getBioPromptOptions } from "./bioPromptOptions";
+import { toast } from "../../../toastify/Toastify";
 
 interface BioLinksSectionProps {
     profileForm: ProfileForm;
@@ -22,6 +24,24 @@ export const BioLinksSection = ({
     onUpdateProfile,
     onSaveField,
 }: BioLinksSectionProps) => {
+    // Keep a local state to ensure AI content is properly synced
+    const [localBio, setLocalBio] = useState(profileForm.bio);
+
+    // Sync local state when profileForm.bio changes externally
+    React.useEffect(() => {
+        setLocalBio(profileForm.bio);
+    }, [profileForm.bio]);
+
+    const handleBioChange = (value: string) => {
+        setLocalBio(value);
+        onUpdateProfile("bio", value);
+    };
+
+    const handleAIAssistantChange = (value: string) => {
+        // console.log("AI generated bio:", value);
+        handleBioChange(value);
+    };
+
     return (
         <section className="card rounded-2xl p-6 sm:p-8 space-y-6">
             <div className="flex items-center justify-between">
@@ -36,15 +56,26 @@ export const BioLinksSection = ({
                     />
                 )}
             </div>
-            <div className={modifiedFields.has("profile.bio") ? "ring-2 ring-(--accent)/20 rounded-lg" : ""}>
+            <div className={`relative ${modifiedFields.has("profile.bio") ? "ring-2 ring-(--accent)/20 rounded-lg" : ""}`}>
                 <MarkdownEditor
-                    value={profileForm.bio}
-                    onChange={(v) => onUpdateProfile("bio", v)}
+                    value={localBio}
+                    onChange={handleBioChange}
                     placeholder="Tell others about yourself, your experience, and what you're passionate about..."
                     minHeight="200px"
                     showCopy={false}
                     showDownload={false}
                 />
+                <div className="absolute bottom-0 right-0">
+                    <AIAssistant
+                        options={getBioPromptOptions()}
+                        onChange={(e)=> {
+                            handleAIAssistantChange(e)
+                            toast.info("The AI has finished processing your request. Please review the output before savingj.", {
+                                title: "Prompt Ready"
+                            })
+                        }}
+                    />
+                </div>
             </div>
         </section>
     );

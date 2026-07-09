@@ -12,6 +12,9 @@ import { TextArea } from "../inputs/TextArea";
 import { difficultyLevels } from "@/lib/utilities/indices/DropDownItems";
 import Switch from "../inputs/Switch";
 import Dropdown from "../inputs/DynamicDropdown";
+import AIAssistant from "../ai/AIAsistant";
+import { getSkillDescriptionOptions } from "./skillPromptOptions";
+import { toast } from "../toastify/Toastify";
 
 interface AddSkillDialogProps {
     open: boolean;
@@ -138,7 +141,7 @@ export function AddSkillDialog({ open, onOpenChange }: AddSkillDialogProps) {
 
                 <div className="grid grid-cols-2 gap-3">
                     <Dropdown
-                    placeholder="Select or enter a new category"
+                        placeholder="Select or enter a new category"
                         label="Category"
                         type="datalist"
                         options={categoryOptions}
@@ -148,7 +151,7 @@ export function AddSkillDialog({ open, onOpenChange }: AddSkillDialogProps) {
                         onSelect={(e: string | string[]) => setCategory(e as string)}
                     />
                     <Dropdown
-                    placeholder="Select or enter a new sub category"
+                        placeholder="Select or enter a new sub category"
                         label="Subcategory"
                         value={subcategory}
                         onSelect={(e: string | string[]) => setSubcategory(e as string)}
@@ -167,12 +170,32 @@ export function AddSkillDialog({ open, onOpenChange }: AddSkillDialogProps) {
                     onChange={(e) => setDifficultyLevel(e)}
                 />
 
-                <TextArea
-                    label="Description (optional)"
-                    desc="Describe your experience with this skill..."
-                    value={description}
-                    onChange={(e) => setDescription(e)}
-                />
+                <div className="relative">
+                    <TextArea
+                        value={description}
+                        onChange={(e) => setDescription(e)}
+                        placeholder="Describe your experience with this skill..."
+                        label="Description (optional)"
+                    />
+                    <div className="absolute right-0 bottom-0">
+                        <AIAssistant
+                            options={getSkillDescriptionOptions(
+                                description,
+                                skillName,
+                                proficiencyLevel,
+                                category,
+                                subcategory,
+                                difficultyLevel,
+                                isMajor
+                            )}
+                            onChange={(e) => setDescription(e)}
+                            onEmptyClick={() => {
+                                toast.warning("Please enter a skill name first");
+                            }}
+                        />
+                    </div>
+                </div>
+
 
                 {/* Major Skill Toggle */}
                 <div className="flex items-center justify-between px-3 py-2.5 rounded-xl 

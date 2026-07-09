@@ -34,12 +34,10 @@ export default function ProjectFeedSkeleton() {
       <div className="flex items-center justify-between mb-3 px-1">
         <div className="h-2.5 w-16 rounded bg-[var(--foreground)]/5" />
         <div className="h-2.5 w-16 rounded bg-[var(--foreground)]/5" />
-        <div className="h-2.5 w-16 rounded bg-[var(--foreground)]/5" />
       </div>
 
       {/* Interaction Bar Skeleton */}
       <div className="flex items-center gap-1 pt-3 border-t border-[var(--foreground)]/10">
-        <div className="flex-1 h-9 rounded-xl bg-[var(--foreground)]/5" />
         <div className="flex-1 h-9 rounded-xl bg-[var(--foreground)]/5" />
         <div className="flex-1 h-9 rounded-xl bg-[var(--foreground)]/5" />
       </div>

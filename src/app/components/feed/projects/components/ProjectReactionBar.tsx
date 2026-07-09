@@ -65,8 +65,8 @@ export default function ProjectReactionBar({
           <button
             onClick={handleToggleLike}
             className={`w-full flex items-center justify-center gap-2 py-2 rounded-xl transition-colors ${optimisticLiked
-                ? "text-[var(--accent)] bg-[var(--accent)]/10"
-                : "text-[var(--foreground)]/60 hover:bg-[var(--foreground)]/5"
+              ? "text-[var(--accent)] bg-[var(--accent)]/10"
+              : "text-[var(--foreground)]/60 hover:bg-[var(--foreground)]/5"
               }`}
           >
             <Heart size={18} fill={optimisticLiked ? "currentColor" : "none"} />
@@ -81,8 +81,8 @@ export default function ProjectReactionBar({
           onClick={onToggleComments}
           disabled={isLoadingComments}
           className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl transition-colors ${showComments
-              ? "text-[var(--accent)] bg-[var(--accent)]/10"
-              : "text-[var(--foreground)]/60 hover:bg-[var(--foreground)]/5"
+            ? "text-[var(--accent)] bg-[var(--accent)]/10"
+            : "text-[var(--foreground)]/60 hover:bg-[var(--foreground)]/5"
             } ${isLoadingComments ? "opacity-70 cursor-wait" : ""}`}
         >
           {isLoadingComments ? (
@@ -93,25 +93,6 @@ export default function ProjectReactionBar({
           <span className="text-sm font-medium">
             {isLoadingComments ? "Loading..." : "Comment"}
           </span>
-        </button>
-
-        {/* Share Button */}
-        <button
-          onClick={() => {
-            const url = `${window.location.origin}/projects/${project.id}`;
-            if (navigator.share) {
-              navigator.share({
-                title: project.project_name,
-                url,
-              });
-            } else {
-              navigator.clipboard.writeText(url);
-            }
-          }}
-          className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-[var(--foreground)]/60 hover:bg-[var(--foreground)]/5 transition-colors"
-        >
-          <Share2 size={18} />
-          <span className="text-sm font-medium">Share</span>
         </button>
       </div>
     </>

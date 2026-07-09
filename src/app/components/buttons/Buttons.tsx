@@ -6,6 +6,7 @@ import React, {
   useMemo,
   useRef,
   useEffect,
+  useCallback,
 } from "react";
 import { getLoader, SpinLoader } from "../loaders/Loader";
 import { useTheme } from "../theme/ThemeContext";
@@ -32,7 +33,66 @@ type ButtonProps = {
   size?: "sm" | "md" | "lg";
   customColor?: string;
   colorIntensity?: "light" | "medium" | "dark";
-  maxWidth?: string; // Optional max width for the button
+  maxWidth?: string;
+};
+
+// Custom hook to watch CSS custom property changes
+const useCSSVariable = (variableName: string, fallback: string): string => {
+  const [value, setValue] = useState(() => {
+    if (typeof document === "undefined") return fallback;
+    const computedValue = getComputedStyle(document.documentElement)
+      .getPropertyValue(variableName)
+      .trim();
+    return computedValue || fallback;
+  });
+
+  useEffect(() => {
+    // Initial read
+    const updateValue = () => {
+      const newValue = getComputedStyle(document.documentElement)
+        .getPropertyValue(variableName)
+        .trim();
+      if (newValue && newValue !== value) {
+        setValue(newValue);
+      }
+    };
+
+    // Update on mount
+    updateValue();
+
+    // Watch for style/class changes on :root that might affect CSS variables
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (
+          mutation.type === "attributes" &&
+          (mutation.attributeName === "style" ||
+            mutation.attributeName === "class" ||
+            mutation.attributeName === "data-theme")
+        ) {
+          updateValue();
+          break;
+        }
+      }
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["style", "class", "data-theme"],
+    });
+
+    // Also listen for custom events that might trigger theme changes
+    const handleThemeChange = () => updateValue();
+    window.addEventListener("themechange", handleThemeChange);
+    window.addEventListener("storage", handleThemeChange); // For cross-tab sync
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("themechange", handleThemeChange);
+      window.removeEventListener("storage", handleThemeChange);
+    };
+  }, [variableName, value]);
+
+  return value;
 };
 
 // Enhanced color normalization with better error handling
@@ -65,7 +125,9 @@ const normalizeColorToHex = (color: string): string => {
   }
 
   // RGBA format (ignore alpha for now)
-  const rgbaMatch = colorStr.match(/rgba\((\d+),\s*(\d+),\s*(\d+),\s*[\d.]+\)/);
+  const rgbaMatch = colorStr.match(
+    /rgba\((\d+),\s*(\d+),\s*(\d+),\s*[\d.]+\)/
+  );
   if (rgbaMatch) {
     const [, r, g, b] = rgbaMatch;
     const toHex = (n: string) =>
@@ -170,6 +232,11 @@ const Button = ({
   const [isFocused, setIsFocused] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
 
+  // Watch CSS variable changes to trigger re-renders
+  const cssAccent = useCSSVariable("--accent", themePresets[0].accent);
+  const cssBackground = useCSSVariable("--background", "#ffffff");
+  const cssForeground = useCSSVariable("--foreground", "#000000");
+
   // Track hydration to prevent mismatches
   useEffect(() => {
     setIsHydrated(true);
@@ -177,9 +244,9 @@ const Button = ({
 
   // Memoize color calculations to prevent unnecessary recalculations
   const colorPalette = useMemo(() => {
-    const baseColor = normalizeColorToHex(customColor || accentColor.color);
+    const baseColor = normalizeColorToHex(customColor || cssAccent);
     return generateColorPalette(baseColor, colorIntensity);
-  }, [customColor, accentColor.color, colorIntensity]);
+  }, [customColor, colorIntensity, cssAccent]);
 
   // Memoize variant-specific color palettes
   const variantColorPalettes = useMemo(
@@ -224,17 +291,17 @@ const Button = ({
   );
 
   // Get current interaction state - only use interactive states after hydration
-  const getCurrentState = () => {
+  const getCurrentState = useCallback(() => {
     if (disabled) return "disabled";
-    if (!isHydrated) return "default"; // Always return default during SSR
+    if (!isHydrated) return "default";
     if (isActive) return "active";
     if (isHovered) return "hovered";
     if (isFocused) return "focused";
     return "default";
-  };
+  }, [disabled, isHydrated, isActive, isHovered, isFocused]);
 
   // Generate dynamic styles based on variant and state
-  const getDynamicStyles = () => {
+  const getDynamicStyles = useCallback((): React.CSSProperties => {
     const currentState = getCurrentState();
     let palette = colorPalette;
 
@@ -359,56 +426,89 @@ const Button = ({
       default:
         return baseStyles;
     }
-  };
+  }, [
+    getCurrentState,
+    variant,
+    colorPalette,
+    variantColorPalettes,
+    maxWidth,
+  ]);
 
   // Get loader color based on variant and state
-  const getLoaderColor = () => {
+  const getLoaderColor = useCallback(() => {
     if (variant === "outline" && !isHovered && !isActive)
       return colorPalette.base;
     if (variant === "ghost") return colorPalette.base;
     return "#ffffff";
-  };
+  }, [variant, isHovered, isActive, colorPalette.base]);
 
   // Get focus ring color for accessibility
-  const getFocusRingColor = () => {
+  const getFocusRingColor = useCallback(() => {
     if (variant === "danger") return variantColorPalettes.danger.base;
     if (variant === "success") return variantColorPalettes.success.base;
     return colorPalette.base;
-  };
+  }, [variant, variantColorPalettes, colorPalette.base]);
 
   const dynamicStyles = getDynamicStyles();
 
-  // Handle focus styles without direct DOM manipulation during render
-  const handleFocusCapture = (e: React.FocusEvent<HTMLButtonElement>) => {
-    if (!isHydrated) return;
+  // Handle focus styles
+  const handleFocusCapture = useCallback(
+    (e: React.FocusEvent<HTMLButtonElement>) => {
+      if (!isHydrated) return;
 
-    const focusRingColor = getFocusRingColor();
-    const currentBoxShadow = dynamicStyles.boxShadow || "none";
+      const focusRingColor = getFocusRingColor();
+      const currentBoxShadow = dynamicStyles.boxShadow || "none";
 
-    // Use setTimeout to avoid hydration issues
-    setTimeout(() => {
-      if (e.currentTarget) {
-        e.currentTarget.style.setProperty(
-          "box-shadow",
-          `${currentBoxShadow}, 0 0 0 3px ${focusRingColor}40`
-        );
-      }
-    }, 0);
-  };
+      // Use requestAnimationFrame for smoother updates
+      requestAnimationFrame(() => {
+        if (e.currentTarget) {
+          e.currentTarget.style.boxShadow = `${currentBoxShadow}, 0 0 0 3px ${focusRingColor}40`;
+        }
+      });
+    },
+    [isHydrated, getFocusRingColor, dynamicStyles.boxShadow]
+  );
 
-  const handleBlurCapture = (e: React.FocusEvent<HTMLButtonElement>) => {
-    if (!isHydrated) return;
+  const handleBlurCapture = useCallback(
+    (e: React.FocusEvent<HTMLButtonElement>) => {
+      if (!isHydrated) return;
 
-    // Use setTimeout to avoid hydration issues
-    setTimeout(() => {
-      if (e.currentTarget) {
-        e.currentTarget.style.setProperty(
-          "box-shadow",
-          dynamicStyles.boxShadow || "none"
-        );
-      }
-    }, 0);
-  };
+      requestAnimationFrame(() => {
+        if (e.currentTarget) {
+          e.currentTarget.style.boxShadow = dynamicStyles.boxShadow || "none";
+        }
+      });
+    },
+    [isHydrated, dynamicStyles.boxShadow]
+  );
+
+  // Mouse event handlers
+  const handleMouseEnter = useCallback(() => {
+    if (isHydrated && !disabled && !loading) setIsHovered(true);
+  }, [isHydrated, disabled, loading]);
+
+  const handleMouseLeave = useCallback(() => {
+    if (isHydrated) {
+      setIsHovered(false);
+      setIsActive(false);
+    }
+  }, [isHydrated]);
+
+  const handleMouseDown = useCallback(() => {
+    if (isHydrated && !disabled && !loading) setIsActive(true);
+  }, [isHydrated, disabled, loading]);
+
+  const handleMouseUp = useCallback(() => {
+    if (isHydrated) setIsActive(false);
+  }, [isHydrated]);
+
+  const handleFocus = useCallback(() => {
+    if (isHydrated) setIsFocused(true);
+  }, [isHydrated]);
+
+  const handleBlur = useCallback(() => {
+    if (isHydrated) setIsFocused(false);
+  }, [isHydrated]);
 
   return (
     <button
@@ -419,21 +519,12 @@ const Button = ({
       className={`${baseClasses} ${sizeClasses[size]} ${className}`}
       style={dynamicStyles}
       onClick={onClick}
-      onMouseEnter={() =>
-        isHydrated && !disabled && !loading && setIsHovered(true)
-      }
-      onMouseLeave={() => {
-        if (isHydrated) {
-          setIsHovered(false);
-          setIsActive(false);
-        }
-      }}
-      onMouseDown={() =>
-        isHydrated && !disabled && !loading && setIsActive(true)
-      }
-      onMouseUp={() => isHydrated && setIsActive(false)}
-      onFocus={() => isHydrated && setIsFocused(true)}
-      onBlur={() => isHydrated && setIsFocused(false)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
       onFocusCapture={handleFocusCapture}
       onBlurCapture={handleBlurCapture}
     >

@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { UserResponse, useUserSettings } from "@/lib/stores/user/useUserSettings";
+import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 import { EditProfileForm } from "@/src/app/components/profile/EditProfileForm";
 import { ErrorMessage } from "@/src/app/components/profile/ErrorMessage";
 import { ProfileNotFound } from "@/src/app/components/profile/ProfileNotFound";
@@ -11,6 +11,7 @@ import { UserNotFoundNotice } from "@/src/app/components/profile/UserNotFoundNot
 import { ProfileViewPage } from "./ProfileViewPage";
 import { ProfileSkeleton } from "./view/ProfileSkeleton";
 import { useTheme } from "../theme/ThemeContext";
+import { UserResponse } from "@/lib/stores/user/useUserAccountStore";
 
 export const UserProfilePage = () => {
     const {

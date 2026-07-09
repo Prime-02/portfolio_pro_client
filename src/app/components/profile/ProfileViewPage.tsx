@@ -4,7 +4,6 @@
 import type {
     UserProfileRequest,
     UserSettings,
-    UserResponse,
     UserUpdateRequest,
 } from "@/lib/stores/user/useUserSettings";
 import { ProfileHeroCard } from "./view/ProfileHeroCard";
@@ -17,6 +16,7 @@ import ProjectsPage from "../projects/ProjectsPage";
 import SkillsPage from "../skills";
 import SocialLinksPage from "../socials";
 import TestimonialsPage from "../testimonials/TestimonialsPage";
+import { UserResponse } from "@/lib/stores/user/useUserAccountStore";
 
 interface ProfileViewPageProps {
     profile: UserProfileRequest | null;

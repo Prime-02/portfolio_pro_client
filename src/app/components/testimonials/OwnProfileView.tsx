@@ -164,13 +164,6 @@ export function OwnProfileView({
                         ? "Share your profile to start collecting testimonials from people you've worked with."
                         : "Write a testimonial for someone you've worked with to help them build their reputation."
                 }
-                emptyAction={
-                    <Button
-                        onClick={onNavigateToWrite}
-                        icon={<PenLine className="w-4 h-4" />}
-                        text="Write a Testimonial"
-                    />
-                }
                 isOwner={true}
             />
 

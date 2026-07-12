@@ -1,61 +1,61 @@
 import { PromptOption } from "../../ai/AIAsistant";
 
 // Function to generate prompt options with context of existing text
-  export const getPromptOptions = (currentText: string): PromptOption[] => {
-    const hasText = currentText.trim().length > 0;
+export const getPromptOptions = (currentText: string): PromptOption[] => {
+  const hasText = currentText.trim().length > 0;
 
-    return [
-      {
-        title: "Improve writing",
-        prompt: hasText
-          ? `Rewrite the following text to be more engaging and professional while maintaining the original meaning. Fix any grammar issues and improve clarity: "${currentText}"`
-          : "Generate an engaging and professional social media post about technology, productivity, or personal growth. Make it thought-provoking and under 280 characters."
-      },
-      {
-        title: "Make shorter",
-        prompt: hasText
-          ? `Condense the following text into a shorter, more concise version while keeping the key message intact: "${currentText}"`
-          : "Write a short, impactful social media post (under 150 characters) that sparks curiosity."
-      },
-      {
-        title: "Make longer",
-        prompt: hasText
-          ? `Expand on the following text by adding more detail, context, and engaging elements while staying on topic: "${currentText}"`
-          : "Write a detailed and engaging social media post about an interesting topic, including examples and thought-provoking questions."
-      },
-      {
-        title: "Add hashtags",
-        prompt: hasText
-          ? `Based on the following text, suggest 3-5 relevant and trending hashtags that would increase visibility. Return only the hashtags separated by spaces: "${currentText}"`
-          : "Suggest 5 trending and relevant hashtags for a post about technology and innovation. Return only the hashtags separated by spaces."
-      },
-      {
-        title: "Fix tone",
-        prompt: hasText
-          ? `Rewrite the following text to have a professional and friendly tone while keeping the same message: "${currentText}"`
-          : "Generate a friendly and professional social media post sharing an interesting insight or tip."
-      },
-      {
-        title: "Generate idea",
-        prompt: "Generate an engaging social media post idea. Keep it under 280 characters and make it thought-provoking. Don't include hashtags."
-      },
-      {
-        title: "Add emojis",
-        prompt: hasText
-          ? `Add appropriate and relevant emojis to the following text to make it more engaging and visually appealing. Keep it natural and don't overdo it: "${currentText}"`
-          : "Create a fun and engaging social media post with appropriate emojis about a positive topic."
-      },
-      {
-        title: "Question post",
-        prompt: hasText
-          ? `Transform the following text into an engaging question that encourages discussion and comments from readers: "${currentText}"`
-          : "Create an engaging question post that sparks discussion about technology, career growth, or personal development."
-      },
-      {
-        title: "Thread opener",
-        prompt: hasText
-          ? `Transform the following text into an engaging thread opener (first tweet/post) that makes people want to read more. Add "🧵" at the end: "${currentText}"`
-          : "Create an engaging thread opener about an interesting insight or lesson learned. Make it compelling enough to make people want to read the full thread. Add 🧵 at the end."
-      },
-    ];
-}
+  return [
+    {
+      title: "Improve writing",
+      prompt: hasText
+        ? `You are an expert editor and copywriter specializing in digital content optimization. I need you to comprehensively improve and elevate the following text. Go beyond basic proofreading - transform it into polished, compelling content that captures attention and drives engagement. Your task includes: correcting all grammar, punctuation, and syntax issues while preserving the author's unique voice, restructuring awkward sentences for better flow and readability, replacing weak or generic words with more powerful and precise alternatives, enhancing clarity by tightening verbose phrases and unpacking confusing passages, adjusting the rhythm and pacing to maintain reader interest throughout, and subtly amplifying the emotional impact or persuasive power where appropriate. The final output should feel like it was written by a confident, skilled communicator while staying true to the original message and intent. Do not add new topics or change the core meaning - enhance what's already there to its fullest potential. Original text: "${currentText}"`
+        : `You are a social media strategist and content creator who specializes in crafting posts that stop the scroll and spark meaningful engagement. Generate an original, compelling social media post about technology, productivity, or personal growth. Your post must accomplish the following: open with a powerful hook that creates immediate curiosity or emotional resonance (a surprising fact, counterintuitive insight, or relatable challenge), deliver a clear and valuable insight that makes the reader feel they learned something worthwhile, use concrete examples or vivid imagery to make abstract concepts tangible, maintain an authentic, conversational tone that feels like advice from a trusted, intelligent friend, and end with a thought-provoking question or call-to-reflection that naturally invites comments and discussion. The post should feel fresh and original - not like recycled motivational content. Keep it under 280 characters while still packing maximum value. Do not use hashtags, emojis, or thread indicators.`,
+    },
+    {
+      title: "Make shorter",
+      prompt: hasText
+        ? `You are a master of brevity and concise communication - an expert who knows that the most powerful messages are often the shortest. Your task is to distill the following text down to its absolute essence, cutting everything that isn't essential while preserving and even amplifying the core message. Think of this as creating the "headline version" of the content. Your process should: identify the single most important idea or takeaway, eliminate all redundancy, filler words, tangents, and unnecessary context, compress complex thoughts into tight, punchy expressions, ensure every remaining word carries weight and serves a purpose, and maintain the original tone and intent while dramatically improving impact-per-word. The result should be roughly half the original length or less, yet feel more powerful and memorable than the original. If the original text is already short, make it even tighter - like sharpening a blade that's already sharp. Original text: "${currentText}"`
+        : `You are a minimalist content creator who believes the most impactful social media posts are the ones that say more with less. Create an ultra-short, curiosity-driven social media post (under 150 characters) that packs maximum intrigue into minimum words. Your post should: lead with a bold statement, provocative question, or unexpected insight that immediately grabs attention, create an "information gap" that makes readers desperate to know more, comment, or click through, use rhythmic, quotable language that sticks in the mind long after reading, and feel complete and satisfying despite its brevity - a full thought compressed into a gem. Think of this as creating a post that someone would screenshot and share because every word is perfectly chosen. Avoid vague inspiration and instead offer a specific, surprising perspective. Do not use hashtags or emojis.`,
+    },
+    {
+      title: "Make longer",
+      prompt: hasText
+        ? `You are a skilled content developer and narrative builder who excels at taking concise thoughts and expanding them into rich, fully-realized content. Take the following text as a seed idea and develop it into a more comprehensive, engaging, and substantive piece of content. Your expansion should: unpack the core idea with additional layers of depth, context, and nuance that add real value, incorporate relevant examples, analogies, or mini-stories that illustrate the point memorably, anticipate and address the reader's natural follow-up questions or objections, weave in supporting points that strengthen the main argument or message, add thoughtful transitions that guide the reader smoothly from one idea to the next, and conclude with a satisfying wrap-up that reinforces the key takeaway or prompts further reflection. The expansion should feel natural and organic - not padded or repetitive. Every sentence you add should earn its place by contributing meaningful substance. Maintain the original voice and perspective while giving the ideas room to breathe and resonate more deeply. Original text: "${currentText}"`
+        : `You are a thought-provoking content creator who specializes in writing substantive, insightful social media posts that feel like mini-articles. Write a detailed and engaging social media post about an interesting topic related to technology, work, creativity, or personal growth. Structure your post as a compelling micro-essay: start with a strong hook that creates immediate intrigue or identifies a relatable tension, provide rich context or a brief anecdote that grounds your insight in real experience, develop your main point with clear reasoning and specific examples that make abstract ideas concrete, introduce a counterintuitive angle or deeper layer that surprises readers and rewards their attention, and close with a thought-provoking question that invites readers to reflect on their own experiences and share in the comments. The post should feel generous and insightful - like you're sharing something genuinely useful, not just filling space. Aim for 3-5 well-crafted sentences that create a satisfying reading arc. Do not use hashtags.`,
+    },
+    {
+      title: "Add hashtags",
+      prompt: hasText
+        ? `You are a social media analytics expert and hashtag strategist who understands the algorithms and discovery mechanics of major platforms like LinkedIn, Twitter/X, and Instagram. Analyze the following text and recommend 3-5 highly relevant, strategic hashtags that will maximize visibility and reach for this specific content. Your hashtag selection criteria should include: direct relevance to the core topic and themes (must pass the "would someone searching this hashtag want to see this post?" test), a smart mix of popular high-volume tags and more specific niche tags to balance reach versus competition, inclusion of at least one community or conversation-based hashtag that connects to ongoing professional discussions, consideration of current trending conversations within the relevant industry or topic space, and avoidance of generic, overused tags that add noise without real discovery potential. Format your response by returning ONLY the hashtags separated by spaces (e.g., #TechInnovation #ProductivityHacks #FutureOfWork). Do not include any explanations, commentary, or the original text. Original text: "${currentText}"`
+        : `You are a social media analytics expert and hashtag strategist who understands platform algorithms and content discovery dynamics. Recommend 5 strategic, high-performing hashtags for a post about technology and innovation. Your selection should be data-informed in its thinking: include a mix of broad-reach hashtags (#Technology, #Innovation) and more targeted niche tags that reach specific engaged communities, incorporate at least one trending or conversation-driven hashtag relevant to current tech discussions, consider regional or industry-specific tags if they add focused reach, and avoid banned, spammy, or over-saturated tags that could hurt visibility. The hashtags should work together as a cohesive strategy - each one opening a different discovery pathway to the content. Format your response by returning ONLY the hashtags separated by spaces (e.g., #TechTrends #DigitalTransformation #AI #FutureTech #InnovationCulture). Do not include any explanations or commentary.`,
+    },
+    {
+      title: "Fix tone",
+      prompt: hasText
+        ? `You are a professional communications coach who specializes in helping people strike the perfect tone in their writing - that sweet spot between corporate stiffness and overly casual informality. Rewrite the following text to achieve a professional yet warm and friendly tone that builds rapport while maintaining credibility. Your tonal adjustments should: warm up the language with conversational connectors and a more personal, human voice, eliminate any harsh, cold, or overly formal phrasing that creates distance from the reader, add subtle elements of personality, empathy, or gentle humor where natural and appropriate, maintain or strengthen the professional substance - friendliness should never come at the cost of competence, and ensure the revised version sounds like someone confident and approachable speaking authentically, not someone performing "friendliness" from a script. The reader should feel like they're hearing from a respected colleague who also happens to be genuinely likeable. Preserve the original message and key points completely. Original text: "${currentText}"`
+        : `You are a warm, authentic content creator who understands that the most engaging social media content feels like a conversation with a wise friend. Create a friendly, accessible, and professional social media post sharing a helpful insight, tip, or observation. Your post should embody the following qualities: warmth that makes readers feel welcomed and valued rather than lectured, professional credibility that signals you know your subject without needing to prove it with jargon, generosity of spirit - you're sharing because you genuinely want to help, not to impress, a conversational rhythm that uses natural phrasing, occasional contractions, and varied sentence lengths, and a subtle invitation for dialogue that makes readers want to respond and share their own thoughts. The overall effect should be like getting advice from a mentor who genuinely cares about your growth. Keep it under 280 characters and let the kindness in your tone be the memorable part. Do not use hashtags or emojis.`,
+    },
+    {
+      title: "Generate idea",
+      prompt: `You are a creative social media strategist who specializes in generating fresh, original content ideas that consistently drive high engagement. Your mission is to create a single, powerful social media post concept that is so compelling it practically guarantees likes, comments, and shares. Today's assignment: generate an original, thought-provoking post idea that challenges conventional thinking or reframes a common experience in an unexpected way. Your post concept should: identify a universal tension, frustration, or unspoken truth that your audience immediately recognizes and relates to, offer a fresh perspective or counterintuitive insight that makes them pause and think "I never thought of it that way", be broad enough to attract diverse engagement but specific enough to feel personal and authentic, naturally invite responses by creating space for agreement, respectful disagreement, or personal stories, and work without any accompanying images, links, or multimedia - pure text power. Describe the complete post concept including the hook, the insight, and what kind of response it's designed to trigger. The post itself should be under 280 characters. Do not include hashtags, emojis, or thread indicators. Aim for something that feels genuinely original, not derivative of common motivational content.`,
+    },
+    {
+      title: "Add emojis",
+      prompt: hasText
+        ? `You are a digital communication specialist who understands the subtle art of using emojis to enhance text without overwhelming it. Your task is to thoughtfully integrate emojis into the following text to make it more visually appealing, emotionally resonant, and engaging. Approach this with restraint and strategic intent: use emojis as visual punctuation that reinforces key points, adds emotional color, or creates visual breaks for easier reading, select emojis that genuinely match the sentiment and content rather than random decoration, place them at natural pause points - sentence beginnings or ends, section breaks, or next to key concepts they illustrate, follow the "less is more" principle: a few well-chosen emojis enhance the message; too many make it look unprofessional or juvenile, and maintain readability for all audiences, including those using screen readers. The goal is enhancement, not transformation - the text should still read beautifully and professionally if the emojis were removed. Do not add emojis to every line or sentence. Use 1-4 thoughtfully placed emojis total unless the content specifically calls for more. Original text: "${currentText}"`
+        : `You are a warm, expressive content creator who knows how to use emojis to add personality and emotional resonance to social media content. Create a positive, uplifting social media post that naturally and tastefully incorporates emojis. Your post should: revolve around a genuinely uplifting theme - gratitude, progress, kindness, learning, or celebrating small wins, use emojis as organic elements of the message that enhance meaning rather than distract from it, place emojis strategically where they reinforce emotion (🌟 for breakthroughs, 💡 for insights, 🙌 for celebration, etc.), maintain a natural, conversational flow where emojis feel like part of the sentence rhythm rather than afterthoughts, and avoid overuse - aim for 2-4 well-placed emojis that add warmth and visual appeal without clutter. The overall effect should feel like a genuinely happy person sharing a good moment, not someone trying to manufacture positivity with emoji overload. Keep the post under 280 characters. Do not use hashtags.`,
+    },
+    {
+      title: "Question post",
+      prompt: hasText
+        ? `You are a community engagement specialist who understands that the right question at the right time can spark hundreds of valuable conversations. Transform the following text into an irresistible discussion prompt - a question or series of questions so compelling that readers feel almost compelled to share their thoughts. Your transformed post should: extract the most discussion-worthy aspect of the original text and build your question around it, craft a question that has genuine depth - one where people will want to read others' answers, not just share their own, use open-ended framing that invites diverse perspectives and personal experiences rather than yes/no or obvious answers, create psychological safety for sharing by modeling vulnerability or curiosity in how you pose the question, and include a brief, relatable setup or context before the question if it helps people connect to why you're asking. The question should make readers feel like their opinion truly matters and that participating in the discussion will be interesting and worthwhile. Original text: "${currentText}"`
+        : `You are a master of conversation-starting content who knows that the most engaging social media posts often end with a question mark. Create an irresistible discussion-sparking question post about technology, career growth, or personal development. Your post must be designed to maximize comments and quality discussion: open with a brief, relatable observation or scenario that establishes common ground and shows why the question matters, pose a genuinely thought-provoking question that has no single right answer and invites diverse perspectives, frame the question in a way that makes everyone feel qualified to answer - not just experts, consider adding a "I'll go first..." to model the kind of response you're hoping to see, and ensure the question feels like the start of an interesting dinner party conversation, not a quiz or a request for free consulting. The best responses will come from posts that make people think "oh, I have a strong opinion about this!" or "I went through something similar." Keep it under 280 characters. Do not use hashtags or thread indicators.`,
+    },
+    {
+      title: "Thread opener",
+      prompt: hasText
+        ? `You are a Twitter/X thread strategist who understands the precise mechanics of what makes a thread opener go viral. Transform the following text into an irresistible thread opener - the first tweet that acts as a gateway to deeper content. Your opener must accomplish several critical objectives simultaneously: deliver a powerful, scroll-stopping hook in the first 3-5 words that creates immediate curiosity, clearly signal to readers that valuable, substantive content follows if they click through, establish your credibility or unique angle on the topic within the first line, create an "open loop" or information gap that makes clicking "Show this thread" feel like the only logical next action, and naturally incorporate the 🧵 emoji at the end as a clear visual indicator and convention of the format. Think of this as creating a movie trailer for your content - it should promise so much value that people can't not read the full thread. The opener should be complete as a standalone statement but undeniably more intriguing when expanded. Original text: "${currentText}"`
+        : `You are a viral thread writer who has mastered the art of the irresistible opening tweet. Create a powerful thread opener that compels readers to click "Show this thread" and read every subsequent tweet. Your opener should be built on a proven viral framework: start with a bold, counterintuitive, or emotionally charged statement that demands attention within the first few words, hint at valuable, hard-won knowledge or an interesting story that will unfold in the thread, use specific, concrete language that signals substance - avoid vague promises of "the truth about..." or "what nobody tells you...", create clear stakes - why should someone invest 2-3 minutes reading your thread? What will they gain or learn?, and maintain an authentic, human voice that sounds like one person sharing genuine insights, not a content farm manufacturing engagement. The topic should be genuinely interesting: a surprising lesson learned, an unconventional approach that worked, a common myth debunked, or a counterintuitive truth about an everyday topic. Remember to add 🧵 at the very end as both a convention signal and visual thread indicator. Keep the opener itself under 280 characters.`,
+    },
+  ];
+};

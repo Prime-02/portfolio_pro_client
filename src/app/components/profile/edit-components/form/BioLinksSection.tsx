@@ -42,6 +42,30 @@ export const BioLinksSection = ({
         handleBioChange(value);
     };
 
+    const handleEmptyClick = () => {
+        const missingFields = [];
+        if (!profileForm.profession) missingFields.push("Profession");
+        if (!profileForm.job_title) missingFields.push("Job Title");
+        if (!profileForm.years_of_experience) missingFields.push("Years of Experience");
+        if (!profileForm.availability) missingFields.push("Availability");
+
+        if (missingFields.length > 0) {
+            toast.warning(
+                `Please complete your profile details to unlock AI bio suggestions. Missing: ${missingFields.join(", ")}`,
+                {
+                    title: "Incomplete Profile",
+                }
+            );
+        } else {
+            toast.info(
+                "Start typing a bio to enable AI-powered suggestions and improvements",
+                {
+                    title: "Start Writing",
+                }
+            );
+        }
+    };
+
     return (
         <section className="card rounded-2xl p-6 sm:p-8 space-y-6">
             <div className="flex items-center justify-between">
@@ -67,11 +91,19 @@ export const BioLinksSection = ({
                 />
                 <div className="absolute bottom-0 right-0">
                     <AIAssistant
-                        options={getBioPromptOptions()}
-                        onChange={(e)=> {
-                            handleAIAssistantChange(e)
-                            toast.info("The AI has finished processing your request. Please review the output before savingj.", {
-                                title: "Prompt Ready"
+                        options={getBioPromptOptions({
+                            currentText: localBio,
+                            profession: profileForm.profession,
+                            jobTitle: profileForm.job_title,
+                            yearsOfExperience: profileForm.years_of_experience ? String(profileForm.years_of_experience) : undefined,
+                            availability: profileForm.availability,
+                            openToWork: profileForm.open_to_work
+                        })}
+                        onEmptyClick={handleEmptyClick}
+                        onChange={(e) => {
+                            handleAIAssistantChange(e);
+                            toast.info("The AI has finished processing your request. Please review the output before saving.", {
+                                title: "Prompt Ready",
                             })
                         }}
                     />

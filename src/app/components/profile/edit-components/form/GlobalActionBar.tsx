@@ -20,7 +20,7 @@ export const GlobalActionBar = ({
     const hasModifications = modifiedFieldsCount > 0;
 
     return (
-        <div className="sticky bottom-0 bg-(--background) py-4 -mx-2 px-2 border-t border-(--foreground)/10">
+        <div className="sticky bottom-0 bg-(--background) py-4 -mx-2 px-2 border-t z-50 border-(--foreground)/10">
             <div className="flex items-center justify-between">
                 <div className="text-sm text-(--foreground)/50">
                     {hasModifications ? (

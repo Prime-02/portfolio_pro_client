@@ -1,12 +1,22 @@
 import type { NextConfig } from "next";
 
+const revision = crypto.randomUUID();
+
+const withSerwist = require("@serwist/next").default({
+  swSrc: "src/app/sw.ts",
+  swDest: "public/sw.js",
+  additionalPrecacheEntries: [{ url: "/offline", revision }],
+  disable: process.env.NODE_ENV === "development",
+  reloadOnOnline: false,
+});
+
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
         protocol: "https",
         hostname: "**", // Allows all hostnames
-        pathname: "/**", // Allows all paths
+        pathname: "/**",
       },
       {
         protocol: "https",
@@ -18,10 +28,9 @@ const nextConfig: NextConfig = {
         hostname: "res.cloudinary.com",
         pathname: "/**",
       },
-      // Add other patterns if needed
     ],
   },
   experimental: {},
 };
 
-export default nextConfig;
+export default withSerwist(nextConfig);

@@ -42,11 +42,6 @@ export default function CreatePostBar({ onPostCreated }: CreatePostBarProps) {
     return matches.map((t) => t.slice(1).toLowerCase());
   }, []);
 
-  // Remove # prefixes from text for display
-  const stripHashPrefixes = useCallback((input: string): string => {
-    return input.replace(/#([\w-]+)/g, "$1");
-  }, []);
-
   // Handle image selection
   const handleImageSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -186,13 +181,12 @@ export default function CreatePostBar({ onPostCreated }: CreatePostBarProps) {
     setIsSubmitting(true);
     try {
       const extractedTags = extractTags(text);
-      const cleanBody = stripHashPrefixes(text);
 
       await createContent({
-        title: cleanBody.slice(0, 100) || "Post",
+        title: text.slice(0, 100) || "Post",
         content_type: "POST",
-        body: cleanBody,
-        excerpt: cleanBody.slice(0, 200),
+        body: text,
+        excerpt: text.slice(0, 200),
         tags: extractedTags.join(","),
         status: "PUBLISHED",
         is_public: true,
@@ -215,7 +209,7 @@ export default function CreatePostBar({ onPostCreated }: CreatePostBarProps) {
     } finally {
       setIsSubmitting(false);
     }
-  }, [text, selectedImage, createContent, extractTags, stripHashPrefixes, onPostCreated]);
+  }, [text, selectedImage, createContent, extractTags, onPostCreated]);
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -333,40 +327,31 @@ export default function CreatePostBar({ onPostCreated }: CreatePostBarProps) {
         )}
 
         <div className="flex items-center justify-between mt-3">
+          <Button
+            text="Write a Blog/Article"
+            onClick={handleRouteToBlog}
+            size="sm"
+            variant="outline"
+            className="w-auto px-5"
+          />
           <div className="flex items-center gap-3">
-            {/* Image Upload Button */}
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm text-[var(--foreground)]/60 hover:bg-[var(--foreground)]/5 hover:text-[var(--accent)] transition-colors"
-              title="Add image"
-            >
-              <ImagePlus size={18} />
-              <span className="hidden sm:inline">Add Image</span>
-            </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleImageSelect}
-              className="hidden"
-            />
-
-            <span className="text-xs text-[var(--foreground)]/40">
-              Type{" "}
-              <kbd className="px-1.5 py-0.5 rounded text-xs bg-[var(--foreground)]/10">
-                #
-              </kbd>{" "}
-              for tags
-            </span>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Button
-              text="Write a Blog/Article"
-              onClick={handleRouteToBlog}
-              size="sm"
-              variant="outline"
-              className="w-auto px-5"
-            />
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm text-[var(--foreground)]/60 hover:bg-[var(--foreground)]/5 hover:text-[var(--accent)] transition-colors"
+                title="Add image"
+              >
+                <ImagePlus size={18} />
+                <span className="hidden sm:inline">Add Image</span>
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageSelect}
+                className="hidden"
+              />
+            </div>
             <Button
               icon={<Send size={16} />}
               text="Post"

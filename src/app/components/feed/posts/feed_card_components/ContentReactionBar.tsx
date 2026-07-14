@@ -1,13 +1,8 @@
 "use client";
 
-import React, { useCallback, useState, useEffect } from "react";
+import React, { useCallback, useState, useEffect, useRef } from "react";
 import {
-  Heart,
   MessageCircle,
-  Share2,
-  ThumbsUp,
-  Flame,
-  Lightbulb,
   Loader2,
 } from "lucide-react";
 import { useContentLikeStore } from "@/lib/stores/contents";
@@ -20,11 +15,11 @@ interface ContentReactionBarProps {
   onToggleComments: () => void;
 }
 
-const REACTIONS: { type: ReactionType; icon: React.ReactNode; label: string }[] = [
-  { type: "LIKE", icon: <ThumbsUp size={18} />, label: "Like" },
-  { type: "LOVE", icon: <Heart size={18} />, label: "Love" },
-  { type: "CELEBRATE", icon: <Flame size={18} />, label: "Celebrate" },
-  { type: "INSIGHTFUL", icon: <Lightbulb size={18} />, label: "Insightful" },
+export const REACTIONS: { type: ReactionType; emoji: string; label: string }[] = [
+  { type: "LIKE", emoji: "👍", label: "Like" },
+  { type: "LOVE", emoji: "❤️", label: "Love" },
+  { type: "CELEBRATE", emoji: "🔥", label: "Celebrate" },
+  { type: "INSIGHTFUL", emoji: "💡", label: "Insightful" },
 ];
 
 export default function ContentReactionBar({
@@ -38,6 +33,8 @@ export default function ContentReactionBar({
   const [optimisticReaction, setOptimisticReaction] = useState<ReactionType | null>(null);
   const [optimisticLikesCount, setOptimisticLikesCount] = useState(content.likes_count);
 
+  const reactionContainerRef = useRef<HTMLDivElement>(null);
+
   const likeContent = useContentLikeStore((s) => s.likeContent);
   const unlikeContent = useContentLikeStore((s) => s.unlikeContent);
 
@@ -47,6 +44,25 @@ export default function ContentReactionBar({
     setOptimisticReaction(content.reaction_type ?? "LIKE");
     setOptimisticLikesCount(content.likes_count);
   }, [content.is_liked, content.reaction_type, content.likes_count]);
+
+  // Handle click outside to close reaction picker
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        reactionContainerRef.current &&
+        !reactionContainerRef.current.contains(event.target as Node)
+      ) {
+        setShowReactionPicker(false);
+      }
+    }
+
+    if (showReactionPicker) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }
+  }, [showReactionPicker]);
 
   const handleReaction = useCallback(
     async (reactionType: ReactionType) => {
@@ -95,22 +111,22 @@ export default function ContentReactionBar({
       {/* Interaction Bar */}
       <div className="flex items-center gap-1 pt-3 border-t border-[var(--foreground)]/10">
         {/* Reaction Button with Picker */}
-        <div className="relative flex-1">
+        <div className="relative flex-1" ref={reactionContainerRef}>
           <button
             onClick={() => setShowReactionPicker((prev) => !prev)}
             className={`w-full flex items-center justify-center gap-2 py-2 rounded-xl transition-colors ${optimisticLiked
-              ? "text-[var(--accent)] bg-[var(--accent)]/10"
-              : "text-[var(--foreground)]/60 hover:bg-[var(--foreground)]/5"
+                ? "text-[var(--accent)] bg-[var(--accent)]/10"
+                : "text-[var(--foreground)]/60 hover:bg-[var(--foreground)]/5"
               }`}
           >
             {currentReaction ? (
               <>
-                {currentReaction.icon}
+                <span className="text-lg">{currentReaction.emoji}</span>
                 <span className="text-sm font-medium">{currentReaction.label}</span>
               </>
             ) : (
               <>
-                <ThumbsUp size={18} />
+                <span className="text-lg">👍</span>
                 <span className="text-sm font-medium">React</span>
               </>
             )}
@@ -120,19 +136,18 @@ export default function ContentReactionBar({
             <div
               className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 flex items-center gap-1 p-2 rounded-2xl border border-[var(--foreground)]/10 shadow-xl"
               style={{ backgroundColor: "var(--background)" }}
-              onMouseLeave={() => setShowReactionPicker(false)}
             >
               {REACTIONS.map((reaction) => (
                 <button
                   key={reaction.type}
                   onClick={() => handleReaction(reaction.type)}
-                  className={`p-2.5 rounded-xl transition-all hover:scale-110 ${optimisticLiked && optimisticReaction === reaction.type
-                    ? "bg-[var(--accent)]/20 text-[var(--accent)]"
-                    : "hover:bg-[var(--foreground)]/5 text-[var(--foreground)]/70"
+                  className={`p-2.5 rounded-xl transition-all hover:scale-110 text-lg ${optimisticLiked && optimisticReaction === reaction.type
+                      ? "bg-[var(--accent)]/20"
+                      : "hover:bg-[var(--foreground)]/5"
                     }`}
                   title={reaction.label}
                 >
-                  {reaction.icon}
+                  {reaction.emoji}
                 </button>
               ))}
             </div>
@@ -144,8 +159,8 @@ export default function ContentReactionBar({
           onClick={onToggleComments}
           disabled={isLoadingComments}
           className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl transition-colors ${showComments
-            ? "text-[var(--accent)] bg-[var(--accent)]/10"
-            : "text-[var(--foreground)]/60 hover:bg-[var(--foreground)]/5"
+              ? "text-[var(--accent)] bg-[var(--accent)]/10"
+              : "text-[var(--foreground)]/60 hover:bg-[var(--foreground)]/5"
             } ${isLoadingComments ? "opacity-70 cursor-wait" : ""}`}
         >
           {isLoadingComments ? (

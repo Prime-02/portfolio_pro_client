@@ -20,6 +20,8 @@ import Button from "../buttons/Buttons";
 import { TextArea } from "../inputs/TextArea";
 import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 import { toast } from "../toastify/Toastify";
+import { isAuthenticated } from "@/lib/client/api";
+import Link from "next/link";
 
 interface BlogCommentItemProps {
   comment: ContentCommentWithUser;
@@ -69,7 +71,7 @@ export function BlogCommentItem({
   const isOwn = !!currentUserId && comment.user_id === currentUserId;
 
   const handleReply = async () => {
-    if (!userInfo?.username) {
+    if (!userInfo?.username || !isAuthenticated()) {
       toast.warning("You must be logged in to comment");
       return;
     }
@@ -158,7 +160,9 @@ export function BlogCommentItem({
         onMouseLeave={() => setShowActions(false)}
       >
         {/* Avatar */}
-        <div className="flex-shrink-0">
+        <Link
+          href={`/${comment.user?.username}`}
+          className="flex-shrink-0">
           <div className="w-8 h-8 rounded-full bg-[var(--accent)]/10 flex items-center justify-center overflow-hidden">
             {comment.user?.profile_picture ? (
               <img
@@ -172,14 +176,16 @@ export function BlogCommentItem({
               </span>
             )}
           </div>
-        </div>
+        </Link>
 
         {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-sm font-medium">
+            <Link
+              href={`/${comment.user?.username}`}
+              className="text-sm font-medium">
               {getDisplayName(comment.user)}
-            </span>
+            </Link>
             <span className="text-[10px] text-[var(--foreground)]/30">
               {new Date(comment.created_at).toLocaleDateString("en-US", {
                 month: "short",
@@ -238,8 +244,8 @@ export function BlogCommentItem({
                 onClick={handleToggleLike}
                 disabled={isTogglingLike}
                 className={`flex items-center gap-1 text-xs transition-colors ${comment.is_liked
-                    ? "text-[var(--accent)]"
-                    : "text-[var(--foreground)]/40 hover:text-[var(--accent)]"
+                  ? "text-[var(--accent)]"
+                  : "text-[var(--foreground)]/40 hover:text-[var(--accent)]"
                   }`}
               >
                 <Heart className={`w-3.5 h-3.5 ${comment.is_liked ? "fill-current" : ""}`} />

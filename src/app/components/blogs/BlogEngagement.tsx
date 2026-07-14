@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Heart,
@@ -15,13 +15,14 @@ import {
 import { useContentLikeStore } from "@/lib/stores/contents/useContentLikeStore";
 import { useContentCommentStore } from "@/lib/stores/contents/useContentCommentStore";
 import { useContentShareStore } from "@/lib/stores/contents/useContentShareStore";
-import type { ContentCommentWithUser, ContentWithAuthor } from "@/lib/stores/contents/types/content.types";
+import type { ContentCommentWithUser, ContentWithAuthor, ReactionType } from "@/lib/stores/contents/types/content.types";
 import Button from "../buttons/Buttons";
 import { TextArea } from "../inputs/TextArea";
 import { BlogCommentItem } from "./BlogCommentItem";
 import { toast } from "../toastify/Toastify";
 import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 import Link from "next/link";
+import { REACTIONS } from "../feed/posts/feed_card_components/ContentReactionBar";
 
 interface BlogEngagementProps {
   blog: ContentWithAuthor;
@@ -32,9 +33,19 @@ export function BlogEngagement({ blog }: BlogEngagementProps) {
   const [newComment, setNewComment] = useState("");
   const [sortBy, setSortBy] = useState<"newest" | "oldest">("newest");
   const [showSortMenu, setShowSortMenu] = useState(false);
+  const [showReactionPicker, setShowReactionPicker] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [errorDismissed, setErrorDismissed] = useState(false);
   const [accumulatedComments, setAccumulatedComments] = useState<ContentCommentWithUser[]>(blog.comments_count ? [] : []);
+
+  // Optimistic state for reactions
+  const [optimisticLiked, setOptimisticLiked] = useState(blog.is_liked ?? false);
+  const [optimisticReaction, setOptimisticReaction] = useState<ReactionType | null>(
+    blog.reaction_type ?? null
+  );
+  const [optimisticLikesCount, setOptimisticLikesCount] = useState(blog.likes_count);
+
+  const reactionContainerRef = useRef<HTMLDivElement>(null);
 
   const {
     likeContent,
@@ -69,10 +80,55 @@ export function BlogEngagement({ blog }: BlogEngagementProps) {
     ? accumulatedComments
     : [];
   const totalComments = commentTotalByContent[contentId] ?? blog.comments_count ?? 0;
-  const isLiked = userLikedStatus[contentId]?.liked ?? blog.is_liked ?? false;
-  const likesCount = totalByContent[contentId] ?? blog.likes_count ?? 0;
+
+  // Use optimistic values for display
+  const isLiked = optimisticLiked;
+  const likesCount = optimisticLikesCount;
   const recentLikes = likesByContent[contentId] ?? [];
   const isShared = userSharedStatus[contentId]?.shared ?? blog.is_shared ?? false;
+
+  // Sync with prop changes when blog updates from parent
+  useEffect(() => {
+    setOptimisticLiked(blog.is_liked ?? false);
+    setOptimisticReaction(blog.reaction_type ?? null);
+    setOptimisticLikesCount(blog.likes_count);
+  }, [blog.is_liked, blog.reaction_type, blog.likes_count]);
+
+  // Also sync with store values
+  useEffect(() => {
+    const storeLiked = userLikedStatus[contentId]?.liked;
+    const storeReaction = userLikedStatus[contentId]?.reaction_type;
+    const storeTotal = totalByContent[contentId];
+
+    if (storeLiked !== undefined) {
+      setOptimisticLiked(storeLiked);
+    }
+    if (storeReaction !== undefined) {
+      setOptimisticReaction(storeReaction);
+    }
+    if (storeTotal !== undefined) {
+      setOptimisticLikesCount(storeTotal);
+    }
+  }, [userLikedStatus, totalByContent, contentId]);
+
+  // Handle click outside to close reaction picker
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        reactionContainerRef.current &&
+        !reactionContainerRef.current.contains(event.target as Node)
+      ) {
+        setShowReactionPicker(false);
+      }
+    }
+
+    if (showReactionPicker) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }
+  }, [showReactionPicker]);
 
   useEffect(() => {
     if (likeError || commentError) setErrorDismissed(false);
@@ -104,17 +160,57 @@ export function BlogEngagement({ blog }: BlogEngagementProps) {
     checkUserShared(contentId);
   }, [contentId]);
 
-  const handleToggleLike = async () => {
-    if (!userInfo?.username) {
-      toast.warning("You must be logged in to like posts");
-      return;
-    }
-    if (isLiked) {
-      await unlikeContent(contentId);
-    } else {
-      await likeContent({ content_id: contentId, reaction_type: "LIKE" });
-    }
-  };
+  const handleReaction = useCallback(
+    async (reactionType: ReactionType) => {
+      if (!userInfo?.username) {
+        toast.warning("You must be logged in to react to posts");
+        return;
+      }
+
+      const wasLiked = optimisticLiked;
+      const prevReaction = optimisticReaction;
+      const prevCount = optimisticLikesCount;
+
+      // Optimistic update
+      if (wasLiked && prevReaction === reactionType) {
+        // Unlike/remove reaction
+        setOptimisticLiked(false);
+        setOptimisticReaction(null);
+        setOptimisticLikesCount(Math.max(0, prevCount - 1));
+      } else {
+        // Like/react
+        setOptimisticLiked(true);
+        setOptimisticReaction(reactionType);
+        if (!wasLiked) {
+          setOptimisticLikesCount(prevCount + 1);
+        }
+      }
+      setShowReactionPicker(false);
+
+      try {
+        if (wasLiked && prevReaction === reactionType) {
+          await unlikeContent(contentId);
+        } else {
+          await likeContent({ content_id: contentId, reaction_type: reactionType });
+        }
+      } catch {
+        // Revert on error
+        setOptimisticLiked(wasLiked);
+        setOptimisticReaction(prevReaction);
+        setOptimisticLikesCount(prevCount);
+        toast.error("Failed to update reaction");
+      }
+    },
+    [
+      optimisticLiked,
+      optimisticReaction,
+      optimisticLikesCount,
+      contentId,
+      likeContent,
+      unlikeContent,
+      userInfo?.username,
+    ]
+  );
 
   const handleAddComment = async () => {
     if (!userInfo?.username) {
@@ -126,19 +222,6 @@ export function BlogEngagement({ blog }: BlogEngagementProps) {
     if (result) {
       setNewComment("");
     }
-  };
-
-  const handleShare = async () => {
-    if (!userInfo?.username) {
-      toast.warning("You must be logged in to share posts");
-      return;
-    }
-    if (isShared) {
-      toast.info("You already shared this post");
-      return;
-    }
-    await shareContent({ original_content_id: contentId, is_public: true });
-    toast.success("Post shared to your profile");
   };
 
   const handleSortChange = async (newSort: typeof sortBy) => {
@@ -170,6 +253,8 @@ export function BlogEngagement({ blog }: BlogEngagementProps) {
     commentError && { key: "comment", message: commentError },
   ].filter(Boolean) as { key: string; message: string }[];
   const hasErrors = activeErrors.length > 0 && !errorDismissed;
+
+  const currentReaction = REACTIONS.find((r) => r.type === optimisticReaction);
 
   return (
     <div className="space-y-8">
@@ -212,31 +297,66 @@ export function BlogEngagement({ blog }: BlogEngagementProps) {
       >
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-medium text-[var(--foreground)]/40 uppercase tracking-wider flex items-center gap-2">
-            <Heart className={`w-4 h-4 ${isLiked ? "text-red-500 fill-red-500" : ""}`} />
-            Likes ({likesCount})
+            Reactions ({likesCount})
           </h3>
           <div className="flex gap-2">
-            <Button
-              size="sm"
-              variant={isLiked ? "primary" : "outline"}
-              onClick={handleToggleLike}
-              loading={likeSubmitting}
-              icon={<Heart className={`w-4 h-4 ${isLiked ? "fill-current" : ""}`} />}
-              text={isLiked ? "Liked" : "Like"}
-            />
+            {/* Reaction Button with Picker */}
+            <div className="relative" ref={reactionContainerRef}>
+              <Button
+                size="sm"
+                variant={isLiked ? "primary" : "outline"}
+                onClick={() => setShowReactionPicker((prev) => !prev)}
+                disabled={!userInfo?.username}
+                loading={likeSubmitting}
+                icon={
+                  currentReaction ? (
+                    <span className="text-base">{currentReaction.emoji}</span>
+                  ) : (
+                    <Heart className={`w-4 h-4 ${isLiked ? "fill-current" : ""}`} />
+                  )
+                }
+                text={isLiked && currentReaction ? currentReaction.label : isLiked ? "Liked" : "Like"}
+              />
+
+              {/* Reaction Picker */}
+              <AnimatePresence>
+                {showReactionPicker && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                    className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 flex items-center gap-1 p-2 rounded-2xl border border-[var(--foreground)]/10 shadow-xl z-50"
+                    style={{ backgroundColor: "var(--background)" }}
+                  >
+                    {REACTIONS.map((reaction) => (
+                      <button
+                        key={reaction.type}
+                        onClick={() => handleReaction(reaction.type)}
+                        className={`p-2.5 rounded-xl transition-all hover:scale-110 text-lg ${optimisticLiked && optimisticReaction === reaction.type
+                            ? "bg-[var(--accent)]/20"
+                            : "hover:bg-[var(--foreground)]/5"
+                          }`}
+                        title={reaction.label}
+                      >
+                        {reaction.emoji}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </div>
 
         {/* Recent Likers */}
         {recentLikes.length > 0 && (
-          <div
-          >
+          <div>
             <div className="flex flex-wrap gap-2">
               {recentLikes.slice(0, 8).map((like) => (
                 <Link
-                  href={`/${like.user?.username}/profile`}
+                  href={`/${like.user?.username}`}
                   key={like.id}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--foreground)]/5"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--foreground)]/5 hover:bg-[var(--foreground)]/10 transition-colors"
                 >
                   {/* Avatar */}
                   <div className="flex-shrink-0">
@@ -298,8 +418,8 @@ export function BlogEngagement({ blog }: BlogEngagementProps) {
                         setShowSortMenu(false);
                       }}
                       className={`w-full text-left px-3 py-2 text-xs hover:bg-[var(--foreground)]/5 transition-colors ${sortBy === option
-                        ? "text-[var(--accent)] font-medium"
-                        : "text-[var(--foreground)]/60"
+                          ? "text-[var(--accent)] font-medium"
+                          : "text-[var(--foreground)]/60"
                         }`}
                     >
                       {option === "newest" ? "Newest First" : "Oldest First"}

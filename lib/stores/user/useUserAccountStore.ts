@@ -5,7 +5,7 @@ import type { AxiosError } from "axios";
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
-
+export type UserSubscriptionTier = "free" | "pro" | "enterprise";
 export interface UserResponse {
   id: string;
   username: string | null;
@@ -19,7 +19,7 @@ export interface UserResponse {
   is_active: boolean;
   is_superuser: boolean;
   role: string;
-  subscription_tier: string | null;
+  subscription_tier: UserSubscriptionTier | null;
   subscription_expires: string | null;
 }
 

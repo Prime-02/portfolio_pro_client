@@ -176,7 +176,9 @@ const LandingPageNavbar = () => {
                       {(isExpanded || mobileMenuOpen) && (
                         <span className="flex flex-col items-start ">
                           <p className="font-semibold">{userInfo?.username}</p>
-                          <p className="text-xs opacity-65">free</p>
+                          <p className="text-xs opacity-65">
+                            {userInfo.subscription_tier || "free"}
+                          </p>
                         </span>
                       )}
                       <ChevronDown

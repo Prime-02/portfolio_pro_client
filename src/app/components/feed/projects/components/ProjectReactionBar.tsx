@@ -2,9 +2,7 @@
 
 import React, { useCallback, useState, useEffect } from "react";
 import {
-  Heart,
   MessageCircle,
-  Share2,
   Loader2,
 } from "lucide-react";
 import type { ProjectWithAuthor } from "@/lib/stores/projects/types/project.types";
@@ -65,11 +63,11 @@ export default function ProjectReactionBar({
           <button
             onClick={handleToggleLike}
             className={`w-full flex items-center justify-center gap-2 py-2 rounded-xl transition-colors ${optimisticLiked
-              ? "text-[var(--accent)] bg-[var(--accent)]/10"
-              : "text-[var(--foreground)]/60 hover:bg-[var(--foreground)]/5"
+                ? "text-[var(--accent)] bg-[var(--accent)]/10"
+                : "text-[var(--foreground)]/60 hover:bg-[var(--foreground)]/5"
               }`}
           >
-            <Heart size={18} fill={optimisticLiked ? "currentColor" : "none"} />
+            <span className="text-lg">❤️</span>
             <span className="text-sm font-medium">
               {optimisticLiked ? "Liked" : "Like"}
             </span>
@@ -81,8 +79,8 @@ export default function ProjectReactionBar({
           onClick={onToggleComments}
           disabled={isLoadingComments}
           className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl transition-colors ${showComments
-            ? "text-[var(--accent)] bg-[var(--accent)]/10"
-            : "text-[var(--foreground)]/60 hover:bg-[var(--foreground)]/5"
+              ? "text-[var(--accent)] bg-[var(--accent)]/10"
+              : "text-[var(--foreground)]/60 hover:bg-[var(--foreground)]/5"
             } ${isLoadingComments ? "opacity-70 cursor-wait" : ""}`}
         >
           {isLoadingComments ? (

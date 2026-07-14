@@ -4,7 +4,7 @@ import NotificationsDisplay from "./NotificationsDisplay";
 
 const NotificationMain = () => {
   return (
-    <div>
+    <div className="max-w-6xl mx-auto">
       <NotificationHeader />
       <NotificationsDisplay />
     </div>

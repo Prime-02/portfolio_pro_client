@@ -1,5 +1,6 @@
 "use client";
 
+import React, { useCallback, useState, useEffect, useRef } from "react";
 import {
   Heart,
   MessageCircle,
@@ -11,55 +12,112 @@ import {
   Calendar,
   Clock,
 } from "lucide-react";
-import type { ContentWithAuthor } from "@/lib/stores/contents/types/content.types";
+import type { ContentWithAuthor, ReactionType } from "@/lib/stores/contents/types/content.types";
 import { useContentLikeStore } from "@/lib/stores/contents/useContentLikeStore";
 import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 import { toast } from "../toastify/Toastify";
+import { REACTIONS } from "../feed/posts/feed_card_components/ContentReactionBar";
+import Link from "next/link";
 
 interface BlogHeroProps {
   blog: ContentWithAuthor;
-  isPost: boolean
+  isPost: boolean;
 }
 
 export function BlogHero({ blog, isPost }: BlogHeroProps) {
-  const { likeContent, unlikeContent, userLikedStatus, isSubmitting } = useContentLikeStore();
   const { userInfo } = useUserSettings();
+  const [showReactionPicker, setShowReactionPicker] = useState(false);
+  const [optimisticLiked, setOptimisticLiked] = useState(blog.is_liked ?? false);
+  const [optimisticReaction, setOptimisticReaction] = useState<ReactionType | null>(
+    blog.reaction_type ?? null
+  );
+  const [optimisticLikesCount, setOptimisticLikesCount] = useState(blog.likes_count);
 
-  const hasLiked = userLikedStatus[blog.id]?.liked ?? blog.is_liked ?? false;
-  const likesCount = blog.likes_count ?? 0;
-  const commentsCount = blog.comments_count ?? 0;
-  const viewsCount = blog.views_count ?? 0;
+  const reactionContainerRef = useRef<HTMLDivElement>(null);
 
-  const readTime = blog.body ? Math.ceil(blog.body.split(/\s+/).length / 200) : 0;
+  const likeContent = useContentLikeStore((s) => s.likeContent);
+  const unlikeContent = useContentLikeStore((s) => s.unlikeContent);
 
-  const handleLike = async () => {
-    if (!userInfo?.username) {
-      toast.warning("You must be logged in to like posts");
-      return;
-    }
-    if (hasLiked) {
-      await unlikeContent(blog.id);
-    } else {
-      await likeContent({ content_id: blog.id, reaction_type: "LIKE" });
-    }
-  };
+  // Sync with prop changes when blog updates from parent
+  useEffect(() => {
+    setOptimisticLiked(blog.is_liked ?? false);
+    setOptimisticReaction(blog.reaction_type ?? null);
+    setOptimisticLikesCount(blog.likes_count);
+  }, [blog.is_liked, blog.reaction_type, blog.likes_count]);
 
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: blog.title,
-          text: blog.excerpt || blog.title,
-          url: window.location.href,
-        });
-      } catch {
-        // User cancelled
+  // Handle click outside to close reaction picker
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        reactionContainerRef.current &&
+        !reactionContainerRef.current.contains(event.target as Node)
+      ) {
+        setShowReactionPicker(false);
       }
-    } else {
-      await navigator.clipboard.writeText(window.location.href);
-      toast.success("Link copied to clipboard");
     }
-  };
+
+    if (showReactionPicker) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }
+  }, [showReactionPicker]);
+
+  const handleReaction = useCallback(
+    async (reactionType: ReactionType) => {
+      if (!userInfo?.username) {
+        toast.warning("You must be logged in to react to posts");
+        return;
+      }
+
+      const wasLiked = optimisticLiked;
+      const prevReaction = optimisticReaction;
+      const prevCount = optimisticLikesCount;
+
+      // Optimistic update
+      if (wasLiked && prevReaction === reactionType) {
+        // Unlike/remove reaction
+        setOptimisticLiked(false);
+        setOptimisticReaction(null);
+        setOptimisticLikesCount(Math.max(0, prevCount - 1));
+      } else {
+        // Like/react
+        setOptimisticLiked(true);
+        setOptimisticReaction(reactionType);
+        if (!wasLiked) {
+          setOptimisticLikesCount(prevCount + 1);
+        }
+      }
+      setShowReactionPicker(false);
+
+      try {
+        if (wasLiked && prevReaction === reactionType) {
+          await unlikeContent(blog.id);
+        } else {
+          await likeContent({ content_id: blog.id, reaction_type: reactionType });
+        }
+      } catch {
+        // Revert on error
+        setOptimisticLiked(wasLiked);
+        setOptimisticReaction(prevReaction);
+        setOptimisticLikesCount(prevCount);
+        toast.error("Failed to update reaction");
+      }
+    },
+    [
+      optimisticLiked,
+      optimisticReaction,
+      optimisticLikesCount,
+      blog.id,
+      likeContent,
+      unlikeContent,
+      userInfo?.username,
+    ]
+  );
+
+  const commentsCount = blog.comments_count ?? 0;
+  const readTime = blog.body ? Math.ceil(blog.body.split(/\s+/).length / 200) : 0;
 
   const statusConfig = {
     PUBLISHED: { label: "Published", color: "text-emerald-500", bg: "bg-emerald-500/10" },
@@ -69,6 +127,7 @@ export function BlogHero({ blog, isPost }: BlogHeroProps) {
     DELETED: { label: "Deleted", color: "text-red-500", bg: "bg-red-500/10" },
   };
 
+  const currentReaction = REACTIONS.find((r) => r.type === optimisticReaction);
   const status = statusConfig[blog.status] || statusConfig.DRAFT;
 
   return (
@@ -88,15 +147,18 @@ export function BlogHero({ blog, isPost }: BlogHeroProps) {
       )}
 
       {/* Title & Meta Row */}
-      {
-        !isPost && <div className="flex items-center gap-3 flex-wrap">
+      {!isPost && (
+        <div className="flex items-center gap-3 flex-wrap">
           <h1 className="text-3xl md:text-4xl font-league-700 leading-tight">{blog.title}</h1>
         </div>
-      }
+      )}
+
       <div className="space-y-4">
         <div className="flex items-center gap-3 flex-wrap text-sm text-[var(--foreground)]/50">
           {blog.author && (
-            <span className="flex items-center gap-2">
+            <Link
+              href={`/${blog.author.username}`}
+              className="flex items-center gap-2">
               {blog.author.profile_picture ? (
                 <img src={blog.author.profile_picture} alt={blog.author.username} className="w-6 h-6 rounded-full object-cover" />
               ) : (
@@ -105,16 +167,17 @@ export function BlogHero({ blog, isPost }: BlogHeroProps) {
                 </div>
               )}
               <span className="font-medium text-[var(--foreground)]/70">{blog.author.username}</span>
-            </span>
+            </Link>
           )}
 
           <span className="text-[var(--foreground)]/20">·</span>
 
-          {
-            !isPost && <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium ${status.bg} ${status.color}`}>
+          {!isPost && (
+            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium ${status.bg} ${status.color}`}>
               {status.label}
             </span>
-          }
+          )}
+
           {!blog.is_public && !isPost && (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-[var(--foreground)]/10 text-[var(--foreground)]/50">
               <Lock className="w-3 h-3" />
@@ -159,37 +222,57 @@ export function BlogHero({ blog, isPost }: BlogHeroProps) {
 
       {/* Engagement Actions */}
       <div className="flex items-center gap-3 flex-wrap">
-        <button
-          onClick={handleLike}
-          disabled={isSubmitting}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all
-            ${hasLiked
-              ? "border-red-500/30 bg-red-500/10 text-red-500"
-              : "border-[var(--foreground)]/10 hover:border-red-500/30 hover:bg-red-500/5 text-[var(--foreground)]/60"
-            }`}
-        >
-          <Heart className={`w-5 h-5 ${hasLiked ? "fill-current" : ""}`} />
-          <span className="text-sm font-medium">{likesCount}</span>
-        </button>
+        {/* Reaction Button with Picker */}
+        <div className="relative" ref={reactionContainerRef}>
+          <button
+            onClick={() => setShowReactionPicker((prev) => !prev)}
+            disabled={!userInfo?.username}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all
+              ${optimisticLiked
+                ? "border-[var(--accent)]/30 bg-[var(--accent)]/10 text-[var(--accent)]"
+                : "border-[var(--foreground)]/10 hover:border-[var(--foreground)]/20 hover:bg-[var(--foreground)]/5 text-[var(--foreground)]/60"
+              }
+              ${!userInfo?.username ? "opacity-50 cursor-not-allowed" : ""}`}
+          >
+            {currentReaction ? (
+              <span className="text-lg">{currentReaction.emoji}</span>
+            ) : (
+              <Heart className="w-5 h-5" />
+            )}
+            <span className="text-sm font-medium">{optimisticLikesCount}</span>
+          </button>
 
-        <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[var(--foreground)]/10 text-[var(--foreground)]/60">
+          {showReactionPicker && (
+            <div
+              className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 flex items-center gap-1 p-2 rounded-2xl border border-[var(--foreground)]/10 shadow-xl"
+              style={{ backgroundColor: "var(--background)" }}
+            >
+              {REACTIONS.map((reaction) => (
+                <button
+                  key={reaction.type}
+                  onClick={() => handleReaction(reaction.type)}
+                  className={`p-2.5 rounded-xl transition-all hover:scale-110 text-lg ${optimisticLiked && optimisticReaction === reaction.type
+                    ? "bg-[var(--accent)]/20"
+                    : "hover:bg-[var(--foreground)]/5"
+                    }`}
+                  title={reaction.label}
+                >
+                  {reaction.emoji}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Comment Count */}
+        <div
+          onClick={() => {
+            console.log(blog.reaction_type)
+          }}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[var(--foreground)]/10 text-[var(--foreground)]/60">
           <MessageCircle className="w-5 h-5" />
           <span className="text-sm font-medium">{commentsCount}</span>
         </div>
-
-        <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[var(--foreground)]/10 text-[var(--foreground)]/60">
-          <Eye className="w-5 h-5" />
-          <span className="text-sm font-medium">{viewsCount}</span>
-        </div>
-
-        <button
-          onClick={handleShare}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[var(--foreground)]/10 
-            hover:border-[var(--accent)]/30 hover:bg-[var(--accent)]/5 transition-all text-[var(--foreground)]/60"
-        >
-          <Share2 className="w-5 h-5" />
-          <span className="text-sm font-medium">Reshare</span>
-        </button>
       </div>
     </div>
   );

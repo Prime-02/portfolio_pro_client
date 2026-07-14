@@ -8,7 +8,7 @@ import { Home, Briefcase, Users, Search, X, Sparkles } from 'lucide-react';
 
 // All tabs in one array
 const TABS = [
-  { id: "", label: "FYP", icon: Home },
+  { id: "", label: "Posts", icon: Home },
   { id: "projects", label: "Projects", icon: Briefcase },
   { id: "professionals", label: "Top Professionals", icon: Users },
   { id: "whats-new", label: "What's New", icon: Sparkles },

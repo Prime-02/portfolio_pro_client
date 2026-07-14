@@ -105,9 +105,11 @@ export const metadata: Metadata = {
 
   // Verification tokens (add these when you set up search console)
   verification: {
-    google: "your-google-verification-code", // Replace with actual verification code
+    google: "w5XtqI99jBr7rAfeYcCgTEEBjV0rZUF7l9iTMrM1Eco", // Replace with actual verification code
     // bing: "your-bing-verification-code", // Uncomment and replace if using Bing
   },
+
+  //<meta name="google-site-verification" content="w5XtqI99jBr7rAfeYcCgTEEBjV0rZUF7l9iTMrM1Eco" />
 
   // Additional metadata
   other: {

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { themePresets } from "@/lib/utilities/indices/Themes";
 import ColorPicker from "../inputs/ColorPicker";
 import type { ThemeVariant } from "../types and interfaces/loaderTypes";
-import { ThemePreset } from "../../(user)/[dashboard]/(sub-routes)/settings/preference/tabs/Themes";
+import { ThemePreset } from "../../(user)/[username]/(sub-routes)/settings/preference/tabs/Themes";
 import { hexToRgb } from "@/lib/utilities/syncFunctions/syncs";
 import { useTheme } from "../theme/ThemeContext";
 

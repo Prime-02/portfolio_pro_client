@@ -1,5 +1,5 @@
 import { useRouting } from "@/lib/hooks/routing/useRouting";
-import ThemeControlPanel from "@/src/app/(user)/[dashboard]/(sub-routes)/settings/preference/ThemeControlPanel";
+import ThemeControlPanel from "@/src/app/(user)/[username]/(sub-routes)/settings/preference/ThemeControlPanel";
 import Button from "@/src/app/components/buttons/Buttons";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import React from "react";

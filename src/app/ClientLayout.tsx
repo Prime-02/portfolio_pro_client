@@ -15,7 +15,6 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
   // Check if the current path is one of the routes where navbar should be HIDDEN
   const shouldHideNavbar = [
     "/user-auth",
-    "/welcome",
     "/studio",
     "/portfolios/"
   ].some(route => pathname?.includes(route));

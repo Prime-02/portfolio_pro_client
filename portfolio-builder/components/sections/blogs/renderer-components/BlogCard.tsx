@@ -122,7 +122,7 @@ export default function BlogCard({ blog, config, cardSize, fullWidth = true, ind
         ? ({ "--card-accent": accentColor } as React.CSSProperties)
         : undefined;
 
-    const authorName = blog.author?.display_name || blog.author?.username || "Anonymous";
+    const authorName = blog.author?.display_name || blog.author?.username || "Not Set";
     const authorImage = blog.author?.profile_picture;
 
     // ── Compact ──────────────────────────────────────────────────────────────

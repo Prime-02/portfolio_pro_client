@@ -6,7 +6,7 @@ import { useRouting } from "@/lib/hooks/routing/useRouting";
 
 const LogOutComponent = () => {
   const { logout } = useAuthStore();
-  const { startLoading, stopLoading, isLoading, } = useUIStore()
+  const { startLoading, stopLoading, isLoading, toggleMobileMenu } = useUIStore()
 
   const { router } = useRouting()
 
@@ -14,6 +14,7 @@ const LogOutComponent = () => {
     startLoading("logging_out");
     try {
       await logout();
+      toggleMobileMenu(false)
       router.push("/")
     } finally {
       stopLoading("logging_out");

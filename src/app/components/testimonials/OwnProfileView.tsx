@@ -2,7 +2,7 @@
 "use client";
 
 import { Quote, PenLine, Share2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useTheme } from "../theme/ThemeContext";
 import Button from "../buttons/Buttons";
 import { Testimonial, TestimonialStats } from "@/lib/stores/testimonials/useTestimonial";
@@ -13,7 +13,8 @@ import { TestimonialDialogs } from "./TestimonialDialogs";
 import { PageHeader } from "../ui/PageHeader";
 import { InfiniteScrollTrigger } from "../blogs/InfiniteScrollTrigger";
 import { LoadingSkeleton } from "./LoadingSkeleton";
-import { handleShareProfile } from "@/lib/utilities/syncFunctions/syncs";
+import { copyToClipboard } from "@/lib/utilities/syncFunctions/syncs";
+import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 
 interface OwnProfileViewProps {
     receivedTestimonials: Testimonial[];
@@ -72,6 +73,8 @@ export function OwnProfileView({
 }: OwnProfileViewProps) {
     const router = useRouter();
     const { profileContext } = useTheme();
+    const { userInfo } = useUserSettings()
+    const params = useParams()
     const usernamePath = profileContext?.username ? `${profileContext.username}` : "";
     const isReceivedTab = activeTab === "received";
     const currentTestimonials = isReceivedTab ? receivedTestimonials : authoredTestimonials;
@@ -81,6 +84,17 @@ export function OwnProfileView({
     const currentOnLoadMore = isReceivedTab ? onLoadMoreReceived : onLoadMoreAuthored;
     const displayedTestimonials = miniView ? currentTestimonials.slice(0, 3) : currentTestimonials;
     const showSeeAll = miniView && currentTestimonials.length > 0;
+    const currentPath = window.location.href
+    const username = params.username as string
+
+    const handleShareProfile = () => {
+        copyToClipboard(currentPath);
+    };
+
+    const handleInvite = () => {
+        const writePage = `${currentPath}/write?for=${username}`
+        copyToClipboard(writePage)
+    }
 
     // Show loading skeleton only on initial load (no data yet)
     if (isLoadingReceived && receivedTestimonials.length === 0 && isReceivedTab) {
@@ -101,11 +115,17 @@ export function OwnProfileView({
                         : `${totalAuthored} testimonial${totalAuthored !== 1 ? "s" : ""} written by you`
                 }
                 action={!miniView ? (
-                    <div className="flex items-center gap-x-2">
+                    <div className="flex flex-wrap items-center gap-2">
                         <Button
                             onClick={handleShareProfile}
                             className="self-start sm:self-auto"
                             text="Share Your Testimonials"
+                            icon={<Share2 className="w-4 h-4" />}
+                        />
+                        <Button
+                            onClick={handleInvite}
+                            className="self-start sm:self-auto"
+                            text="Invite others to write you a testimonial"
                             icon={<Share2 className="w-4 h-4" />}
                             variant="outline"
                         />

@@ -166,7 +166,7 @@ function LogoImageUpload({
         <ImageField
             url={logoImageUrl || null}
             onChange={handleImageChange}
-            folder={`${userInfo?.id}/portfolio/${portfolioId}/footer/logo`}
+            folder={`${userInfo?.id}/portfolios/${portfolioId}/footer_logo`}
             accept="image"
         />
     );

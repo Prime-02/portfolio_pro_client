@@ -60,7 +60,7 @@ function CommentItem({
   const author = comment.user;
   const displayName = author?.firstname && author?.lastname
     ? `${author.firstname} ${author.lastname}`
-    : author?.username || "Anonymous";
+    : author?.username || "Not Set";
 
   const isAuthor = userInfo?.id === comment.user_id;
 

@@ -67,7 +67,7 @@ export default function SuggestionCard({ suggestion, isMine }: SuggestionCardPro
   const author = suggestion.user;
   const displayName = author?.firstname && author?.lastname
     ? `${author.firstname} ${author.lastname}`
-    : author?.username || "Anonymous";
+    : author?.username || "Not Set";
 
   const handleToggleVote = () => {
     if (isOwn) return

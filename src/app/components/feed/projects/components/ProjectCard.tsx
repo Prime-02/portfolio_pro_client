@@ -71,7 +71,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
             </div>
             <div>
               <p className="font-semibold text-sm text-[var(--foreground)]">
-                {author?.display_name || author?.username || "Anonymous"}
+                {author?.display_name || author?.username || "Not Set"}
               </p>
               <p className="text-xs text-[var(--foreground)]/50">
                 {project.created_at

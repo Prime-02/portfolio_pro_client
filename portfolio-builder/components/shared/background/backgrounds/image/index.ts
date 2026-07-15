@@ -7,7 +7,7 @@ registerBackground({
   type: "image",
   label: "Image",
   fields: [
-    { kind: "text", label: "Image URL", key: "imageUrl", defaultValue: "", placeholder: "https://example.com/image.jpg" },
+    { kind: "text", label: "Image URL", key: "imageUrl", defaultValue: ""},
     {
       kind: "dropdown",
       label: "Size",

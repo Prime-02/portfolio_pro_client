@@ -9,6 +9,7 @@ import type { ReactNode } from "react";
  */
 export type FieldType =
   | { kind: "color"; label: string; key: string; defaultValue: string }
+  | { kind: "image"; label: string; key: string; defaultValue: string }
   | { kind: "slider"; label: string; key: string; defaultValue: number; min: number; max: number; step: number; unit?: string }
   | { kind: "text"; label: string; key: string; defaultValue: string; placeholder?: string }
   | { kind: "checkbox"; label: string; key: string; defaultValue: boolean }

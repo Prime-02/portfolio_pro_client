@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Pencil, Trash2, Zap, TrendingUp, Award } from "lucide-react";
 import type { ProfessionalSkill } from "@/lib/stores/skills/useSkills";
+import { useUIStore } from "@/lib/stores/ui/useUIStore";
 
 interface SkillBadgeProps {
     skill: ProfessionalSkill;
@@ -70,6 +71,7 @@ function ProficiencyRing({ percent, color }: { percent: number; color: string })
 
 export function SkillBadge({ skill, onEdit, onDelete, index, isOwner = false }: SkillBadgeProps) {
     const [isHovered, setIsHovered] = useState(false);
+    const { isDesktop } = useUIStore();
     const prof = getProficiency(skill.proficiency_level);
     const ProfIcon = prof.icon;
     const percent = getProficiencyPercent(skill.proficiency_level);
@@ -77,14 +79,13 @@ export function SkillBadge({ skill, onEdit, onDelete, index, isOwner = false }: 
 
     return (
         <motion.div
-            layout
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
             transition={{ duration: 0.3, delay: index * 0.05 }}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
-            className={`group relative rounded-2xl border transition-all duration-300 overflow-hidden
+            className={`group relative rounded-2xl border transition-all duration-300 overflow-hidden h-fit
                         ${isMajor
                     ? "border-[var(--accent)]/15 bg-[var(--accent)]/2"
                     : "border-[var(--foreground)]/5 bg-[var(--background)]"
@@ -158,14 +159,15 @@ export function SkillBadge({ skill, onEdit, onDelete, index, isOwner = false }: 
                     )}
                 </div>
 
-                {/* Actions - only for owner, appear on hover */}
+                {/* Actions - only for owner, appear on hover (desktop) or always visible (mobile/tablet) */}
                 {isOwner && (
                     <AnimatePresence>
-                        {isHovered && (
+                        {(!isDesktop || isHovered) && (
                             <motion.div
-                                initial={{ opacity: 0, y: 5 }}
+                                initial={isDesktop ? { opacity: 0, y: 5 } : { opacity: 1, y: 0 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: 5 }}
+                                exit={isDesktop ? { opacity: 0, y: 5 } : { opacity: 1, y: 0 }}
+                                transition={{ duration: 0.2 }}
                                 className="flex gap-1 mt-3 pt-3 border-t border-[var(--foreground)]/5"
                             >
                                 <button

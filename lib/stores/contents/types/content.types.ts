@@ -468,13 +468,13 @@ export interface UserSummary {
 
 /** Derive a display name from a UserSummary, handling both display_name and firstname/lastname */
 export function getDisplayName(user?: UserSummary | null): string {
-  if (!user) return "Anonymous";
+  if (!user) return "Not Set";
   if (user.display_name) return user.display_name;
   const parts = [user.firstname, user.middlename, user.lastname].filter(
     Boolean,
   );
   if (parts.length > 0) return parts.join(" ");
-  return user.username || "Anonymous";
+  return user.username || "Not Set";
 }
 
 export interface PaginationParams {

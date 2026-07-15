@@ -12,6 +12,7 @@ import { ProfileViewPage } from "./ProfileViewPage";
 import { ProfileSkeleton } from "./view/ProfileSkeleton";
 import { useTheme } from "../theme/ThemeContext";
 import { UserResponse } from "@/lib/stores/user/useUserAccountStore";
+import { useRouting } from "@/lib/hooks/routing/useRouting";
 
 export const UserProfilePage = () => {
     const {
@@ -36,8 +37,9 @@ export const UserProfilePage = () => {
 
     // Get profile context from ThemeContext instead of re-validating
     const { profileContext } = useTheme();
-
-    const [isEditing, setIsEditing] = useState(false);
+    const { checkParams, clearQueryParam } = useRouting()
+    const isNew = checkParams("edit_profile") === "true"
+    const [isEditing, setIsEditing] = useState(isNew);
     const [isSaving, setIsSaving] = useState(false);
 
     // Derived state from profileContext
@@ -106,6 +108,7 @@ export const UserProfilePage = () => {
     };
 
     const handleCancelEdit = async () => {
+        clearQueryParam(["edit_profile"])
         setIsEditing(false);
         await refetchData(); // Discard any unsaved changes
     };
@@ -150,7 +153,7 @@ export const UserProfilePage = () => {
 
     // ─── Main Render ──────────────────────────────────────────────────────────
     return (
-        <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto py-8">
             {/* User Not Found Notice for authenticated users viewing missing profiles */}
             {showUserNotFound && (
                 <UserNotFoundNotice username={userInfo?.username ?? ""} />

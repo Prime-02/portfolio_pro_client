@@ -59,7 +59,7 @@ const NotificationCard = (prop: ProcessedNotification) => {
         </span>
         <p className="text-sm md:text-base break-words">{message}</p>
       </div>
-      <span className="flex items-center gap-x-2 flex-shrink-0 self-end md:self-center">
+      <span className="flex flex-wrap items-center gap-2 flex-shrink-0 self-end md:self-center">
         {!isRead && (
           <Button
             text="Mark as read"

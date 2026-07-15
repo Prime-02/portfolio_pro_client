@@ -13,6 +13,7 @@ import {
     Calendar,
 } from "lucide-react";
 import type { Experience, EmploymentType, LocationType } from "@/lib/stores/experiences/useExperience";
+import { useUIStore } from "@/lib/stores/ui/useUIStore";
 
 interface ExperienceCardProps {
     experience: Experience;
@@ -65,6 +66,7 @@ export function ExperienceCard({
 }: ExperienceCardProps) {
     const [isHovered, setIsHovered] = useState(false);
     const [expanded, setExpanded] = useState(false);
+    const { isDesktop } = useUIStore();
 
     const isCurrent = experience.is_current;
     const isFeatured = experience.is_featured;
@@ -73,14 +75,13 @@ export function ExperienceCard({
 
     return (
         <motion.div
-            layout
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.35, delay: index * 0.06, ease: [0.25, 0.46, 0.45, 0.94] }}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
-            className={`relative rounded-2xl border transition-all duration-300 overflow-hidden
+            className={`relative rounded-2xl border transition-all duration-300 overflow-hidden h-fit
                 ${isFeatured
                     ? "border-[var(--accent)]/30 bg-[var(--accent)]/5"
                     : "border-[var(--foreground)]/10 bg-[var(--background)]"
@@ -243,14 +244,14 @@ export function ExperienceCard({
                     </div>
                 )}
 
-                {/* Owner actions — appear on hover */}
+                {/* Owner actions — appear on hover (desktop) or always visible (mobile/tablet) */}
                 {isOwner && (
                     <AnimatePresence>
-                        {isHovered && (
+                        {(!isDesktop || isHovered) && (
                             <motion.div
-                                initial={{ opacity: 0, y: 4 }}
+                                initial={isDesktop ? { opacity: 0, y: 4 } : { opacity: 1, y: 0 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: 4 }}
+                                exit={isDesktop ? { opacity: 0, y: 4 } : { opacity: 1, y: 0 }}
                                 transition={{ duration: 0.15 }}
                                 className="flex gap-1 mt-4 pt-3 border-t border-[var(--foreground)]/5"
                             >

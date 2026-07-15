@@ -31,16 +31,17 @@ export const ProfileHeroCard = ({
     onEdit,
 }: ProfileHeroCardProps) => {
     return (
-        <div className="card rounded-2xl p-6 sm:p-8">
+        <div className="card rounded-2xl">
             {/* Top row: Avatar + Edit button */}
-            <div className="flex items-start justify-between mb-6">
-                <div className="relative w-[30vw] h-[30vw] max-w-56 max-h-56 min-w-24 min-h-24 rounded-full overflow-hidden ring-4 ring-(--accent)/20 shadow-lg shrink-0">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between mb-4 sm:mb-6 gap-4 sm:gap-0">
+                <div className="relative w-24 h-24 sm:w-[25vw] sm:h-[25vw] md:w-[30vw] md:h-[30vw] max-w-40 md:max-w-56 max-h-40 md:max-h-56 rounded-full overflow-hidden ring-4 ring-(--accent)/20 shadow-lg shrink-0">
                     {userInfo?.profile_picture ? (
                         <Image
                             src={getImageSrc(userInfo?.profile_picture)}
                             alt={name || "Profile"}
                             fill
                             className="object-cover"
+                            sizes="(max-width: 640px) 96px, (max-width: 768px) 25vw, 30vw"
                         />
                     ) : (
                         <div className="w-full h-full bg-gradient-to-br from-(--accent)/10 to-(--accent)/5 flex items-center justify-center">
@@ -52,62 +53,63 @@ export const ProfileHeroCard = ({
                 </div>
 
                 {isOwnProfile && onEdit && (
-                    <div className="flex items-center gap-x-2">
+                    <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-center sm:justify-end">
                         <Button
                             text="Share Your Profile"
                             icon={<Share2Icon className="w-4 h-4 transition-transform group-hover:rotate-12" />}
                             onClick={handleShareProfile}
                             variant="outline"
+                            className="text-xs sm:text-sm"
                         />
                         <Button
                             text="Edit Profile"
                             icon={<Edit className="w-4 h-4 transition-transform group-hover:rotate-12" />}
                             onClick={onEdit}
+                            className="text-xs sm:text-sm"
                         />
                     </div>
                 )}
             </div>
 
-            {/* Rest of the component remains the same... */}
             {/* Name & username */}
-            <div className="mb-5">
-                <h1 className="text-2xl sm:text-3xl font-league-700 text-(--foreground) leading-tight">
-                    {name || "Anonymous"}
+            <div className="mb-4 sm:mb-5 text-center sm:text-left">
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-league-700 text-(--foreground) leading-tight break-words">
+                    {name || "Not Set"}
                 </h1>
                 {username && (
-                    <p className="text-(--foreground)/50 font-league-400 mt-1 text-sm">@{username}</p>
+                    <p className="text-(--foreground)/50 font-league-400 mt-1 text-xs sm:text-sm break-all">@{username}</p>
                 )}
             </div>
 
             {/* Badges row */}
-            <div className="flex flex-wrap gap-2 mb-6">
+            <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-4 sm:mb-6 justify-center sm:justify-start">
                 {profile?.open_to_work && (
-                    <Badge active color="accent">
-                        <span className="flex items-center gap-1.5">
+                    <Badge active color="accent" className="text-xs sm:text-sm">
+                        <span className="flex items-center gap-1 sm:gap-1.5">
                             <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
                             Open to Work
                         </span>
                     </Badge>
                 )}
                 {profile?.availability && (
-                    <Badge color="primary">{profile.availability.replace("_", " ").toLocaleUpperCase()} Notice Period</Badge>
-                )}
-                {/* {(userInfo as any)?.is_active !== undefined && (
-                    <Badge active={(userInfo as any).is_active} color={(userInfo as any).is_active ? "accent" : "secondary"}>
-                        {(userInfo as any).is_active ? "Active" : "Inactive"}
+                    <Badge color="primary" className="text-xs sm:text-sm">
+                        {profile.availability.replace("_", " ").toLocaleUpperCase()} Notice Period
                     </Badge>
-                )} */}
+                )}
             </div>
 
             {/* Bio */}
             {profile?.bio && (
-                <div className="mb-6 p-4 rounded-xl bg-(--foreground)/[0.03] border border-(--foreground)/5">
-                    <MarkdownRenderer className="text-(--foreground)/80 leading-relaxed" markdown={profile.bio} />
+                <div className="mb-4 sm:mb-6 rounded-xl bg-(--foreground)/[0.03] border border-(--foreground)/5">
+                    <MarkdownRenderer
+                        className="text-sm sm:text-base text-(--foreground)/80 leading-relaxed break-words"
+                        markdown={profile.bio}
+                    />
                 </div>
             )}
 
             {/* Quick stats row */}
-            <div className="grid grid-cols-1 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                 {profile?.profession && (
                     <StatCard value={profile.profession} label="Profession" icon="briefcase" />
                 )}

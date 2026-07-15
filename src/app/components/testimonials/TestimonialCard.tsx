@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Quote, Star, Trash2, CheckCircle2, Clock, User, Loader2 } from "lucide-react";
+import { Quote, Star, Trash2, CheckCircle2, Clock, User } from "lucide-react";
 import { Testimonial } from "@/lib/stores/testimonials/useTestimonial";
+import { useUIStore } from "@/lib/stores/ui/useUIStore";
+import { LoaderComponent } from "../loaders/Loader";
 
 interface TestimonialCardProps {
     testimonial: Testimonial;
@@ -45,10 +47,15 @@ export function TestimonialCard({
 }: TestimonialCardProps) {
     const [isExpanded, setIsExpanded] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
+    const { isDesktop } = useUIStore()
     const contentIsLong = testimonial.content.length > 200;
     const displayContent = isExpanded || !contentIsLong
         ? testimonial.content
         : testimonial.content.slice(0, 200) + "...";
+
+    // Actions should always be visible on non-desktop devices
+    const shouldShowActions = (!isDesktop || isHovered) || isTogglingFeature || isApproving;
+    const hasActions = !!(onToggleFeature || onDelete || onApprove);
 
     return (
         <motion.div
@@ -156,11 +163,11 @@ export function TestimonialCard({
                 {/* Actions — only for owner */}
                 {isOwner && (
                     <AnimatePresence>
-                        {(isHovered || isTogglingFeature || isApproving) && (onToggleFeature || onDelete || onApprove) && (
+                        {shouldShowActions && hasActions && (
                             <motion.div
-                                initial={{ opacity: 0, y: 5 }}
+                                initial={isDesktop ? { opacity: 0, y: 5 } : { opacity: 1, y: 0 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: 5 }}
+                                exit={isDesktop ? { opacity: 0, y: 5 } : { opacity: 1, y: 0 }}
                                 className="flex gap-2 mt-4 pt-3 border-t border-[var(--foreground)]/5"
                             >
                                 {onApprove && !testimonial.is_approved && (
@@ -172,7 +179,7 @@ export function TestimonialCard({
                                                  disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         {isApproving ? (
-                                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                            <LoaderComponent size={16} />
                                         ) : (
                                             <CheckCircle2 className="w-3.5 h-3.5" />
                                         )}
@@ -192,7 +199,7 @@ export function TestimonialCard({
                                             }`}
                                     >
                                         {isTogglingFeature ? (
-                                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                            <LoaderComponent size={16} />
                                         ) : (
                                             <Star
                                                 className={`w-3.5 h-3.5 ${testimonial.is_featured ? "fill-[var(--accent)]" : ""

@@ -7,6 +7,7 @@ import type { SocialLink } from "@/lib/stores/social_links/useSocialLinks";
 import { socialMediaPlatforms } from "@/lib/utilities/indices/DropDownItems";
 import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 import { copyToClipboard } from "@/lib/utilities/syncFunctions/syncs";
+import { useUIStore } from "@/lib/stores/ui/useUIStore";
 
 interface SocialLinkCardProps {
     link: SocialLink;
@@ -17,7 +18,9 @@ interface SocialLinkCardProps {
 
 export function SocialLinkCard({ link, onEdit, onDelete, isPrivate = true }: SocialLinkCardProps) {
     const [copied, setCopied] = useState(false);
+    const [isHovered, setIsHovered] = useState(false);
     const { getThemeVariant } = useUserSettings();
+    const { isDesktop } = useUIStore();
 
     const platform = socialMediaPlatforms.find(
         (p) => p.code.toLowerCase() === link.platform_name.toLowerCase()
@@ -41,13 +44,14 @@ export function SocialLinkCard({ link, onEdit, onDelete, isPrivate = true }: Soc
 
     return (
         <motion.div
-            layout
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95 }}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
             className="group relative rounded-2xl border border-[var(--foreground)]/10 
                        bg-[var(--background)] hover:border-[var(--foreground)]/20 
-                       hover:shadow-lg transition-all duration-300 overflow-hidden p-5"
+                       hover:shadow-lg transition-all duration-300 overflow-hidden p-5 h-fit"
         >
             {/* Platform Header */}
             <div className="flex items-start justify-between mb-4">
@@ -72,7 +76,12 @@ export function SocialLinkCard({ link, onEdit, onDelete, isPrivate = true }: Soc
 
                 {/* Actions */}
                 {isPrivate && (
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <motion.div
+                        initial={isDesktop ? { opacity: 0 } : { opacity: 1 }}
+                        animate={{ opacity: !isDesktop || isHovered ? 1 : 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="flex gap-1"
+                    >
                         <button
                             onClick={onEdit}
                             className="p-2 rounded-lg hover:bg-[var(--foreground)]/10 transition-colors"
@@ -87,7 +96,7 @@ export function SocialLinkCard({ link, onEdit, onDelete, isPrivate = true }: Soc
                         >
                             <Trash2 className="w-4 h-4" />
                         </button>
-                    </div>
+                    </motion.div>
                 )}
             </div>
 

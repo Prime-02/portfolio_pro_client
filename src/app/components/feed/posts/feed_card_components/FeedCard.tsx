@@ -83,7 +83,7 @@ export default function FeedCard({ content }: FeedCardProps) {
             </div>
             <div>
               <p className="font-semibold text-sm text-[var(--foreground)]">
-                {author?.display_name || author?.username || "Anonymous"}
+                {author?.display_name || author?.username || "Not Set"}
               </p>
               <p className="text-xs text-[var(--foreground)]/50">
                 {content.created_at

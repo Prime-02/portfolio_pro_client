@@ -81,7 +81,7 @@ export function OwnBlogsView({
         title="My Posts & Blogs"
         description={`${totalBlogs} post${totalBlogs !== 1 ? "s" : ""} in your collection`}
         action={!miniView ? (
-          <div className="flex items-center gap-x-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Button
               onClick={handleShareProfile}
               className="self-start sm:self-auto"

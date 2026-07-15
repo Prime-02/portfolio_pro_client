@@ -1,3 +1,4 @@
+import { useUIStore } from "@/lib/stores/ui/useUIStore";
 import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 import { privateRoutes } from "@/lib/utilities/indices/NavigationItems";
 import Link from "next/link";
@@ -16,12 +17,13 @@ const routeCategories = {
     "education",
     "skills",
   ],
-  CONTENT: [ "testimonials", "blogs"],
+  CONTENT: ["testimonials", "blogs"],
   SETTINGS: ["preference", "account-settings", 'session-management'],
 };
 
-const Menu = ({ isCollapsed }: { isCollapsed: boolean }) => {
+const Menu = ({ isCollapsed, setIsCollapsed }: { isCollapsed: boolean, setIsCollapsed: (isCollapsed: boolean) => void }) => {
   const { userInfo } = useUserSettings();
+  const { isMobile } = useUIStore()
   const pathname = usePathname();
 
   // Group routes by category
@@ -54,7 +56,7 @@ const Menu = ({ isCollapsed }: { isCollapsed: boolean }) => {
           <div key={category} className="space-y-3">
             {/* Category Header */}
             {isCollapsed && (
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 px-3">
+              <h3 className="text-sm font-semibold uppercase tracking-wider opacity-60 px-3">
                 {categoryTitles[category as keyof typeof categoryTitles]}
               </h3>
             )}
@@ -69,6 +71,11 @@ const Menu = ({ isCollapsed }: { isCollapsed: boolean }) => {
                   <Link
                     key={route.slug}
                     href={`/${userInfo?.username ?? "user"}${route.link}`}
+                    onClick={() => {
+                      if (isMobile) {
+                        setIsCollapsed(false)
+                      }
+                    }}
                     className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all justify-center duration-200 ${isActive
                       ? `bg-[var(--accent)] text-[var(--accent)] border-r-2 border-[var(--accent)]`
                       : "hover:bg-[var(--background)]/10"

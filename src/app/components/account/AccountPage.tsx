@@ -8,6 +8,8 @@ import Button from "../buttons/Buttons";
 import { toast } from "../toastify/Toastify";
 import Modal from "../containers/modals/Modal";
 import { useAuthStore } from "@/lib/stores/user/useAuthStore";
+import { PageHeader } from "../ui/PageHeader";
+import { UserCog2Icon } from "lucide-react";
 
 
 // ── Reusable Components (hard-coded, update later) ─────────────────────
@@ -239,7 +241,7 @@ export default function AccountSettingsPage() {
     const handleDelete = useCallback(async () => {
         const success = await deleteAccount({ password: deletePassword });
         if (success) {
-            await logout();
+            await logout(false);
             setDeleteModalOpen(false);
             setDeletePassword("");
             toast.success("Account deleted. Redirecting...");
@@ -274,14 +276,11 @@ export default function AccountSettingsPage() {
     return (
         <div className="mx-auto max-w-3xl px-4 py-8">
             {/* Header */}
-            <div className="mb-8">
-                <h1 className="font-league-700 text-3xl tracking-tight text-(--foreground)">
-                    Account Settings
-                </h1>
-                <p className="mt-1 text-sm text-(--foreground)/60">
-                    Manage your account details, security, and preferences
-                </p>
-            </div>
+            <PageHeader
+                title="Account Settings"
+                description="Manage your account details, security, and preferences"
+                icon={<UserCog2Icon />}
+            />
 
             {/* Profile Overview */}
             <Card className="mb-6">
@@ -306,11 +305,6 @@ export default function AccountSettingsPage() {
                         {userInfo?.phone_number && (
                             <p className="text-sm text-(--foreground)/50">
                                 {userInfo.phone_number}
-                            </p>
-                        )}
-                        {userInfo?.role && (
-                            <p className="mt-2 text-xs text-(--foreground)/40 uppercase tracking-wide">
-                                Role: {userInfo.role}
                             </p>
                         )}
                     </div>

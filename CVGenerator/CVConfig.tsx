@@ -132,7 +132,7 @@ export default function CVConfig({
         onClick={onGenerate}
         loading={loading}
         disabled={loading || sections.length === 0}
-        size="lg"
+        size="sm"
         text="Generate CV"
       />
     </div>

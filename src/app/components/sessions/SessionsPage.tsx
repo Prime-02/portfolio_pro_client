@@ -4,10 +4,11 @@ import { useState, useCallback, useEffect } from "react";
 import { useSessionsStore } from "@/lib/stores/user/useSessionsStore";
 import Button from "../buttons/Buttons";
 import { toast } from "../toastify/Toastify";
-import { RefreshCcw } from "lucide-react";
+import { MonitorSmartphone, RefreshCcw } from "lucide-react";
 import { tokenStore } from "@/lib/client/api";
 import { useAuthStore } from "@/lib/stores/user/useAuthStore";
 import { useRouter } from "next/navigation";
+import { PageHeader } from "../ui/PageHeader";
 
 function Card({
     children,
@@ -269,38 +270,32 @@ export default function SessionsPage() {
     return (
         <div className="mx-auto max-w-4xl px-4 py-8">
             {/* Header */}
-            <div className="mb-8 flex items-start justify-between">
-                <div>
-                    <h1 className="font-league-700 text-3xl tracking-tight text-(--foreground)"
-                    onClick={()=>{
-                        toast.info(`Current Session ID: ${tokenStore.getSessionId()}`)
-                    }}
-                    >
-                        {currentSessionId}
-                        Session Management
-                    </h1>
-                    <p className="mt-1 text-sm text-(--foreground)/60">
-                        Manage your active sessions across all devices
-                    </p>
-                </div>
-                <div className="flex gap-2">
-                    <Button
-                        variant="ghost"
-                        onClick={() => fetchSessionList(true)}
-                        loading={isLoading}
-                        disabled={isLoading}
-                        text="Refresh"
-                        icon={<RefreshCcw />}
-                    />
+            <PageHeader
+                icon={<MonitorSmartphone />}
+                title="Session Management"
+                description="Manage your active sessions across all devices"
+                action={
+                    <div className="flex gap-2">
+                        <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => fetchSessionList(true)}
+                            loading={isLoading}
+                            disabled={isLoading}
+                            text="Refresh"
+                            icon={<RefreshCcw />}
+                        />
 
-                    <Button
-                        variant="danger"
-                        onClick={() => setRevokeAllModalOpen(true)}
-                        disabled={sessionList.length === 0 || isLoading}
-                        text="Revoke All"
-                    />
-                </div>
-            </div>
+                        <Button
+                            size="sm"
+                            variant="danger"
+                            onClick={() => setRevokeAllModalOpen(true)}
+                            disabled={sessionList.length === 0 || isLoading}
+                            text="Revoke All"
+                        />
+                    </div>
+                }
+            />
 
             {/* Active Session Summary */}
             {activeSession && (

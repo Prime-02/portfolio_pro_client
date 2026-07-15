@@ -82,7 +82,7 @@ export function OwnProjectsView({
         title="My Projects"
         description={`${totalProjects} project${totalProjects !== 1 ? "s" : ""} in your portfolio`}
         action={!miniView ? (
-          <div className="flex items-center gap-x-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Button
               onClick={handleShareProfile}
               className="self-start sm:self-auto"

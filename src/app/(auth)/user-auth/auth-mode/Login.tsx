@@ -77,9 +77,7 @@ const Login = () => {
 
       // Navigate based on user status
       if (isNewUser) {
-        router.push("/welcome");
-      } else if (!loginRes.user.username || loginRes.user.username === "") {
-        router.push("/welcome?step=1");
+        router.push(`/${loginRes.user.username}?edit_profile=true`);
       } else {
         router.push(`/${loginRes.user.username}`);
       }

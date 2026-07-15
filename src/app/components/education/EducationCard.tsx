@@ -7,6 +7,7 @@ import {
     CheckCircle2, BookOpen, ChevronDown, Lock, ExternalLink
 } from "lucide-react";
 import type { Education } from "@/lib/stores/education/useEducation";
+import { useUIStore } from "@/lib/stores/ui/useUIStore";
 
 interface EducationCardProps {
     education: Education;
@@ -23,6 +24,8 @@ function formatYear(yearStr: string | null | undefined): string {
 
 export function EducationCard({ education, onEdit, onDelete, isOwner = false }: EducationCardProps) {
     const [expanded, setExpanded] = useState(false);
+    const [isHovered, setIsHovered] = useState(false);
+    const { isDesktop } = useUIStore();
     const isCurrent = education.is_current;
     const hasEndYear = !!education.end_year;
 
@@ -30,13 +33,14 @@ export function EducationCard({ education, onEdit, onDelete, isOwner = false }: 
 
     return (
         <motion.div
-            layout
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95 }}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
             className="group relative rounded-2xl border border-[var(--foreground)]/10 
                        bg-[var(--background)] hover:border-[var(--foreground)]/20 
-                       transition-all duration-300 overflow-hidden"
+                       transition-all duration-300 overflow-hidden h-fit"
         >
             <div className="p-5">
                 {/* Header */}
@@ -72,7 +76,12 @@ export function EducationCard({ education, onEdit, onDelete, isOwner = false }: 
 
                     {/* Actions — only for owner */}
                     {isOwner && (
-                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 ml-2">
+                        <motion.div
+                            initial={isDesktop ? { opacity: 0 } : { opacity: 1 }}
+                            animate={{ opacity: !isDesktop || isHovered ? 1 : 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="flex gap-1 flex-shrink-0 ml-2"
+                        >
                             <button
                                 onClick={onEdit}
                                 className="p-2 rounded-lg hover:bg-[var(--foreground)]/10 transition-colors"
@@ -87,7 +96,7 @@ export function EducationCard({ education, onEdit, onDelete, isOwner = false }: 
                             >
                                 <Trash2 className="w-4 h-4" />
                             </button>
-                        </div>
+                        </motion.div>
                     )}
                 </div>
 

@@ -175,7 +175,7 @@ export default function MediaTab({ data, onUpdate }: MediaTabProps) {
                     <ImageField
                         url={currentUrl}
                         onChange={handleUrlChange}
-                        folder={`${userInfo?.id}/portfolio/${portfolioId}/hero/${mediaType}`}
+                        folder={`${userInfo?.id}/portfolios/${portfolioId}/hero/${mediaType}`}
                         accept={mediaType}
                     />
                 </Field>

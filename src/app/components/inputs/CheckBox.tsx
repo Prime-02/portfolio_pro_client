@@ -163,7 +163,7 @@ const CheckBox: React.FC<CheckBoxProps> = ({
   return (
     <>
       <style>{scopedStyles}</style>
-      <div className={`flex items-center gap-x-2 ${className}`}>
+      <div className={`flex flex-wrap items-center gap-2 ${className}`}>
         <div style={{
           display: "flex",
           alignItems: "center",

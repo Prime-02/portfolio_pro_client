@@ -15,18 +15,24 @@ import { getImageSrc } from "@/lib/utilities/syncFunctions/syncs";
 import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 
 const LandingPageNavbar = () => {
-  const { userInfo } = useUserSettings()
-  const { viewportWidth, setViewportWidth } = useUIStore()
+  const { userInfo } = useUserSettings();
+  const {
+    viewportWidth,
+    setViewportWidth,
+    mobileMenuOpen,
+    toggleMobileMenu,
+    isSidebarExpanded,
+    setSidebarExpanded,
+  } = useUIStore();
+
   const [imageError, setImageError] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleImageError = () => {
     setImageError(true);
   };
   const fallbackLetter = userInfo?.username?.toUpperCase() || "User";
 
-  const isMobile = viewportWidth < 768; // md breakpoint
+  const isMobile = viewportWidth < 768;
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -37,24 +43,19 @@ const LandingPageNavbar = () => {
       window.addEventListener("resize", handleResize);
       return () => window.removeEventListener("resize", handleResize);
     }
-  }, []);
+  }, [setViewportWidth]);
 
   // Handle hover expand on desktop only
   const handleMouseEnter = () => {
     if (!isMobile) {
-      setIsExpanded(true);
+      setSidebarExpanded(true);
     }
   };
 
   const handleMouseLeave = () => {
     if (!isMobile) {
-      setIsExpanded(false);
+      setSidebarExpanded(false);
     }
-  };
-
-  // Mobile: Toggle menu
-  const toggleMobileMenu = () => {
-    setMobileMenuOpen(!mobileMenuOpen);
   };
 
   return (
@@ -69,7 +70,7 @@ const LandingPageNavbar = () => {
             <CloseButton onClick={toggleMobileMenu} />
           ) : (
             <button
-              onClick={toggleMobileMenu}
+                onClick={() => toggleMobileMenu(true)}
               className="p-2 rounded-full hover:bg-[var(--accent)]/10 transition-colors"
               title="Menu"
             >
@@ -84,7 +85,7 @@ const LandingPageNavbar = () => {
         className={`
           ${isMobile ? "fixed" : "relative"} top-0 h-screen max-h-screen overflow-auto bg-[var(--background)] border-r border-[var(--accent)]/20 flex flex-col transition-all duration-300 ease-in-out
           ${isMobile ? `z-40 ${mobileMenuOpen ? "left-0" : "-left-full"}` : ""}
-          ${isExpanded || mobileMenuOpen ? "w-64" : "w-16"}
+          ${isSidebarExpanded || mobileMenuOpen ? "w-64" : "w-16"}
           ${isMobile ? "pt-16" : ""}
         `}
         onMouseEnter={handleMouseEnter}
@@ -92,16 +93,16 @@ const LandingPageNavbar = () => {
       >
         {/* Top section - Logo and Search */}
         <div
-          className={`items-center flex flex-col gap-2 py-4 ${isExpanded || mobileMenuOpen ? "px-4" : ""}`}
+          className={`items-center flex flex-col gap-2 py-4 ${isSidebarExpanded || mobileMenuOpen ? "px-4" : ""}`}
         >
           {!isMobile && (
             <Link
-              className={`${isExpanded ? "w-full flex items-center justify-between " : "mx-auto"}`}
+              className={`${isSidebarExpanded ? "w-full flex items-center justify-between " : "mx-auto"}`}
               href="/feed"
             >
               <PortfolioProLogo
-                variant={isExpanded ? "banner" : "logo"}
-                scale={!isExpanded ? 0.2 : 0.3}
+                variant={isSidebarExpanded ? "banner" : "logo"}
+                scale={!isSidebarExpanded ? 0.2 : 0.3}
               />
             </Link>
           )}
@@ -113,7 +114,7 @@ const LandingPageNavbar = () => {
             <div className="flex flex-col h-full">
               {/* Menu takes majority of space */}
               <div className="flex-1 overflow-y-auto custom-scrollbar py-2">
-                <Menu isCollapsed={isExpanded || mobileMenuOpen} />
+                <Menu setIsCollapsed={toggleMobileMenu} isCollapsed={isSidebarExpanded || mobileMenuOpen} />
               </div>
 
               {/* Fixed bottom controls */}
@@ -122,13 +123,13 @@ const LandingPageNavbar = () => {
                 <Link
                   title="Notification"
                   href={`/${userInfo?.username}/notifications`}
-                  className={`cursor-pointer rounded-full flex items-center transition-all duration-300 hover:bg-[var(--accent)]/10 ${isExpanded || mobileMenuOpen
+                  className={`cursor-pointer rounded-full flex items-center transition-all duration-300 hover:bg-[var(--accent)]/10 ${isSidebarExpanded || mobileMenuOpen
                     ? "w-full px-4 py-3 justify-start gap-3"
                     : "w-12 h-12 justify-center mx-auto"
                     }`}
                 >
                   <NotificationsButton
-                    expanded={isExpanded || mobileMenuOpen}
+                    expanded={isSidebarExpanded || mobileMenuOpen}
                   />
                 </Link>
 
@@ -140,7 +141,7 @@ const LandingPageNavbar = () => {
                   position="top-left"
                   clicker={
                     <div
-                      className={`relative flex items-center cursor-pointer rounded-full transition-all duration-300 hover:bg-[var(--accent)]/10 ${isExpanded || mobileMenuOpen
+                      className={`relative flex items-center cursor-pointer rounded-full transition-all duration-300 hover:bg-[var(--accent)]/10 ${isSidebarExpanded || mobileMenuOpen
                         ? "w-full px-4 py-3 justify-start gap-3"
                         : "w-12 h-12 justify-center mx-auto"
                         }`}
@@ -173,7 +174,7 @@ const LandingPageNavbar = () => {
                           />
                         )}
                       </span>
-                      {(isExpanded || mobileMenuOpen) && (
+                      {(isSidebarExpanded || mobileMenuOpen) && (
                         <span className="flex flex-col items-start ">
                           <p className="font-semibold">{userInfo?.username}</p>
                           <p className="text-xs opacity-65">
@@ -182,7 +183,7 @@ const LandingPageNavbar = () => {
                         </span>
                       )}
                       <ChevronDown
-                        className={`rounded-full bg-[var(--background)] p-0.5 shadow-sm ${isExpanded || mobileMenuOpen
+                        className={`rounded-full bg-[var(--background)] p-0.5 shadow-sm ${isSidebarExpanded || mobileMenuOpen
                           ? "absolute bottom-6 right-5"
                           : "absolute -bottom-0.5 -right-1"
                           }`}
@@ -198,7 +199,7 @@ const LandingPageNavbar = () => {
             </div>
           ) : (
             <div className="h-full flex flex-col pb-6 items-center gap-3">
-              {isExpanded || mobileMenuOpen ? (
+              {isSidebarExpanded || mobileMenuOpen ? (
                 <>
                   <Link
                     href="/user-auth?auth_mode=login"
@@ -235,7 +236,7 @@ const LandingPageNavbar = () => {
       {isMobile && mobileMenuOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-30 top-16"
-          onClick={toggleMobileMenu}
+          onClick={() => toggleMobileMenu(false)}
         />
       )}
     </>

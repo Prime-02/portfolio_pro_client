@@ -20,6 +20,7 @@ import {
 import { useRouter } from "next/navigation";
 import type { ContentWithAuthor, ContentStatus } from "@/lib/stores/contents/types/content.types";
 import { useUserSettings } from "@/lib/stores/user/useUserSettings";
+import { useUIStore } from "@/lib/stores/ui/useUIStore";
 
 interface BlogCardProps {
   blog: ContentWithAuthor;
@@ -49,6 +50,7 @@ export function BlogCard({
   const [isHovered, setIsHovered] = useState(false);
   const { userInfo } = useUserSettings()
   const router = useRouter();
+  const { isDesktop } = useUIStore()
 
   const hasCover = blog.cover_image_url;
   const isPublic = blog.is_public;
@@ -61,7 +63,6 @@ export function BlogCard({
 
   return (
     <motion.article
-      layout
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
@@ -69,7 +70,7 @@ export function BlogCard({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={() => router.push(`blogs/${blog.id}`)}
-      className={`group relative rounded-2xl border transition-all duration-300 overflow-hidden cursor-pointer
+      className={`group relative rounded-2xl border transition-all duration-300 overflow-hidden cursor-pointer h-fit
         ${featured
           ? "border-[var(--accent)]/20 bg-[var(--accent)]/5 md:col-span-2 lg:col-span-2"
           : "border-[var(--foreground)]/10 bg-[var(--background)]"
@@ -213,8 +214,9 @@ export function BlogCard({
         {/* Owner actions */}
         {isOwner && (
           <motion.div
-            initial={false}
-            animate={{ opacity: isHovered ? 1 : 0, y: isHovered ? 0 : 4 }}
+            initial={isDesktop ? { opacity: 0, y: 4 } : { opacity: 1, y: 0 }}
+            animate={{ opacity: !isDesktop || isHovered ? 1 : 0, y: !isDesktop || isHovered ? 0 : 4 }}
+            transition={{ duration: 0.2 }}
             className="flex gap-1 mt-3 pt-3 border-t border-[var(--foreground)]/5"
           >
             <button

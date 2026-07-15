@@ -6,9 +6,11 @@ import { useTheme } from "@/src/app/components/theme/ThemeContext";
 import { ThemeVariant } from "@/src/app/components/types and interfaces/loaderTypes";
 import Button from "@/src/app/components/buttons/Buttons";
 import { useUserSettings } from "@/lib/stores/user/useUserSettings";
+import { useUIStore } from "@/lib/stores/ui/useUIStore";
 
 const ThemeSettings = () => {
   const { themeVariant, setThemeVariant } = useTheme();
+  const { toggleMobileMenu } = useUIStore()
   const { userInfo } = useUserSettings();
 
   type ThemeType = {
@@ -42,18 +44,20 @@ const ThemeSettings = () => {
           <div
             key={theme}
             className={`p-3 rounded-lg cursor-pointer transition-colors w-full ${themeVariant === theme
-                ? "text-[var(--accent)] dark:text-[var(--accent)]"
-                : "hover:bg-[var(--background)]"
+              ? "text-[var(--accent)] dark:text-[var(--accent)]"
+              : "hover:bg-[var(--background)]"
               }`}
             onClick={() => {
+              toggleMobileMenu()
+              toggleMobileMenu(false)
               setThemeVariant(theme);
             }}
           >
             <div className="flex items-center">
               <div
                 className={`mr-3 ${themeVariant === theme
-                    ? "text-[var(--accent)]"
-                    : "opacity-65"
+                  ? "text-[var(--accent)]"
+                  : "opacity-65"
                   }`}
               >
                 <Icon />

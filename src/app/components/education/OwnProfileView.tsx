@@ -55,7 +55,7 @@ export function OwnProfileView({
                 title="My Education"
                 description="Manage your academic background and qualifications"
                 action={!miniView ? (
-                    <div className="flex items-center gap-x-2">
+                    <div className="flex flex-wrap items-center gap-2">
                         <Button
                             onClick={handleShareProfile}
                             className="self-start sm:self-auto"

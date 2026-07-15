@@ -13,7 +13,7 @@ import React, { useState } from "react";
 
 const FeedBackComponent = () => {
   const { theme } = useTheme();
-  const { startLoading, stopLoading, isLoading } = useUIStore();
+  const { startLoading, stopLoading, isLoading, toggleMobileMenu } = useUIStore();
   const { createSuggestion } = useSuggestionsStore()
   const { userData } = useUserStore()
   const [sugestion, setSugestion] = useState({
@@ -30,6 +30,7 @@ const FeedBackComponent = () => {
         toast.success(
           "Thank you for your sugestion, please be rest assured that we hear you "
         );
+        toggleMobileMenu(false)
         setSugestion({
           title: "",
           description: "",

@@ -72,7 +72,7 @@ export default function ProfessionalRankingCard({
 
   const displayName = user.firstname && user.lastname
     ? `${user.firstname} ${user.middlename ? user.middlename + " " : ""}${user.lastname}`
-    : user.username || "Anonymous";
+    : user.username || "Not Set";
 
   const highestTestimonial = user.highest_rated_testimonial;
 

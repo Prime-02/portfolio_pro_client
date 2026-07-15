@@ -21,6 +21,7 @@ import { useRouter } from "next/navigation";
 import type { PortfolioProjectResponse } from "@/lib/stores/projects/types/project.types";
 import { useTheme } from "../theme/ThemeContext";
 import { useProjectEngagementStore } from "@/lib/stores/projects/useProjectEngagementStore";
+import { useUIStore } from "@/lib/stores/ui/useUIStore";
 
 interface ProjectCardProps {
   project: PortfolioProjectResponse;
@@ -40,9 +41,10 @@ export function ProjectCard({
   onDelete,
 }: ProjectCardProps) {
   const [isHovered, setIsHovered] = useState(false);
-  const {} = useTheme()
-  const {} = useProjectEngagementStore()
+  const { } = useTheme()
+  const { } = useProjectEngagementStore()
   const router = useRouter();
+  const { isDesktop } = useUIStore();
 
   const hasHeroMedia = project.other_project_image_url?.hero_media?.url;
   const isPublic = project.is_public;
@@ -60,7 +62,6 @@ export function ProjectCard({
 
   return (
     <motion.div
-      layout
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
@@ -68,9 +69,9 @@ export function ProjectCard({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={() => router.push(`projects/${project.id}`)}
-      className={`group relative rounded-2xl border transition-all duration-300 overflow-hidden cursor-pointer
-        ${featured 
-          ? "border-[var(--accent)]/20 bg-[var(--accent)]/5 md:col-span-2 lg:col-span-2" 
+      className={`group relative rounded-2xl border transition-all duration-300 overflow-hidden cursor-pointer h-fit
+        ${featured
+          ? "border-[var(--accent)]/20 bg-[var(--accent)]/5 md:col-span-2 lg:col-span-2"
           : "border-[var(--foreground)]/10 bg-[var(--background)]"
         }
         hover:border-[var(--accent)]/30 hover:shadow-lg hover:shadow-[var(--accent)]/5`}
@@ -199,8 +200,9 @@ export function ProjectCard({
         {/* Owner actions */}
         {isOwner && (
           <motion.div
-            initial={false}
-            animate={{ opacity: isHovered ? 1 : 0, y: isHovered ? 0 : 4 }}
+            initial={isDesktop ? { opacity: 0, y: 4 } : { opacity: 1, y: 0 }}
+            animate={{ opacity: !isDesktop || isHovered ? 1 : 0, y: !isDesktop || isHovered ? 0 : 4 }}
+            transition={{ duration: 0.2 }}
             className="flex gap-1 mt-3 pt-3 border-t border-[var(--foreground)]/5"
           >
             <button

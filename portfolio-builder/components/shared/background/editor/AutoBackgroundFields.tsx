@@ -5,6 +5,7 @@ import type { BackgroundModule, FieldType } from "./BackgroundRegistry.tsx";
 import ColorPicker from "@/src/app/components/inputs/ColorPicker";
 import { PBCheckBox, PBDropdown, PBRangeInput } from "../../ui/inputs";
 import CheckBox from "@/src/app/components/inputs/CheckBox";
+import { ImageField } from "@/src/app/components/cloudinary/ImageField";
 
 interface AutoBackgroundFieldsProps {
   module: BackgroundModule;
@@ -41,6 +42,13 @@ function FieldRenderer({
         <div>
           <label className="block text-xs text-[var(--pb-text-muted)] mb-1">{field.label}</label>
           <ColorPicker value={(bg as any)[field.key] ?? field.defaultValue} onChange={(v) => onUpdate({ [field.key]: v })} />
+        </div>
+      );
+    case "image":
+      return (
+        <div>
+          <label className="block text-xs text-[var(--pb-text-muted)] mb-1">{field.label}</label>
+          <ImageField url={(bg as any)[field.key] ?? field.defaultValue} onChange={(v) => onUpdate({ [field.key]: v })} />
         </div>
       );
 

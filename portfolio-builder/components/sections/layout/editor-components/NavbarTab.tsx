@@ -399,7 +399,7 @@ function LogoImageUpload({
         <ImageField
             url={logoImageUrl || null}
             onChange={handleImageChange}
-            folder={`${userInfo?.id}/portfolio/${portfolioId}/navbar/logo`}
+            folder={`${userInfo?.id}/portfolios/${portfolioId}/navbar_logo`}
             accept="image"
         />
     );

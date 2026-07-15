@@ -8,6 +8,7 @@ import {
     Eye, EyeOff, Maximize2, FileText, Image, Loader2
 } from "lucide-react";
 import type { Certification } from "@/lib/stores/certifications/useCertifications";
+import { useUIStore } from "@/lib/stores/ui/useUIStore";
 
 interface CertificationCardProps {
     certification: Certification;
@@ -47,8 +48,10 @@ export function CertificationCard({ certification, onEdit, onDelete, isOwner = f
     const [showFilePreview, setShowFilePreview] = useState(false);
     const [iframeLoading, setIframeLoading] = useState(true);
     const [naturalDimensions, setNaturalDimensions] = useState<{ width: number; height: number } | null>(null);
+    const [isHovered, setIsHovered] = useState(false);
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
+    const { isDesktop } = useUIStore();
     const expiryStatus = getExpiryStatus(certification.expiration_date);
 
     const statusConfig = {
@@ -150,13 +153,14 @@ export function CertificationCard({ certification, onEdit, onDelete, isOwner = f
 
     return (
         <motion.div
-            layout
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95 }}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
             className="group relative rounded-2xl border border-[var(--foreground)]/10 
                        bg-[var(--background)] hover:border-[var(--foreground)]/20 
-                       transition-all duration-300 overflow-hidden"
+                       transition-all duration-300 overflow-hidden h-fit"
         >
             <div className="p-5">
                 {/* Header */}
@@ -183,7 +187,12 @@ export function CertificationCard({ certification, onEdit, onDelete, isOwner = f
 
                     {/* Actions — only for owner */}
                     {isOwner && (
-                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 ml-2">
+                        <motion.div
+                            initial={isDesktop ? { opacity: 0 } : { opacity: 1 }}
+                            animate={{ opacity: !isDesktop || isHovered ? 1 : 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="flex gap-1 flex-shrink-0 ml-2"
+                        >
                             <button
                                 onClick={onEdit}
                                 className="p-2 rounded-lg hover:bg-[var(--foreground)]/10 transition-colors"
@@ -198,7 +207,7 @@ export function CertificationCard({ certification, onEdit, onDelete, isOwner = f
                             >
                                 <Trash2 className="w-4 h-4" />
                             </button>
-                        </div>
+                        </motion.div>
                     )}
                 </div>
 

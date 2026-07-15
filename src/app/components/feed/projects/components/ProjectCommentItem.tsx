@@ -16,7 +16,7 @@ interface ProjectCommentItemProps {
 }
 
 function getDisplayName(user?: { display_name?: string | null; username?: string | null } | null): string {
-  return user?.display_name || user?.username || "Anonymous";
+  return user?.display_name || user?.username || "Not Set";
 }
 
 export default function ProjectCommentItem({ comment, projectId }: ProjectCommentItemProps) {

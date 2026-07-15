@@ -36,7 +36,6 @@ export const unprotectedRoutes = [
   "/register",
   "/auth",
   "/public",
-  "/welcome",
   "/feed",
   "/blogs",
   "/projects",

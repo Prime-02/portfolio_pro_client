@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-type LoadingKey = string; // Or use template literals for stricter typing
+type LoadingKey = string;
 
 interface UIStore {
   loadingCounts: Record<LoadingKey, number>;
@@ -11,6 +11,15 @@ interface UIStore {
   isTablet: boolean; // >= 640px && < 1024px
   isDesktop: boolean; // >= 1024px
   isSmallMobile: boolean; // < 375px
+
+  // Mobile menu state
+  mobileMenuOpen: boolean;
+  setMobileMenuOpen: (open: boolean) => void;
+  toggleMobileMenu: (isOpen?: boolean) => void;
+
+  // Navigation sidebar state (for desktop hover expand)
+  isSidebarExpanded: boolean;
+  setSidebarExpanded: (expanded: boolean) => void;
 
   startLoading: (key: LoadingKey) => void;
   stopLoading: (key: LoadingKey) => void;
@@ -27,8 +36,20 @@ export const useUIStore = create<UIStore>((set, get) => ({
   // Initialize breakpoints
   isMobile: false,
   isTablet: false,
-  isDesktop: true, // Default to desktop
+  isDesktop: true,
   isSmallMobile: false,
+
+  // Mobile menu state
+  mobileMenuOpen: false,
+  setMobileMenuOpen: (open) => set({ mobileMenuOpen: open }),
+  toggleMobileMenu: (isOpen) =>
+    set((state) => ({
+      mobileMenuOpen: isOpen !== undefined ? isOpen : !state.mobileMenuOpen,
+    })),
+
+  // Sidebar expanded state
+  isSidebarExpanded: false,
+  setSidebarExpanded: (expanded) => set({ isSidebarExpanded: expanded }),
 
   startLoading: (key) =>
     set((state) => ({

@@ -99,7 +99,9 @@ const OAuthComponent: React.FC<OAuthComponentProps> = ({
   const { isLoading,
     startLoading, stopLoading, } = useUIStore()
   const { isDarkMode } = useTheme();
-  const hasCalledApproveUser = useRef(false);
+  // Guards against React StrictMode's double-invocation of the mount effect only.
+  // Manual retries (via canvaVerification) are NOT gated by this ref.
+  const hasCalledOnMount = useRef(false);
   const [emailVerification, setEmailVerification] = useState(false);
   const verifiedEmail = checkParams("email");
   const [email, setEmail] = useState("");
@@ -125,10 +127,6 @@ const OAuthComponent: React.FC<OAuthComponentProps> = ({
       : "";
 
   const approveUser = async () => {
-    if (hasCalledApproveUser.current) {
-      return;
-    }
-    hasCalledApproveUser.current = true;
     startLoading(config.loadingKey);
     try {
       const { data } = await api.get(constructedURL.slice(1));
@@ -147,17 +145,16 @@ const OAuthComponent: React.FC<OAuthComponentProps> = ({
         }
 
         // Handle routing based on user status
-        if (!data.is_new) {
-          router.replace(`/${data?.user?.username ?? "dashboard"}`);
+        if (data.is_new) {
+          router.replace(`/${data?.user?.username}?edit_profile=true`);
         } else {
-          router.replace(`/welcome`);
+          router.replace(`/${data?.user?.username}`);
         }
       } else {
         toast.error("We were unable to verify you. Please try again", {
           title: "Verification Error",
         });
         clearQueryParam();
-        console.log("Data gotten: ", data);
       }
     } catch (error) {
       toast.error("We were unable to verify you. Please try again", {
@@ -196,19 +193,35 @@ const OAuthComponent: React.FC<OAuthComponentProps> = ({
     }
   };
 
-  useEffect(() => {
-    if (mode === "approved") {
-      if (provider === "canva") {
-        if (verifiedEmail) {
-          approveUser();
-          return;
+  const canvaVerification = async () => {
+    startLoading("canva_verification")
+    try {
+      if (mode === "approved") {
+        if (provider === "canva") {
+          if (verifiedEmail) {
+            await approveUser();
+            return;
+          } else {
+            setEmailVerification(true);
+          }
         } else {
-          setEmailVerification(true);
+          approveUser();
         }
-      } else {
-        approveUser();
       }
+    } finally {
+      stopLoading("canva_verification")
     }
+  }
+
+  useEffect(() => {
+    // Only guard the automatic mount-time trigger (protects against
+    // StrictMode's double-invoke in dev). Manual retries via the button
+    // call canvaVerification() directly and are unaffected by this ref.
+    if (hasCalledOnMount.current) {
+      return;
+    }
+    hasCalledOnMount.current = true;
+    canvaVerification()
   }, [mode]);
 
   // Get logo source and class based on provider and mode
@@ -287,10 +300,12 @@ const OAuthComponent: React.FC<OAuthComponentProps> = ({
             <div className="w-full flex flex-col gap-y-2">
               <div className="flex mt-4 justify-center gap-3">
                 <Button
+                  disabled={isLoading("canva_verification")}
+                  loading={isLoading("canva_verification")}
                   variant="ghost"
                   onClick={() => {
-                    if (verifiedEmail) {
-                      router.replace("/welcome");
+                    if (verifiedEmail && !isLoading("canva_verification")) {
+                      canvaVerification()
                     } else {
                       setEmailVerification(true);
                     }

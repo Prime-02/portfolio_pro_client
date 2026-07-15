@@ -269,7 +269,7 @@ export default function CVGenerator() {
       // Step 7: Normalize testimonials
       const normalizedTestimonials = currentTestimonials.map((t: any) => ({
         id: t.id,
-        name: t.author_name || t.name || "Anonymous",
+        name: t.author_name || t.name || "Not Set",
         role: t.author_title || t.role || "",
         company: t.author_company || t.company || "",
         content: t.content || "",

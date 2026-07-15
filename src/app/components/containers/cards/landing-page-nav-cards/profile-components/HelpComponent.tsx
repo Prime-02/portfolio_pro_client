@@ -1,8 +1,10 @@
+import { useUIStore } from "@/lib/stores/ui/useUIStore";
 import Button from "@/src/app/components/buttons/Buttons";
 import Link from "next/link";
 import React from "react";
 
 const HelpComponent = () => {
+  const { toggleMobileMenu } = useUIStore()
   return (
     <div className="space-y-4 p-4 max-w-md mx-auto">
       <div className="text-center">
@@ -16,6 +18,9 @@ const HelpComponent = () => {
               size="md"
               text="Contact support"
               className="w-full"
+              onClick={() => {
+                toggleMobileMenu(false)
+              }}
             />
           </Link>
 
@@ -25,6 +30,9 @@ const HelpComponent = () => {
               size="md"
               text="Browse FAQs"
               className="w-full"
+              onClick={() => {
+                toggleMobileMenu(false)
+              }}
             />
           </Link>
         </div>

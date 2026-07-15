@@ -5,6 +5,7 @@ interface BadgeProps {
     active?: boolean;
     color?: "accent" | "primary" | "secondary";
     size?: "sm" | "md" | "lg";
+    className?: string
 }
 
 export const Badge = ({
@@ -12,6 +13,7 @@ export const Badge = ({
     active = false,
     color = "accent",
     size = "md",
+    className
 }: BadgeProps) => {
     const sizeClasses = {
         sm: "px-2 py-0.5 text-xs",
@@ -33,7 +35,7 @@ export const Badge = ({
 
     return (
         <span
-            className={`inline-flex items-center rounded-full font-league-500 ${sizeClasses[size]} ${colorClasses[color]}`}
+            className={`inline-flex items-center rounded-full font-league-500 ${className} ${sizeClasses[size]} ${colorClasses[color]}`}
         >
             {children}
         </span>

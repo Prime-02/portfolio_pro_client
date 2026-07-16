@@ -59,7 +59,7 @@ export const metadata: Metadata = {
       "Create stunning professional portfolios with Portfolio Pro. Build, customize, and showcase your work with our powerful portfolio builder platform.",
     images: [
       {
-        url: `${BASE_URL}/og-image.jpg`,
+        url: `${BASE_URL}/og-image.png`,
         width: 1200,
         height: 630,
         alt: "Portfolio Pro - Professional Portfolio Builder",
@@ -72,7 +72,7 @@ export const metadata: Metadata = {
     title: "Portfolio Pro - Build Your Portfolios Like A Pro",
     description:
       "Create stunning professional portfolios with Portfolio Pro. Build, customize, and showcase your work with our powerful portfolio builder platform.",
-    images: [`${BASE_URL}/twitter-image.jpg`],
+    images: [`${BASE_URL}/twitter-image.png`],
     creator: "@portfoliopro",
     site: "@portfoliopro",
   },

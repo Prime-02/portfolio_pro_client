@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Pencil, Trash2, Zap, TrendingUp, Award } from "lucide-react";
 import type { ProfessionalSkill } from "@/lib/stores/skills/useSkills";
 import { useUIStore } from "@/lib/stores/ui/useUIStore";
+import { copyToClipboard } from "@/lib/utilities/syncFunctions/syncs";
 
 interface SkillBadgeProps {
     skill: ProfessionalSkill;

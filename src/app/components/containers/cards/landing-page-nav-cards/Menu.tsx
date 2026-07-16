@@ -34,11 +34,17 @@ const Menu = ({ isCollapsed, setIsCollapsed }: { isCollapsed: boolean, setIsColl
     })
   );
 
-  const isActiveRoute = (routeLink: string) => {
-    const basePath = `/${userInfo?.username ?? "user"}/`;
-    const fullRoutePath = `${basePath}${routeLink}`.replace(/\/+$/, "");
+  const isActiveRoute = (routeLink: string, routeSlug: string) => {
+    const basePath = `/${userInfo?.username ?? "user"}`;
     const cleanPathname = pathname.replace(/\/+$/, "");
-    return cleanPathname === fullRoutePath;
+
+    // Check the actual link path
+    const linkPath = `${basePath}${routeLink}`.replace(/\/+$/, "");
+
+    // Also check by slug as a fallback
+    const slugPath = `${basePath}/${routeSlug}`.replace(/\/+$/, "");
+
+    return cleanPathname === linkPath || cleanPathname === slugPath;
   };
 
   // Category title mapping
@@ -65,7 +71,7 @@ const Menu = ({ isCollapsed, setIsCollapsed }: { isCollapsed: boolean, setIsColl
             <div className="space-y-1">
               {routes.map((route) => {
                 const IconComponent = route.icon;
-                const isActive = isActiveRoute(route.link);
+                const isActive = isActiveRoute(route.link, route.slug);
 
                 return (
                   <Link
@@ -77,12 +83,12 @@ const Menu = ({ isCollapsed, setIsCollapsed }: { isCollapsed: boolean, setIsColl
                       }
                     }}
                     className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all justify-center duration-200 ${isActive
-                      ? `bg-[var(--accent)] text-[var(--accent)] border-r-2 border-[var(--accent)]`
+                      ? `bg-[var(--accent)] text-[var(--foreground)] border-r-2 border-[var(--accent)]`
                       : "hover:bg-[var(--background)]/10"
                       } mx-auto `}
                   >
                     <IconComponent
-                      className={`${isActive ? `text-[var(--accent)]` : ""
+                      className={`${isActive ? `text-[var(--foreground)]` : ""
                         } mx-auto `}
                     />
                     {isCollapsed && (

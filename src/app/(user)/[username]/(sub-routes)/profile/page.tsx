@@ -1,10 +1,10 @@
-import { UserProfilePage } from '@/src/app/components/profile/UserProfilePage'
-import React from 'react'
+"use client"
+import { redirect, useParams } from 'next/navigation'
 
 const UserProfile = () => {
-  return (
-    <UserProfilePage/>
-  )
+  const params = useParams()
+  const username = params.username as string
+  redirect(`/${username}`)
 }
 
 export default UserProfile

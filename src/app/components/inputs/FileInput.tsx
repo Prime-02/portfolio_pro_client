@@ -193,7 +193,10 @@ export const FileInput: React.FC<FileInputProps> = ({
         if (contentType.startsWith("image/")) {
           setPreview(value);
           const img = new Image();
-          img.onload = () => { setError(null); setIsLoading(false); };
+          img.onload = () => {
+            setError(null);
+            setIsLoading(false);
+          };
           img.onerror = () => { setError("Unable to load image from URL"); setIsLoading(false); };
           img.src = value;
         } else if (contentType === "application/pdf") {
@@ -316,37 +319,10 @@ export const FileInput: React.FC<FileInputProps> = ({
                 ? "border-[var(--accent)]"
                 : "border-gray-300 dark:border-gray-600 hover:border-[var(--accent)] hover:bg-[var(--background)]"
             }`}
-          style={
-            hasImagePreview
-              ? {
-                backgroundImage: `url(${preview})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-              }
-              : undefined
-          }
         >
-          {/* Dark overlay when image is loaded, stronger on drag */}
-          {hasImagePreview && (
-            <div
-              className={`absolute inset-0 transition-all duration-200 pointer-events-none ${isDragging ? "bg-black/60" : "bg-black/35"
-                }`}
-            />
-          )}
-
-          {/* PDF state background tint */}
-          {hasPdfSelected && !hasImagePreview && (
-            <div className="absolute inset-0 bg-[var(--accent)]/5 pointer-events-none" />
-          )}
-
-          {/* Drag overlay highlight */}
-          {isDragging && !hasImagePreview && (
-            <div className="absolute inset-0 bg-[var(--accent)]/10 pointer-events-none" />
-          )}
-
           {/* Loading state */}
           {isLoading && (
-            <div className="relative z-10 flex items-center justify-center py-8">
+            <div className="relative z-10 flex items-center justify-center py-8 min-h-[160px]">
               <div className="w-5 h-5 border-2 border-t-transparent border-[var(--accent)] rounded-full animate-spin" />
               <span className="ml-2 text-sm text-gray-600 dark:text-gray-300">Loading…</span>
             </div>
@@ -354,56 +330,80 @@ export const FileInput: React.FC<FileInputProps> = ({
 
           {/* Main dropzone content */}
           {!isLoading && (
-            <label
-              htmlFor={inputId}
-              className="relative z-10 flex flex-col items-center justify-center gap-2 px-4 py-6 cursor-pointer text-center"
-            >
-              {hasImagePreview ? (
-                /* Image loaded — compact overlay UI */
-                <>
-                  <LucideImage className="w-6 h-6 text-white/80 drop-shadow" />
-                  <span className="text-sm font-medium text-white drop-shadow">
-                    {fileName}
-                  </span>
-                  {isHovering && (
-                    <span className="text-xs text-white drop-shadow font-semibold bg-blue-600 px-3 py-1.5 rounded">
-                      ✎ Replace File
+            <div className="relative">
+              {/* Image preview with original aspect ratio and minimum height */}
+              {hasImagePreview && (
+                <div className="relative min-h-[160px] flex items-center justify-center">
+                  <img
+                    src={preview}
+                    alt={fileName}
+                    className="max-w-full h-auto rounded-lg"
+                    style={{
+                      maxHeight: '400px',
+                      objectFit: 'contain'
+                    }}
+                  />
+                  {/* Dark overlay on hover/drag */}
+                  <div
+                    className={`absolute inset-0 transition-all duration-200 pointer-events-none ${isDragging ? "bg-black/60" : isHovering ? "bg-black/35" : "bg-transparent"
+                      }`}
+                  />
+                  {/* Overlay UI */}
+                  <div className="absolute inset-0 z-10 flex flex-col items-center justify-center pointer-events-none">
+                    <LucideImage className="w-6 h-6 text-white/80 drop-shadow mb-2" />
+                    <span className="text-sm font-medium text-white drop-shadow">
+                      {fileName}
                     </span>
-                  )}
-                  {!isHovering && (
-                    <span className="text-xs text-white/70 drop-shadow">
-                      Click or drop to replace
-                    </span>
-                  )}
-                </>
-              ) : hasPdfSelected ? (
-                /* PDF loaded — compact info UI */
-                <>
-                  <FileText className={`w-8 h-8 transition-colors duration-200 ${isDragging ? "text-[var(--accent)]" : "text-gray-400 dark:text-gray-500"}`} />
-                  <span className="text-sm font-medium text-[var(--accent)]">{fileName}</span>
-                  {isHovering ? (
-                    <span className="text-xs text-white font-semibold bg-blue-600 px-3 py-1.5 rounded">
-                      ✎ Replace File
-                    </span>
-                  ) : (
-                    <span className="text-xs text-gray-500 dark:text-gray-400">Click or drop to replace</span>
-                  )}
-                </>
-              ) : (
-                /* Empty state */
-                <>
-                  <LucideImage className={`w-8 h-8 transition-colors duration-200 ${isDragging ? "text-[var(--accent)]" : "text-gray-400 dark:text-gray-500"}`} />
-                  <div className="flex flex-col gap-1">
-                    <span className="text-sm font-medium text-[var(--accent)]">
-                      {isDragging ? "Drop file here" : "Choose File"}
-                    </span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      or drag and drop
-                    </span>
+                    {isHovering && (
+                      <span className="text-xs text-white font-semibold bg-blue-600 px-3 py-1.5 rounded mt-2 pointer-events-auto">
+                        ✎ Replace File
+                      </span>
+                    )}
+                    {!isHovering && (
+                      <span className="text-xs text-white/70 drop-shadow mt-1">
+                        Click or drop to replace
+                      </span>
+                    )}
                   </div>
-                </>
+                </div>
               )}
-            </label>
+
+              {/* Empty state or PDF state */}
+              {!hasImagePreview && (
+                <label
+                  htmlFor={inputId}
+                  className="relative z-10 flex flex-col items-center justify-center gap-2 px-4 py-6 cursor-pointer text-center min-h-[160px]"
+                >
+                  {hasPdfSelected ? (
+                    /* PDF loaded — compact info UI */
+                    <>
+                      <FileText className={`w-8 h-8 transition-colors duration-200 ${isDragging ? "text-[var(--accent)]" : "text-gray-400 dark:text-gray-500"}`} />
+                      <span className="text-sm font-medium text-[var(--accent)]">{fileName}</span>
+                      {isHovering ? (
+                        <span className="text-xs text-white font-semibold bg-blue-600 px-3 py-1.5 rounded">
+                          ✎ Replace File
+                        </span>
+                      ) : (
+                        <span className="text-xs text-gray-500 dark:text-gray-400">Click or drop to replace</span>
+                      )}
+                    </>
+                  ) : (
+                    /* Empty state */
+                    <>
+                      <LucideImage className={`w-8 h-8 transition-colors duration-200 ${isDragging ? "text-[var(--accent)]" : "text-gray-400 dark:text-gray-500"}`} />
+                      <div className="flex flex-col gap-1">
+                        <span className="text-sm font-medium text-[var(--accent)]">
+                          {isDragging ? "Drop file here" : "Choose File"}
+                        </span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                          or drag and drop
+                        </span>
+                      </div>
+                    </>
+                  )}
+                </label>
+              )}
+            </div>
           )}
 
           {/* Clear button — shown when a file is selected */}
@@ -420,19 +420,16 @@ export const FileInput: React.FC<FileInputProps> = ({
         </div>
       )}
 
-      {/* Disabled view — image as background in read-only zone */}
+      {/* Disabled view — image with minimum height */}
       {disabled && hasImagePreview && (
-        <div
-          className="relative w-full rounded-lg overflow-hidden"
-          style={{
-            backgroundImage: `url(${preview})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            minHeight: "160px",
-          }}
-        >
-          <div className="absolute inset-0 bg-black/20" />
-          <div className="relative z-10 flex items-end p-3">
+        <div className="relative w-full rounded-lg overflow-hidden min-h-[160px] flex items-center justify-center bg-gray-100 dark:bg-gray-800">
+          <img
+            src={preview}
+            alt={fileName}
+            className="max-w-full h-auto max-h-[400px] object-contain"
+          />
+          <div className="absolute inset-0 bg-black/20 pointer-events-none" />
+          <div className="absolute bottom-0 left-0 right-0 z-10 flex items-end p-3">
             <span className="text-xs text-white/80 drop-shadow">{fileName}</span>
           </div>
         </div>

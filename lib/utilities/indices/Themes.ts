@@ -1,4 +1,4 @@
-import { Crown, Loader, Palette } from "lucide-react";
+import { Palette, Zap } from "lucide-react";
 
 export const themePresets = [
   {
@@ -94,7 +94,7 @@ export const tabConfig = [
   {
     key: "pro",
     label: "Go-Pro",
-    icon: Crown,
+    icon: Zap,
     description: "Advanced customization",
     helpText:
       "Fine-tune every aspect of your theme with advanced color controls and import/export your theme configurations.",

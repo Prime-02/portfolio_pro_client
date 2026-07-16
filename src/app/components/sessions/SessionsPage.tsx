@@ -360,7 +360,7 @@ export default function SessionsPage() {
                         {[1, 2, 3].map((i) => (
                             <div
                                 key={i}
-                                className="animate-pulse rounded-lg border border-(--foreground)/5 p-4"
+                                className="animate-pulse duration-500 rounded-lg border border-(--foreground)/5 p-4"
                             >
                                 <div className="flex items-center gap-3">
                                     <div className="h-10 w-10 rounded-full bg-(--foreground)/10" />

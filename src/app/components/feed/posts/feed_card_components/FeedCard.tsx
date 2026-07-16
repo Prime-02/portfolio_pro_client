@@ -171,16 +171,17 @@ export default function FeedCard({ content }: FeedCardProps) {
           )}
         </div>
 
-        {/* Cover Image */}
+        {/* Cover Image - CORRECTED */}
         {content.cover_image_url && (
-          <div className="mb-4 rounded-xl overflow-hidden relative">
+          <div className="mb-4 rounded-xl overflow-hidden">
             <Image
               src={content.cover_image_url}
               alt={content.title || "Post cover image"}
-              fill
-              className="object-cover !static"
+              width={800}
+              height={400}
+              className="w-full object-cover"
+              style={{ maxHeight: '20rem' }}
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              style={{ position: 'relative', width: '100%', height: 'auto', maxHeight: '20rem' }}
             />
           </div>
         )}

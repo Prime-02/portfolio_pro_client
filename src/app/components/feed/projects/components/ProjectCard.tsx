@@ -155,16 +155,17 @@ export default function ProjectCard({ project }: ProjectCardProps) {
           )}
         </div>
 
-        {/* Cover Image */}
+        {/* Cover Image - CORRECTED */}
         {primaryImage && (
-          <div className="mb-4 rounded-xl overflow-hidden relative">
+          <div className="mb-4 rounded-xl overflow-hidden">
             <Image
               src={primaryImage}
               alt={project.project_name || "Project cover image"}
-              fill
-              className="object-cover !static"
+              width={800}
+              height={400}
+              className="w-full object-cover"
+              style={{ maxHeight: '20rem' }}
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              style={{ position: 'relative', width: '100%', height: 'auto', maxHeight: '20rem' }}
             />
           </div>
         )}

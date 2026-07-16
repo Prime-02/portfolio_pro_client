@@ -45,7 +45,7 @@ export const unprotectedRoutes = [
 export const privateRoutes: Route[] = [
   {
     name: "Personal Profile",
-    link: "/profile",
+    link: "",
     slug: "personal-info",
     icon: FaIdCard,
     description: "View and manage your personal profile information",

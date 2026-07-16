@@ -39,7 +39,8 @@ export const unprotectedRoutes = [
   "/feed",
   "/blogs",
   "/projects",
-  "test-endpoints",
+  "/test-endpoints",
+  "/install-app",
 ];
 
 export const privateRoutes: Route[] = [

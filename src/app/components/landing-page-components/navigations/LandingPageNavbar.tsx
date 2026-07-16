@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import PortfolioProLogo from "../../logo/PortfolioProLogo";
 import Popover from "../../containers/divs/PopOver";
-import { ChevronDown, User } from "lucide-react";
+import { ChevronDown, DownloadIcon, User } from "lucide-react";
 import { Menu as MenuIcon } from "lucide-react";
 import Link from "next/link";
 import Button from "../../buttons/Buttons";
@@ -13,6 +13,7 @@ import NotificationsButton from "../../buttons/NotificationsButton";
 import { useUIStore } from "@/lib/stores/ui/useUIStore";
 import { getImageSrc } from "@/lib/utilities/syncFunctions/syncs";
 import { useUserSettings } from "@/lib/stores/user/useUserSettings";
+import { usePWA } from "@/lib/hooks/pwa/usePWA";
 
 const LandingPageNavbar = () => {
   const { userInfo } = useUserSettings();
@@ -26,6 +27,9 @@ const LandingPageNavbar = () => {
   } = useUIStore();
 
   const [imageError, setImageError] = useState(false);
+
+  // Use the custom PWA hook - replaces all the manual PWA logic
+  const { isInstalled: isPWAInstalled } = usePWA();
 
   const handleImageError = () => {
     setImageError(true);
@@ -70,7 +74,7 @@ const LandingPageNavbar = () => {
             <CloseButton onClick={() => toggleMobileMenu(false)} />
           ) : (
             <button
-                onClick={() => toggleMobileMenu(true)}
+              onClick={() => toggleMobileMenu(true)}
               className="p-2 rounded-full hover:bg-[var(--accent)]/10 transition-colors"
               title="Menu"
             >
@@ -132,6 +136,23 @@ const LandingPageNavbar = () => {
                     expanded={isSidebarExpanded || mobileMenuOpen}
                   />
                 </Link>
+
+                {/* Install App Link - Only show if not already installed */}
+                {!isPWAInstalled && (
+                  <Link
+                    title="Install App"
+                    href={`/install-app`}
+                    className={`cursor-pointer rounded-full flex items-center transition-all duration-300 hover:bg-[var(--accent)]/10 ${isSidebarExpanded || mobileMenuOpen
+                      ? "w-full px-4 py-3 justify-start gap-3"
+                      : "w-12 h-12 justify-center mx-auto"
+                      }`}
+                  >
+                    <DownloadIcon />
+                    {(isSidebarExpanded || mobileMenuOpen) && (
+                      <p>Get the app</p>
+                    )}
+                  </Link>
+                )}
 
                 {/* Profile Popover */}
                 <Popover

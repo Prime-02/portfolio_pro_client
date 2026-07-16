@@ -5,7 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
     Pencil, Trash2, ExternalLink, Award, Building2,
     Calendar, Clock, CheckCircle2, AlertCircle, Globe, ChevronDown, Lock,
-    Eye, EyeOff, Maximize2, FileText, Image, Loader2
+    Eye, EyeOff, Maximize2, FileText, Loader2,
+    ImageIcon
 } from "lucide-react";
 import type { Certification } from "@/lib/stores/certifications/useCertifications";
 import { useUIStore } from "@/lib/stores/ui/useUIStore";
@@ -266,7 +267,7 @@ export function CertificationCard({ certification, onEdit, onDelete, isOwner = f
                             ) : (
                                 <>
                                     {fileType === 'image' ? (
-                                        <Image className="w-3 h-3" />
+                                        <ImageIcon className="w-3 h-3"  />
                                     ) : fileType === 'pdf' ? (
                                         <FileText className="w-3 h-3" />
                                     ) : (
@@ -295,7 +296,7 @@ export function CertificationCard({ certification, onEdit, onDelete, isOwner = f
                                 <div className="flex items-center justify-between mb-3 px-3 py-2 bg-[var(--foreground)]/5 rounded-lg">
                                     <div className="flex items-center gap-2 min-w-0">
                                         {fileType === 'image' ? (
-                                            <Image className="w-4 h-4 text-green-500 flex-shrink-0" />
+                                            <ImageIcon className="w-4 h-4 text-green-500 flex-shrink-0" />
                                         ) : fileType === 'pdf' ? (
                                             <FileText className="w-4 h-4 text-blue-500 flex-shrink-0" />
                                         ) : (

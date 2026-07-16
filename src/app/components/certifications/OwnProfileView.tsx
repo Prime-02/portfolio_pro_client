@@ -10,6 +10,7 @@ import { ErrorMessage } from "../ui/ErrorMessage";
 import type { Certification } from "@/lib/stores/certifications/useCertifications";
 import { StatsBar } from "./StatsBar";
 import { handleShareProfile } from "@/lib/utilities/syncFunctions/syncs";
+import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 
 interface OwnProfileViewProps {
     certifications: Certification[];
@@ -47,6 +48,7 @@ export function OwnProfileView({
     const usernamePath = profileContext?.username ? `${profileContext.username}` : "";
     const displayedCertifications = miniView ? certifications.slice(0, 3) : certifications;
     const showSeeAll = miniView && certifications.length > 0;
+    const { userInfo } = useUserSettings()
 
     return (
         <div className={miniView ? "p-6 md:p-8 lg:p-10 max-w-6xl mx-auto" : "min-h-screen p-6 md:p-8 lg:p-10 max-w-6xl mx-auto"}>
@@ -57,7 +59,13 @@ export function OwnProfileView({
                 action={!miniView ? (
                     <div className="flex flex-wrap items-center gap-2">
                         <Button
-                            onClick={handleShareProfile}
+                            onClick={() => {
+                                handleShareProfile({
+                                    title: `${userInfo?.username}'s Certifications — Portfolio Pro`,
+                                    text: `View ${userInfo?.username}'s professional certifications on Portfolio Pro`,
+                                    imageUrl: userInfo?.profile_picture || undefined
+                                })
+                            }}
                             className="self-start sm:self-auto"
                             text="Share Your Certifications"
                             icon={<Share2 className="w-4 h-4" />}

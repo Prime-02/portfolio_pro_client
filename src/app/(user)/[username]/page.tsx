@@ -5,8 +5,8 @@ import { fetchForMetadata } from "@/lib/server/fetchMetadata";
 import { UserProfileRequest } from '@/lib/stores/user/useUserSettings';
 import { UserResponse } from '@/lib/stores/user/useUserAccountStore';
 import { mdToPlainText } from '../../components/markdown/MarkdownText';
+import { BASE_URL } from '@/lib/utilities/syncFunctions/syncs';
 
-const BASE_URL = "https://portfolio-pro-client.vercel.app";
 
 export async function generateMetadata({
   params,

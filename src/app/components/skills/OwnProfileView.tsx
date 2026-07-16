@@ -10,6 +10,7 @@ import { ErrorMessage } from "../ui/ErrorMessage";
 import type { ProfessionalSkill } from "@/lib/stores/skills/useSkills";
 import { PageHeader } from "../ui/PageHeader";
 import { handleShareProfile } from "@/lib/utilities/syncFunctions/syncs";
+import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 
 interface OwnProfileViewProps {
     skills: ProfessionalSkill[];
@@ -47,6 +48,7 @@ export function OwnProfileView({
     const usernamePath = profileContext?.username ? `${profileContext.username}` : "";
     const displayedSkills = miniView ? skills.slice(0, 3) : skills;
     const showSeeAll = miniView && skills.length > 0;
+    const { userInfo } = useUserSettings()
 
     return (
         <div className={miniView ? "p-6 md:p-8 lg:p-10 max-w-6xl mx-auto" : "min-h-screen p-6 md:p-8 lg:p-10 max-w-6xl mx-auto"}>
@@ -57,7 +59,13 @@ export function OwnProfileView({
                 action={!miniView ? (
                     <div className="flex flex-wrap items-center gap-2">
                         <Button
-                            onClick={handleShareProfile}
+                            onClick={() => {
+                                handleShareProfile({
+                                    title: `${userInfo?.username}'s Skills — Portfolio Pro`,
+                                    text: `Explore ${userInfo?.username}'s expertise and skills on Portfolio Pro`,
+                                    imageUrl: userInfo?.profile_picture || undefined
+                                })
+                            }}
                             className="self-start sm:self-auto"
                             text="Share Your Skills"
                             icon={<Share2 className="w-4 h-4" />}

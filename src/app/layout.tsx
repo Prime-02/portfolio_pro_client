@@ -9,8 +9,7 @@ import PortfolioProLogo from "./components/logo/PortfolioProTextLogo";
 import DynamicTitle from "./DynamicTitle";
 import { WebSocketProvider } from "./WebSocketContext";
 import { themePresets } from "@/lib/utilities/indices/Themes";
-
-const BASE_URL = "https://portfolio-pro-client.vercel.app";
+import { BASE_URL } from "@/lib/utilities/syncFunctions/syncs";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

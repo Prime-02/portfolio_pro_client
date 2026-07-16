@@ -3,8 +3,7 @@ import { ProjectDetailPage } from '../../components/projects'
 import type { Metadata } from "next";
 import { fetchForMetadata } from "@/lib/server/fetchMetadata";
 import { PortfolioProjectResponse } from '@/lib/stores/projects/types/project.types';
-
-const BASE_URL = "https://portfolio-pro-client.vercel.app";
+import { BASE_URL } from '@/lib/utilities/syncFunctions/syncs';
 
 export async function generateMetadata({
   params,

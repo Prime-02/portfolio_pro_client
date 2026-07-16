@@ -12,6 +12,7 @@ import { Textinput } from "../inputs/Textinput"
 import AIAssistant from "../ai/AIAsistant"
 import { getPortfolioDescriptionOptions } from "./portfolioPromptOptions"
 import { toast } from "../toastify/Toastify"
+import { BASE_URL } from "@/lib/utilities/syncFunctions/syncs"
 
 type SnapshotMode = "none" | "generate" | "upload"
 
@@ -24,7 +25,7 @@ interface EditPortfolioModalProps {
 }
 
 
-const LIVE_URL = "https://portfolio-pro-client.vercel.app"
+const LIVE_URL = BASE_URL
 
 
 const EditPortfolioModal = ({

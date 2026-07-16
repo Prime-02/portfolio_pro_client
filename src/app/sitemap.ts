@@ -1,8 +1,8 @@
 // src/app/sitemap.ts
 import type { MetadataRoute } from "next";
 import { fetchForMetadata } from "@/lib/server/fetchMetadata";
+import { BASE_URL } from "@/lib/utilities/syncFunctions/syncs";
 
-const BASE_URL = "https://portfolio-pro-client.vercel.app";
 
 interface BlogListItem {
   slug: string;

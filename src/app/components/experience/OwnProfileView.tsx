@@ -15,6 +15,7 @@ import { useEffect } from "react";
 import { isAuthenticated } from "@/lib/client/api";
 import { PageHeader } from "../ui/PageHeader";
 import { handleShareProfile } from "@/lib/utilities/syncFunctions/syncs";
+import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 
 interface OwnProfileViewProps {
     experiences: Experience[];
@@ -48,6 +49,7 @@ export function OwnProfileView({
     miniView = false,
 }: OwnProfileViewProps) {
     const { fetchAllSkills } = useSkills()
+    const {userInfo} = useUserSettings()
 
     useEffect(() => {
         if (!isAuthenticated()) return
@@ -69,7 +71,13 @@ export function OwnProfileView({
                 action={!miniView ? (
                     <div className="flex flex-wrap items-center gap-2">
                         <Button
-                            onClick={handleShareProfile}
+                            onClick={() => {
+                                handleShareProfile({
+                                    title: `${userInfo?.username}'s Experience — Portfolio Pro`,
+                                    text: `Explore ${userInfo?.username}'s career journey on Portfolio Pro`,
+                                    imageUrl: userInfo?.profile_picture || undefined
+                                })
+                            }}
                             className="self-start sm:self-auto"
                             text="Share Your Experience"
                             icon={<Share2 className="w-4 h-4" />}

@@ -58,7 +58,13 @@ export const ProfileHeroCard = ({
                         <Button
                             text="Share Your Profile"
                             icon={<Share2Icon className="w-4 h-4 transition-transform group-hover:rotate-12" />}
-                            onClick={handleShareProfile}
+                            onClick={() => {
+                                handleShareProfile({
+                                    title: `${name || username}'s Profile — Portfolio Pro`,
+                                    text: `Discover ${name || username}'s profile on Portfolio Pro`,
+                                    imageUrl: userInfo?.profile_picture || undefined
+                                })
+                            }}
                             variant="outline"
                             className="text-xs sm:text-sm"
                         />

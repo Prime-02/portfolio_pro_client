@@ -84,7 +84,13 @@ export function OwnProjectsView({
         action={!miniView ? (
           <div className="flex flex-wrap items-center gap-2">
             <Button
-              onClick={handleShareProfile}
+              onClick={() => {
+                handleShareProfile({
+                  title: `${userInfo?.username}'s Projects — Portfolio Pro`,
+                  text: `Check out ${userInfo?.username}'s project on Portfolio Pro`,
+                  imageUrl: userInfo?.profile_picture || undefined
+                })
+              }}
               className="self-start sm:self-auto"
               text="Share Your Projects"
               icon={<Share2 className="w-4 h-4" />}

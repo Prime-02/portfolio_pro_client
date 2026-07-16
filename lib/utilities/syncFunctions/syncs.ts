@@ -1,3 +1,5 @@
+export const BASE_URL = "https://portfolio-pro-client.vercel.app";
+
 export type Primitive = string | number | boolean | symbol | null | undefined;
 
 /**
@@ -1749,12 +1751,49 @@ export const formatDateForInput = (
   }
 };
 
-export const handleShareProfile = () => {
-  const fullUrl = window.location.href;
-  copyToClipboard(fullUrl);
+interface ShareOptions {
+  url?: string;
+  title?: string;
+  text?: string;
+  imageUrl?: string;
+}
+export const handleShareProfile = async (options?: ShareOptions) => {
+  const url = options?.url ?? window.location.href;
+  const title = options?.title ?? document.title;
+  const text = options?.text;
+  const imageUrl = options?.imageUrl;
+
+  // Convert image URL to File if provided
+  let imageFile: File | undefined;
+  if (imageUrl) {
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const filename = imageUrl.split("/").pop()?.split("?")[0] || "image.jpg";
+      imageFile = new File([blob], filename, { type: blob.type });
+    } catch {
+      // If image fetch fails, proceed without it
+    }
+  }
+
+  const shareData: ShareData = {
+    url,
+    title,
+    ...(text ? { text } : {}),
+    ...(imageFile ? { files: [imageFile] } : {}),
+  };
+
+  if (navigator.share && navigator.canShare?.(shareData)) {
+    try {
+      await navigator.share(shareData);
+      return;
+    } catch (err) {
+      if ((err as Error).name === "AbortError") return;
+    }
+  }
+
+  copyToClipboard(url);
 };
-
-
 export function hexToRgb(hex: string): string {
   const h = hex.replace("#", "");
   const full =

@@ -1,7 +1,7 @@
 // src/app/robots.ts
+import { BASE_URL } from "@/lib/utilities/syncFunctions/syncs";
 import type { MetadataRoute } from "next";
 
-const BASE_URL = "https://portfolio-pro-client.vercel.app";
 
 export default function robots(): MetadataRoute.Robots {
   return {

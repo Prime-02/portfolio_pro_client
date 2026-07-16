@@ -1,3 +1,4 @@
+import { BASE_URL } from "@/lib/utilities/syncFunctions/syncs";
 import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "edge"; // or "nodejs" if you need Node-specific APIs
@@ -26,7 +27,7 @@ export async function GET(req: NextRequest) {
         "User-Agent":
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
         Accept: "image/webp,image/apng,image/*,*/*;q=0.8",
-        Referer: "https://portfolio-pro-client.vercel.app",
+        Referer: BASE_URL,
       },
     });
 

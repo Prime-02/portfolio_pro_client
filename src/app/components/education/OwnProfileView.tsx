@@ -10,6 +10,7 @@ import { ErrorMessage } from "../ui/ErrorMessage";
 import type { Education } from "@/lib/stores/education/useEducation";
 import { PageHeader } from "../ui/PageHeader";
 import { handleShareProfile } from "@/lib/utilities/syncFunctions/syncs";
+import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 
 interface OwnProfileViewProps {
     educations: Education[];
@@ -44,6 +45,7 @@ export function OwnProfileView({
 }: OwnProfileViewProps) {
     const router = useRouter();
     const { profileContext } = useTheme();
+    const { userInfo } = useUserSettings()
     const usernamePath = profileContext?.username ? `${profileContext.username}` : "";
     const displayedEducations = miniView ? educations.slice(0, 3) : educations;
     const showSeeAll = miniView && educations.length > 0;
@@ -57,7 +59,13 @@ export function OwnProfileView({
                 action={!miniView ? (
                     <div className="flex flex-wrap items-center gap-2">
                         <Button
-                            onClick={handleShareProfile}
+                            onClick={() => {
+                                handleShareProfile({
+                                    title: `${userInfo?.username}'s Education — Portfolio Pro`,
+                                    text: `Explore ${userInfo?.username}'s academic qualifications on Portfolio Pro`,
+                                    imageUrl: userInfo?.profile_picture || undefined
+                                })
+                            }}
                             className="self-start sm:self-auto"
                             text="Share Education History"
                             icon={<Share2 className="w-4 h-4" />}

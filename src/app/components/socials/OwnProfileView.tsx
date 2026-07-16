@@ -10,6 +10,7 @@ import { ErrorMessage } from "../ui/ErrorMessage";
 import type { SocialLink } from "@/lib/stores/social_links/useSocialLinks";
 import { PageHeader } from "../ui/PageHeader";
 import { handleShareProfile } from "@/lib/utilities/syncFunctions/syncs";
+import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 
 interface OwnProfileViewProps {
     links: SocialLink[];
@@ -47,6 +48,7 @@ export function OwnProfileView({
     const usernamePath = profileContext?.username ? `${profileContext.username}` : "";
     const displayedLinks = miniView ? links.slice(0, 3) : links;
     const showSeeAll = miniView && links.length > 0;
+    const { userInfo } = useUserSettings()
 
     return (
         <div className={miniView ? "p-6 md:p-8 lg:p-10 max-w-6xl mx-auto" : "min-h-screen p-6 md:p-8 lg:p-10 max-w-6xl mx-auto"}>
@@ -57,7 +59,13 @@ export function OwnProfileView({
                 action={!miniView ? (
                     <div className="flex flex-wrap items-center gap-2">
                         <Button
-                            onClick={handleShareProfile}
+                            onClick={() => {
+                                handleShareProfile({
+                                    title: `${userInfo?.username}'s Links — Portfolio Pro`,
+                                    text: `Connect with ${userInfo?.username} on Portfolio Pro`,
+                                    imageUrl: userInfo?.profile_picture || undefined
+                                })
+                            }}
                             className="self-start sm:self-auto"
                             text="Share Your Social Links"
                             icon={<Share2 className="w-4 h-4" />}

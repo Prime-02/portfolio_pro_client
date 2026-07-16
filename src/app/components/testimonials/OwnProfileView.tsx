@@ -13,7 +13,7 @@ import { TestimonialDialogs } from "./TestimonialDialogs";
 import { PageHeader } from "../ui/PageHeader";
 import { InfiniteScrollTrigger } from "../blogs/InfiniteScrollTrigger";
 import { LoadingSkeleton } from "./LoadingSkeleton";
-import { copyToClipboard } from "@/lib/utilities/syncFunctions/syncs";
+import { copyToClipboard, handleShareProfile } from "@/lib/utilities/syncFunctions/syncs";
 import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 
 interface OwnProfileViewProps {
@@ -87,15 +87,15 @@ export function OwnProfileView({
     const currentPath = window.location.href
     const username = params.username as string
 
-    const handleShareProfile = () => {
-        copyToClipboard(currentPath);
-    };
-
     const handleInvite = () => {
         const writePage = `${currentPath}/write?for=${username}`
-        copyToClipboard(writePage)
-    }
-
+        handleShareProfile({
+            title: `Write a Testimonial for ${userInfo?.username}`,
+            text: `Share your experience working with ${userInfo?.username} on Portfolio Pro`,
+            url: writePage,
+            imageUrl: userInfo?.profile_picture || undefined
+        })
+    };
     // Show loading skeleton only on initial load (no data yet)
     if (isLoadingReceived && receivedTestimonials.length === 0 && isReceivedTab) {
         return <LoadingSkeleton />;
@@ -117,7 +117,13 @@ export function OwnProfileView({
                 action={!miniView ? (
                     <div className="flex flex-wrap items-center gap-2">
                         <Button
-                            onClick={handleShareProfile}
+                            onClick={() => {
+                                handleShareProfile({
+                                    title: `${userInfo?.username}'s Testimonials — Portfolio Pro`,
+                                    text: `Read what others say about ${userInfo?.username} on Portfolio Pro`,
+                                    imageUrl: userInfo?.profile_picture || undefined
+                                })
+                            }}
                             className="self-start sm:self-auto"
                             text="Share Your Testimonials"
                             icon={<Share2 className="w-4 h-4" />}

@@ -83,7 +83,13 @@ export function OwnBlogsView({
         action={!miniView ? (
           <div className="flex flex-wrap items-center gap-2">
             <Button
-              onClick={handleShareProfile}
+              onClick={() => {
+                handleShareProfile({
+                  title: `${userInfo?.username}'s Blog — Portfolio Pro`,
+                  text: `Read ${userInfo?.username}'s articles and insights on Portfolio Pro`,
+                  imageUrl: userInfo?.profile_picture || undefined
+                })
+              }}
               className="self-start sm:self-auto"
               text="Share Your Posts"
               variant="outline"

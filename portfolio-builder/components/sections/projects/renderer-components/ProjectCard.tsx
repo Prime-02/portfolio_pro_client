@@ -1,5 +1,6 @@
 // portfolio-builder/components/sections/projects/renderer-components/ProjectCard.tsx
 
+import Image from "next/image";
 import { PortfolioProjectResponse } from "@/lib/stores/projects/types/project.types";
 import type { CardConfig } from "./resolveCardOverride";
 import { ExternalLink, Calendar, DollarSign, User, Layers, GitBranch } from "lucide-react";
@@ -17,6 +18,8 @@ const SIZE_PADDING = { small: "p-3", medium: "p-4", large: "p-5" } as const;
 const IMAGE_HEIGHT = { small: "h-32", medium: "h-40", large: "h-52" } as const;
 // List thumbnail — fixed square, doesn't stretch with row height
 const LIST_IMAGE_SIZE = { small: "w-12 h-12", medium: "w-16 h-16", large: "w-20 h-20" } as const;
+const LIST_IMAGE_DIMENSIONS = { small: 48, medium: 64, large: 80 } as const;
+const THUMBNAIL_SIZE = { small: 48, medium: 64, large: 80 } as const;
 const NAME_SIZE = { small: "text-sm", medium: "text-base", large: "text-lg" } as const;
 
 function formatDate(dateStr: string | null | undefined, display: string): string {
@@ -105,6 +108,8 @@ export default function ProjectCard({ project, config, cardSize, fullWidth = tru
     const pad = SIZE_PADDING[cardSize];
     const imgH = IMAGE_HEIGHT[cardSize];
     const listImgSize = LIST_IMAGE_SIZE[cardSize];
+    const listImgDimension = LIST_IMAGE_DIMENSIONS[cardSize];
+    const thumbnailSize = THUMBNAIL_SIZE[cardSize];
     const nameText = NAME_SIZE[cardSize];
     const widthClass = fullWidth ? "w-full" : "";
 
@@ -120,9 +125,11 @@ export default function ProjectCard({ project, config, cardSize, fullWidth = tru
                 style={accentStyle}
             >
                 {showImage && project.project_image_url && (
-                    <img
+                    <Image
                         src={project.project_image_url}
-                        alt={project.project_name}
+                        alt={project.project_name || "Project image"}
+                        width={48}
+                        height={48}
                         className="w-12 h-12 rounded-md object-cover shrink-0"
                     />
                 )}
@@ -151,9 +158,11 @@ export default function ProjectCard({ project, config, cardSize, fullWidth = tru
             >
                 {/* Fixed-size thumbnail — never stretches with row height */}
                 {showImage && project.project_image_url && (
-                    <img
+                    <Image
                         src={project.project_image_url}
-                        alt={project.project_name}
+                        alt={project.project_name || "Project image"}
+                        width={listImgDimension}
+                        height={listImgDimension}
                         className={`${listImgSize} rounded-md object-cover shrink-0`}
                     />
                 )}
@@ -200,10 +209,12 @@ export default function ProjectCard({ project, config, cardSize, fullWidth = tru
             >
                 {showImage && project.project_image_url && (
                     <div className={`relative ${imgH} overflow-hidden`}>
-                        <img
+                        <Image
                             src={project.project_image_url}
-                            alt={project.project_name}
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                            alt={project.project_name || "Project image"}
+                            fill
+                            className="object-cover transition-transform duration-500 group-hover:scale-105"
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         />
                         {/* Dark scrim — theme-independent, guarantees title contrast on bright images */}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
@@ -290,9 +301,11 @@ export default function ProjectCard({ project, config, cardSize, fullWidth = tru
             >
                 <div className="flex items-start gap-3">
                     {showImage && project.project_image_url && (
-                        <img
+                        <Image
                             src={project.project_image_url}
-                            alt={project.project_name}
+                            alt={project.project_name || "Project image"}
+                            width={64}
+                            height={64}
                             className="w-16 h-16 rounded-lg object-cover shrink-0"
                         />
                     )}
@@ -377,11 +390,13 @@ export default function ProjectCard({ project, config, cardSize, fullWidth = tru
             style={accentStyle}
         >
             {showImage && project.project_image_url && (
-                <div className={`${imgH} rounded-lg overflow-hidden mb-2`}>
-                    <img
+                <div className={`${imgH} rounded-lg overflow-hidden mb-2 relative`}>
+                    <Image
                         src={project.project_image_url}
-                        alt={project.project_name}
-                        className="w-full h-full object-cover"
+                        alt={project.project_name || "Project image"}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     />
                 </div>
             )}

@@ -1,5 +1,6 @@
 // portfolio-builder/components/sections/testimonials/renderer-components/TestimonialCard.tsx
 
+import Image from "next/image";
 import { Testimonial } from "@/lib/stores/testimonials/useTestimonial";
 import type { CardConfig } from "./resolveCardOverride";
 import { Star, Quote, BadgeCheck } from "lucide-react";
@@ -15,6 +16,7 @@ interface TestimonialCardProps {
 
 const SIZE_PADDING = { small: "p-4", medium: "p-5", large: "p-6" } as const;
 const AVATAR_SIZE = { small: "w-10 h-10", medium: "w-12 h-12", large: "w-14 h-14" } as const;
+const AVATAR_DIMENSIONS = { small: 40, medium: 48, large: 56 } as const;
 const NAME_SIZE = { small: "text-sm", medium: "text-base", large: "text-lg" } as const;
 const CONTENT_SIZE = { small: "text-xs", medium: "text-sm", large: "text-base" } as const;
 const QUOTE_SIZE = { small: "w-5 h-5", medium: "w-6 h-6", large: "w-8 h-8" } as const;
@@ -109,10 +111,18 @@ function Avatar({
     .slice(0, 2)
     .toUpperCase();
 
+  const dimension = AVATAR_DIMENSIONS[size];
+
   return (
     <div className={`${AVATAR_SIZE[size]} ${shapeClass} shrink-0 overflow-hidden bg-[var(--pb-surface-elevated)] border border-[var(--pb-border)] flex items-center justify-center`}>
       {url ? (
-        <img src={url} alt={name} className="w-full h-full object-cover" />
+        <Image
+          src={url}
+          alt={name || "Avatar"}
+          width={dimension}
+          height={dimension}
+          className="w-full h-full object-cover"
+        />
       ) : (
         <span className="text-xs font-semibold text-[var(--pb-text-muted)]">{initials}</span>
       )}

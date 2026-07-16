@@ -1,5 +1,6 @@
 // portfolio-builder/components/sections/skills/renderer-components/SkillCard.tsx
 
+import Image from "next/image";
 import type { ProfessionalSkill } from "@/lib/stores/skills/useSkills";
 import type { CardConfig } from "./resolveCardOverride";
 import {
@@ -18,6 +19,7 @@ interface SkillCardProps {
 
 const SIZE_PADDING = { small: "p-3", medium: "p-4", large: "p-5" } as const;
 const LOGO_SIZE = { small: "w-8 h-8", medium: "w-10 h-10", large: "w-12 h-12" } as const;
+const LOGO_DIMENSIONS = { small: 32, medium: 40, large: 48 } as const;
 const NAME_SIZE = { small: "text-sm", medium: "text-base", large: "text-lg" } as const;
 
 export default function SkillCard({ skill, config, cardSize, fullWidth = true }: SkillCardProps) {
@@ -35,6 +37,7 @@ export default function SkillCard({ skill, config, cardSize, fullWidth = true }:
 
     const pad = SIZE_PADDING[cardSize];
     const logo = LOGO_SIZE[cardSize];
+    const logoDimension = LOGO_DIMENSIONS[cardSize];
     const nameText = NAME_SIZE[cardSize];
     const widthClass = fullWidth ? "w-full" : "";
 
@@ -50,9 +53,11 @@ export default function SkillCard({ skill, config, cardSize, fullWidth = true }:
                 style={accentStyle}
             >
                 {showLogo && skill.skill_logo_url && (
-                    <img
+                    <Image
                         src={skill.skill_logo_url}
-                        alt={skill.skill_name}
+                        alt={skill.skill_name || "Skill logo"}
+                        width={logoDimension}
+                        height={logoDimension}
                         className={`${logo} rounded-md object-contain shrink-0`}
                     />
                 )}
@@ -78,8 +83,8 @@ export default function SkillCard({ skill, config, cardSize, fullWidth = true }:
         return (
             <div
                 className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm transition-all hover:scale-105 ${accentColor
-                        ? ""
-                        : "border-[var(--pb-border)] bg-[var(--pb-surface)] text-[var(--pb-text-primary)]"
+                    ? ""
+                    : "border-[var(--pb-border)] bg-[var(--pb-surface)] text-[var(--pb-text-primary)]"
                     }`}
                 style={
                     accentColor
@@ -92,7 +97,13 @@ export default function SkillCard({ skill, config, cardSize, fullWidth = true }:
                 }
             >
                 {showLogo && skill.skill_logo_url && (
-                    <img src={skill.skill_logo_url} alt="" className="w-4 h-4 rounded object-contain" />
+                    <Image
+                        src={skill.skill_logo_url}
+                        alt={skill.skill_name || "Skill logo"}
+                        width={16}
+                        height={16}
+                        className="w-4 h-4 rounded object-contain"
+                    />
                 )}
                 <span className="font-medium">{skill.skill_name}</span>
                 {showProficiency && (
@@ -111,9 +122,11 @@ export default function SkillCard({ skill, config, cardSize, fullWidth = true }:
             >
                 <div className="flex items-center gap-3">
                     {showLogo && skill.skill_logo_url && (
-                        <img
+                        <Image
                             src={skill.skill_logo_url}
-                            alt={skill.skill_name}
+                            alt={skill.skill_name || "Skill logo"}
+                            width={logoDimension}
+                            height={logoDimension}
                             className={`${logo} rounded-lg object-contain shrink-0`}
                         />
                     )}
@@ -164,9 +177,11 @@ export default function SkillCard({ skill, config, cardSize, fullWidth = true }:
             >
                 <div className="flex items-start gap-3">
                     {showLogo && skill.skill_logo_url && (
-                        <img
+                        <Image
                             src={skill.skill_logo_url}
-                            alt={skill.skill_name}
+                            alt={skill.skill_name || "Skill logo"}
+                            width={logoDimension}
+                            height={logoDimension}
                             className={`${logo} rounded-xl object-contain shrink-0`}
                         />
                     )}
@@ -219,9 +234,11 @@ export default function SkillCard({ skill, config, cardSize, fullWidth = true }:
         >
             <div className="flex items-center gap-3">
                 {showLogo && skill.skill_logo_url && (
-                    <img
+                    <Image
                         src={skill.skill_logo_url}
-                        alt={skill.skill_name}
+                        alt={skill.skill_name || "Skill logo"}
+                        width={logoDimension}
+                        height={logoDimension}
                         className={`${logo} rounded-lg object-contain shrink-0`}
                     />
                 )}

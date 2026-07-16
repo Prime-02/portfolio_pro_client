@@ -1,6 +1,7 @@
 "use client";
 
 import React, { JSX, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   Star,
@@ -85,12 +86,16 @@ export default function ProfessionalRankingCard({
       <div className="p-5">
         <div className="flex items-start gap-4">
           {/* Avatar */}
-          <div className="flex-shrink-0">
+          <Link
+            href={`/${user.username}`}
+            className="flex-shrink-0">
             <div className="w-14 h-14 rounded-full bg-[var(--accent)]/15 flex items-center justify-center overflow-hidden border-2 border-[var(--accent)]/20">
               {user.profile_picture ? (
-                <img
+                <Image
                   src={user.profile_picture}
-                  alt={displayName}
+                  alt={displayName || "User avatar"}
+                  width={56}
+                  height={56}
                   className="w-full h-full object-cover"
                 />
               ) : (
@@ -99,7 +104,7 @@ export default function ProfessionalRankingCard({
                 </span>
               )}
             </div>
-          </div>
+          </Link>
 
           {/* Info */}
           <div className="flex-1 min-w-0">

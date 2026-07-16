@@ -2,8 +2,6 @@
 
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useSearchParams } from "next/navigation";
-import { useUserSettings } from "@/lib/stores/user/useUserSettings";
-import { useRouting } from "@/lib/hooks/routing/useRouting";
 import ProfessionalRankingCard from "./components/ProfessionalRankingCard";
 import RankingFeedSkeleton from "./components/RankingFeedSkeleton";
 import { useTestimonialsStore } from "@/lib/stores/testimonials/useTestimonial";

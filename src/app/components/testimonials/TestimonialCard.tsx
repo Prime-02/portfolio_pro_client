@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Quote, Star, Trash2, CheckCircle2, Clock, User } from "lucide-react";
 import { Testimonial } from "@/lib/stores/testimonials/useTestimonial";
@@ -133,9 +134,11 @@ export function TestimonialCard({
                 {/* Author info */}
                 <div className="flex items-center gap-3 mt-4 pt-4 border-t border-[var(--foreground)]/5">
                     {testimonial.avatar_url ? (
-                        <img
+                        <Image
                             src={testimonial.avatar_url}
-                            alt={testimonial.author_name}
+                            alt={testimonial.author_name || "Author avatar"}
+                            width={40}
+                            height={40}
                             className="w-10 h-10 rounded-full object-cover"
                         />
                     ) : (

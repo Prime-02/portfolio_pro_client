@@ -10,29 +10,28 @@ import DynamicTitle from "./DynamicTitle";
 import { WebSocketProvider } from "./WebSocketContext";
 import { themePresets } from "@/lib/utilities/indices/Themes";
 
+const BASE_URL = "https://portfolio-pro-client.vercel.app";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
-  display: "swap", // Improves font loading performance
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
-  display: "swap", // Improves font loading performance
+  display: "swap",
 });
 
-// SEO Metadata Configuration
 export const metadata: Metadata = {
-  // Basic SEO
   title: {
     default: "Portfolio Pro - Build Your Portfolios Like A Pro",
-    template: "%s | Portfolio Pro", // For page-specific titles
+    template: "%s | Portfolio Pro",
   },
   description:
     "Create stunning professional portfolios with Portfolio Pro. Build, customize, and showcase your work with our powerful portfolio builder platform.",
 
-  // Keywords for SEO
   keywords: [
     "portfolio builder",
     "professional portfolio",
@@ -46,23 +45,21 @@ export const metadata: Metadata = {
     "career showcase",
   ],
 
-  // Author and site info
   authors: [{ name: "Portfolio Pro Team" }],
   creator: "Portfolio Pro",
   publisher: "Portfolio Pro",
 
-  // Open Graph (Facebook, LinkedIn, etc.)
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://portfoliopro.com", // Replace with your actual domain
+    url: BASE_URL,
     siteName: "Portfolio Pro",
     title: "Portfolio Pro - Build Your Portfolios Like A Pro",
     description:
       "Create stunning professional portfolios with Portfolio Pro. Build, customize, and showcase your work with our powerful portfolio builder platform.",
     images: [
       {
-        url: "https://portfoliopro.com/og-image.jpg", // Replace with your actual image
+        url: `${BASE_URL}/og-image.jpg`,
         width: 1200,
         height: 630,
         alt: "Portfolio Pro - Professional Portfolio Builder",
@@ -70,18 +67,16 @@ export const metadata: Metadata = {
     ],
   },
 
-  // Twitter Card
   twitter: {
     card: "summary_large_image",
     title: "Portfolio Pro - Build Your Portfolios Like A Pro",
     description:
       "Create stunning professional portfolios with Portfolio Pro. Build, customize, and showcase your work with our powerful portfolio builder platform.",
-    images: ["https://portfoliopro.com/twitter-image.jpg"], // Replace with your actual image
-    creator: "@portfoliopro", // Replace with your Twitter handle
-    site: "@portfoliopro", // Replace with your Twitter handle
+    images: [`${BASE_URL}/twitter-image.jpg`],
+    creator: "@portfoliopro",
+    site: "@portfoliopro",
   },
 
-  // Additional meta tags
   robots: {
     index: true,
     follow: true,
@@ -94,29 +89,22 @@ export const metadata: Metadata = {
     },
   },
 
-  // Canonical URL
   alternates: {
-    canonical: "https://portfoliopro.com", // Replace with your actual domain
+    canonical: BASE_URL,
   },
 
-  // App-specific metadata
   applicationName: "Portfolio Pro",
   category: "Business",
 
-  // Verification tokens (add these when you set up search console)
   verification: {
-    google: "w5XtqI99jBr7rAfeYcCgTEEBjV0rZUF7l9iTMrM1Eco", // Replace with actual verification code
-    // bing: "your-bing-verification-code", // Uncomment and replace if using Bing
+    google: "w5XtqI99jBr7rAfeYcCgTEEBjV0rZUF7l9iTMrM1Eco",
   },
 
-  //<meta name="google-site-verification" content="w5XtqI99jBr7rAfeYcCgTEEBjV0rZUF7l9iTMrM1Eco" />
-
-  // Additional metadata
   other: {
     "mobile-web-app-capable": "yes",
     "apple-mobile-web-app-capable": "yes",
     "apple-mobile-web-app-status-bar-style": "black-translucent",
-    "theme-color": themePresets[0].accent, // Replace with your brand color
+    "theme-color": themePresets[0].accent,
   },
 };
 
@@ -128,46 +116,21 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        {/* Additional SEO meta tags */}
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="format-detection" content="telephone=no" />
         <meta name="msapplication-TileColor" content="#000000" />
-        <meta name="theme-color" content="#000000" />
 
-        {/* Favicon and app icons */}
         <link rel="icon" href="/favicon.ico" />
-        <link
-          rel="apple-touch-icon"
-          sizes="180x180"
-          href="/apple-touch-icon.png"
-        />
-        <link
-          rel="icon"
-          type="image/png"
-          sizes="32x32"
-          href="/favicon-32x32.png"
-        />
-        <link
-          rel="icon"
-          type="image/png"
-          sizes="16x16"
-          href="/favicon-16x16.png"
-        />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
         <link rel="manifest" href="/site.webmanifest" />
 
-        {/* Preconnect to external domains for performance */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-
-        {/* DNS prefetch for better performance */}
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
         <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
 
-        {/* JSON-LD Structured Data */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -177,35 +140,20 @@ export default function RootLayout({
               name: "Portfolio Pro",
               description:
                 "Create stunning professional portfolios with Portfolio Pro. Build, customize, and showcase your work with our powerful portfolio builder platform.",
-              url: "https://portfoliopro.com",
+              url: BASE_URL,
               applicationCategory: "BusinessApplication",
               operatingSystem: "Any",
-              offers: {
-                "@type": "Offer",
-                price: "0",
-                priceCurrency: "USD",
-              },
-              creator: {
-                "@type": "Organization",
-                name: "Portfolio Pro",
-                url: "https://portfoliopro.com",
-              },
+              offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+              creator: { "@type": "Organization", name: "Portfolio Pro", url: BASE_URL },
             }),
           }}
         />
       </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Suspense
           fallback={
             <div className="flex justify-center w-full items-center h-screen">
-              <PortfolioProLogo
-                tracking={0.2}
-                scale={0.75}
-                fontWeight={"extrabold"}
-                reanimateDelay={3000}
-              />{" "}
+              <PortfolioProLogo tracking={0.2} scale={0.75} fontWeight={"extrabold"} reanimateDelay={3000} />
             </div>
           }
         >

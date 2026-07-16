@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     ChevronDown,
@@ -32,7 +33,7 @@ export function CommentItem({
     depth = 0,
     maxDepth = 3,
 }: CommentItemProps) {
-    const {userInfo} = useUserSettings()
+    const { userInfo } = useUserSettings()
     const [isReplying, setIsReplying] = useState(false);
     const [replyContent, setReplyContent] = useState("");
     const [isExpanded, setIsExpanded] = useState(false);
@@ -61,10 +62,10 @@ export function CommentItem({
     const hasMoreReplies = replies.length < totalReplies;
 
     const handleReply = async () => {
-         if (!userInfo?.username){
-                  toast.warning("You must be logged in to comment on a projects")
-                  return
-                }
+        if (!userInfo?.username) {
+            toast.warning("You must be logged in to comment on a projects")
+            return
+        }
         if (!replyContent.trim()) return;
 
         const data = {
@@ -130,9 +131,11 @@ export function CommentItem({
                 <div className="flex-shrink-0">
                     <div className="w-8 h-8 rounded-full bg-[var(--accent)]/10 flex items-center justify-center overflow-hidden">
                         {comment?.profile_picture ? (
-                            <img
-                                src={comment.profile_picture || ""}
-                                alt={comment.username || "User"}
+                            <Image
+                                src={comment.profile_picture}
+                                alt={comment.username || "User avatar"}
+                                width={32}
+                                height={32}
                                 className="w-full h-full object-cover"
                             />
                         ) : (

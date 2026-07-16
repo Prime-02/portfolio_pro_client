@@ -17,7 +17,7 @@ const TABS = [
 const NavBar = () => {
   const params = useParams();
   const { router, pathname, checkParams, clearQueryParam } = useRouting()
-  const { isMobile, isTablet, isDesktop } = useUIStore()
+  const { isMobile, isTablet, isDesktop, toggleMobileMenu } = useUIStore()
   const [activeTab, setActiveTab] = useState(params.tab as string || "")
   const [showSearch, setShowSearch] = useState(false)
   const [searchValue, setSearchValue] = useState("")
@@ -64,6 +64,7 @@ const NavBar = () => {
 
   // Handle tab change - preserve search query if it exists
   const handleTabChange = (tabId: string) => {
+    toggleMobileMenu(false)
     const searchParam = checkParams('search')
     if (searchParam) {
       router.push(`/feed/${tabId}?search=${encodeURIComponent(searchParam)}`)

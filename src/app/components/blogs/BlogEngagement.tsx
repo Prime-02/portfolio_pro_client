@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Heart,
@@ -333,8 +334,8 @@ export function BlogEngagement({ blog }: BlogEngagementProps) {
                         key={reaction.type}
                         onClick={() => handleReaction(reaction.type)}
                         className={`p-2.5 rounded-xl transition-all hover:scale-110 text-lg ${optimisticLiked && optimisticReaction === reaction.type
-                            ? "bg-[var(--accent)]/20"
-                            : "hover:bg-[var(--foreground)]/5"
+                          ? "bg-[var(--accent)]/20"
+                          : "hover:bg-[var(--foreground)]/5"
                           }`}
                         title={reaction.label}
                       >
@@ -362,9 +363,11 @@ export function BlogEngagement({ blog }: BlogEngagementProps) {
                   <div className="flex-shrink-0">
                     <div className="w-8 h-8 rounded-full bg-[var(--accent)]/10 flex items-center justify-center overflow-hidden">
                       {like.user?.profile_picture ? (
-                        <img
+                        <Image
                           src={like.user.profile_picture}
-                          alt={like.user.username || "User"}
+                          alt={like.user.username || "User avatar"}
+                          width={32}
+                          height={32}
                           className="w-full h-full object-cover"
                         />
                       ) : (
@@ -418,8 +421,8 @@ export function BlogEngagement({ blog }: BlogEngagementProps) {
                         setShowSortMenu(false);
                       }}
                       className={`w-full text-left px-3 py-2 text-xs hover:bg-[var(--foreground)]/5 transition-colors ${sortBy === option
-                          ? "text-[var(--accent)] font-medium"
-                          : "text-[var(--foreground)]/60"
+                        ? "text-[var(--accent)] font-medium"
+                        : "text-[var(--foreground)]/60"
                         }`}
                     >
                       {option === "newest" ? "Newest First" : "Oldest First"}

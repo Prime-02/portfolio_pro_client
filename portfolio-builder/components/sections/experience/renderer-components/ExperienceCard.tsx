@@ -1,6 +1,7 @@
 // portfolio-builder/components/sections/experience/renderer-components/ExperienceCard.tsx
 
 import { useMemo } from "react";
+import Image from "next/image";
 import type { ExperienceItem } from "./layoutProps";
 import type { CardConfig } from "./resolveCardOverride";
 import { Briefcase, MapPin, Calendar, Building2, Star } from "lucide-react";
@@ -14,6 +15,7 @@ interface ExperienceCardProps {
 
 const SIZE_PADDING = { small: "p-3", medium: "p-4", large: "p-5" } as const;
 const LOGO_SIZE = { small: "w-8 h-8", medium: "w-10 h-10", large: "w-12 h-12" } as const;
+const LOGO_DIMENSIONS = { small: 32, medium: 40, large: 48 } as const;
 const NAME_SIZE = { small: "text-sm", medium: "text-base", large: "text-lg" } as const;
 const COMPANY_SIZE = { small: "text-xs", medium: "text-sm", large: "text-base" } as const;
 
@@ -82,6 +84,7 @@ export default function ExperienceCard({
 
   const pad = SIZE_PADDING[cardSize];
   const logo = LOGO_SIZE[cardSize];
+  const logoDimension = LOGO_DIMENSIONS[cardSize];
   const nameText = NAME_SIZE[cardSize];
   const companyText = COMPANY_SIZE[cardSize];
   const widthClass = fullWidth ? "w-full" : "";
@@ -109,9 +112,11 @@ export default function ExperienceCard({
         style={accentStyle}
       >
         {showCompanyLogo && experience.company_logo_url && (
-          <img
+          <Image
             src={experience.company_logo_url}
-            alt={experience.company_name}
+            alt={experience.company_name || "Company logo"}
+            width={logoDimension}
+            height={logoDimension}
             className={`${logo} rounded-md object-contain shrink-0 bg-[var(--pb-background)]`}
           />
         )}
@@ -140,9 +145,11 @@ export default function ExperienceCard({
         style={accentStyle}
       >
         {showCompanyLogo && experience.company_logo_url && (
-          <img
+          <Image
             src={experience.company_logo_url}
-            alt={experience.company_name}
+            alt={experience.company_name || "Company logo"}
+            width={logoDimension}
+            height={logoDimension}
             className={`${logo} rounded-lg object-contain shrink-0 bg-[var(--pb-background)]`}
           />
         )}
@@ -189,9 +196,11 @@ export default function ExperienceCard({
       >
         <div className="flex items-start gap-3">
           {showCompanyLogo && experience.company_logo_url && (
-            <img
+            <Image
               src={experience.company_logo_url}
-              alt={experience.company_name}
+              alt={experience.company_name || "Company logo"}
+              width={logoDimension}
+              height={logoDimension}
               className={`${logo} rounded-xl object-contain shrink-0 bg-[var(--pb-background)]`}
             />
           )}
@@ -276,9 +285,11 @@ export default function ExperienceCard({
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3">
             {showCompanyLogo && experience.company_logo_url && (
-              <img
+              <Image
                 src={experience.company_logo_url}
-                alt={experience.company_name}
+                alt={experience.company_name || "Company logo"}
+                width={logoDimension}
+                height={logoDimension}
                 className={`${logo} rounded-xl object-contain shrink-0 bg-[var(--pb-background)]`}
               />
             )}
@@ -380,9 +391,11 @@ export default function ExperienceCard({
     >
       <div className="flex items-start gap-3">
         {showCompanyLogo && experience.company_logo_url && (
-          <img
+          <Image
             src={experience.company_logo_url}
-            alt={experience.company_name}
+            alt={experience.company_name || "Company logo"}
+            width={logoDimension}
+            height={logoDimension}
             className={`${logo} rounded-lg object-contain shrink-0 bg-[var(--pb-background)]`}
           />
         )}

@@ -4,6 +4,9 @@ import Modal from "../containers/modals/Modal"
 import Button from "../buttons/Buttons"
 import { Textinput } from "../inputs/Textinput"
 import { TextArea } from "../inputs/TextArea"
+import AIAssistant from "../ai/AIAsistant"
+import { getPortfolioDescriptionOptions } from "./portfolioPromptOptions"
+import { toast } from "../toastify/Toastify"
 
 interface CreatePortfolioModalProps {
   isOpen: boolean
@@ -77,14 +80,20 @@ const CreatePortfolioModal = ({
           {errors.name && <p className="mt-1 text-sm text-red-500">{errors.name}</p>}
         </div>
 
-        <div>
-          <TextArea
-            label="Description"
-            value={description}
-            onChange={(val) => setDescription(val)}
-            placeholder="Brief description of your portfolio..."
-          />
-        </div>
+       <div className="relative">
+                        <TextArea label="Description" value={description} onChange={(e) => setDescription(e)} />
+                        <div className="absolute bottom-0 right-0">
+                            <AIAssistant
+                                onChange={(e) => setDescription(e)}
+                                options={getPortfolioDescriptionOptions(description, name)}
+                                onEmptyClick={() => {
+                                    toast.info("Please enter a title to generate a description for your portfolio", {
+                                        title: "Could not genrate a description"
+                                    })
+                                }}
+                            />
+                        </div>
+                    </div>
 
         <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--foreground)]/10">
           <div>

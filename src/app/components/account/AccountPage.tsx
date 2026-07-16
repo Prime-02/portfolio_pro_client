@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
+import Image from "next/image";
 import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 import { useUserAccountStore } from "@/lib/stores/user/useUserAccountStore";
 import { Textinput } from "../inputs/Textinput";
@@ -111,6 +112,11 @@ function Avatar({
         md: "h-12 w-12 text-sm",
         lg: "h-20 w-20 text-lg",
     };
+    const dimensions = {
+        sm: 32,
+        md: 48,
+        lg: 80,
+    };
     const initials = fallback
         .split(" ")
         .map((n) => n[0])
@@ -120,12 +126,14 @@ function Avatar({
 
     return (
         <div
-            className={`${sizeClasses[size]} flex items-center justify-center rounded-full bg-(--accent)/15 text-(--accent) font-league-600`}
+            className={`${sizeClasses[size]} flex items-center justify-center rounded-full bg-(--accent)/15 text-(--accent) font-league-600 overflow-hidden`}
         >
             {src ? (
-                <img
+                <Image
                     src={src}
-                    alt="Profile"
+                    alt={fallback || "Profile picture"}
+                    width={dimensions[size]}
+                    height={dimensions[size]}
                     className="h-full w-full rounded-full object-cover"
                 />
             ) : (

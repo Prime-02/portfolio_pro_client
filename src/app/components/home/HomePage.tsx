@@ -13,10 +13,10 @@ export default function HomePage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8 md:p-12 font-[family-name:var(--font-geist-sans)]">
       <main className="w-full max-w-4xl flex flex-col items-center text-center gap-8 sm:gap-12">
-        <div className="flex flex-col items-center gap-4">
+        <div className="flex flex-col items-center">
           <PortfolioProLogo
             tracking={0.2}
-            scale={0.75}
+            scale={0.65}
             fontWeight={"extrabold"}
             reanimateDelay={3000}
           />

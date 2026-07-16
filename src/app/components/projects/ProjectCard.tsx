@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import {
   Heart,
@@ -79,10 +80,15 @@ export function ProjectCard({
       {/* Media section */}
       {hasHeroMedia && (
         <div className={`relative overflow-hidden ${featured ? "h-48 md:h-56" : "h-40"}`}>
-          <img
+          <Image
             src={project.other_project_image_url!.hero_media!.url}
-            alt={project.project_name}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            alt={project.project_name || "Project hero image"}
+            fill
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            sizes={featured
+              ? "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              : "(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 25vw"
+            }
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[var(--background)] via-transparent to-transparent" />
 

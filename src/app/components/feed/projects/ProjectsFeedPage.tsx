@@ -105,7 +105,7 @@ export default function ProjectsFeedPage() {
         {/* Create Project CTA */}
         {userInfo?.username && (
           <div
-            className="rounded-2xl border border-[var(--foreground)]/10 p-4 flex items-center justify-between"
+            className="rounded-2xl border border-[var(--foreground)]/10 p-4 flex flex-wrap items-center gap-2 justify-between"
             style={{ backgroundColor: "var(--background)" }}
           >
             <div className="flex items-center gap-3">
@@ -124,6 +124,7 @@ export default function ProjectsFeedPage() {
             <Button
               text="Create Project"
               onClick={() => router.push(`/${userInfo.username}/projects/create`)}
+              size="sm"
             />
           </div>
         )}

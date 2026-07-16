@@ -67,7 +67,7 @@ const LandingPageNavbar = () => {
             <PortfolioProLogo variant="banner" scale={0.3} />
           </Link>
           {mobileMenuOpen ? (
-            <CloseButton onClick={toggleMobileMenu} />
+            <CloseButton onClick={() => toggleMobileMenu(false)} />
           ) : (
             <button
                 onClick={() => toggleMobileMenu(true)}
@@ -83,8 +83,8 @@ const LandingPageNavbar = () => {
       {/* Sidebar - Desktop or Mobile when open */}
       <div
         className={`
-          ${isMobile ? "fixed" : "relative"} top-0 h-screen max-h-screen overflow-auto bg-[var(--background)] border-r border-[var(--accent)]/20 flex flex-col transition-all duration-300 ease-in-out
-          ${isMobile ? `z-40 ${mobileMenuOpen ? "left-0" : "-left-full"}` : ""}
+          ${isMobile ? "fixed" : "relative"} top-0 z-50 h-screen max-h-screen overflow-auto bg-[var(--background)] border-r border-[var(--accent)]/20 flex flex-col transition-all duration-300 ease-in-out
+          ${isMobile ? `${mobileMenuOpen ? "left-0" : "-left-full"}` : ""}
           ${isSidebarExpanded || mobileMenuOpen ? "w-64" : "w-16"}
           ${isMobile ? "pt-16" : ""}
         `}

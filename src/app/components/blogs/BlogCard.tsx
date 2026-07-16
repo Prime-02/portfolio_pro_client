@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import {
   Heart,
@@ -21,6 +22,7 @@ import { useRouter } from "next/navigation";
 import type { ContentWithAuthor, ContentStatus } from "@/lib/stores/contents/types/content.types";
 import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 import { useUIStore } from "@/lib/stores/ui/useUIStore";
+import Link from "next/link";
 
 interface BlogCardProps {
   blog: ContentWithAuthor;
@@ -80,10 +82,15 @@ export function BlogCard({
       {/* Cover Image */}
       {hasCover && (
         <div className={`relative overflow-hidden ${featured ? "h-52 md:h-64" : "h-44"}`}>
-          <img
+          <Image
             src={blog.cover_image_url!}
-            alt={blog.title}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            alt={blog.title || "Blog cover"}
+            fill
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            sizes={featured
+              ? "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              : "(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 25vw"
+            }
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[var(--background)] via-transparent to-transparent" />
 
@@ -134,11 +141,19 @@ export function BlogCard({
                 {blog.title}
               </h3>
             }
-            <div className="flex items-center gap-2 mt-1.5">
+            <Link
+              href={`/${blog.author?.username}`}
+              className="flex items-center gap-2 mt-1.5">
               {blog.author && (
                 <span className="flex items-center gap-1.5 text-xs text-[var(--foreground)]/50">
                   {blog.author.profile_picture ? (
-                    <img src={blog.author.profile_picture} alt={blog.author.username} className="w-4 h-4 rounded-full object-cover" />
+                    <Image
+                      src={blog.author.profile_picture}
+                      alt={blog.author.username || "Author avatar"}
+                      width={16}
+                      height={16}
+                      className="w-4 h-4 rounded-full object-cover"
+                    />
                   ) : (
                     <div className="w-4 h-4 rounded-full bg-[var(--accent)]/10 flex items-center justify-center">
                       <span className="text-[8px] font-medium text-[var(--accent)]">{blog.author.username[0]?.toUpperCase()}</span>
@@ -153,7 +168,7 @@ export function BlogCard({
                   <span className="text-xs text-[var(--foreground)]/40">{blog.category}</span>
                 </>
               )}
-            </div>
+            </Link>
           </div>
         </div>
 

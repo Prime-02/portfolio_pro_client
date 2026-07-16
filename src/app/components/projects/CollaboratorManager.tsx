@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -179,7 +180,7 @@ export default function CollaboratorManagerPage() {
             className="flex items-center gap-2 text-sm text-[var(--foreground)]/60 hover:text-[var(--accent)] transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
-             Go Back
+            Go Back
           </button>
           <div>
             <Button
@@ -229,9 +230,11 @@ export default function CollaboratorManagerPage() {
                       bg-[var(--background)] hover:border-[var(--accent)]/20 transition-colors"
                   >
                     {collaborator.profile_picture ? (
-                      <img
+                      <Image
                         src={collaborator.profile_picture}
-                        alt={collaborator.username ?? `Collaborator ${i}`}
+                        alt={collaborator.username ?? `Collaborator ${i + 1}`}
+                        width={40}
+                        height={40}
                         className="w-10 h-10 rounded-full object-cover flex-shrink-0"
                       />
                     ) : (

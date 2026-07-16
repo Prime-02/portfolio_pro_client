@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { Edit, Flag, MoreVertical, Sparkles, Trash } from "lucide-react";
@@ -67,12 +68,16 @@ export default function FeedCard({ content }: FeedCardProps) {
       >
         {/* Author Header */}
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
+          <Link
+            href={`/${author?.username}`}
+            className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-[var(--accent)]/20 flex items-center justify-center overflow-hidden">
               {author?.profile_picture ? (
-                <img
+                <Image
                   src={author.profile_picture}
-                  alt={author.display_name || author.username || ""}
+                  alt={author.display_name || author.username || "Author avatar"}
+                  width={40}
+                  height={40}
                   className="w-full h-full object-cover"
                 />
               ) : (
@@ -96,7 +101,7 @@ export default function FeedCard({ content }: FeedCardProps) {
                 )}
               </p>
             </div>
-          </div>
+          </Link>
 
           {/* Report Button */}
 
@@ -168,12 +173,14 @@ export default function FeedCard({ content }: FeedCardProps) {
 
         {/* Cover Image */}
         {content.cover_image_url && (
-          <div className="mb-4 rounded-xl overflow-hidden">
-            <img
+          <div className="mb-4 rounded-xl overflow-hidden relative">
+            <Image
               src={content.cover_image_url}
-              alt={content.title}
-              className="w-full h-auto max-h-80 object-cover"
-              loading="lazy"
+              alt={content.title || "Post cover image"}
+              fill
+              className="object-cover !static"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              style={{ position: 'relative', width: '100%', height: 'auto', maxHeight: '20rem' }}
             />
           </div>
         )}

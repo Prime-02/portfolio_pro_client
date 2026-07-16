@@ -13,6 +13,7 @@ import Button from "../../buttons/Buttons";
 import { Edit, Share2Icon } from "lucide-react";
 import { UserResponse } from "@/lib/stores/user/useUserAccountStore";
 
+
 interface ProfileHeroCardProps {
     profile: UserProfileRequest | null;
     userInfo: UserResponse | UserUpdateRequest | null;
@@ -34,14 +35,14 @@ export const ProfileHeroCard = ({
         <div className="card rounded-2xl">
             {/* Top row: Avatar + Edit button */}
             <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between mb-4 sm:mb-6 gap-4 sm:gap-0">
-                <div className="relative w-24 h-24 sm:w-[25vw] sm:h-[25vw] md:w-[30vw] md:h-[30vw] max-w-40 md:max-w-56 max-h-40 md:max-h-56 rounded-full overflow-hidden ring-4 ring-(--accent)/20 shadow-lg shrink-0">
+                <div className="relative w-32 h-32 sm:w-[25vw] sm:h-[25vw] md:w-[30vw] md:h-[30vw] max-w-40 md:max-w-56 max-h-40 md:max-h-56 rounded-full overflow-hidden ring-4 ring-(--accent)/20 shadow-lg shrink-0">
                     {userInfo?.profile_picture ? (
                         <Image
                             src={getImageSrc(userInfo?.profile_picture)}
                             alt={name || "Profile"}
                             fill
                             className="object-cover"
-                            sizes="(max-width: 640px) 96px, (max-width: 768px) 25vw, 30vw"
+                            sizes="(max-width: 640px) 128px, (max-width: 768px) 25vw, 30vw"
                         />
                     ) : (
                         <div className="w-full h-full bg-gradient-to-br from-(--accent)/10 to-(--accent)/5 flex items-center justify-center">

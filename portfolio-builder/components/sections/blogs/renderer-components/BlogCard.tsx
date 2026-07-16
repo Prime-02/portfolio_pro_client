@@ -1,5 +1,6 @@
 // portfolio-builder/components/sections/blogs/renderer-components/BlogCard.tsx
 
+import Image from "next/image";
 import { ContentWithAuthor } from "@/lib/stores/contents/types/content.types";
 import type { CardConfig } from "./resolveCardOverride";
 import { ExternalLink, Calendar, Eye, MessageCircle, Heart, Share2, Bookmark, Clock, User } from "lucide-react";
@@ -130,7 +131,13 @@ export default function BlogCard({ blog, config, cardSize, fullWidth = true, ind
         return (
             <div className={`${widthClass} ${pad} rounded-lg border border-[var(--pb-border)] bg-[var(--pb-surface)] flex items-center gap-3 transition-all hover:border-[var(--pb-foreground-20)]`} style={accentStyle}>
                 {showImage && blog.cover_image_url && (
-                    <img src={blog.cover_image_url} alt={blog.title} className="w-12 h-12 rounded-md object-cover shrink-0" />
+                    <Image
+                        src={blog.cover_image_url}
+                        alt={blog.title || "Blog cover"}
+                        width={48}
+                        height={48}
+                        className="w-12 h-12 rounded-md object-cover shrink-0"
+                    />
                 )}
                 <div className="flex-1 min-w-0">
                     {showTitle && <p className={`${titleText} font-medium text-[var(--pb-text-primary)] truncate`}>{blog.title}</p>}
@@ -152,7 +159,13 @@ export default function BlogCard({ blog, config, cardSize, fullWidth = true, ind
         return (
             <div className={`${widthClass} ${pad} rounded-lg border border-[var(--pb-border)] bg-[var(--pb-surface)] flex items-center gap-3 transition-all hover:border-[var(--pb-foreground-20)]`} style={accentStyle}>
                 {showImage && blog.cover_image_url && (
-                    <img src={blog.cover_image_url} alt={blog.title} className={`${listImgSize} rounded-md object-cover shrink-0`} />
+                    <Image
+                        src={blog.cover_image_url}
+                        alt={blog.title || "Blog cover"}
+                        width={cardSize === "small" ? 48 : cardSize === "medium" ? 64 : 80}
+                        height={cardSize === "small" ? 48 : cardSize === "medium" ? 64 : 80}
+                        className={`${listImgSize} rounded-md object-cover shrink-0`}
+                    />
                 )}
                 <div className="flex-1 min-w-0">
                     {showTitle && <p className={`${titleText} font-medium text-[var(--pb-text-primary)] truncate`}>{blog.title}</p>}
@@ -189,7 +202,13 @@ export default function BlogCard({ blog, config, cardSize, fullWidth = true, ind
             <div className={`${widthClass} rounded-xl overflow-hidden border border-[var(--pb-border)] bg-[var(--pb-surface)] transition-all hover:border-[var(--pb-foreground-20)] group`} style={accentStyle}>
                 {showImage && blog.cover_image_url && (
                     <div className={`relative ${imgH} overflow-hidden`}>
-                        <img src={blog.cover_image_url} alt={blog.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                        <Image
+                            src={blog.cover_image_url}
+                            alt={blog.title || "Blog cover"}
+                            fill
+                            className="object-cover transition-transform duration-500 group-hover:scale-105"
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
                         <div className="absolute inset-0 bg-gradient-to-t from-[var(--pb-surface)]/40 via-transparent to-transparent" />
                         <div className="absolute bottom-3 left-4 right-4 flex items-end justify-between">
@@ -216,7 +235,17 @@ export default function BlogCard({ blog, config, cardSize, fullWidth = true, ind
                     <div className="flex flex-wrap items-center gap-2">
                         {showAuthor && (
                             <span className="text-xs text-[var(--pb-text-muted)] flex items-center gap-1">
-                                {authorImage ? <img src={authorImage} alt={authorName} className="w-4 h-4 rounded-full object-cover" /> : <User size={12} />}
+                                {authorImage ? (
+                                    <Image
+                                        src={authorImage}
+                                        alt={authorName}
+                                        width={16}
+                                        height={16}
+                                        className="w-4 h-4 rounded-full object-cover"
+                                    />
+                                ) : (
+                                    <User size={12} />
+                                )}
                                 {authorName}
                             </span>
                         )}
@@ -258,7 +287,13 @@ export default function BlogCard({ blog, config, cardSize, fullWidth = true, ind
             <div className={`${widthClass} ${pad} rounded-xl border border-[var(--pb-border)] bg-[var(--pb-surface)] space-y-3 transition-all hover:border-[var(--pb-foreground-20)]`} style={accentStyle}>
                 <div className="flex items-start gap-3">
                     {showImage && blog.cover_image_url && (
-                        <img src={blog.cover_image_url} alt={blog.title} className="w-20 h-20 rounded-lg object-cover shrink-0" />
+                        <Image
+                            src={blog.cover_image_url}
+                            alt={blog.title || "Blog cover"}
+                            width={80}
+                            height={80}
+                            className="w-20 h-20 rounded-lg object-cover shrink-0"
+                        />
                     )}
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap mb-1">
@@ -289,7 +324,17 @@ export default function BlogCard({ blog, config, cardSize, fullWidth = true, ind
                 <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-[var(--pb-border)]">
                     {showAuthor && (
                         <span className="text-xs text-[var(--pb-text-muted)] flex items-center gap-1">
-                            {authorImage ? <img src={authorImage} alt={authorName} className="w-4 h-4 rounded-full object-cover" /> : <User size={12} />}
+                            {authorImage ? (
+                                <Image
+                                    src={authorImage}
+                                    alt={authorName}
+                                    width={16}
+                                    height={16}
+                                    className="w-4 h-4 rounded-full object-cover"
+                                />
+                            ) : (
+                                <User size={12} />
+                            )}
                             {authorName}
                         </span>
                     )}
@@ -342,7 +387,13 @@ export default function BlogCard({ blog, config, cardSize, fullWidth = true, ind
             <div className={`${widthClass} ${pad} rounded-xl border border-[var(--pb-border)] bg-[var(--pb-surface)] space-y-3 transition-all hover:border-[var(--pb-foreground-20)]`} style={accentStyle}>
                 <div className="flex items-start gap-3">
                     {showImage && blog.cover_image_url && (
-                        <img src={blog.cover_image_url} alt={blog.title} className="w-16 h-16 rounded-lg object-cover shrink-0" />
+                        <Image
+                            src={blog.cover_image_url}
+                            alt={blog.title || "Blog cover"}
+                            width={64}
+                            height={64}
+                            className="w-16 h-16 rounded-lg object-cover shrink-0"
+                        />
                     )}
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
@@ -368,7 +419,17 @@ export default function BlogCard({ blog, config, cardSize, fullWidth = true, ind
                 <div className="flex flex-wrap items-center gap-2 pt-1">
                     {showAuthor && (
                         <span className="text-xs text-[var(--pb-text-muted)] flex items-center gap-1">
-                            {authorImage ? <img src={authorImage} alt={authorName} className="w-4 h-4 rounded-full object-cover" /> : <User size={12} />}
+                            {authorImage ? (
+                                <Image
+                                    src={authorImage}
+                                    alt={authorName}
+                                    width={16}
+                                    height={16}
+                                    className="w-4 h-4 rounded-full object-cover"
+                                />
+                            ) : (
+                                <User size={12} />
+                            )}
                             {authorName}
                         </span>
                     )}
@@ -408,8 +469,14 @@ export default function BlogCard({ blog, config, cardSize, fullWidth = true, ind
     return (
         <div className={`${widthClass} ${pad} rounded-xl border border-[var(--pb-border)] bg-[var(--pb-surface)] space-y-2.5 transition-all hover:border-[var(--pb-foreground-20)]`} style={accentStyle}>
             {showImage && blog.cover_image_url && (
-                <div className={`${imgH} rounded-lg overflow-hidden mb-2`}>
-                    <img src={blog.cover_image_url} alt={blog.title} className="w-full h-full object-cover" />
+                <div className={`${imgH} rounded-lg overflow-hidden mb-2 relative`}>
+                    <Image
+                        src={blog.cover_image_url}
+                        alt={blog.title || "Blog cover"}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    />
                 </div>
             )}
             <div className="flex items-center gap-2 flex-wrap">
@@ -429,7 +496,17 @@ export default function BlogCard({ blog, config, cardSize, fullWidth = true, ind
                 <div className="flex items-center gap-2 flex-wrap">
                     {showAuthor && (
                         <span className="text-xs text-[var(--pb-text-muted)] flex items-center gap-1">
-                            {authorImage ? <img src={authorImage} alt={authorName} className="w-4 h-4 rounded-full object-cover" /> : <User size={12} />}
+                            {authorImage ? (
+                                <Image
+                                    src={authorImage}
+                                    alt={authorName}
+                                    width={16}
+                                    height={16}
+                                    className="w-4 h-4 rounded-full object-cover"
+                                />
+                            ) : (
+                                <User size={12} />
+                            )}
                             {authorName}
                         </span>
                     )}

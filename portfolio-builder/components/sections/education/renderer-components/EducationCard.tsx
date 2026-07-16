@@ -1,6 +1,7 @@
 // portfolio-builder/components/sections/education/renderer-components/EducationCard.tsx
 
 import { useMemo } from "react";
+import Image from "next/image";
 import type { EducationItem } from "./layoutProps";
 import type { CardConfig } from "./resolveCardOverride";
 import { GraduationCap, BookOpen, Calendar, School, Award, MapPin } from "lucide-react";
@@ -14,6 +15,7 @@ interface EducationCardProps {
 
 const SIZE_PADDING = { small: "p-3", medium: "p-4", large: "p-5" } as const;
 const LOGO_SIZE = { small: "w-8 h-8", medium: "w-10 h-10", large: "w-12 h-12" } as const;
+const LOGO_DIMENSIONS = { small: 32, medium: 40, large: 48 } as const;
 const INSTITUTION_SIZE = { small: "text-sm", medium: "text-base", large: "text-lg" } as const;
 const DEGREE_SIZE = { small: "text-xs", medium: "text-sm", large: "text-base" } as const;
 
@@ -82,6 +84,7 @@ export default function EducationCard({
 
   const pad = SIZE_PADDING[cardSize];
   const logo = LOGO_SIZE[cardSize];
+  const logoSize = LOGO_DIMENSIONS[cardSize];
   const institutionText = INSTITUTION_SIZE[cardSize];
   const degreeText = DEGREE_SIZE[cardSize];
   const widthClass = fullWidth ? "w-full" : "";
@@ -109,9 +112,11 @@ export default function EducationCard({
         style={accentStyle}
       >
         {showInstitutionLogo && education.institution_logo_url && (
-          <img
+          <Image
             src={education.institution_logo_url}
-            alt={education.institution}
+            alt={education.institution || "Institution logo"}
+            width={logoSize}
+            height={logoSize}
             className={`${logo} rounded-md object-contain shrink-0 bg-[var(--pb-background)]`}
           />
         )}
@@ -140,9 +145,11 @@ export default function EducationCard({
         style={accentStyle}
       >
         {showInstitutionLogo && education.institution_logo_url && (
-          <img
+          <Image
             src={education.institution_logo_url}
-            alt={education.institution}
+            alt={education.institution || "Institution logo"}
+            width={logoSize}
+            height={logoSize}
             className={`${logo} rounded-lg object-contain shrink-0 bg-[var(--pb-background)]`}
           />
         )}
@@ -175,9 +182,11 @@ export default function EducationCard({
       >
         <div className="flex items-start gap-3">
           {showInstitutionLogo && education.institution_logo_url && (
-            <img
+            <Image
               src={education.institution_logo_url}
-              alt={education.institution}
+              alt={education.institution || "Institution logo"}
+              width={logoSize}
+              height={logoSize}
               className={`${logo} rounded-xl object-contain shrink-0 bg-[var(--pb-background)]`}
             />
           )}
@@ -238,9 +247,11 @@ export default function EducationCard({
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3">
             {showInstitutionLogo && education.institution_logo_url && (
-              <img
+              <Image
                 src={education.institution_logo_url}
-                alt={education.institution}
+                alt={education.institution || "Institution logo"}
+                width={logoSize}
+                height={logoSize}
                 className={`${logo} rounded-xl object-contain shrink-0 bg-[var(--pb-background)]`}
               />
             )}
@@ -311,9 +322,11 @@ export default function EducationCard({
 
         <div className="flex items-start gap-3 relative z-10">
           {showInstitutionLogo && education.institution_logo_url && (
-            <img
+            <Image
               src={education.institution_logo_url}
-              alt={education.institution}
+              alt={education.institution || "Institution logo"}
+              width={logoSize}
+              height={logoSize}
               className={`${logo} rounded-xl object-contain shrink-0 bg-[var(--pb-background)]`}
             />
           )}
@@ -368,9 +381,11 @@ export default function EducationCard({
     >
       <div className="flex items-start gap-3">
         {showInstitutionLogo && education.institution_logo_url && (
-          <img
+          <Image
             src={education.institution_logo_url}
-            alt={education.institution}
+            alt={education.institution || "Institution logo"}
+            width={logoSize}
+            height={logoSize}
             className={`${logo} rounded-lg object-contain shrink-0 bg-[var(--pb-background)]`}
           />
         )}

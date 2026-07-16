@@ -5,7 +5,7 @@
 // WYSIWYG editing engine — shipping that to every visitor of a public
 // portfolio page just to render text would be a big regression. This uses
 // react-markdown (+ remark-gfm for tables/strikethrough/task-lists, +
-// rehype-slug for heading anchor ids, + rehype-raw so literal <details>/<img
+// rehype-slug for heading anchor ids, + rehype-raw so literal <details>/<Image
 // width height> HTML the editor may have emitted still renders).
 //
 // npm install react-markdown remark-gfm rehype-slug rehype-raw
@@ -13,6 +13,7 @@
 "use client";
 
 import { memo, useEffect, useRef } from "react";
+import Image from "next/image";
 import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeSlug from "rehype-slug";
@@ -42,16 +43,50 @@ function resolveRendererImageSrc(src?: string): string {
 // ─── react-markdown component overrides ──────────────────────────────────────
 
 const components: Components = {
-    img: ({ src, alt, width, height }) => (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-            src={resolveRendererImageSrc(typeof src === "string" ? src : undefined)}
-            alt={alt ?? ""}
-            width={width}
-            height={height}
-            loading="lazy"
-        />
-    ),
+    img: ({ src, alt, width, height }) => {
+        const resolvedSrc = resolveRendererImageSrc(typeof src === "string" ? src : undefined);
+        const numericWidth = typeof width === "number" ? width : typeof width === "string" ? parseInt(width, 10) : undefined;
+        const numericHeight = typeof height === "number" ? height : typeof height === "string" ? parseInt(height, 10) : undefined;
+
+        // If we have both width and height, use them directly
+        if (numericWidth && numericHeight) {
+            return (
+                <Image
+                    src={resolvedSrc}
+                    alt={alt ?? ""}
+                    width={numericWidth}
+                    height={numericHeight}
+                    style={{ maxWidth: '100%', height: 'auto' }}
+                />
+            );
+        }
+
+        // If we only have one dimension, use fill with aspect ratio container
+        if (numericWidth || numericHeight) {
+            return (
+                <div style={{ position: 'relative', width: '100%', maxWidth: numericWidth || '100%' }}>
+                    <Image
+                        src={resolvedSrc}
+                        alt={alt ?? ""}
+                        width={numericWidth || 1200}
+                        height={numericHeight || 800}
+                        style={{ width: '100%', height: 'auto' }}
+                    />
+                </div>
+            );
+        }
+
+        // Fallback: no dimensions specified, use a sensible default
+        return (
+            <Image
+                src={resolvedSrc}
+                alt={alt ?? ""}
+                width={1200}
+                height={800}
+                style={{ maxWidth: '100%', height: 'auto' }}
+            />
+        );
+    },
     // remark-gfm marks task-list <li> with className="task-list-item"; map
     // that onto the "task-item" class your existing CSS (.mdr li.task-item)
     // already styles, so the stylesheet didn't need to change.

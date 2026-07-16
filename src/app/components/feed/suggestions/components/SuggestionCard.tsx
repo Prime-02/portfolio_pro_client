@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import { ThumbsUp, Pencil, Trash2, MoreHorizontal } from "lucide-react";
 import {
   useSuggestionsStore,
@@ -16,6 +17,7 @@ import AIAssistant from "../../../ai/AIAsistant";
 import { getSuggestionOptions } from "./suggestionsPromptOptions";
 import { toast } from "../../../toastify/Toastify";
 import Button from "../../../buttons/Buttons";
+import Link from "next/link";
 
 interface SuggestionCardProps {
   suggestion: SuggestionResponse;
@@ -104,12 +106,16 @@ export default function SuggestionCard({ suggestion, isMine }: SuggestionCardPro
       <div className="p-5">
         <div className="flex items-start gap-4">
           {/* Avatar */}
-          <div className="flex-shrink-0">
+          <Link
+            href={`/${author.username}`}
+            className="flex-shrink-0">
             <div className="w-10 h-10 rounded-full bg-[var(--accent)]/15 flex items-center justify-center overflow-hidden border-2 border-[var(--accent)]/20">
               {author?.profile_picture ? (
-                <img
+                <Image
                   src={author.profile_picture}
-                  alt={displayName}
+                  alt={displayName || "User avatar"}
+                  width={40}
+                  height={40}
                   className="w-full h-full object-cover"
                 />
               ) : (
@@ -118,7 +124,7 @@ export default function SuggestionCard({ suggestion, isMine }: SuggestionCardPro
                 </span>
               )}
             </div>
-          </div>
+          </Link>
 
           {/* Content */}
           <div className="flex-1 min-w-0">

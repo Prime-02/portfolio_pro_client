@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react"
+import Image from "next/image"
 import type { PortfolioResponse, PortfolioUpdate } from "@/portfolio-builder/store/usePortfolioStore"
 import Modal from "../containers/modals/Modal"
 import { TextArea } from "../inputs/TextArea"
@@ -8,6 +9,9 @@ import { useRouting } from "@/lib/hooks/routing/useRouting"
 import { FileInput } from "../inputs/FileInput"
 import Button from "../buttons/Buttons"
 import { Textinput } from "../inputs/Textinput"
+import AIAssistant from "../ai/AIAsistant"
+import { getPortfolioDescriptionOptions } from "./portfolioPromptOptions"
+import { toast } from "../toastify/Toastify"
 
 type SnapshotMode = "none" | "generate" | "upload"
 
@@ -205,8 +209,19 @@ const EditPortfolioModal = ({
                     <Textinput label="Name" required type="text" value={name} onChange={(e) => setName(e)} />
                 </div>
 
-                <div>
+                <div className="relative">
                     <TextArea label="Description" value={description} onChange={(e) => setDescription(e)} />
+                    <div className="absolute bottom-0 right-0">
+                        <AIAssistant
+                            onChange={(e) => setDescription(e)}
+                            options={getPortfolioDescriptionOptions(description, name)}
+                            onEmptyClick={() => {
+                                toast.info("Please enter a title to generate a description for your portfolio", {
+                                    title: "Could not genrate a description"
+                                })
+                            }}
+                        />
+                    </div>
                 </div>
 
                 {/* Cover Image Section */}
@@ -217,14 +232,16 @@ const EditPortfolioModal = ({
 
                     {/* Current cover image preview (saved, or staged-but-not-yet-uploaded) */}
                     {coverImageUrl && snapshotMode === "none" && (
-                        <div className="relative rounded-lg overflow-hidden border border-[var(--foreground)]/10">
-                            <img
+                        <div className="relative rounded-lg overflow-hidden border border-[var(--foreground)]/10 h-40">
+                            <Image
                                 src={coverImageUrl}
                                 alt="Cover preview"
-                                className="w-full h-40 object-cover"
+                                fill
+                                className="object-cover"
+                                sizes="(max-width: 768px) 100vw, 50vw"
                             />
                             {pendingFile && (
-                                <span className="absolute top-2 left-2 px-2 py-0.5 text-xs font-medium bg-black/60 text-white rounded-md">
+                                <span className="absolute top-2 left-2 px-2 py-0.5 text-xs font-medium bg-black/60 text-white rounded-md z-10">
                                     Not saved yet
                                 </span>
                             )}
@@ -234,14 +251,14 @@ const EditPortfolioModal = ({
                                 icon={<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>}
                                 onClick={handleRemoveCoverImage}
                                 title="Remove cover image"
-                                className="absolute top-2 left-2 z-20 bg-red-500 hover:bg-red-700 text-white rounded-full p-2"
+                                className="absolute top-2 right-2 z-20 bg-red-500 hover:bg-red-700 text-white rounded-full p-2"
                             />
                         </div>
                     )}
 
                     {/* Snapshot mode selector */}
                     {snapshotMode === "none" && (
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-2">
                             <Button
                                 variant="outline"
                                 size="sm"
@@ -265,12 +282,14 @@ const EditPortfolioModal = ({
                     {/* Generate snapshot mode */}
                     {snapshotMode === "generate" && (
                         <div className="space-y-3 rounded-lg border border-[var(--foreground)]/10 p-3">
-                            <div className="rounded-lg overflow-hidden border border-[var(--foreground)]/10 bg-[var(--foreground)]/5">
-                                <img
+                            <div className="rounded-lg overflow-hidden border border-[var(--foreground)]/10 bg-[var(--foreground)]/5 h-48 relative">
+                                <Image
                                     key={snapshotKey}
                                     src={`/api/snapshot?url=${encodeURIComponent(`${portfolioSnapshot()}&t=${snapshotKey}`)}`}
                                     alt="Portfolio snapshot preview"
-                                    className="w-full h-48 object-cover"
+                                    fill
+                                    className="object-cover"
+                                    sizes="(max-width: 768px) 100vw, 50vw"
                                 />
                             </div>
                             <div className="flex gap-2">

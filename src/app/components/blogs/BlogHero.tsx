@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import {
   Heart,
   MessageCircle,
@@ -136,10 +137,13 @@ export function BlogHero({ blog, isPost }: BlogHeroProps) {
       {blog.cover_image_url && (
         <div className="relative rounded-2xl overflow-hidden border border-[var(--foreground)]/10">
           <div className="relative aspect-[21/9] bg-[var(--foreground)]/5">
-            <img
+            <Image
               src={blog.cover_image_url}
-              alt={blog.title}
-              className="w-full h-full object-cover"
+              alt={blog.title || "Blog cover image"}
+              fill
+              className="object-cover"
+              priority
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[var(--background)]/40 via-transparent to-transparent" />
           </div>
@@ -160,7 +164,13 @@ export function BlogHero({ blog, isPost }: BlogHeroProps) {
               href={`/${blog.author.username}`}
               className="flex items-center gap-2">
               {blog.author.profile_picture ? (
-                <img src={blog.author.profile_picture} alt={blog.author.username} className="w-6 h-6 rounded-full object-cover" />
+                <Image
+                  src={blog.author.profile_picture}
+                  alt={blog.author.username || "Author avatar"}
+                  width={24}
+                  height={24}
+                  className="w-6 h-6 rounded-full object-cover"
+                />
               ) : (
                 <div className="w-6 h-6 rounded-full bg-[var(--accent)]/10 flex items-center justify-center">
                   <span className="text-[10px] font-medium text-[var(--accent)]">{blog.author.username[0]?.toUpperCase()}</span>

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Users, Shield, Pencil, ArrowRight, X } from "lucide-react";
 import type { CollaboratorResponse } from "@/lib/stores/projects/types/project.types";
@@ -70,9 +71,11 @@ export function CollaboratorList({
             onClick={() => setSelectedCollaborator(collaborator)}
           >
             {collaborator.profile_picture ? (
-              <img
+              <Image
                 src={collaborator.profile_picture}
-                alt={collaborator.username || `Profile picture of Collaborator ${i}`}
+                alt={collaborator.username || `Collaborator ${i + 1}`}
+                width={40}
+                height={40}
                 className="w-10 h-10 rounded-full object-cover flex-shrink-0"
               />
             ) : (
@@ -115,12 +118,13 @@ export function CollaboratorList({
         size="lg"
         title={
           <div>
-
             <div className="flex items-center gap-3">
               {selectedCollaborator?.profile_picture ? (
-                <img
-                  src={selectedCollaborator?.profile_picture}
-                  alt={selectedCollaborator?.username || "Profile picture"}
+                <Image
+                  src={selectedCollaborator.profile_picture}
+                  alt={selectedCollaborator.username || "Profile picture"}
+                  width={48}
+                  height={48}
                   className="w-12 h-12 rounded-full object-cover"
                 />
               ) : (

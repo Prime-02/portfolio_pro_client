@@ -148,7 +148,7 @@ const OAuthComponent: React.FC<OAuthComponentProps> = ({
         if (data.is_new) {
           router.replace(`/${data?.user?.username}?edit_profile=true`);
         } else {
-          router.replace(`/${data?.user?.username}`);
+          router.replace(`/`);
         }
       } else {
         toast.error("We were unable to verify you. Please try again", {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Heart,
@@ -113,10 +114,10 @@ export function EngagementSection({
   };
 
   const handleAddComment = async () => {
-    if (!userInfo?.username){
-          toast.warning("You must be logged in to comment on a projects")
-          return
-        }
+    if (!userInfo?.username) {
+      toast.warning("You must be logged in to comment on a projects")
+      return
+    }
     if (!newComment.trim()) return;
     const result = await addComment(projectId, { content: newComment });
     if (result) {
@@ -228,9 +229,11 @@ export function EngagementSection({
                 >
                   <div className="w-5 h-5 rounded-full bg-[var(--accent)]/10 flex items-center justify-center overflow-hidden">
                     {like.profile_picture ? (
-                      <img
+                      <Image
                         src={like.profile_picture}
-                        alt={like.username}
+                        alt={like.username || "User avatar"}
+                        width={20}
+                        height={20}
                         className="w-full h-full object-cover"
                       />
                     ) : (

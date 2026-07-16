@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Pencil, Trash2, Zap, TrendingUp, Award } from "lucide-react";
 import type { ProfessionalSkill } from "@/lib/stores/skills/useSkills";
@@ -107,14 +108,16 @@ export function SkillBadge({ skill, onEdit, onDelete, index, isOwner = false }: 
                 <div className="flex items-center gap-3">
                     <div className="relative">
                         <div
-                            className="w-12 h-12 overflow-clip rounded-xl flex items-center justify-center"
+                            className="w-12 h-12 overflow-hidden rounded-xl flex items-center justify-center"
                             style={{ backgroundColor: `${prof.color}15` }}
                         >
                             {skill.skill_logo_url ? (
-                                <img
+                                <Image
                                     src={skill.skill_logo_url}
-                                    alt={skill.skill_name}
-                                    className="object-cover"
+                                    alt={skill.skill_name || "Skill logo"}
+                                    width={48}
+                                    height={48}
+                                    className="object-contain"
                                 />
                             ) : (
                                 <ProfIcon className="w-6 h-6" style={{ color: prof.color }} />

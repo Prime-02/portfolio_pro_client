@@ -6,7 +6,7 @@ export default function Loading() {
     <div className="flex justify-center w-full items-center h-screen">
       <PortfolioProLogo
         tracking={0.2}
-        scale={0.75}
+        scale={0.65}
         fontWeight={"extrabold"}
         reanimateDelay={3000}
       />{" "}

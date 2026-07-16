@@ -3,7 +3,9 @@ import { api } from "@/lib/client/api";
 import { useUIStore } from "@/lib/stores/ui/useUIStore";
 import Button from "@/src/app/components/buttons/Buttons";
 import BasicHeader from "@/src/app/components/containers/divs/header/BasicHeader";
+import { PageHeader } from "@/src/app/components/ui/PageHeader";
 import { useWebSocketContext } from "@/src/app/WebSocketContext";
+import { Bell } from "lucide-react";
 import React from "react";
 
 const NotificationHeader = () => {
@@ -40,36 +42,29 @@ const NotificationHeader = () => {
   };
 
   return (
-    <div className="flex items-start md:items-center flex-col md:flex-row justify-between w-full mb-8 p-3 md:p-8 ">
-      <BasicHeader
-        heading="Notifications"
-        headingClass="md:text-6xl text-4xl font-bold"
-        subHeading={
-          unreadCount < 1
-            ? "You're all caught up"
-            : `You have ${unreadCount} notification${unreadCount > 1 ? "s" : ""} to go through`
-        }
-        subHeadingClass="md:text-3xl text-xl font-semibold"
-      />
-      {notifications.length > 0 && (
-        <span
-        className="md:max-w-sm"
-        >
-          <Button
-            text={
-              unreadCount === 0
-                ? "Delete all notifications"
-                : "Mark all as read"
-            }
-            onClick={notificationActions}
-            loading={
-              isLoading("marking_all_notifications_as_read") ||
-              isLoading("deleting_all_notifications")
-            }
-          />
-        </span>
+    <PageHeader
+      title="Notifications"
+      description={
+        unreadCount < 1
+          ? "You're all caught up"
+          : `You have ${unreadCount} notification${unreadCount > 1 ? "s" : ""} to go through`
+      }
+      action={notifications.length > 0 && (
+        <Button
+          text={
+            unreadCount === 0
+              ? "Delete all notifications"
+              : "Mark all as read"
+          }
+          onClick={notificationActions}
+          loading={
+            isLoading("marking_all_notifications_as_read") ||
+            isLoading("deleting_all_notifications")
+          }
+        />
       )}
-    </div>
+      icon={<Bell />}
+    />
   );
 };
 

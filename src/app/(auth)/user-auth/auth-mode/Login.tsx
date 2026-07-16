@@ -79,7 +79,7 @@ const Login = () => {
       if (isNewUser) {
         router.push(`/${loginRes.user.username}?edit_profile=true`);
       } else {
-        router.push(`/${loginRes.user.username}`);
+        router.push(`/`);
       }
 
       toast.success("Login successful! Welcome back.", {

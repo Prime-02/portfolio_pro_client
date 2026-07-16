@@ -179,7 +179,6 @@ export default function ContentReactionBar({
           onClick={() => {
             handleShareProfile({
               title: `${content.title} by ${content.author?.username} — Portfolio Pro`,
-              imageUrl: content.cover_image_url || content.author?.profile_picture || undefined,
               url: `${BASE_URL}/blogs/${content.slug}`
 
             })

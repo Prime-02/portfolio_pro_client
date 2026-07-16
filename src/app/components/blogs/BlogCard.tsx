@@ -82,10 +82,9 @@ export function BlogCard({
       {/* Cover Image */}
       {hasCover && (
         <div className={`relative overflow-hidden ${featured ? "h-52 md:h-64" : "h-44"}`}>
-          <Image
+          <img
             src={blog.cover_image_url!}
             alt={blog.title || "Blog cover"}
-            fill
             className="object-cover transition-transform duration-500 group-hover:scale-105"
             sizes={featured
               ? "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -147,7 +146,7 @@ export function BlogCard({
               {blog.author && (
                 <span className="flex items-center gap-1.5 text-xs text-[var(--foreground)]/50">
                   {blog.author.profile_picture ? (
-                    <Image
+                    <img
                       src={blog.author.profile_picture}
                       alt={blog.author.username || "Author avatar"}
                       width={16}

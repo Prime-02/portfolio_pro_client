@@ -114,7 +114,7 @@ export default function Footer({ data, navbarData }: FooterProps) {
         return (
             <a href="#hero" onClick={(e) => handleLinkClick(e, "hero")} className="flex items-center shrink-0">
                 {data.logoType === "image" && data.logoImageUrl ? (
-                    <Image
+                    <img
                         src={data.logoImageUrl}
                         alt={data.logoText ?? "Logo"}
                         width={logoHeight * 3} // Assuming typical logo aspect ratio of 3:1

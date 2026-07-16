@@ -230,7 +230,7 @@ export default function CollaboratorManagerPage() {
                       bg-[var(--background)] hover:border-[var(--accent)]/20 transition-colors"
                   >
                     {collaborator.profile_picture ? (
-                      <Image
+                      <img
                         src={collaborator.profile_picture}
                         alt={collaborator.username ?? `Collaborator ${i + 1}`}
                         width={40}

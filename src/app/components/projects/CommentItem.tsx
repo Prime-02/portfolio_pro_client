@@ -131,7 +131,7 @@ export function CommentItem({
                 <div className="flex-shrink-0">
                     <div className="w-8 h-8 rounded-full bg-[var(--accent)]/10 flex items-center justify-center overflow-hidden">
                         {comment?.profile_picture ? (
-                            <Image
+                            <img
                                 src={comment.profile_picture}
                                 alt={comment.username || "User avatar"}
                                 width={32}

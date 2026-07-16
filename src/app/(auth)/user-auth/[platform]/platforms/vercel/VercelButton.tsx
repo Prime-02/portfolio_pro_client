@@ -93,7 +93,7 @@ const VercelButton = () => {
       </Modal>
       <Button
         icon={
-          <Image
+          <img
             src={`/socials/vercel/vercel-icon-${isDarkMode ? "dark" : "light"}.svg`}
             width={15}
             height={15}

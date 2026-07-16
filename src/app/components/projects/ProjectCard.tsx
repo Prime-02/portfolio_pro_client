@@ -80,10 +80,9 @@ export function ProjectCard({
       {/* Media section */}
       {hasHeroMedia && (
         <div className={`relative overflow-hidden ${featured ? "h-48 md:h-56" : "h-40"}`}>
-          <Image
+          <img
             src={project.other_project_image_url!.hero_media!.url}
             alt={project.project_name || "Project hero image"}
-            fill
             className="object-cover transition-transform duration-500 group-hover:scale-105"
             sizes={featured
               ? "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

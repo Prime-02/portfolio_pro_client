@@ -71,7 +71,7 @@ export function CollaboratorList({
             onClick={() => setSelectedCollaborator(collaborator)}
           >
             {collaborator.profile_picture ? (
-              <Image
+              <img
                 src={collaborator.profile_picture}
                 alt={collaborator.username || `Collaborator ${i + 1}`}
                 width={40}
@@ -120,7 +120,7 @@ export function CollaboratorList({
           <div>
             <div className="flex items-center gap-3">
               {selectedCollaborator?.profile_picture ? (
-                <Image
+                <img
                   src={selectedCollaborator.profile_picture}
                   alt={selectedCollaborator.username || "Profile picture"}
                   width={48}

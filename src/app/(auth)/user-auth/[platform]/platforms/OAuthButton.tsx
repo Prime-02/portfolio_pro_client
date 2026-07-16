@@ -104,7 +104,7 @@ const OAuthButton: React.FC<OAuthButtonProps> = ({
     <div className={fullWidth ? "w-full" : ""}>
       <Button
         icon={
-          <Image
+          <img
             src={getLogoSrc()}
             width={provider === "canva" ? 0 : 20}
             height={20}
@@ -112,7 +112,7 @@ const OAuthButton: React.FC<OAuthButtonProps> = ({
           />
         }
         icon2={
-          <Image
+          <img
             src={getLogoSrc()}
             width={provider === "canva" ? 35 : 0}
             height={20}

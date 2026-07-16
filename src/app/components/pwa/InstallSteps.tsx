@@ -52,7 +52,7 @@ const InstallSteps: React.FC<InstallStepsProps> = ({ isInstallable }) => {
                             opacity: 0.6,
                         }}
                     >
-                        Three simple steps to get started with the PortfolioPro app
+                        Three simple steps to get started with the Portfolio Pro app
                     </p>
                 </div>
 

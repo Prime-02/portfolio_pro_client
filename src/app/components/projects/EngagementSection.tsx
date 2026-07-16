@@ -229,7 +229,7 @@ export function EngagementSection({
                 >
                   <div className="w-5 h-5 rounded-full bg-[var(--accent)]/10 flex items-center justify-center overflow-hidden">
                     {like.profile_picture ? (
-                      <Image
+                      <img
                         src={like.profile_picture}
                         alt={like.username || "User avatar"}
                         width={20}

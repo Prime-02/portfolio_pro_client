@@ -116,7 +116,7 @@ function Avatar({
   return (
     <div className={`${AVATAR_SIZE[size]} ${shapeClass} shrink-0 overflow-hidden bg-[var(--pb-surface-elevated)] border border-[var(--pb-border)] flex items-center justify-center`}>
       {url ? (
-        <Image
+        <img
           src={url}
           alt={name || "Avatar"}
           width={dimension}

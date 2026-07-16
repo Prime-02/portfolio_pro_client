@@ -87,7 +87,7 @@ function CommentItem({
         <div className="flex-shrink-0">
           <div className="w-8 h-8 rounded-full bg-[var(--accent)]/15 flex items-center justify-center overflow-hidden border border-[var(--accent)]/20">
             {author?.profile_picture ? (
-              <Image
+              <img
                 src={author.profile_picture}
                 alt={displayName}
                 width={32}
@@ -224,7 +224,7 @@ export default function SuggestionComments({ suggestionId }: SuggestionCommentsP
           <div className="flex-shrink-0">
             <div className="w-8 h-8 rounded-full bg-[var(--accent)]/15 flex items-center justify-center overflow-hidden border border-[var(--accent)]/20">
               {userInfo.profile_picture ? (
-                <Image
+                <img
                   src={userInfo.profile_picture}
                   alt="Your avatar"
                   width={32}

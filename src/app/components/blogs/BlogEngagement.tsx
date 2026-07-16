@@ -363,7 +363,7 @@ export function BlogEngagement({ blog }: BlogEngagementProps) {
                   <div className="flex-shrink-0">
                     <div className="w-8 h-8 rounded-full bg-[var(--accent)]/10 flex items-center justify-center overflow-hidden">
                       {like.user?.profile_picture ? (
-                        <Image
+                        <img
                           src={like.user.profile_picture}
                           alt={like.user.username || "User avatar"}
                           width={32}

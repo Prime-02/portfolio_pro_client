@@ -73,7 +73,7 @@ export default function FeedCard({ content }: FeedCardProps) {
             className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-[var(--accent)]/20 flex items-center justify-center overflow-hidden">
               {author?.profile_picture ? (
-                <Image
+                <img
                   src={author.profile_picture}
                   alt={author.display_name || author.username || "Author avatar"}
                   width={40}
@@ -174,7 +174,7 @@ export default function FeedCard({ content }: FeedCardProps) {
         {/* Cover Image - CORRECTED */}
         {content.cover_image_url && (
           <div className="mb-4 rounded-xl overflow-hidden">
-            <Image
+            <img
               src={content.cover_image_url}
               alt={content.title || "Post cover image"}
               width={800}

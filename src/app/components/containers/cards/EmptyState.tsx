@@ -27,20 +27,20 @@ const EmptyState: React.FC<EmptyStateProps> = ({
   imageWidth = 100, // Default width
   imageHeight = 100, // Default height
 }) => {
-  
+
   return (
     <div
       className={`col-span-full  flex flex-col items-center justify-center py-12 `}
     >
       {imageUrl && (
-        <Image
+        <img
           width={imageWidth}
           height={imageHeight}
           alt="Nothing found"
           src={imageUrl}
         />
       )}
-      
+
       <div className="text-center">
         <h3 className="text-lg font-semibold text- mb-2">{title}</h3>
         <p className="text- mb-4">{description}</p>

@@ -151,7 +151,7 @@ const Step2 = () => {
       onSkip={handleSkip}
       additionalContent={
         <div className="h-full w-full">
-          <Image
+          <img
             alt="Step 2"
             src={"/vectors/undraw_profile_d7qw.svg"}
             width={1000}

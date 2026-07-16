@@ -46,8 +46,8 @@ export default function AccordionLayout({
           >
             <div
               className={`rounded-xl border transition-all duration-200 ${isOpen
-                  ? "border-[var(--pb-foreground-30)] bg-[var(--pb-surface)]"
-                  : "border-[var(--pb-border)] bg-[var(--pb-surface)] hover:border-[var(--pb-foreground-20)]"
+                ? "border-[var(--pb-foreground-30)] bg-[var(--pb-surface)]"
+                : "border-[var(--pb-border)] bg-[var(--pb-surface)] hover:border-[var(--pb-foreground-20)]"
                 }`}
             >
               {/* Accordion header */}
@@ -56,7 +56,7 @@ export default function AccordionLayout({
                 className="w-full flex items-center gap-3 px-4 py-3 text-left"
               >
                 {data.showCompanyLogo && exp.company_logo_url && (
-                  <Image
+                  <img
                     src={exp.company_logo_url}
                     alt={exp.company_name || "Company logo"}
                     width={36}

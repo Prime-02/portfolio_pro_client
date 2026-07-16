@@ -103,10 +103,9 @@ export function MediaDisplay({
         if (shape === "portrait" || shape === "landscape") {
             return (
                 <div className={`${sizeClass} ${aspectRatioClass} ${shapeClass} relative overflow-hidden border-2 border-[var(--pb-border)] mx-auto shadow-lg ${className ?? ""}`}>
-                    <Image
+                    <img
                         src={media.imageUrl}
                         alt={media.imageAlt || "Hero media"}
-                        fill
                         className="object-cover"
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     />
@@ -116,7 +115,7 @@ export function MediaDisplay({
 
         // For fixed square/circle shapes
         return (
-            <Image
+            <img
                 src={media.imageUrl}
                 alt={media.imageAlt || "Hero media"}
                 width={dimensions.width}

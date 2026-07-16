@@ -311,14 +311,13 @@ export default function CreatePostBar({ onPostCreated }: CreatePostBarProps) {
         {imagePreview && (
           <div className="relative mt-3 inline-block">
             <div className="relative rounded-xl overflow-hidden border border-[var(--foreground)]/10">
-              <Image
+              <img
                 src={imagePreview}
                 alt="Preview"
                 width={400}
                 height={192}
                 className="max-h-48 w-auto object-cover"
                 style={{ width: 'auto', height: 'auto' }}
-                unoptimized
               />
               <button
                 onClick={handleRemoveImage}

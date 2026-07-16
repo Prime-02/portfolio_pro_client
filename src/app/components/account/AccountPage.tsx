@@ -129,7 +129,7 @@ function Avatar({
             className={`${sizeClasses[size]} flex items-center justify-center rounded-full bg-(--accent)/15 text-(--accent) font-league-600 overflow-hidden`}
         >
             {src ? (
-                <Image
+                <img
                     src={src}
                     alt={fallback || "Profile picture"}
                     width={dimensions[size]}

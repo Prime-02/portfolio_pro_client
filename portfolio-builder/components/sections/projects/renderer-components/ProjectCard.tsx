@@ -125,7 +125,7 @@ export default function ProjectCard({ project, config, cardSize, fullWidth = tru
                 style={accentStyle}
             >
                 {showImage && project.project_image_url && (
-                    <Image
+                    <img
                         src={project.project_image_url}
                         alt={project.project_name || "Project image"}
                         width={48}
@@ -158,7 +158,7 @@ export default function ProjectCard({ project, config, cardSize, fullWidth = tru
             >
                 {/* Fixed-size thumbnail — never stretches with row height */}
                 {showImage && project.project_image_url && (
-                    <Image
+                    <img
                         src={project.project_image_url}
                         alt={project.project_name || "Project image"}
                         width={listImgDimension}
@@ -209,10 +209,9 @@ export default function ProjectCard({ project, config, cardSize, fullWidth = tru
             >
                 {showImage && project.project_image_url && (
                     <div className={`relative ${imgH} overflow-hidden`}>
-                        <Image
+                        <img
                             src={project.project_image_url}
                             alt={project.project_name || "Project image"}
-                            fill
                             className="object-cover transition-transform duration-500 group-hover:scale-105"
                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         />
@@ -301,7 +300,7 @@ export default function ProjectCard({ project, config, cardSize, fullWidth = tru
             >
                 <div className="flex items-start gap-3">
                     {showImage && project.project_image_url && (
-                        <Image
+                        <img
                             src={project.project_image_url}
                             alt={project.project_name || "Project image"}
                             width={64}
@@ -391,10 +390,9 @@ export default function ProjectCard({ project, config, cardSize, fullWidth = tru
         >
             {showImage && project.project_image_url && (
                 <div className={`${imgH} rounded-lg overflow-hidden mb-2 relative`}>
-                    <Image
+                    <img
                         src={project.project_image_url}
                         alt={project.project_name || "Project image"}
-                        fill
                         className="object-cover"
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     />

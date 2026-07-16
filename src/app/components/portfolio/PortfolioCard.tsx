@@ -25,10 +25,9 @@ const PortfolioCard = ({ portfolio, onEdit, onDelete }: PortfolioCardProps) => {
         <div className="card rounded-xl border border-[var(--foreground)]/10 p-5 hover:border-[var(--accent)]/50 transition-all duration-200 group">
             <div className="h-40 bg-[var(--foreground)]/5 rounded-lg mb-4 flex items-center justify-center overflow-hidden relative">
                 {portfolio.cover_image_url ? (
-                    <Image
+                    <img
                         src={portfolio.cover_image_url}
                         alt={portfolio.name || "Portfolio cover"}
-                        fill
                         className="object-cover"
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     />

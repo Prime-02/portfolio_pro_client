@@ -52,7 +52,7 @@ export function EducationCard({ education, onEdit, onDelete, isOwner = false }: 
                             style={{ backgroundColor: `${accentColor}20` }}
                         >
                             {education.institution_logo_url ? (
-                                <Image
+                                <img
                                     src={education.institution_logo_url}
                                     alt={education.institution || "Institution logo"}
                                     width={32}

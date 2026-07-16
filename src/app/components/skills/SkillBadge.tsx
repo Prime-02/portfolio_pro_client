@@ -113,7 +113,7 @@ export function SkillBadge({ skill, onEdit, onDelete, index, isOwner = false }: 
                             style={{ backgroundColor: `${prof.color}15` }}
                         >
                             {skill.skill_logo_url ? (
-                                <Image
+                                <img
                                     src={skill.skill_logo_url}
                                     alt={skill.skill_name || "Skill logo"}
                                     width={48}

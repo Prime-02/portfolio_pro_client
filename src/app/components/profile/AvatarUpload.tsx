@@ -346,19 +346,17 @@ export const AvatarUpload = ({
                 >
                     {preview ? (
                         isLocalPreview ? (
-                            <Image
+                            <img
                                 src={preview}
                                 alt="Profile picture"
                                 width={dimension}
                                 height={dimension}
                                 className="w-full h-full object-cover"
-                                unoptimized
                             />
                         ) : (
-                            <Image
+                            <img
                                 src={preview}
                                 alt="Profile picture"
-                                fill
                                 className="object-cover"
                             />
                         )

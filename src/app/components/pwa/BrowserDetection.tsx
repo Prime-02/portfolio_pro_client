@@ -149,7 +149,7 @@ const BrowserDetection: React.FC = () => {
                             lineHeight: 1.6,
                         }}
                     >
-                        {`PortfolioPro works on all modern browsers. For the best experience,
+                        {`Portfolio Pro works on all modern browsers. For the best experience,
                         we recommend using Chrome, Edge, or Safari. Mobile users can install
                         directly from their browser's share menu.`}
                     </p>

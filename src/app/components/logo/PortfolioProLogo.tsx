@@ -30,7 +30,7 @@ export const PortfolioProLogo: React.FC<LoadingAnimationProps> = ({
 
   return (
     <div className="flex w-fit items-center justify-center">
-      <Image
+      <img
         src={images[variant]}
         alt="Portfolio Pro Logo"
         width={width}
@@ -41,7 +41,6 @@ export const PortfolioProLogo: React.FC<LoadingAnimationProps> = ({
           objectFit: 'contain'
         }}
         className="select-none"
-        priority
       />
     </div>
   );

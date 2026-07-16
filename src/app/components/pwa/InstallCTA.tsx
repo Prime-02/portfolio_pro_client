@@ -111,7 +111,7 @@ const InstallCTA: React.FC<InstallCTAProps> = ({ isInstallable }) => {
                                 lineHeight: 1.7,
                             }}
                         >
-                            Install PortfolioPro now and enjoy a faster, more reliable
+                            Install Portfolio Pro now and enjoy a faster, more reliable
                             experience with offline access and native app features.
                         </p>
 

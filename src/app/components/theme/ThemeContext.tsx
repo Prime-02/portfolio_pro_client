@@ -81,8 +81,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [optimisticLoader, setOptimisticLoader] = useState<Loader | null>(null);
 
   const isSaving = useRef(false);
-  // Tracks whether the init effect has completed at least once, so that
-  // subsequent navigations to unprotected routes can be true no-ops.
+
   const hasInitializedRef = useRef(false);
   // Mirrors profileContext without being a dependency of the init effect,
   // so the "already resolved, skip re-init" guard below can check whether
@@ -359,7 +358,12 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   }, [profileContext]);
 
   useEffect(() => {
-    if (userInfo && userInfo.username === usernameInUrl && profileContextRef.current.kind !== "pending") return;
+    if (
+      userInfo &&
+      userInfo.username === usernameInUrl &&
+      profileContextRef.current.kind !== "pending" &&
+      profileContextRef.current.username === usernameInUrl
+    ) return;
 
     const init = async () => {
       try {

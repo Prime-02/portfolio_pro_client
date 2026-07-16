@@ -47,7 +47,7 @@ interface ImageFieldProps {
 // ─── Crop helpers ─────────────────────────────────────────────────────────────
 
 /**
- * Given a loaded <Image> element and the pixel crop area returned by
+ * Given a loaded <img> element and the pixel crop area returned by
  * react-easy-crop, draws the cropped region onto a canvas and returns it as
  * a Blob (image/jpeg).
  */
@@ -511,7 +511,7 @@ export function ImageField({
                         <video src={url} controls className="max-w-full h-auto max-h-[400px] block" />
                     ) : (
                         <div className="relative max-w-full max-h-[400px]">
-                            <Image
+                            <img
                                 src={url}
                                 alt="Uploaded media"
                                 width={800}
@@ -519,7 +519,6 @@ export function ImageField({
                                 className="max-w-full h-auto max-h-[400px] object-contain block"
                                 style={{ width: 'auto', height: 'auto' }}
                                 sizes="(max-width: 768px) 100vw, 50vw"
-                                unoptimized={url.startsWith('blob:')}
                             />
                         </div>
                     )}

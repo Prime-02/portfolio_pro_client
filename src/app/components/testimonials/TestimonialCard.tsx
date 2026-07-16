@@ -134,7 +134,7 @@ export function TestimonialCard({
                 {/* Author info */}
                 <div className="flex items-center gap-3 mt-4 pt-4 border-t border-[var(--foreground)]/5">
                     {testimonial.avatar_url ? (
-                        <Image
+                        <img
                             src={testimonial.avatar_url}
                             alt={testimonial.author_name || "Author avatar"}
                             width={40}

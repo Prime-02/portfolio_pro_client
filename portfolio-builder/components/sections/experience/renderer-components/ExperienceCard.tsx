@@ -112,7 +112,7 @@ export default function ExperienceCard({
         style={accentStyle}
       >
         {showCompanyLogo && experience.company_logo_url && (
-          <Image
+          <img
             src={experience.company_logo_url}
             alt={experience.company_name || "Company logo"}
             width={logoDimension}
@@ -145,7 +145,7 @@ export default function ExperienceCard({
         style={accentStyle}
       >
         {showCompanyLogo && experience.company_logo_url && (
-          <Image
+          <img
             src={experience.company_logo_url}
             alt={experience.company_name || "Company logo"}
             width={logoDimension}
@@ -196,7 +196,7 @@ export default function ExperienceCard({
       >
         <div className="flex items-start gap-3">
           {showCompanyLogo && experience.company_logo_url && (
-            <Image
+            <img
               src={experience.company_logo_url}
               alt={experience.company_name || "Company logo"}
               width={logoDimension}
@@ -285,7 +285,7 @@ export default function ExperienceCard({
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3">
             {showCompanyLogo && experience.company_logo_url && (
-              <Image
+              <img
                 src={experience.company_logo_url}
                 alt={experience.company_name || "Company logo"}
                 width={logoDimension}
@@ -391,7 +391,7 @@ export default function ExperienceCard({
     >
       <div className="flex items-start gap-3">
         {showCompanyLogo && experience.company_logo_url && (
-          <Image
+          <img
             src={experience.company_logo_url}
             alt={experience.company_name || "Company logo"}
             width={logoDimension}

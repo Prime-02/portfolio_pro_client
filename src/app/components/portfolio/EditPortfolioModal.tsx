@@ -234,10 +234,9 @@ const EditPortfolioModal = ({
                     {/* Current cover image preview (saved, or staged-but-not-yet-uploaded) */}
                     {coverImageUrl && snapshotMode === "none" && (
                         <div className="relative rounded-lg overflow-hidden border border-[var(--foreground)]/10 h-40">
-                            <Image
+                            <img
                                 src={coverImageUrl}
                                 alt="Cover preview"
-                                fill
                                 className="object-cover"
                                 sizes="(max-width: 768px) 100vw, 50vw"
                             />
@@ -284,11 +283,10 @@ const EditPortfolioModal = ({
                     {snapshotMode === "generate" && (
                         <div className="space-y-3 rounded-lg border border-[var(--foreground)]/10 p-3">
                             <div className="rounded-lg overflow-hidden border border-[var(--foreground)]/10 bg-[var(--foreground)]/5 h-48 relative">
-                                <Image
+                                <img
                                     key={snapshotKey}
                                     src={`/api/snapshot?url=${encodeURIComponent(`${portfolioSnapshot()}&t=${snapshotKey}`)}`}
                                     alt="Portfolio snapshot preview"
-                                    fill
                                     className="object-cover"
                                     sizes="(max-width: 768px) 100vw, 50vw"
                                 />

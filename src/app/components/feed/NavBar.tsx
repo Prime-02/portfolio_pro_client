@@ -79,7 +79,7 @@ const NavBar = () => {
       <>
         {/* Search Overlay */}
         {showSearch && (
-          <div className="fixed inset-0 z-50 bg-[var(--background)]/95 backdrop-blur-xl">
+          <div className="fixed inset-0 z-30 bg-[var(--background)]/95 backdrop-blur-xl">
             <div className="flex flex-col h-full">
               <div className="flex items-center gap-3 px-4 py-4 border-b border-[var(--foreground)]/10">
                 <form onSubmit={handleSearch} className="flex-1">

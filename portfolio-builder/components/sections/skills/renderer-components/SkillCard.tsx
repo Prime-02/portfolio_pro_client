@@ -53,7 +53,7 @@ export default function SkillCard({ skill, config, cardSize, fullWidth = true }:
                 style={accentStyle}
             >
                 {showLogo && skill.skill_logo_url && (
-                    <Image
+                    <img
                         src={skill.skill_logo_url}
                         alt={skill.skill_name || "Skill logo"}
                         width={logoDimension}
@@ -97,7 +97,7 @@ export default function SkillCard({ skill, config, cardSize, fullWidth = true }:
                 }
             >
                 {showLogo && skill.skill_logo_url && (
-                    <Image
+                    <img
                         src={skill.skill_logo_url}
                         alt={skill.skill_name || "Skill logo"}
                         width={16}
@@ -122,7 +122,7 @@ export default function SkillCard({ skill, config, cardSize, fullWidth = true }:
             >
                 <div className="flex items-center gap-3">
                     {showLogo && skill.skill_logo_url && (
-                        <Image
+                        <img
                             src={skill.skill_logo_url}
                             alt={skill.skill_name || "Skill logo"}
                             width={logoDimension}
@@ -177,7 +177,7 @@ export default function SkillCard({ skill, config, cardSize, fullWidth = true }:
             >
                 <div className="flex items-start gap-3">
                     {showLogo && skill.skill_logo_url && (
-                        <Image
+                        <img
                             src={skill.skill_logo_url}
                             alt={skill.skill_name || "Skill logo"}
                             width={logoDimension}
@@ -234,7 +234,7 @@ export default function SkillCard({ skill, config, cardSize, fullWidth = true }:
         >
             <div className="flex items-center gap-3">
                 {showLogo && skill.skill_logo_url && (
-                    <Image
+                    <img
                         src={skill.skill_logo_url}
                         alt={skill.skill_name || "Skill logo"}
                         width={logoDimension}

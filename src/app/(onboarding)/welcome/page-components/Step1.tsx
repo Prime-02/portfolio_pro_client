@@ -181,7 +181,7 @@ const Step1 = () => {
       pageWriteup={accountBasics.page_writeup}
       additionalContent={
         <div className=" h-full w-full">
-          <Image
+          <img
             alt="Step 1"
             src={"/vectors/undraw_applications_h0mq.svg"}
             width={1000}

@@ -44,7 +44,7 @@ const Step0 = () => {
       onSkip={handleSkip}
       additionalContent={
         <div className="h-full w-full">
-          <Image
+          <img
             alt="Step 4"
             src={"/vectors/undraw_hello_ccwj.svg"}
             width={1000}

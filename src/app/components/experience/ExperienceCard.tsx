@@ -106,7 +106,7 @@ export function ExperienceCard({
                                    bg-[var(--foreground)]/5 border border-[var(--foreground)]/10 overflow-hidden"
                     >
                         {experience.company_logo_url ? (
-                            <Image
+                            <img
                                 src={experience.company_logo_url}
                                 alt={experience.company_name || "Company logo"}
                                 width={32}

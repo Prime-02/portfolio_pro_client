@@ -143,7 +143,7 @@ const Step4 = () => {
       onSkip={handleSkip}
       additionalContent={
         <div className="h-full w-full">
-          <Image
+          <img
             alt="Step 4"
             src={"/vectors/undraw_my-notifications_fy5v.svg"}
             width={1000}

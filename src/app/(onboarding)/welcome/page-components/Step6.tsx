@@ -59,7 +59,7 @@ const Step6 = () => {
       onSkip={handleSkip}
       additionalContent={
         <div className="h-full w-full">
-          <Image
+          <img
             alt="Step 4"
             src={"/vectors/undraw_order-confirmed_m9e9.svg"}
             width={1000}

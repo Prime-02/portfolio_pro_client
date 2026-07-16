@@ -66,7 +66,7 @@ const LandingPageNavbar = () => {
     <>
       {/* Mobile Top Bar */}
       {isMobile && (
-        <div className="fixed top-0 left-0 right-0 z-50 h-16 border-b bg-[var(--background)] border-[var(--accent)]/20 flex items-center justify-between px-4">
+        <div className="fixed top-0 left-0 right-0 z-[999999] h-16 border-b bg-[var(--background)] border-[var(--accent)]/20 flex items-center justify-between px-4">
           <Link href="/feed">
             <PortfolioProLogo variant="banner" scale={0.3} />
           </Link>
@@ -171,7 +171,7 @@ const LandingPageNavbar = () => {
                     >
                       <span className="relative flex h-10 w-10 items-center justify-center object-cover rounded-full overflow-hidden flex-shrink-0">
                         {imageError ? (
-                          <Image
+                          <img
                             src={`https://avatar.oxro.io/avatar.svg?name=${fallbackLetter}`}
                             alt={`${userInfo?.username || "User"}'s Profile Picture`}
                             width={100}
@@ -181,7 +181,7 @@ const LandingPageNavbar = () => {
                             loading="lazy"
                           />
                         ) : (
-                          <Image
+                          <img
                             src={getImageSrc(
                               userInfo?.profile_picture,
                               userInfo?.username ?? ""

@@ -15,12 +15,12 @@ const features: Feature[] = [
         description:
             "Instant loading with cached assets and service worker optimization. Experience near-native performance.",
     },
-    // {
-    //     icon: <Wifi size={24} />,
-    //     title: "Works Offline",
-    //     description:
-    //         "Access your portfolio data even without an internet connection. Perfect for on-the-go access.",
-    // },
+    {
+        icon: <Wifi size={24} />,
+        title: "Works Offline",
+        description:
+            "Access your portfolio data even without an internet connection. Perfect for on-the-go access.",
+    },
     {
         icon: <Smartphone size={24} />,
         title: "Native Feel",
@@ -76,7 +76,7 @@ const FeatureGrid: React.FC = () => {
                             opacity: 0.6,
                         }}
                     >
-                        Get the most out of PortfolioPro with these powerful features
+                        Get the most out of Portfolio Pro with these powerful features
                         available exclusively in the installed version.
                     </p>
                 </div>

@@ -133,7 +133,7 @@ const Step3 = () => {
       onSkip={handleSkip}
       additionalContent={
         <div className=" h-full w-full">
-          <Image
+          <img
             alt="Step 3"
             src={"/vectors/undraw_contact-us_kcoa.svg"}
             width={1000}

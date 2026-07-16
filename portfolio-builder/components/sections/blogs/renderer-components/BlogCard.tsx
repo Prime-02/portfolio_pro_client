@@ -131,7 +131,7 @@ export default function BlogCard({ blog, config, cardSize, fullWidth = true, ind
         return (
             <div className={`${widthClass} ${pad} rounded-lg border border-[var(--pb-border)] bg-[var(--pb-surface)] flex items-center gap-3 transition-all hover:border-[var(--pb-foreground-20)]`} style={accentStyle}>
                 {showImage && blog.cover_image_url && (
-                    <Image
+                    <img
                         src={blog.cover_image_url}
                         alt={blog.title || "Blog cover"}
                         width={48}
@@ -159,7 +159,7 @@ export default function BlogCard({ blog, config, cardSize, fullWidth = true, ind
         return (
             <div className={`${widthClass} ${pad} rounded-lg border border-[var(--pb-border)] bg-[var(--pb-surface)] flex items-center gap-3 transition-all hover:border-[var(--pb-foreground-20)]`} style={accentStyle}>
                 {showImage && blog.cover_image_url && (
-                    <Image
+                    <img
                         src={blog.cover_image_url}
                         alt={blog.title || "Blog cover"}
                         width={cardSize === "small" ? 48 : cardSize === "medium" ? 64 : 80}
@@ -202,10 +202,9 @@ export default function BlogCard({ blog, config, cardSize, fullWidth = true, ind
             <div className={`${widthClass} rounded-xl overflow-hidden border border-[var(--pb-border)] bg-[var(--pb-surface)] transition-all hover:border-[var(--pb-foreground-20)] group`} style={accentStyle}>
                 {showImage && blog.cover_image_url && (
                     <div className={`relative ${imgH} overflow-hidden`}>
-                        <Image
+                        <img
                             src={blog.cover_image_url}
                             alt={blog.title || "Blog cover"}
-                            fill
                             className="object-cover transition-transform duration-500 group-hover:scale-105"
                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         />
@@ -236,7 +235,7 @@ export default function BlogCard({ blog, config, cardSize, fullWidth = true, ind
                         {showAuthor && (
                             <span className="text-xs text-[var(--pb-text-muted)] flex items-center gap-1">
                                 {authorImage ? (
-                                    <Image
+                                    <img
                                         src={authorImage}
                                         alt={authorName}
                                         width={16}
@@ -287,7 +286,7 @@ export default function BlogCard({ blog, config, cardSize, fullWidth = true, ind
             <div className={`${widthClass} ${pad} rounded-xl border border-[var(--pb-border)] bg-[var(--pb-surface)] space-y-3 transition-all hover:border-[var(--pb-foreground-20)]`} style={accentStyle}>
                 <div className="flex items-start gap-3">
                     {showImage && blog.cover_image_url && (
-                        <Image
+                        <img
                             src={blog.cover_image_url}
                             alt={blog.title || "Blog cover"}
                             width={80}
@@ -325,7 +324,7 @@ export default function BlogCard({ blog, config, cardSize, fullWidth = true, ind
                     {showAuthor && (
                         <span className="text-xs text-[var(--pb-text-muted)] flex items-center gap-1">
                             {authorImage ? (
-                                <Image
+                                <img
                                     src={authorImage}
                                     alt={authorName}
                                     width={16}
@@ -387,7 +386,7 @@ export default function BlogCard({ blog, config, cardSize, fullWidth = true, ind
             <div className={`${widthClass} ${pad} rounded-xl border border-[var(--pb-border)] bg-[var(--pb-surface)] space-y-3 transition-all hover:border-[var(--pb-foreground-20)]`} style={accentStyle}>
                 <div className="flex items-start gap-3">
                     {showImage && blog.cover_image_url && (
-                        <Image
+                        <img
                             src={blog.cover_image_url}
                             alt={blog.title || "Blog cover"}
                             width={64}
@@ -420,7 +419,7 @@ export default function BlogCard({ blog, config, cardSize, fullWidth = true, ind
                     {showAuthor && (
                         <span className="text-xs text-[var(--pb-text-muted)] flex items-center gap-1">
                             {authorImage ? (
-                                <Image
+                                <img
                                     src={authorImage}
                                     alt={authorName}
                                     width={16}
@@ -470,10 +469,9 @@ export default function BlogCard({ blog, config, cardSize, fullWidth = true, ind
         <div className={`${widthClass} ${pad} rounded-xl border border-[var(--pb-border)] bg-[var(--pb-surface)] space-y-2.5 transition-all hover:border-[var(--pb-foreground-20)]`} style={accentStyle}>
             {showImage && blog.cover_image_url && (
                 <div className={`${imgH} rounded-lg overflow-hidden mb-2 relative`}>
-                    <Image
+                    <img
                         src={blog.cover_image_url}
                         alt={blog.title || "Blog cover"}
-                        fill
                         className="object-cover"
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     />
@@ -497,7 +495,7 @@ export default function BlogCard({ blog, config, cardSize, fullWidth = true, ind
                     {showAuthor && (
                         <span className="text-xs text-[var(--pb-text-muted)] flex items-center gap-1">
                             {authorImage ? (
-                                <Image
+                                <img
                                     src={authorImage}
                                     alt={authorName}
                                     width={16}

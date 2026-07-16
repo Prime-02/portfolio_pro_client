@@ -162,13 +162,12 @@ const InstallHero: React.FC = () => {
                                     boxShadow: "0 25px 50px -12px var(--foreground)",
                                 }}
                             >
-                                <Image
+                                <img
                                     src="/desktop-pwa.png"
-                                    alt="PortfolioPro App Preview"
+                                    alt="Portfolio Pro App Preview"
                                     width={1080}
                                     height={675}
                                     className="w-full h-auto"
-                                    priority
                                 />
                             </div>
 
@@ -212,13 +211,12 @@ const InstallHero: React.FC = () => {
                                     boxShadow: "0 25px 50px -12px var(--foreground)",
                                 }}
                             >
-                                <Image
+                                <img
                                     src="/mobile-pwa.png"
-                                    alt="PortfolioPro Mobile App Preview"
+                                    alt="Portfolio Pro Mobile App Preview"
                                     width={560}
                                     height={1064}
                                     className="w-full h-auto"
-                                    priority
                                 />
                             </div>
 

@@ -246,7 +246,7 @@ export default function Navbar({ data }: NavbarProps) {
                 onClick={(e) => handleNavClick(e, "hero")}
             >
                 {data.logoType === "image" && data.logoImageUrl ? (
-                    <Image
+                    <img
                         src={data.logoImageUrl}
                         alt={data.logoText ?? "Logo"}
                         width={logoHeight * 3} // Assuming typical logo aspect ratio of 3:1

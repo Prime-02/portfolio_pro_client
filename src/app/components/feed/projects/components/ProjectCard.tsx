@@ -61,7 +61,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
             className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-[var(--accent)]/20 flex items-center justify-center overflow-hidden">
               {author?.profile_picture ? (
-                <Image
+                <img
                   src={author.profile_picture}
                   alt={author.display_name || author.username || "Author avatar"}
                   width={40}
@@ -158,7 +158,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
         {/* Cover Image - CORRECTED */}
         {primaryImage && (
           <div className="mb-4 rounded-xl overflow-hidden">
-            <Image
+            <img
               src={primaryImage}
               alt={project.project_name || "Project cover image"}
               width={800}

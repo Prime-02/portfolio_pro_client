@@ -8,10 +8,10 @@ const NotificationsButton = ({ expanded }: { expanded: boolean }) => {
 
   return (
     <div
-      className={`flex items-center justify-${expanded ? "around" : "center"} w-full`}
+      className={`flex items-center ${expanded ? "gap-x-2 w-full" : "justify-center"} w-full`}
     >
       <span className="relative">
-        <Bell size={26} />
+        <Bell />
         {!expanded && unreadCount > 0 && (
           <p className="px-[2px] text-[8px] flex items-center animate-pulse justify-center w-auto absolute top-0 right-0 rounded-full bg-red-500 text-white ">
             {unreadCount > 99 ? "99+" : unreadCount}
@@ -19,7 +19,7 @@ const NotificationsButton = ({ expanded }: { expanded: boolean }) => {
         )}
       </span>
       {expanded && (
-        <span className="text-sm">
+        <span>
           {unreadCount < 1
             ? "No new notifications"
             : `${unreadCount > 99 ? "99+" : unreadCount} new notification${unreadCount > 1 ? "s" : ""}`}

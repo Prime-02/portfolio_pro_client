@@ -101,7 +101,7 @@ const Profile = () => {
             <div className="flex items-center justify-start gap-x-5">
               <span className="relative flex h-16 w-16 items-center justify-center object-cover rounded-full overflow-hidden ">
                 {imageError ? (
-                  <Image
+                  <img
                     src={`https://avatar.oxro.io/avatar.svg?name=${fallbackLetter}`}
                     alt={`${userInfo?.username || "User"}'s Profile Picture`}
                     width={100}
@@ -111,7 +111,7 @@ const Profile = () => {
                     loading="lazy"
                   />
                 ) : (
-                  <Image
+                  <img
                     src={getImageSrc(
                       userInfo?.profile_picture,
                       userInfo?.username ?? "user"

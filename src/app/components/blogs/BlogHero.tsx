@@ -19,6 +19,7 @@ import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 import { toast } from "../toastify/Toastify";
 import { REACTIONS } from "../feed/posts/feed_card_components/ContentReactionBar";
 import Link from "next/link";
+import { BASE_URL, handleShareProfile } from "@/lib/utilities/syncFunctions/syncs";
 
 interface BlogHeroProps {
   blog: ContentWithAuthor;
@@ -119,7 +120,7 @@ export function BlogHero({ blog, isPost }: BlogHeroProps) {
 
   const commentsCount = blog.comments_count ?? 0;
   const readTime = blog.body ? Math.ceil(blog.body.split(/\s+/).length / 200) : 0;
-
+  const canShare = blog.allow_reshare || blog.user_id === userInfo?.id
   const statusConfig = {
     PUBLISHED: { label: "Published", color: "text-emerald-500", bg: "bg-emerald-500/10" },
     DRAFT: { label: "Draft", color: "text-amber-500", bg: "bg-amber-500/10" },
@@ -276,13 +277,28 @@ export function BlogHero({ blog, isPost }: BlogHeroProps) {
 
         {/* Comment Count */}
         <div
-          onClick={() => {
-            console.log(blog.reaction_type)
-          }}
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[var(--foreground)]/10 text-[var(--foreground)]/60">
           <MessageCircle className="w-5 h-5" />
           <span className="text-sm font-medium">{commentsCount}</span>
         </div>
+        {
+          canShare &&
+          <button
+            type="button"
+            onClick={() => {
+              handleShareProfile({
+                title: `${blog.title} by ${blog.author?.username} — Portfolio Pro`,
+                text: `Check out "${blog.title}" by ${blog.author?.username} on Portfolio Pro`,
+                imageUrl: blog.cover_image_url || blog.author?.profile_picture || undefined,
+                url: `${BASE_URL}/blogs/${blog.slug}`
+
+              })
+            }}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[var(--foreground)]/10 text-[var(--foreground)]/60 hover:border-[var(--foreground)]/20 hover:bg-[var(--foreground)]/5 transition-all"
+          >
+            <Share2 className="w-5 h-5" />
+          </button>
+        }
       </div>
     </div>
   );

@@ -147,7 +147,7 @@ export default function FeedCard({ content }: FeedCardProps) {
                 </p>
               )}
               <Link
-                href={`/blogs/${content.id}`}
+                href={`/blogs/${content.slug}`}
                 className="inline-flex items-center gap-1 text-sm font-medium text-[var(--accent)] hover:underline"
               >
                 Read More

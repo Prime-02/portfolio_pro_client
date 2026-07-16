@@ -21,7 +21,7 @@ export default function BlogDetailPage({ isPublicView = false }: { isPublicView?
   const router = useRouter();
   const contentId = params.blog as string;
 
-  const { currentContent, fetchContentById, isLoading, error, clearError } = useContentStore();
+  const { currentContent, fetchContentBySlug, isLoading, error, clearError } = useContentStore();
   const { reportContent, isSubmitting: reportSubmitting } = useContentReportStore();
   const { userInfo, publicUserInfo } = useUserSettings();
   const isPost = currentContent?.content_type === "POST"
@@ -47,7 +47,7 @@ export default function BlogDetailPage({ isPublicView = false }: { isPublicView?
 
     const loadData = async () => {
       try {
-        await fetchContentById(contentId);
+        await fetchContentBySlug(contentId);
       } catch (err) {
         console.error("Error loading blog:", err);
         setPageError("Failed to load post");
@@ -128,7 +128,7 @@ export default function BlogDetailPage({ isPublicView = false }: { isPublicView?
               {isOwner && (
                 <Button
                   size="sm"
-                  onClick={() => router.push(`/${userInfo?.username || publicUserInfo?.username || "user"}/blogs/${contentId}/edit`)}
+                  onClick={() => router.push(`/${userInfo?.username || publicUserInfo?.username || "user"}/blogs/${currentContent.id}/edit`)}
                   icon={<Pencil className="w-4 h-4" />}
                   text="Edit"
                 />

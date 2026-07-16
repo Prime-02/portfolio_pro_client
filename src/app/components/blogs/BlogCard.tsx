@@ -71,7 +71,7 @@ export function BlogCard({
       transition={{ duration: 0.35, delay: index * 0.05, ease: [0.25, 0.46, 0.45, 0.94] }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      onClick={() => router.push(`blogs/${blog.id}`)}
+      onClick={() => router.push(`blogs/${blog.slug}`)}
       className={`group relative rounded-2xl border transition-all duration-300 overflow-hidden cursor-pointer h-fit
         ${featured
           ? "border-[var(--accent)]/20 bg-[var(--accent)]/5 md:col-span-2 lg:col-span-2"

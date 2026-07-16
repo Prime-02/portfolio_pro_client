@@ -63,8 +63,8 @@ const InstallCTA: React.FC<InstallCTAProps> = ({ isInstallable }) => {
                                 opacity: 0.6,
                             }}
                         >
-                            Check your browser's installation prompt to complete the setup.
-                            The app will open automatically once installed.
+                           {` Check your browser's installation prompt to complete the setup.
+                            The app will open automatically once installed.`}
                         </p>
                     </div>
                 </div>

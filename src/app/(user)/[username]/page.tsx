@@ -29,6 +29,7 @@ export async function generateMetadata({
 
   const title = `${displayName}${profile?.profession ? ` — ${profile.profession}` : ""}`;
   const plainBio = profile?.bio ? mdToPlainText(profile.bio) : null;
+  const imageUrl = info?.profile_picture;
 
   return {
     title,
@@ -38,12 +39,12 @@ export async function generateMetadata({
       title,
       description: plainBio ?? `View ${displayName}'s portfolio on Portfolio Pro`,
       type: "profile",
-      images: profile?.profile_picture ? [{ url: profile.profile_picture }] : undefined,
+      images: imageUrl ? [{ url: imageUrl }] : undefined,
     },
     twitter: {
       card: "summary_large_image",
       title,
-      images: profile?.profile_picture ? [profile.profile_picture] : undefined,
+      images: imageUrl ? [imageUrl] : undefined,
     },
   };
 }
@@ -75,7 +76,7 @@ const UserDashboard = async ({
           name: displayName,
           alternateName: username,
           description: profile?.bio,
-          image: profile?.profile_picture,
+          image: info?.profile_picture,
           jobTitle: profile?.job_title,
           url: `${BASE_URL}/${username}`,
         },

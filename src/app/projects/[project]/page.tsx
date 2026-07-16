@@ -42,10 +42,8 @@ const page = async ({
   const { project } = await params;
   const data = await fetchForMetadata<PortfolioProjectResponse>(`projects/${project}`);
 
-  const projectCreator = data?.user_associations.find((creator) => {
-    creator.role === "creator"
-  })
-
+  const projectCreator = data?.user_associations.find((creator) => creator.role === "creator")
+  
   const jsonLd = data
     ? {
       "@context": "https://schema.org",

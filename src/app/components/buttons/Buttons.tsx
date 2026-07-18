@@ -9,7 +9,7 @@ import React, {
   useCallback,
 } from "react";
 import { getLoader, SpinLoader } from "../loaders/Loader";
-import { useTheme } from "../theme/ThemeContext";
+import { useTheme } from "../../../context/ThemeContext";
 import { getColorShade } from "@/lib/utilities/syncFunctions/syncs";
 import { themePresets } from "@/lib/utilities/indices/Themes";
 

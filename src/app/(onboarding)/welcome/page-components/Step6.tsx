@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import TemplateStructure, { ComponentArrangement } from "./TemplateStructure";
 import { useRouting } from "@/lib/hooks/routing/useRouting";
 import { useUserStore } from "@/lib/stores/user/userStore";
-import { toast } from "@/src/app/components/toastify/Toastify";
+import { toast } from "@/src/context/Toastify";
 import { completionMessage } from "@/lib/utilities/indices/MultiStepWriteUp";
 import Image from "next/image";
 import Button from "@/src/app/components/buttons/Buttons";

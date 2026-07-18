@@ -1,7 +1,7 @@
 // components/certifications/OwnProfileView.tsx
 import { Award, Plus, Share2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useTheme } from "../theme/ThemeContext";
+import { useTheme } from "../../../context/ThemeContext";
 import Button from "../buttons/Buttons";
 import { PageHeader } from "../ui/PageHeader";
 import { CertificationsGrid } from "./CertificationsGrid";

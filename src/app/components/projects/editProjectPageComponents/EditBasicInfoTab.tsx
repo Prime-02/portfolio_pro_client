@@ -11,7 +11,7 @@ import AIAssistant from "../../ai/AIAsistant";
 import { projectCategory } from "@/lib/utilities/indices/projects-JSONs/projectCreate";
 import { getProjectSummaryPromptOptions, getProjectDescriptionPromptOptions } from "../projectPromptOptions";
 import type { PortfolioProjectUpdate } from "@/lib/stores/projects/types/project.types";
-import { toast } from "../../toastify/Toastify";
+import { toast } from "../../../../context/Toastify";
 
 type FormState = PortfolioProjectUpdate & { mediaSlots: Record<string, File | null> };
 

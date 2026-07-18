@@ -1,6 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
-import { useTheme } from '../theme/ThemeContext';
+import { useTheme } from '../../../context/ThemeContext';
 
 interface LoadingAnimationProps {
   scale?: number;

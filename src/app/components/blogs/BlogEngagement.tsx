@@ -20,7 +20,7 @@ import type { ContentCommentWithUser, ContentWithAuthor, ReactionType } from "@/
 import Button from "../buttons/Buttons";
 import { TextArea } from "../inputs/TextArea";
 import { BlogCommentItem } from "./BlogCommentItem";
-import { toast } from "../toastify/Toastify";
+import { toast } from "../../../context/Toastify";
 import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 import Link from "next/link";
 import { REACTIONS } from "../feed/posts/feed_card_components/ContentReactionBar";

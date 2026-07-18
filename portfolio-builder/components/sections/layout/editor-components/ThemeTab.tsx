@@ -2,7 +2,7 @@ import { useCallback, useMemo } from "react";
 import PortfolioThemePicker, { PortfolioThemeValues } from "@/src/app/components/portfolio/PortfolioThemePicker";
 import { PortfolioThemeData } from "@/portfolio-builder/hooks/usePortfolioTheme";
 import { usePortfolioStore } from "@/portfolio-builder/store/usePortfolioStore";
-import { useTheme } from "@/src/app/components/theme/ThemeContext";
+import { useTheme } from "@/src/context/ThemeContext";
 import { themePresets } from "@/lib/utilities/indices/Themes";
 
 interface ThemeTabProps { }

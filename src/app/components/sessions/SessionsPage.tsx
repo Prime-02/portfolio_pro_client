@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { useSessionsStore } from "@/lib/stores/user/useSessionsStore";
 import Button from "../buttons/Buttons";
-import { toast } from "../toastify/Toastify";
+import { toast } from "../../../context/Toastify";
 import { MonitorSmartphone, RefreshCcw } from "lucide-react";
 import { tokenStore } from "@/lib/client/api";
 import { useAuthStore } from "@/lib/stores/user/useAuthStore";

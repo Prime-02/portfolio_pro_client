@@ -5,7 +5,7 @@ import { useRouting } from "@/lib/hooks/routing/useRouting";
 import { isAuthenticated } from "@/lib/client/api";
 import { removeEmptyStringValues } from "@/lib/utilities/syncFunctions/syncs";
 import { accountBasics } from "@/lib/utilities/indices/MultiStepWriteUp";
-import { toast } from "@/src/app/components/toastify/Toastify";
+import { toast } from "@/src/context/Toastify";
 import { Textinput } from "@/src/app/components/inputs/Textinput";
 import CheckBox from "@/src/app/components/inputs/CheckBox";
 import Button from "@/src/app/components/buttons/Buttons";

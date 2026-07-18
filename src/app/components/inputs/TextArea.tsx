@@ -1,5 +1,5 @@
 import { ReactNode, forwardRef, useRef, useImperativeHandle } from "react";
-import { useTheme } from "../theme/ThemeContext";
+import { useTheme } from "../../../context/ThemeContext";
 import { getColorShade } from "@/lib/utilities/syncFunctions/syncs";
 
 interface TextAreaProps extends Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, 'onChange'> {

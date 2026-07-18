@@ -1,7 +1,7 @@
 import { loaderOptions } from "@/lib/utilities/indices/LoaderOptions";
 import { Textinput } from "@/src/app/components/inputs/Textinput";
 import { getLoader } from "@/src/app/components/loaders/Loader";
-import { useTheme } from "@/src/app/components/theme/ThemeContext";
+import { useTheme } from "@/src/context/ThemeContext";
 import React, { Ref, useCallback } from "react";
 
 type LoadersProps = {

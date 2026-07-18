@@ -5,8 +5,8 @@ import { PathUtil } from "@/lib/utilities/syncFunctions/syncs";
 import Button from "@/src/app/components/buttons/Buttons";
 import Modal from "@/src/app/components/containers/modals/Modal";
 import { Textinput } from "@/src/app/components/inputs/Textinput";
-import { useTheme } from "@/src/app/components/theme/ThemeContext";
-import { toast } from "@/src/app/components/toastify/Toastify";
+import { useTheme } from "@/src/context/ThemeContext";
+import { toast } from "@/src/context/Toastify";
 import Image from "next/image";
 import React, { FormEvent, useState } from "react";
 

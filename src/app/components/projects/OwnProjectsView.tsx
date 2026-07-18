@@ -15,7 +15,7 @@ import Button from "../buttons/Buttons";
 import { ErrorMessage } from "../ui/ErrorMessage";
 import { InfiniteScrollTrigger } from "../blogs/InfiniteScrollTrigger";
 import { handleShareProfile } from "@/lib/utilities/syncFunctions/syncs";
-import { useTheme } from "../theme/ThemeContext";
+import { useTheme } from "../../../context/ThemeContext";
 import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 
 interface OwnProjectsViewProps {

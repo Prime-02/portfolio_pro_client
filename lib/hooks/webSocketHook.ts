@@ -1,6 +1,6 @@
 // hooks/useWebSocket.ts
 import { useEffect, useRef, useState, useCallback } from "react";
-import { useToast } from "../../src/app/components/toastify/Toastify";
+import { useToast } from "../../src/context/Toastify";
 import {
   NotificationData,
   ProcessedNotification,

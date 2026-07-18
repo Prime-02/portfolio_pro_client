@@ -13,7 +13,7 @@ import { urlTypes } from "@/lib/utilities/indices/DropDownItems";
 import { TextArea } from "../inputs/TextArea";
 import AIAssistant from "../ai/AIAsistant";
 import { getHeadlineOptions } from "./socialLinksPromptOptions";
-import { toast } from "../toastify/Toastify";
+import { toast } from "../../../context/Toastify";
 
 interface EditSocialLinkDialogProps {
     link: SocialLink;
@@ -89,7 +89,7 @@ export function EditSocialLinkDialog({ link, open, onOpenChange }: EditSocialLin
                         <AIAssistant
                             options={getHeadlineOptions(headline, profileUrl)}
                             onChange={(e) => setHeadline(e)}
-                            onEmptyClick={()=> {
+                            onEmptyClick={() => {
                                 toast.warning("Please enter a valid ")
                             }}
                         />

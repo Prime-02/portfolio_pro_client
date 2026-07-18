@@ -13,7 +13,7 @@ import { useRouting } from "@/lib/hooks/routing/useRouting";
 import AIAssistant from "../ai/AIAsistant";
 import { TextArea } from "../inputs/TextArea";
 import { getHeadlineOptions } from "./socialLinksPromptOptions";
-import { toast } from "../toastify/Toastify";
+import { toast } from "../../../context/Toastify";
 
 interface AddSocialLinkDialogProps {
     open: boolean;

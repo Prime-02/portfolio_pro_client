@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Download, Upload, Check, X } from "lucide-react";
 import { Accent, Loader, Theme, ThemeVariant } from "@/src/app/components/types and interfaces/loaderTypes";
-import { useTheme } from "@/src/app/components/theme/ThemeContext";
-import { toast } from "@/src/app/components/toastify/Toastify";
+import { useTheme } from "@/src/context/ThemeContext";
+import { toast } from "@/src/context/Toastify";
 import Modal from "@/src/app/components/containers/modals/Modal";
 import Dropdown from "@/src/app/components/inputs/DynamicDropdown";
 import Button from "@/src/app/components/buttons/Buttons";

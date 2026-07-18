@@ -18,7 +18,7 @@ import type { ProjectComment } from "@/lib/stores/projects/types/project.types";
 import Button from "../buttons/Buttons";
 import { TextArea } from "../inputs/TextArea";
 import { useUserSettings } from "@/lib/stores/user/useUserSettings";
-import { toast } from "../toastify/Toastify";
+import { toast } from "../../../context/Toastify";
 
 interface CommentItemProps {
     comment: ProjectComment;

@@ -10,7 +10,7 @@ import { BlogContent } from "./BlogContent";
 import { BlogEngagement } from "./BlogEngagement";
 import Button from "../buttons/Buttons";
 import { ErrorMessage } from "../ui/ErrorMessage";
-import { toast } from "../toastify/Toastify";
+import { toast } from "../../../context/Toastify";
 import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 import { LoadingSkeletonBlogDetail } from "./LoadingSkeletonBlogDetail";
 import { useContentReportStore } from "@/lib/stores/contents/useContentReportStore";

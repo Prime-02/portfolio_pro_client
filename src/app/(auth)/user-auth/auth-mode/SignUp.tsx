@@ -6,7 +6,7 @@ import { useAuthStore } from "@/lib/stores/user/useAuthStore";
 import { PathUtil } from "@/lib/utilities/syncFunctions/syncs";
 import Button from "@/src/app/components/buttons/Buttons";
 import { Textinput } from "@/src/app/components/inputs/Textinput";
-import { toast } from "@/src/app/components/toastify/Toastify";
+import { toast } from "@/src/context/Toastify";
 import { useState } from "react";
 
 const SignUp = () => {

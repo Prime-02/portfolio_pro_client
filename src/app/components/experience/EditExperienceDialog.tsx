@@ -16,7 +16,7 @@ import Dropdown, { DropdownOption } from "../inputs/DynamicDropdown";
 import { Save, Briefcase, Award } from "lucide-react";
 import AIAssistant from "../ai/AIAsistant";
 import { getExperienceAchievementsPromptOptions, getExperienceDescriptionPromptOptions } from "./experiencePromptOption";
-import { toast } from "../toastify/Toastify";
+import { toast } from "../../../context/Toastify";
 
 interface EditExperienceDialogProps {
     experience: Experience;

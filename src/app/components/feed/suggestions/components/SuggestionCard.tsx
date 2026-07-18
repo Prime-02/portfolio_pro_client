@@ -15,7 +15,7 @@ import { suggestionTitles } from "@/lib/utilities/indices/DropDownItems";
 import { TextArea } from "../../../inputs/TextArea";
 import AIAssistant from "../../../ai/AIAsistant";
 import { getSuggestionOptions } from "./suggestionsPromptOptions";
-import { toast } from "../../../toastify/Toastify";
+import { toast } from "../../../../../context/Toastify";
 import Button from "../../../buttons/Buttons";
 import Link from "next/link";
 

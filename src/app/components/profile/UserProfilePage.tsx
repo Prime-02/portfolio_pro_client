@@ -10,7 +10,7 @@ import { EmptyProfile } from "@/src/app/components/profile/EmptyProfile";
 import { UserNotFoundNotice } from "@/src/app/components/profile/UserNotFoundNotice";
 import { ProfileViewPage } from "./ProfileViewPage";
 import { ProfileSkeleton } from "./view/ProfileSkeleton";
-import { useTheme } from "../theme/ThemeContext";
+import { useTheme } from "../../../context/ThemeContext";
 import { UserResponse } from "@/lib/stores/user/useUserAccountStore";
 import { useRouting } from "@/lib/hooks/routing/useRouting";
 

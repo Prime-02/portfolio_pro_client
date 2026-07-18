@@ -2,7 +2,7 @@
 
 import { FolderOpen } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useTheme } from "../theme/ThemeContext";
+import { useTheme } from "../../../context/ThemeContext";
 import { ProjectGrid } from "./ProjectGrid";
 import { EmptyProjectsState } from "./EmptyProjectsState";
 import { LoadingSkeleton } from "./LoadingSkeleton";

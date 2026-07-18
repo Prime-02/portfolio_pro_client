@@ -1,7 +1,7 @@
 // components/skills/PublicProfileView.tsx
 import { Zap } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useTheme } from "../theme/ThemeContext";
+import { useTheme } from "../../../context/ThemeContext";
 import { SkillsGrid } from "./SkillsGrid";
 import { ErrorMessage } from "../ui/ErrorMessage";
 import type { ProfessionalSkill } from "@/lib/stores/skills/useSkills";

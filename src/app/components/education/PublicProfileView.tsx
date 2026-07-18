@@ -1,7 +1,7 @@
 // components/education/PublicProfileView.tsx
 import { GraduationCap } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useTheme } from "../theme/ThemeContext";
+import { useTheme } from "../../../context/ThemeContext";
 import { EducationsGrid } from "./EducationsGrid";
 import { ErrorMessage } from "../ui/ErrorMessage";
 import type { Education } from "@/lib/stores/education/useEducation";

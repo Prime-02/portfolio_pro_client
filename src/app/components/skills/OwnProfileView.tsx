@@ -1,7 +1,7 @@
 // components/skills/OwnProfileView.tsx
 import { Zap, Plus, Share2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useTheme } from "../theme/ThemeContext";
+import { useTheme } from "../../../context/ThemeContext";
 import Button from "../buttons/Buttons";
 import { StatsBar } from "./StatsBar";
 import { SkillsGrid } from "./SkillsGrid";

@@ -4,7 +4,7 @@ import { useUIStore } from "@/lib/stores/ui/useUIStore";
 import Button from "@/src/app/components/buttons/Buttons";
 import BasicHeader from "@/src/app/components/containers/divs/header/BasicHeader";
 import { PageHeader } from "@/src/app/components/ui/PageHeader";
-import { useWebSocketContext } from "@/src/app/WebSocketContext";
+import { useWebSocketContext } from "@/src/context/WebSocketContext";
 import { Bell } from "lucide-react";
 import React from "react";
 

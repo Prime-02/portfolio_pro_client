@@ -10,7 +10,7 @@ import {
   handleAxiosError,
   isNumericString,
 } from "@/lib/utilities/syncFunctions/syncs";
-import { toast } from "@/src/app/components/toastify/Toastify";
+import { toast } from "@/src/context/Toastify";
 
 // ---------------------------------------------------------------------------
 // URLS

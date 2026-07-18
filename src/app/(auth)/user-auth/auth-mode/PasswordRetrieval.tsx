@@ -5,7 +5,7 @@ import { useAuthStore } from "@/lib/stores/user/useAuthStore";
 import Button from "@/src/app/components/buttons/Buttons";
 import BasicHeader from "@/src/app/components/containers/divs/header/BasicHeader";
 import { Textinput } from "@/src/app/components/inputs/Textinput";
-import { toast } from "@/src/app/components/toastify/Toastify";
+import { toast } from "@/src/context/Toastify";
 import React, { useState } from "react";
 
 const PasswordRetrieval = () => {

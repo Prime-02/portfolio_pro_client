@@ -11,7 +11,7 @@ import Button from "../buttons/Buttons"
 import { Textinput } from "../inputs/Textinput"
 import AIAssistant from "../ai/AIAsistant"
 import { getPortfolioDescriptionOptions } from "./portfolioPromptOptions"
-import { toast } from "../toastify/Toastify"
+import { toast } from "../../../context/Toastify"
 import { BASE_URL } from "@/lib/utilities/syncFunctions/syncs"
 
 type SnapshotMode = "none" | "generate" | "upload"

@@ -1,6 +1,6 @@
 import React, { useRef, useMemo } from "react";
 import { FaCheck, FaInfoCircle } from "react-icons/fa";
-import { useTheme } from "../theme/ThemeContext";
+import { useTheme } from "../../../context/ThemeContext";
 
 export interface CheckBoxProps {
   isChecked: boolean;

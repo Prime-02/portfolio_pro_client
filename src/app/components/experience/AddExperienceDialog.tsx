@@ -19,7 +19,7 @@ import {
 } from "@/lib/stores/experiences/useExperience";
 import { useSkills } from "@/lib/stores/skills/useSkills";
 import Dropdown, { DropdownOption } from "../inputs/DynamicDropdown";
-import { toast } from "../toastify/Toastify";
+import { toast } from "../../../context/Toastify";
 
 interface AddExperienceDialogProps {
     open: boolean;

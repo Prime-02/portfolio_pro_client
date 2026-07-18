@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { motion, Variants } from "framer-motion";
 import Modal from "./Modal";
-import { useTheme } from "../../theme/ThemeContext";
+import { useTheme } from "../../../../context/ThemeContext";
 import {
     AlertTriangle,
     AlertCircle,
@@ -143,7 +143,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                         whileTap={isBusy || disableConfirm ? "rest" : "tap"}
                     >
                         {isBusy && (
-                           <LoaderComponent color="#ffffff" size={16} />
+                            <LoaderComponent color="#ffffff" size={16} />
                         )}
                         {isBusy ? "Please wait…" : confirmText}
                     </motion.button>

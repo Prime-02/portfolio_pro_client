@@ -7,7 +7,7 @@ import type { Education } from "@/lib/stores/education/useEducation";
 import { LoadingSkeleton } from "./LoadingSkeleton";
 import { PublicProfileView } from "./PublicProfileView";
 import { OwnProfileView } from "./OwnProfileView";
-import { useTheme } from "../theme/ThemeContext";
+import { useTheme } from "../../../context/ThemeContext";
 
 export default function EducationPage({ miniView = false }: { miniView?: boolean }) {
     const {

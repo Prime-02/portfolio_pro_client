@@ -5,7 +5,7 @@ import { useContentStore } from "@/lib/stores/contents/useContentStore";
 import { LoadingSkeletonBlogs } from "./LoadingSkeletonBlogs";
 import { OwnBlogsView } from "./OwnBlogsView";
 import { PublicBlogsView } from "./PublicBlogsView";
-import { useTheme } from "../theme/ThemeContext";
+import { useTheme } from "../../../context/ThemeContext";
 import { ContentType } from "@/lib/stores/contents";
 
 const PAGE_SIZE = 10;

@@ -20,7 +20,7 @@ import { getDisplayName } from "@/lib/stores/contents/types/content.types";
 import Button from "../buttons/Buttons";
 import { TextArea } from "../inputs/TextArea";
 import { useUserSettings } from "@/lib/stores/user/useUserSettings";
-import { toast } from "../toastify/Toastify";
+import { toast } from "../../../context/Toastify";
 import { isAuthenticated } from "@/lib/client/api";
 import Link from "next/link";
 

@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useUIStore } from "@/lib/stores/ui/useUIStore";
 import { useRouting } from "@/lib/hooks/routing/useRouting";
-import { toast } from "@/src/app/components/toastify/Toastify";
+import { toast } from "@/src/context/Toastify";
 import { Textinput } from "@/src/app/components/inputs/Textinput";
 import Button from "@/src/app/components/buttons/Buttons";
 import { useAuthStore } from "@/lib/stores/user/useAuthStore";

@@ -5,7 +5,7 @@ import { useProjectStore } from "@/lib/stores/projects/useProjectsStore";
 import { LoadingSkeleton } from "./LoadingSkeleton";
 import { OwnProjectsView } from "./OwnProjectsView";
 import { PublicProjectsView } from "./PublicProjectsView";
-import { useTheme } from "../theme/ThemeContext";
+import { useTheme } from "../../../context/ThemeContext";
 
 const PAGE_SIZE = 20;
 

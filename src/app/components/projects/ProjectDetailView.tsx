@@ -15,7 +15,7 @@ import { CollaboratorList } from "./CollaboratorList";
 import { AuditActivityFeed } from "./AuditActivityFeed";
 import Button from "../buttons/Buttons";
 import { ErrorMessage } from "../ui/ErrorMessage";
-import { toast } from "../toastify/Toastify";
+import { toast } from "../../../context/Toastify";
 import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 import { useRouting } from "@/lib/hooks/routing/useRouting";
 import { LoadingSkeletonDetail } from "./LoadingSkeletonDetail";

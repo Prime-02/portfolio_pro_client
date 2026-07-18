@@ -14,7 +14,7 @@ import Switch from "../inputs/Switch";
 import Dropdown from "../inputs/DynamicDropdown";
 import AIAssistant from "../ai/AIAsistant";
 import { getSkillDescriptionOptions } from "./skillPromptOptions";
-import { toast } from "../toastify/Toastify";
+import { toast } from "../../../context/Toastify";
 
 interface AddSkillDialogProps {
     open: boolean;

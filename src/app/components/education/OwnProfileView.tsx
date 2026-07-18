@@ -1,7 +1,7 @@
 // components/education/OwnProfileView.tsx
 import { GraduationCap, Plus, Share2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useTheme } from "../theme/ThemeContext";
+import { useTheme } from "../../../context/ThemeContext";
 import Button from "../buttons/Buttons";
 import { StatsBar } from "./StatsBar";
 import { EducationsGrid } from "./EducationsGrid";

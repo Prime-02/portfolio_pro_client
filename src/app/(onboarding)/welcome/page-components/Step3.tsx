@@ -2,7 +2,7 @@ import { useRouting } from "@/lib/hooks/routing/useRouting";
 import Image from "next/image";
 import { FormEvent, useEffect, useState } from "react";
 import TemplateStructure, { ComponentArrangement } from "./TemplateStructure";
-import { toast } from "@/src/app/components/toastify/Toastify";
+import { toast } from "@/src/context/Toastify";
 import { isAuthenticated } from "@/lib/client/api";
 import { removeEmptyStringValues } from "@/lib/utilities/syncFunctions/syncs";
 import { contactAndLocation } from "@/lib/utilities/indices/MultiStepWriteUp";

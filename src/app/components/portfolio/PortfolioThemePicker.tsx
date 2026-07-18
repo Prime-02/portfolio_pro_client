@@ -4,7 +4,7 @@ import ColorPicker from "../inputs/ColorPicker";
 import type { ThemeVariant } from "../types and interfaces/loaderTypes";
 import { ThemePreset } from "../../(user)/[username]/(sub-routes)/settings/preference/tabs/Themes";
 import { hexToRgb } from "@/lib/utilities/syncFunctions/syncs";
-import { useTheme } from "../theme/ThemeContext";
+import { useTheme } from "../../../context/ThemeContext";
 
 
 export interface PortfolioThemeValues {

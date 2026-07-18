@@ -18,7 +18,7 @@ import { EducationSectionController } from "./sections/education";
 import { EducationData } from "../types/education";
 import { CertificationSectionController } from "./sections/certification";
 import { CertificationData } from "../types/certification";
-import { useTheme } from "@/src/app/components/theme/ThemeContext";
+import { useTheme } from "@/src/context/ThemeContext";
 import { ProjectsData } from "../types/projects";
 import { ProjectsSectionController } from "./sections/projects";
 import { BlogsData } from "../types/blogs";

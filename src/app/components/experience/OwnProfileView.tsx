@@ -3,7 +3,7 @@
 
 import { Briefcase, Plus, Share2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useTheme } from "../theme/ThemeContext";
+import { useTheme } from "../../../context/ThemeContext";
 import Button from "../buttons/Buttons";
 import { StatsBar } from "./StatsBar";
 import { ExperienceTimeline } from "./ExperienceTimeline";
@@ -49,7 +49,7 @@ export function OwnProfileView({
     miniView = false,
 }: OwnProfileViewProps) {
     const { fetchAllSkills } = useSkills()
-    const {userInfo} = useUserSettings()
+    const { userInfo } = useUserSettings()
 
     useEffect(() => {
         if (!isAuthenticated()) return

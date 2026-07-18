@@ -2,7 +2,7 @@ import Link from "next/link";
 import React from "react";
 import { Sun, Moon, Monitor } from "lucide-react";
 import { IconType } from "react-icons";
-import { useTheme } from "@/src/app/components/theme/ThemeContext";
+import { useTheme } from "@/src/context/ThemeContext";
 import { ThemeVariant } from "@/src/app/components/types and interfaces/loaderTypes";
 import Button from "@/src/app/components/buttons/Buttons";
 import { useUserSettings } from "@/lib/stores/user/useUserSettings";

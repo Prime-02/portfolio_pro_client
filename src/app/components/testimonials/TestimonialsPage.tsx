@@ -9,7 +9,7 @@ import { Testimonial } from "@/lib/stores/testimonials/useTestimonial";
 import { LoadingSkeleton } from "./LoadingSkeleton";
 import { PublicProfileView } from "./PublicProfileView";
 import { OwnProfileView } from "./OwnProfileView";
-import { useTheme } from "../theme/ThemeContext";
+import { useTheme } from "../../../context/ThemeContext";
 
 const PAGE_SIZE = 20;
 

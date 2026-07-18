@@ -11,7 +11,7 @@ import type { PortfolioProjectCreate } from "@/lib/stores/projects/types/project
 import { TextArea } from "../../inputs/TextArea";
 import AIAssistant from "../../ai/AIAsistant";
 import { getProjectSummaryPromptOptions, getProjectDescriptionPromptOptions } from "../projectPromptOptions";
-import { toast } from "../../toastify/Toastify";
+import { toast } from "../../../../context/Toastify";
 
 type FormState = PortfolioProjectCreate & { mediaSlots: Record<string, File | null> };
 

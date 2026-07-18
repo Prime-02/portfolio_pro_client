@@ -7,7 +7,7 @@ import { InlineSaveButton } from "../InlineSaveButton";
 import type { ProfileForm, FieldStatus } from "./types";
 import AIAssistant from "../../../ai/AIAsistant";
 import { getBioPromptOptions } from "./bioPromptOptions";
-import { toast } from "../../../toastify/Toastify";
+import { toast } from "../../../../../context/Toastify";
 
 interface BioLinksSectionProps {
     profileForm: ProfileForm;

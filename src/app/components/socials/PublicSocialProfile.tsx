@@ -4,7 +4,7 @@
 import { useEffect } from "react";
 import { useSocialLinks } from "@/lib/stores/social_links/useSocialLinks";
 import { SocialLinksGrid } from "./SocialLinksGrid";
-import { useTheme } from "../theme/ThemeContext";
+import { useTheme } from "../../../context/ThemeContext";
 import { useRouting } from "@/lib/hooks/routing/useRouting";
 
 interface PublicSocialProfileProps {

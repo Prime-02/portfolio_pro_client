@@ -3,7 +3,7 @@
 
 import { Quote, PenLine, Share2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { useTheme } from "../theme/ThemeContext";
+import { useTheme } from "../../../context/ThemeContext";
 import Button from "../buttons/Buttons";
 import { Testimonial, TestimonialStats } from "@/lib/stores/testimonials/useTestimonial";
 import { StatsBar } from "./StatsBar";

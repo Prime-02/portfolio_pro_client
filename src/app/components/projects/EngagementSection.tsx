@@ -17,7 +17,7 @@ import type { FullProjectEngagement, ProjectComment } from "@/lib/stores/project
 import Button from "../buttons/Buttons";
 import { TextArea } from "../inputs/TextArea";
 import { CommentItem } from "./CommentItem";
-import { toast } from "../toastify/Toastify";
+import { toast } from "../../../context/Toastify";
 import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 
 interface EngagementSectionProps {

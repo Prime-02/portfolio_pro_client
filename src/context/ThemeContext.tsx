@@ -9,7 +9,7 @@ import {
   useRef,
   useMemo,
 } from "react";
-import PortfolioProLogo from "../logo/PortfolioProTextLogo";
+import PortfolioProLogo from "../app/components/logo/PortfolioProTextLogo";
 import {
   LoaderInput,
   Loader,
@@ -17,12 +17,12 @@ import {
   Accent,
   ThemeVariant,
   LanguageProps,
-} from "../types and interfaces/loaderTypes";
+} from "../app/components/types and interfaces/loaderTypes";
 import { isAuthenticated } from "@/lib/client/api";
 import { useUIStore } from "@/lib/stores/ui/useUIStore";
 import { useValidation } from "@/lib/hooks/validation/useValidation";
 import { UserSettingsBase, useUserSettings } from "@/lib/stores/user/useUserSettings";
-import { toast } from "../toastify/Toastify";
+import { toast } from "./Toastify";
 import { usePathname, useRouter } from "next/navigation";
 import { unprotectedRoutes } from "@/lib/utilities/indices/NavigationItems";
 

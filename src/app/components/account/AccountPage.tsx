@@ -6,7 +6,7 @@ import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 import { useUserAccountStore } from "@/lib/stores/user/useUserAccountStore";
 import { Textinput } from "../inputs/Textinput";
 import Button from "../buttons/Buttons";
-import { toast } from "../toastify/Toastify";
+import { toast } from "../../../context/Toastify";
 import Modal from "../containers/modals/Modal";
 import { useAuthStore } from "@/lib/stores/user/useAuthStore";
 import { PageHeader } from "../ui/PageHeader";

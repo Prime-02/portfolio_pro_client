@@ -7,7 +7,7 @@ import type { ProfessionalSkill } from "@/lib/stores/skills/useSkills";
 import { LoadingSkeleton } from "./LoadingSkeleton";
 import { PublicProfileView } from "./PublicProfileView";
 import { OwnProfileView } from "./OwnProfileView";
-import { useTheme } from "../theme/ThemeContext";
+import { useTheme } from "../../../context/ThemeContext";
 
 export default function SkillsPage({ miniView = false }: { miniView?: boolean }) {
     const {

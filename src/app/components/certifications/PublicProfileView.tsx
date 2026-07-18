@@ -1,7 +1,7 @@
 // components/certifications/PublicProfileView.tsx
 import { Award } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useTheme } from "../theme/ThemeContext";
+import { useTheme } from "../../../context/ThemeContext";
 import { PageHeader } from "../ui/PageHeader";
 import { CertificationsGrid } from "./CertificationsGrid";
 import { ErrorMessage } from "../ui/ErrorMessage";

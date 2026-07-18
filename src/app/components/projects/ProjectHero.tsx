@@ -19,7 +19,7 @@ import type { FullProjectEngagement } from "@/lib/stores/projects/types/project.
 import { useProjectEngagementStore } from "@/lib/stores/projects/useProjectEngagementStore";
 import MarkdownRenderer from "../markdown/MarkdownRenderer";
 import { useUserSettings } from "@/lib/stores/user/useUserSettings";
-import { toast } from "../toastify/Toastify";
+import { toast } from "../../../context/Toastify";
 
 interface ProjectHeroProps {
   project: PortfolioProjectResponse;

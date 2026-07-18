@@ -7,7 +7,7 @@ import type { Experience } from "@/lib/stores/experiences/useExperience";
 import { LoadingSkeleton } from "./LoadingSkeleton";
 import { PublicProfileView } from "./PublicProfileView";
 import { OwnProfileView } from "./OwnProfileView";
-import { useTheme } from "../theme/ThemeContext";
+import { useTheme } from "../../../context/ThemeContext";
 
 export default function ExperiencePage({ miniView = false }: { miniView?: boolean }) {
     const {

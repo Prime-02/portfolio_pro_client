@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "./components/theme/ThemeContext";
-import { ToastProvider } from "./components/toastify/Toastify";
-import ClientLayout from "./ClientLayout";
+import { ThemeProvider } from "../context/ThemeContext";
+import { ToastProvider } from "../context/Toastify";
+import ClientLayout from "../context/ClientLayout";
 import { Suspense } from "react";
 import PortfolioProLogo from "./components/logo/PortfolioProTextLogo";
-import DynamicTitle from "./DynamicTitle";
-import { WebSocketProvider } from "./WebSocketContext";
+import DynamicTitle from "../context/DynamicTitle";
+import { WebSocketProvider } from "../context/WebSocketContext";
 import { themePresets } from "@/lib/utilities/indices/Themes";
 import { BASE_URL } from "@/lib/utilities/syncFunctions/syncs";
 

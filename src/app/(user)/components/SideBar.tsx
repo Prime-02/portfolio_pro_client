@@ -7,7 +7,7 @@ import {
 import React, { useState, useCallback } from "react";
 import { Accent, Theme, ThemeVariant } from "../../components/types and interfaces/loaderTypes";
 import SidebarToggle from "../../components/buttons/CollapseButton";
-import { useTheme } from "../../components/theme/ThemeContext";
+import { useTheme } from "../../../context/ThemeContext";
 
 interface TabConfigItem {
   key: string;

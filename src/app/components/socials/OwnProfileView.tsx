@@ -1,7 +1,7 @@
 // components/social/OwnProfileView.tsx
 import { Share2, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useTheme } from "../theme/ThemeContext";
+import { useTheme } from "../../../context/ThemeContext";
 import Button from "../buttons/Buttons";
 import { StatsBar } from "./StatsBar";
 import { SocialLinksGrid } from "./SocialLinksGrid";

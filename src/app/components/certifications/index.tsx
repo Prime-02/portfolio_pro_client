@@ -7,7 +7,7 @@ import type { Certification } from "@/lib/stores/certifications/useCertification
 import { LoadingSkeleton } from "./LoadingSkeleton";
 import { PublicProfileView } from "./PublicProfileView";
 import { OwnProfileView } from "./OwnProfileView";
-import { useTheme } from "../theme/ThemeContext";
+import { useTheme } from "../../../context/ThemeContext";
 
 export default function CertificationsPage({ miniView = false }: { miniView?: boolean }) {
     const {

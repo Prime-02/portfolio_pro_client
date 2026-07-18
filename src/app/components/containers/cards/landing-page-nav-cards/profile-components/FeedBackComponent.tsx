@@ -6,8 +6,8 @@ import { validateFields } from "@/lib/utilities/syncFunctions/syncs";
 import Button from "@/src/app/components/buttons/Buttons";
 import Dropdown from "@/src/app/components/inputs/DynamicDropdown";
 import { TextArea } from "@/src/app/components/inputs/TextArea";
-import { useTheme } from "@/src/app/components/theme/ThemeContext";
-import { toast } from "@/src/app/components/toastify/Toastify";
+import { useTheme } from "@/src/context/ThemeContext";
+import { toast } from "@/src/context/Toastify";
 import Link from "next/link";
 import React, { useState } from "react";
 

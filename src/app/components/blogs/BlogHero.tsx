@@ -16,7 +16,7 @@ import {
 import type { ContentWithAuthor, ReactionType } from "@/lib/stores/contents/types/content.types";
 import { useContentLikeStore } from "@/lib/stores/contents/useContentLikeStore";
 import { useUserSettings } from "@/lib/stores/user/useUserSettings";
-import { toast } from "../toastify/Toastify";
+import { toast } from "../../../context/Toastify";
 import { REACTIONS } from "../feed/posts/feed_card_components/ContentReactionBar";
 import Link from "next/link";
 import { BASE_URL, handleShareProfile } from "@/lib/utilities/syncFunctions/syncs";

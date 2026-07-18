@@ -7,7 +7,7 @@ import ExperienceRenderer from "./ExperienceRenderer";
 import ExperienceEditor from "./ExperienceEditor";
 import { ExperienceData, getEmptyExperienceData } from "@/portfolio-builder/types/experience";
 import { useExperiencesStore } from "@/lib/stores/experiences/useExperience";
-import { toast } from "@/src/app/components/toastify/Toastify";
+import { toast } from "@/src/context/Toastify";
 
 // ---------------------------------------------------------------------------
 // Props

@@ -5,7 +5,7 @@
 import { useEffect, useCallback } from "react";
 import { usePortfolioStore } from "@/portfolio-builder/store/usePortfolioStore";
 import { themePresets } from "@/lib/utilities/indices/Themes";
-import { useTheme } from "@/src/app/components/theme/ThemeContext";
+import { useTheme } from "@/src/context/ThemeContext";
 
 // ---------------------------------------------------------------------------
 // Types

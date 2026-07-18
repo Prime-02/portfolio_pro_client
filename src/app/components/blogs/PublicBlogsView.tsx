@@ -2,7 +2,7 @@
 
 import { BookOpen } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useTheme } from "../theme/ThemeContext";
+import { useTheme } from "../../../context/ThemeContext";
 import { BlogGrid } from "./BlogGrid";
 import { EmptyBlogsState } from "./EmptyBlogsState";
 import { LoadingSkeletonBlogs } from "./LoadingSkeletonBlogs";

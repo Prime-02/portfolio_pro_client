@@ -1,7 +1,7 @@
 "use client";
 import { usePathname } from "next/navigation";
 import { ReactNode } from "react";
-import LandingPageNavbar from "./components/landing-page-components/navigations/LandingPageNavbar";
+import LandingPageNavbar from "../app/components/landing-page-components/navigations/LandingPageNavbar";
 import { useUIStore } from "@/lib/stores/ui/useUIStore";
 
 interface ClientLayoutProps {

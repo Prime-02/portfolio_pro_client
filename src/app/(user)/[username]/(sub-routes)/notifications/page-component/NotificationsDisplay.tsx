@@ -1,6 +1,6 @@
 import React from "react";
 import NotificationCard from "./NotificationCard";
-import { useWebSocketContext } from "@/src/app/WebSocketContext";
+import { useWebSocketContext } from "@/src/context/WebSocketContext";
 import EmptyState from "@/src/app/components/containers/cards/EmptyState";
 
 const NotificationsDisplay = () => {

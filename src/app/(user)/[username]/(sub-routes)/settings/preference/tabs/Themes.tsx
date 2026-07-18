@@ -1,5 +1,5 @@
 import { useUIStore } from "@/lib/stores/ui/useUIStore";
-import { useTheme } from "@/src/app/components/theme/ThemeContext";
+import { useTheme } from "@/src/context/ThemeContext";
 import { useCallback } from "react";
 import { themePresets } from "@/lib/utilities/indices/Themes";
 import { Moon, Sun } from "lucide-react";

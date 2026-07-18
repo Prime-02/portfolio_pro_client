@@ -7,7 +7,7 @@ import type { SocialLink } from "@/lib/stores/social_links/useSocialLinks";
 import { LoadingSkeleton } from "./LoadingSkeleton";
 import { PublicProfileView } from "./PublicProfileView";
 import { OwnProfileView } from "./OwnProfileView";
-import { useTheme } from "../theme/ThemeContext";
+import { useTheme } from "../../../context/ThemeContext";
 
 export default function SocialLinksPage({ miniView = false }: { miniView?: boolean }) {
     const {

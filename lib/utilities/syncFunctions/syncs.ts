@@ -339,7 +339,7 @@ export function findMatch<T extends Record<string, unknown>>(
   );
 }
 
-import { toast } from "@/src/app/components/toastify/Toastify";
+import { toast } from "@/src/context/Toastify";
 import { AxiosError } from "axios";
 
 export type ImageSource = string | null | undefined;

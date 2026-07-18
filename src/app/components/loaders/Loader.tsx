@@ -2,7 +2,7 @@ import React from "react";
 import PorfolioProLoader from "./PortfolioPro";
 import { LoaderOptions, LoaderProps } from "../types and interfaces/loaderTypes";
 import { useUserSettings } from "@/lib/stores/user/useUserSettings";
-import { useTheme } from "../theme/ThemeContext";
+import { useTheme } from "../../../context/ThemeContext";
 // Type definitions
 
 interface LoaderContainerProps {

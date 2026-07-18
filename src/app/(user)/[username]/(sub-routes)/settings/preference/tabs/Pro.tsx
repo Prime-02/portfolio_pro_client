@@ -1,6 +1,6 @@
 import { useUIStore } from "@/lib/stores/ui/useUIStore";
-import { useTheme } from "@/src/app/components/theme/ThemeContext";
-import { toast } from "@/src/app/components/toastify/Toastify";
+import { useTheme } from "@/src/context/ThemeContext";
+import { toast } from "@/src/context/Toastify";
 import { useEffect, useState } from "react";
 import ThemeImportExport from "./ThemeImportExport";
 import { Textinput } from "@/src/app/components/inputs/Textinput";

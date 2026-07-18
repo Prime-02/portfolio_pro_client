@@ -14,7 +14,7 @@ import Dropdown from "../inputs/DynamicDropdown";
 import { TextArea } from "../inputs/TextArea";
 import AIAssistant from "../ai/AIAsistant";
 import { getSkillDescriptionOptions } from "./skillPromptOptions";
-import { toast } from "../toastify/Toastify";
+import { toast } from "../../../context/Toastify";
 
 interface EditSkillDialogProps {
     skill: ProfessionalSkill;

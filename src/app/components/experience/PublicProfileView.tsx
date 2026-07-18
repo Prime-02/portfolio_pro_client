@@ -3,7 +3,7 @@
 
 import { Briefcase } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useTheme } from "../theme/ThemeContext";
+import { useTheme } from "../../../context/ThemeContext";
 import { PageHeader } from "../ui/PageHeader";
 import { StatsBar } from "./StatsBar";
 import { ExperienceTimeline } from "./ExperienceTimeline";

@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { PortfolioProjectResponse } from "@/lib/stores/projects/types/project.types";
-import { useTheme } from "../theme/ThemeContext";
+import { useTheme } from "../../../context/ThemeContext";
 import { useProjectEngagementStore } from "@/lib/stores/projects/useProjectEngagementStore";
 import { useUIStore } from "@/lib/stores/ui/useUIStore";
 

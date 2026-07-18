@@ -3,7 +3,7 @@ import Image from "next/image";
 import { FormEvent, useEffect, useState } from "react";
 import TemplateStructure, { ComponentArrangement } from "./TemplateStructure";
 import { isAuthenticated } from "@/lib/client/api";
-import { toast } from "@/src/app/components/toastify/Toastify";
+import { toast } from "@/src/context/Toastify";
 import { privacyAndNotification } from "@/lib/utilities/indices/MultiStepWriteUp";
 import CheckBox from "@/src/app/components/inputs/CheckBox";
 import Button from "@/src/app/components/buttons/Buttons";

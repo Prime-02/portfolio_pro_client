@@ -2,6 +2,7 @@
 
 interface CertificationEditorActionsProps {
   hasChanges: boolean;
+  isSaving: boolean;
   saveStatus: string;
   saveStatusColor: string;
   onSave: () => void;
@@ -20,6 +21,7 @@ export default function CertificationEditorActions({
   saveStatusColor,
   onSave,
   onCancel,
+  isSaving
 }: CertificationEditorActionsProps) {
   return (
     <div className="flex items-center justify-between px-6 py-4 border-t border-[var(--pb-border)] bg-[var(--pb-surface)]">
@@ -28,7 +30,7 @@ export default function CertificationEditorActions({
         <button onClick={onCancel} className={cancelButtonClass}>
           Cancel
         </button>
-        <button onClick={onSave} disabled={!hasChanges} className={saveButtonClass}>
+        <button onClick={onSave} disabled={!hasChanges || isSaving} className={saveButtonClass}>
           Save Now
         </button>
       </div>

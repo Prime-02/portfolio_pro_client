@@ -2,6 +2,7 @@
 
 interface ExperienceEditorActionsProps {
   hasChanges: boolean;
+  isSaving: boolean;
   saveStatus: string;
   saveStatusColor: string;
   onSave: () => void;
@@ -19,6 +20,7 @@ export default function ExperienceEditorActions({
   saveStatus,
   saveStatusColor,
   onSave,
+  isSaving,
   onCancel,
 }: ExperienceEditorActionsProps) {
   return (
@@ -28,7 +30,7 @@ export default function ExperienceEditorActions({
         <button onClick={onCancel} className={cancelButtonClass}>
           Cancel
         </button>
-        <button onClick={onSave} disabled={!hasChanges} className={saveButtonClass}>
+        <button onClick={onSave} disabled={!hasChanges || isSaving} className={saveButtonClass}>
           Save Now
         </button>
       </div>

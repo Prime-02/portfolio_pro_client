@@ -2,6 +2,7 @@
 
 interface TestimonialsEditorActionsProps {
   hasChanges: boolean;
+  isSaving: boolean;
   saveStatus: string;
   saveStatusColor: string;
   onSave: () => void;
@@ -17,6 +18,7 @@ const cancelButtonClass =
 export default function TestimonialsEditorActions({
   hasChanges,
   saveStatus,
+  isSaving,
   saveStatusColor,
   onSave,
   onCancel,
@@ -28,7 +30,7 @@ export default function TestimonialsEditorActions({
         <button onClick={onCancel} className={cancelButtonClass}>
           Cancel
         </button>
-        <button onClick={onSave} disabled={!hasChanges} className={saveButtonClass}>
+        <button onClick={onSave} disabled={!hasChanges || isSaving} className={saveButtonClass}>
           Save Now
         </button>
       </div>

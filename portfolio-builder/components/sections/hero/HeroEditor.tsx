@@ -19,6 +19,7 @@ import HeroRenderer from "./HeroRenderer";
 import SocialLinksTab from "./editor-components/SocialLinksTab";
 import { ResolvedTheme } from "@/portfolio-builder/hooks/usePortfolioTheme";
 import BackgroundTab from "@/portfolio-builder/components/shared/background/editor/BackgroundTab";
+import { usePortfolioStore } from "@/portfolio-builder/store/usePortfolioStore";
 
 // ---------------------------------------------------------------------------
 // Deep merge with defaults to handle missing/legacy keys
@@ -73,6 +74,10 @@ export default function HeroEditor({ initialData, onSave, onCancel, theme, setFu
         "content" | "layout" | "background" | "cta" | "effects" | "animations" | "social"
     >("content");
     const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+
+    // True while this editor OR any other portfolio save is in flight.
+    const isPortfolioSaving = usePortfolioStore((state) => state.isLoading);
+    const isSaving = saveStatus === "saving" || isPortfolioSaving;
 
     // ── Latest data ref (so timers/unmount/unload always save current data) ─
     const dataRef = useRef(data);
@@ -226,6 +231,7 @@ export default function HeroEditor({ initialData, onSave, onCancel, theme, setFu
 
     // ── Manual save ───────────────────────────────────────────────────────
     const handleSave = () => {
+        if (isSaving) return;
         executeSave(data);
     };
 
@@ -236,7 +242,7 @@ export default function HeroEditor({ initialData, onSave, onCancel, theme, setFu
 
     // ── Fullscreen ────────────────────────────────────────────────────────
     const handleFullscreen = () => {
-        executeSave(data);
+        if (!isSaving) executeSave(data);
         setFullScreen(data);
     };
 
@@ -306,7 +312,7 @@ export default function HeroEditor({ initialData, onSave, onCancel, theme, setFu
                     saveStatusColor={saveStatusColor[saveStatus]}
                     onSave={handleSave}
                     onCancel={handleCancel}
-                    isSaving={saveStatus === "saving"}
+                    isSaving={isSaving}
                 />
             </div>
 
@@ -316,9 +322,9 @@ export default function HeroEditor({ initialData, onSave, onCancel, theme, setFu
                     <span className="text-xs text-[var(--pb-text-muted)] uppercase tracking-wide">Preview</span>
                     <button
                         onClick={handleFullscreen}
-                        disabled={saveStatus === "saving"}
+                        disabled={isSaving}
                         className="text-xs text-[var(--pb-text-secondary)] hover:text-[var(--pb-text-primary)] transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-[var(--pb-text-secondary)]"
-                        title={saveStatus === "saving" ? "Cannot open fullscreen while saving" : "Hide editor for fullscreen preview"}
+                        title={isSaving ? "Cannot open fullscreen while saving" : "Hide editor for fullscreen preview"}
                     >
                         <Maximize className="w-3.5 h-3.5" />
                         Fullscreen

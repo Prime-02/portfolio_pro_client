@@ -2,6 +2,7 @@
 
 interface ProjectsEditorActionsProps {
   hasChanges: boolean;
+  isSaving: boolean;
   saveStatus: string;
   saveStatusColor: string;
   onSave: () => void;
@@ -19,6 +20,7 @@ export default function ProjectsEditorActions({
   saveStatus,
   saveStatusColor,
   onSave,
+  isSaving,
   onCancel,
 }: ProjectsEditorActionsProps) {
   return (
@@ -28,7 +30,7 @@ export default function ProjectsEditorActions({
         <button onClick={onCancel} className={cancelButtonClass}>
           Cancel
         </button>
-        <button onClick={onSave} disabled={!hasChanges} className={saveButtonClass}>
+        <button onClick={onSave} disabled={!hasChanges || isSaving} className={saveButtonClass}>
           Save Now
         </button>
       </div>

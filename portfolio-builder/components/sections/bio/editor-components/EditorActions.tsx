@@ -3,6 +3,7 @@
 interface EditorActionsProps {
   hasChanges: boolean;
   isValid: boolean;
+  isSaving: boolean;
   saveStatus: string;
   saveStatusColor: string;
   onSave: () => void;
@@ -22,6 +23,7 @@ export default function EditorActions({
   saveStatusColor,
   onSave,
   onCancel,
+  isSaving
 }: EditorActionsProps) {
   return (
     <div className="flex items-center justify-between px-6 py-4 border-t border-[var(--pb-border)] bg-[var(--pb-surface)]">
@@ -32,7 +34,7 @@ export default function EditorActions({
         </button>
         <button
           onClick={onSave}
-          disabled={!isValid || !hasChanges}
+          disabled={!isValid || !hasChanges || isSaving}
           className={saveButtonClass}
         >
           Save Now

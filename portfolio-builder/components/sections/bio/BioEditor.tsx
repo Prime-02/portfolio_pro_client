@@ -15,6 +15,7 @@ import {
   EditorActions,
   AnimationsTab,
 } from "./editor-components";
+import { usePortfolioStore } from "@/portfolio-builder/store/usePortfolioStore";
 import BioRenderer from "./BioRenderer";
 import BackgroundTab from "@/portfolio-builder/components/shared/background/editor/BackgroundTab";
 
@@ -69,6 +70,10 @@ export default function BioEditor({ initialData, onSave, onCancel, setFullScreen
     "content" | "layout" | "background" | "cta" | "animations"
   >("content");
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+
+  // True while this editor OR any other portfolio save is in flight.
+  const isPortfolioSaving = usePortfolioStore((state) => state.isLoading);
+  const isSaving = saveStatus === "saving" || isPortfolioSaving;
 
   // ── Latest data ref (so timers/unmount/unload always save current data) ──
   const dataRef = useRef(data);
@@ -179,6 +184,7 @@ export default function BioEditor({ initialData, onSave, onCancel, setFullScreen
 
   // ── Manual save ──────────────────────────────────────────────────────────
   const handleSave = () => {
+    if (isSaving) return;
     executeSave(data);
   };
 
@@ -189,7 +195,7 @@ export default function BioEditor({ initialData, onSave, onCancel, setFullScreen
 
   // ── Fullscreen ───────────────────────────────────────────────────────────
   const handleFullscreen = () => {
-    executeSave(data);
+    if (!isSaving) executeSave(data);
     setFullScreen(data);
   };
 
@@ -265,6 +271,7 @@ export default function BioEditor({ initialData, onSave, onCancel, setFullScreen
 
         <EditorActions
           hasChanges={true}
+          isSaving={isSaving}
           isValid={isValidData(data)}
           saveStatus={saveStatusText[saveStatus]}
           saveStatusColor={saveStatusColor[saveStatus]}
@@ -279,9 +286,9 @@ export default function BioEditor({ initialData, onSave, onCancel, setFullScreen
           <span className="text-xs text-[var(--pb-text-muted)] uppercase tracking-wide">Preview</span>
           <button
             onClick={handleFullscreen}
-            disabled={saveStatus === "saving"}
+            disabled={isSaving}
             className="text-xs text-[var(--pb-text-secondary)] hover:text-[var(--pb-text-primary)] transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-[var(--pb-text-secondary)]"
-            title={saveStatus === "saving" ? "Cannot open fullscreen while saving" : "Hide editor for fullscreen preview"}
+            title={isSaving ? "Cannot open fullscreen while saving" : "Hide editor for fullscreen preview"}
           >
             <Maximize className="w-3.5 h-3.5" />
             Fullscreen

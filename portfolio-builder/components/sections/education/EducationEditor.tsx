@@ -16,6 +16,7 @@ import {
   EducationEditorTabs,
   EducationEditorActions,
 } from "./editor-components";
+import { usePortfolioStore } from "@/portfolio-builder/store/usePortfolioStore";
 import EducationRenderer from "./EducationRenderer";
 
 // ---------------------------------------------------------------------------
@@ -70,6 +71,10 @@ export default function EducationEditor({
     "filters" | "card-layout" | "layout" | "background" | "animations" | "cta"
   >("filters");
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+
+  // True while this editor OR any other portfolio save is in flight.
+  const isPortfolioSaving = usePortfolioStore((state) => state.isLoading);
+  const isSaving = saveStatus === "saving" || isPortfolioSaving;
 
   // ── Animation replay counter ─────────────────────────────────────────────
   const [animationKey, setAnimationKey] = useState(0);
@@ -179,6 +184,7 @@ export default function EducationEditor({
 
   // ── Manual save ──────────────────────────────────────────────────────────
   const handleSave = () => {
+    if (isSaving) return;
     executeSave(data);
   };
 
@@ -191,7 +197,7 @@ export default function EducationEditor({
   // Preview only, but also triggers a save so the fullscreen view (and
   // whatever consumes it) reflects the latest edits.
   const handleFullscreen = () => {
-    executeSave(data);
+    if (!isSaving) executeSave(data);
     setFullScreen(data);
   };
 
@@ -269,6 +275,7 @@ export default function EducationEditor({
 
         <EducationEditorActions
           hasChanges={true}
+          isSaving={isSaving}
           saveStatus={saveStatusText[saveStatus]}
           saveStatusColor={saveStatusColor[saveStatus]}
           onSave={handleSave}
@@ -291,9 +298,9 @@ export default function EducationEditor({
             </button>
             <button
               onClick={handleFullscreen}
-              disabled={saveStatus === "saving"}
+              disabled={isSaving}
               className="text-xs text-[var(--pb-text-secondary)] hover:text-[var(--pb-text-primary)] transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-[var(--pb-text-secondary)]"
-              title={saveStatus === "saving" ? "Cannot open fullscreen while saving" : "Hide editor for fullscreen preview"}
+              title={isSaving ? "Cannot open fullscreen while saving" : "Hide editor for fullscreen preview"}
             >
               <Maximize className="w-3.5 h-3.5" />
               Fullscreen

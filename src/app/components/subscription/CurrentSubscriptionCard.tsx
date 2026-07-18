@@ -1,13 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { CalendarClock, AlertCircle } from "lucide-react";
 import { useTheme } from "@/src/context/ThemeContext";
 import { getColorShade } from "@/lib/utilities/syncFunctions/syncs";
 import Button from "@/src/app/components/buttons/Buttons";
 import { selectIsCancelling, useBillingStore } from "@/lib/stores/billing/useBillingStore";
 import SubscriptionStatusBadge from "./SubscriptionStatusBadge";
 import CancelSubscriptionModal from "./CancelSubscriptionModal";
-import { formatDate } from "./utils";
+import { formatDate, daysUntil } from "./utils";
 import { extractErrorMessage, SubscriptionStatus } from "@/lib/stores/billing/payment-types";
 
 export default function CurrentSubscriptionCard() {
@@ -33,17 +34,29 @@ export default function CurrentSubscriptionCard() {
 
   if (isLoadingSubscription && !subscription) {
     return (
-      <div className="h-32 animate-pulse rounded-2xl border border-[var(--foreground)]/10 bg-[var(--foreground)]/5" />
+      <div
+        className="flex animate-pulse flex-col gap-3 rounded-2xl border border-[var(--foreground)]/10 p-6 sm:flex-row sm:items-center sm:justify-between"
+        style={{ backgroundColor: getColorShade(theme.background, 1) }}
+      >
+        <div className="flex flex-col gap-2">
+          <div className="h-5 w-44 rounded bg-[var(--foreground)]/10" />
+          <div className="h-4 w-32 rounded bg-[var(--foreground)]/10" />
+        </div>
+        <div className="h-9 w-36 rounded-lg bg-[var(--foreground)]/10" />
+      </div>
     );
   }
 
   if (loadError) {
     return (
       <div
-        className="flex flex-col items-start gap-3 rounded-2xl border border-[var(--foreground)]/10 p-6"
+        className="flex flex-col items-start gap-3 rounded-2xl border border-red-500/20 p-6"
         style={{ backgroundColor: getColorShade(theme.background, 1) }}
       >
-        <p className="text-sm text-red-500">{loadError}</p>
+        <div className="flex items-center gap-2 text-red-500">
+          <AlertCircle size={18} />
+          <p className="text-sm font-medium">{loadError}</p>
+        </div>
         <Button text="Retry" variant="outline" size="sm" onClick={loadSubscription} />
       </div>
     );
@@ -52,7 +65,7 @@ export default function CurrentSubscriptionCard() {
   if (!subscription) {
     return (
       <div
-        className="rounded-2xl border border-[var(--foreground)]/10 p-6"
+        className="rounded-2xl border border-dashed border-[var(--foreground)]/15 p-6"
         style={{ backgroundColor: getColorShade(theme.background, 1) }}
       >
         <p className="text-sm opacity-70">
@@ -63,22 +76,32 @@ export default function CurrentSubscriptionCard() {
     );
   }
 
+  const remaining = daysUntil(subscription.current_period_end);
+
   return (
     <div
       className="flex flex-col gap-4 rounded-2xl border border-[var(--foreground)]/10 p-6 sm:flex-row sm:items-center sm:justify-between"
       style={{ backgroundColor: getColorShade(theme.background, 1) }}
     >
       <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-3">
-          <h2 className="font-league text-xl font-semibold">
+        <div className="flex flex-wrap items-center gap-3">
+          <h2 className="font-league text-xl font-semibold tracking-tight">
             Current subscription
           </h2>
           <SubscriptionStatusBadge status={subscription.status} />
         </div>
-        <p className="text-sm opacity-70">
-          {isCancelling
-            ? `Cancels on ${formatDate(subscription.current_period_end)}`
-            : `Renews on ${formatDate(subscription.current_period_end)}`}
+        <p className="flex items-center gap-1.5 text-sm opacity-70">
+          <CalendarClock size={14} className="shrink-0 opacity-70" />
+          <span>
+            {isCancelling ? "Cancels on" : "Renews on"}{" "}
+            {formatDate(subscription.current_period_end)}
+            {remaining !== null && remaining >= 0 && (
+              <span className="opacity-60">
+                {" "}
+                · {remaining === 0 ? "today" : `${remaining}d left`}
+              </span>
+            )}
+          </span>
         </p>
       </div>
 

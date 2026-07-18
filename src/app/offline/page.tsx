@@ -26,45 +26,38 @@ export default function OfflinePage() {
                 color: "var(--foreground)",
             }}
         >
-            {/* Animated gradient background blob */}
-            <div
-                className="absolute inset-0 overflow-hidden pointer-events-none"
-                aria-hidden="true"
-            >
-                <div
-                    className="animated-gradient absolute -top-1/2 -left-1/2 w-[200%] h-[200%] opacity-[0.03]"
-                    style={{
-                        background:
-                            "radial-gradient(circle at 30% 30%, var(--accent), transparent 40%), radial-gradient(circle at 70% 70%, var(--foreground), transparent 40%)",
-                    }}
-                />
-            </div>
-
             <div
                 className={`relative z-10 text-center max-w-lg transition-all duration-700 ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
                     }`}
             >
-                {/* Connection Icon */}
+                {/* Connection Icon - Fixed */}
                 <div className="mb-8 flex justify-center">
                     <div
-                        className="relative w-32 h-32 flex items-center justify-center rounded-full"
-                        style={{
-                            background: "var(--accent)",
-                            opacity: 0.1,
-                        }}
+                        className="relative w-32 h-32 flex items-center justify-center rounded-full overflow-hidden"
                     >
+                        {/* Background layer with low opacity */}
+                        <div
+                            className="absolute inset-0 rounded-full"
+                            style={{
+                                backgroundColor: "var(--accent)",
+                                opacity: 0.1,
+                            }}
+                        />
+
+                        {/* Icon - full visibility */}
                         {isOnline ? (
                             <Wifi
                                 size={64}
                                 strokeWidth={1.5}
-                                style={{ color: "var(--accent)", opacity: 0.8 }}
-                                className="animate-pulse"
+                                className="relative z-10 animate-pulse"
+                                style={{ color: "var(--accent)" }}
                             />
                         ) : (
                             <WifiOff
                                 size={64}
                                 strokeWidth={1.5}
-                                style={{ color: "var(--foreground)", opacity: 0.3 }}
+                                className="relative z-10"
+                                style={{ color: "var(--foreground)" }}
                             />
                         )}
                     </div>

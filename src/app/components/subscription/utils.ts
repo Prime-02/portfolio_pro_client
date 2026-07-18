@@ -37,6 +37,16 @@ export const statusStyles: Record<
   [SubscriptionStatus.EXPIRED]: { label: "Expired", color: "#ef4444" },
 };
 
+/**
+ * Statuses that represent an in-progress or live state, used to decide
+ * whether the status badge should show a small live-pulse indicator.
+ */
+export function statusPulses(status: SubscriptionStatus): boolean {
+  return (
+    status === SubscriptionStatus.ACTIVE || status === SubscriptionStatus.PENDING
+  );
+}
+
 export function formatDate(iso: string | null): string {
   if (!iso) return "—";
   return new Date(iso).toLocaleDateString(undefined, {
@@ -44,4 +54,14 @@ export function formatDate(iso: string | null): string {
     month: "long",
     day: "numeric",
   });
+}
+
+/**
+ * Whole days between now and the given ISO date. Returns null if there's
+ * no date, negative values if the date is in the past.
+ */
+export function daysUntil(iso: string | null): number | null {
+  if (!iso) return null;
+  const diffMs = new Date(iso).getTime() - Date.now();
+  return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
 }

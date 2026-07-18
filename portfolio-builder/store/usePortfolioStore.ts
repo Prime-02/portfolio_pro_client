@@ -297,30 +297,6 @@ export const usePortfolioStore = create<PortfolioState>()((set, get) => ({
   deletePortfolio: async (portfolioId: string) => {
     set({ isLoading: true, error: null });
     try {
-      // 1. Find the portfolio to get its cover image URL
-      const portfolio =
-        get().portfolios.find((p) => p.id === portfolioId) ??
-        get().currentPortfolio;
-
-      const { deleteFile } = useCloudinaryCore();
-
-      const coverUrl = portfolio?.cover_image_url;
-      const publicId = extractCloudinaryPublicId(coverUrl || "");
-
-      // 2. Delete the cover image from Cloudinary if it exists
-      if (publicId) {
-        try {
-          await deleteFile(publicId, "image");
-        } catch (cloudErr) {
-          // Log but don't block portfolio deletion if image cleanup fails
-          console.warn(
-            "Failed to delete cover image from Cloudinary:",
-            cloudErr,
-          );
-        }
-      }
-
-      // 3. Delete the portfolio
       await api.delete(`/portfolios/${portfolioId}`);
 
       set((state) => ({

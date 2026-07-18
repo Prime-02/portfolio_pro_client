@@ -1,24 +1,23 @@
 "use client";
 
 import { Suspense } from "react";
+import { CreditCard } from "lucide-react";
 import CheckoutStatusBanner from "@/src/app/components/subscription/CheckoutStatusBanner";
 import CurrentSubscriptionCard from "@/src/app/components/subscription/CurrentSubscriptionCard";
 import PlanGrid from "@/src/app/components/subscription/PlanGrid";
 import { useBillingStore } from "@/lib/stores/billing/useBillingStore";
+import { PageHeader } from "@/src/app/components/ui/PageHeader";
 
 function SubscriptionPageContent() {
   const subscription = useBillingStore((s) => s.subscription);
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-8 px-4 py-10">
-      <div>
-        <h1 className="font-league text-2xl font-bold">
-          Billing &amp; subscription
-        </h1>
-        <p className="mt-1 text-sm opacity-70">
-          Manage your plan, payment status, and upcoming renewal.
-        </p>
-      </div>
+      <PageHeader
+        title="Billling & subscription"
+        description="Manage your plan, payment status, and upcoming renewal."
+        icon={<CreditCard className="h-6 w-6" />}
+      />
 
       <CheckoutStatusBanner />
 

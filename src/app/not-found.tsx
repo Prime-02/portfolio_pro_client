@@ -19,37 +19,30 @@ export default function NotFound() {
         color: "var(--foreground)",
       }}
     >
-      {/* Animated gradient background blob */}
-      <div
-        className="absolute inset-0 overflow-hidden pointer-events-none"
-        aria-hidden="true"
-      >
-        <div
-          className="animated-gradient absolute -top-1/2 -left-1/2 w-[200%] h-[200%] opacity-[0.03]"
-          style={{
-            background:
-              "radial-gradient(circle at 30% 30%, var(--accent), transparent 40%), radial-gradient(circle at 70% 70%, var(--foreground), transparent 40%)",
-          }}
-        />
-      </div>
 
       <div
         className={`relative z-10 text-center max-w-lg transition-all duration-700 ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
           }`}
       >
-        {/* 404 Number */}
+        {/* 404 Number - Improved gradient text */}
         <h1
-          className="font-league text-[8rem] leading-none tracking-tighter select-none"
+          className="font-league text-[8rem] leading-none tracking-tighter select-none relative"
           style={{
             fontFamily: "var(--font-league)",
             fontWeight: 900,
-            background: "linear-gradient(135deg, var(--foreground) 0%, var(--accent) 100%)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            backgroundClip: "text",
           }}
         >
-          404
+          <span
+            style={{
+              background: "linear-gradient(135deg, var(--foreground) 0%, var(--accent) 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+              color: "transparent", // Fallback for browsers that don't support background-clip: text
+            }}
+          >
+            404
+          </span>
         </h1>
 
         {/* Divider line */}

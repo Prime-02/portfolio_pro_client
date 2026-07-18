@@ -13,7 +13,7 @@ import { useTheme } from "../../../context/ThemeContext";
 import { getColorShade } from "@/lib/utilities/syncFunctions/syncs";
 import { themePresets } from "@/lib/utilities/indices/Themes";
 
-type ButtonProps = {
+export type ButtonProps = {
   icon?: ReactNode;
   icon2?: ReactNode;
   onClick?: (event: MouseEvent<HTMLButtonElement>) => void;

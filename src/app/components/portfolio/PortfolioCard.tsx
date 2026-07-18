@@ -4,8 +4,9 @@ import Image from "next/image"
 import { useRouter } from "next/navigation"
 import type { PortfolioResponse } from "@/portfolio-builder/store/usePortfolioStore"
 import { copyToClipboard } from "@/lib/utilities/syncFunctions/syncs"
-import { Share2, Pencil, Trash2 } from "lucide-react"
+import { Share2, Pencil, Trash2, ExternalLink, Edit3 } from "lucide-react"
 import Button from "../buttons/Buttons"
+import ButtonGroup from "../buttons/ButtonGroup"
 
 interface PortfolioCardProps {
     portfolio: PortfolioResponse
@@ -20,6 +21,45 @@ const PortfolioCard = ({ portfolio, onEdit, onDelete }: PortfolioCardProps) => {
         const fullUrl = window.location.href;
         copyToClipboard(`${fullUrl}/${slug}`)
     }
+
+    const actions = [
+        {
+            id: 'open',
+            label: 'Open Studio',
+            icon: <Edit3 className="w-4 h-4" />,
+            onClick: () => router.push(`portfolios/${portfolio.slug}/studio`),
+            description: 'Open in studio editor'
+        },
+        {
+            id: 'visit',
+            label: 'Visit Portfolio Site',
+            icon: <ExternalLink className="w-4 h-4" />,
+            onClick: () => router.push(`portfolios/${portfolio.slug}`),
+            description: 'Visit live portfolio site'
+        },
+        {
+            id: 'share',
+            label: 'Share',
+            icon: <Share2 className="w-4 h-4" />,
+            onClick: () => handleShare(portfolio.slug),
+            description: 'Copy share link to clipboard'
+        },
+        {
+            id: 'edit',
+            label: 'Edit',
+            icon: <Pencil className="w-4 h-4" />,
+            onClick: () => onEdit(portfolio),
+            description: 'Edit portfolio meta information'
+        },
+        {
+            id: 'delete',
+            label: 'Delete',
+            icon: <Trash2 className="w-4 h-4" />,
+            onClick: () => onDelete(portfolio.id),
+            variant: 'danger' as const,
+            description: 'Permanently delete this portfolio'
+        }
+    ]
 
     return (
         <div className="card rounded-xl border border-[var(--foreground)]/10 p-5 hover:border-[var(--accent)]/50 transition-all duration-200 group">
@@ -64,36 +104,14 @@ const PortfolioCard = ({ portfolio, onEdit, onDelete }: PortfolioCardProps) => {
                 </span>
             </div>
 
-            <div className="flex gap-2">
-                <Button
-                    variant="primary"
-                    size="sm"
-                    text="Open Studio"
-                    onClick={() => router.push(`portfolios/${portfolio.slug}/studio`)}
-                    className="flex-1"
-                />
-                <Button
-                    variant="outline"
-                    size="sm"
-                    icon={<Share2 className="w-4 h-4" />}
-                    onClick={() => handleShare(portfolio.slug)}
-                    title="Copy share link"
-                />
-                <Button
-                    variant="outline"
-                    size="sm"
-                    icon={<Pencil className="w-4 h-4" />}
-                    onClick={() => onEdit(portfolio)}
-                    title="Edit portfolio"
-                />
-                <Button
-                    variant="danger"
-                    size="sm"
-                    icon={<Trash2 className="w-4 h-4" />}
-                    onClick={() => onDelete(portfolio.id)}
-                    title="Delete portfolio"
-                />
-            </div>
+            <ButtonGroup
+                actions={actions}
+                defaultActionId="open"
+                variant="primary"
+                size="sm"
+                className="w-full"
+                dropdownPlacement="bottom"
+            />
         </div>
     )
 }

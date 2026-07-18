@@ -4,15 +4,14 @@ export const getPortfolioDescriptionOptions = (
   currentText: string,
   portfolioTitle: string,
 ): PromptOption[] => {
-  const trimmedText = currentText.trim();
   const trimmedTitle = portfolioTitle.trim();
   const hasTitle = trimmedTitle.length > 0;
-  const hasText = trimmedText.length > 0;
-  const hasValidWords = /\w{2,}/.test(trimmedText);
 
-  if (!hasTitle || !hasText || !hasValidWords) {
+  if (!hasTitle) {
     return [];
   }
+
+  const trimmedText = currentText.trim();
 
   return [
     {

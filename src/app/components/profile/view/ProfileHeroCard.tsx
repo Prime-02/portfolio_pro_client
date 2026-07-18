@@ -32,7 +32,7 @@ export const ProfileHeroCard = ({
     onEdit,
 }: ProfileHeroCardProps) => {
     return (
-        <div className="card rounded-2xl">
+        <div className="ounded-2xl">
             {/* Top row: Avatar + Edit button */}
             <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between mb-4 sm:mb-6 gap-4 sm:gap-0">
                 <div className="relative w-32 h-32 sm:w-[25vw] sm:h-[25vw] md:w-[30vw] md:h-[30vw] max-w-40 md:max-w-56 max-h-40 md:max-h-56 rounded-full overflow-hidden ring-4 ring-(--accent)/20 shadow-lg shrink-0">
@@ -44,7 +44,7 @@ export const ProfileHeroCard = ({
                             sizes="(max-width: 640px) 128px, (max-width: 768px) 25vw, 30vw"
                         />
                     ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-(--accent)/10 to-(--accent)/5 flex items-center justify-center">
+                        <div className="w-full h-full flex items-center justify-center">
                             <svg className="w-[35%] h-[35%] text-(--accent)/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                             </svg>
@@ -106,7 +106,7 @@ export const ProfileHeroCard = ({
 
             {/* Bio */}
             {profile?.bio && (
-                <div className="mb-4 sm:mb-6 rounded-xl bg-(--foreground)/[0.03] border border-(--foreground)/5">
+                <div className="mb-4 sm:mb-6">
                     <MarkdownRenderer
                         className="text-sm sm:text-base text-(--foreground)/80 leading-relaxed break-words"
                         markdown={profile.bio}

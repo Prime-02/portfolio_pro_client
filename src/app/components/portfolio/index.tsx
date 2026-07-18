@@ -11,12 +11,23 @@ import CreatePortfolioModal from "./CreatePortfolioModal"
 import PortfolioCard from "./PortfolioCard"
 import EditPortfolioModal from "./EditPortfolioModal"
 import { useUserSettings } from "@/lib/stores/user/useUserSettings"
+import ConfirmationModal from "../containers/modals/ConfirmationModal"
+
 
 const PortfolioPage = () => {
     const router = useRouter()
     const [isCreating, setIsCreating] = useState(false)
     const [editingPortfolio, setEditingPortfolio] = useState<PortfolioResponse | null>(null)
     const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+    const [deleteConfirmModal, setDeleteConfirmModal] = useState<{
+        isOpen: boolean;
+        portfolioId: string | null;
+        portfolioTitle: string;
+    }>({
+        isOpen: false,
+        portfolioId: null,
+        portfolioTitle: "",
+    })
     const { userInfo } = useUserSettings()
 
     const {
@@ -47,7 +58,7 @@ const PortfolioPage = () => {
             try {
                 const response = await createPortfolio(payload)
                 setIsCreating(false)
-                router.push(`/${userInfo?.username}/portfolios/${response.id}/studio`)
+                router.push(`/${userInfo?.username}/portfolios/${response.slug}/studio`)
             } catch (err) {
                 // Error handled by store
             }
@@ -69,17 +80,29 @@ const PortfolioPage = () => {
         [updatePortfolio]
     )
 
-    const handleDelete = useCallback(
-        async (id: string) => {
-            if (!window.confirm("Are you sure you want to delete this portfolio?")) return
-            try {
-                await deletePortfolio(id)
-            } catch (err) {
-                // Error handled by store
-            }
-        },
-        [deletePortfolio]
-    )
+    const handleDeleteClick = (portfolio: PortfolioResponse) => {
+        setDeleteConfirmModal({
+            isOpen: true,
+            portfolioId: portfolio.id,
+            portfolioTitle: portfolio.name || "Untitled Portfolio",
+        })
+    }
+
+    const handleDeleteConfirm = useCallback(async () => {
+        if (!deleteConfirmModal.portfolioId) return
+
+        try {
+            await deletePortfolio(deleteConfirmModal.portfolioId)
+            setDeleteConfirmModal({ isOpen: false, portfolioId: null, portfolioTitle: "" })
+        } catch (err) {
+            // Error handled by store
+            setDeleteConfirmModal({ isOpen: false, portfolioId: null, portfolioTitle: "" })
+        }
+    }, [deleteConfirmModal.portfolioId, deletePortfolio])
+
+    const handleDeleteCancel = () => {
+        setDeleteConfirmModal({ isOpen: false, portfolioId: null, portfolioTitle: "" })
+    }
 
     const openEdit = (portfolio: PortfolioResponse) => {
         setEditingPortfolio(portfolio)
@@ -87,7 +110,7 @@ const PortfolioPage = () => {
     }
 
     return (
-        <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
+        <div className="min-h-screen text-[var(--foreground)]">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <header className="flex flex-wrap justify-between items-center gap-4 mb-10">
                     <BasicHeader
@@ -157,7 +180,7 @@ const PortfolioPage = () => {
                                 key={portfolio.id}
                                 portfolio={portfolio}
                                 onEdit={openEdit}
-                                onDelete={handleDelete}
+                                onDelete={() => handleDeleteClick(portfolio)}
                             />
                         ))}
                     </div>
@@ -180,6 +203,18 @@ const PortfolioPage = () => {
                 }}
                 onSubmit={handleEdit}
                 isLoading={isLoading}
+            />
+
+            <ConfirmationModal
+                isOpen={deleteConfirmModal.isOpen}
+                onClose={handleDeleteCancel}
+                onConfirm={handleDeleteConfirm}
+                title="Delete Portfolio?"
+                message={`Are you sure you want to delete "${deleteConfirmModal.portfolioTitle}"? This action cannot be undone.`}
+                confirmText="Delete"
+                cancelText="Cancel"
+                variant="danger"
+                loading={isLoading}
             />
         </div>
     )

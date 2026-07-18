@@ -49,6 +49,7 @@ export enum SubscriptionTier {
 // ==================== Plans ====================
 export interface SubscriptionPlanResponse {
   id: string;
+  name: string;
   tier: string;
   provider: PaymentProvider;
   interval: BillingInterval;

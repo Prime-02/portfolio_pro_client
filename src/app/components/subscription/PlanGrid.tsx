@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { AlertCircle, PackageOpen } from "lucide-react";
 import { useBillingStore } from "@/lib/stores/billing/useBillingStore";
 import Button from "@/src/app/components/buttons/Buttons";
 import PlanCard from "./PlanCard";
@@ -58,8 +59,14 @@ export default function PlanGrid({
         {[0, 1, 2].map((i) => (
           <div
             key={i}
-            className="h-64 animate-pulse rounded-2xl border border-[var(--foreground)]/10 bg-[var(--foreground)]/5"
-          />
+            className="flex h-64 animate-pulse flex-col gap-4 rounded-2xl border border-[var(--foreground)]/10 bg-[var(--foreground)]/5 p-6"
+          >
+            <div className="h-5 w-24 rounded bg-[var(--foreground)]/10" />
+            <div className="h-8 w-32 rounded bg-[var(--foreground)]/10" />
+            <div className="h-4 w-full rounded bg-[var(--foreground)]/10" />
+            <div className="h-4 w-2/3 rounded bg-[var(--foreground)]/10" />
+            <div className="mt-auto h-9 w-full rounded-lg bg-[var(--foreground)]/10" />
+          </div>
         ))}
       </div>
     );
@@ -67,8 +74,11 @@ export default function PlanGrid({
 
   if (loadError && plans.length === 0) {
     return (
-      <div className="flex flex-col items-start gap-3">
-        <p className="text-sm text-red-500">{loadError}</p>
+      <div className="flex flex-col items-start gap-3 rounded-2xl border border-red-500/20 p-6">
+        <div className="flex items-center gap-2 text-red-500">
+          <AlertCircle size={18} />
+          <p className="text-sm font-medium">{loadError}</p>
+        </div>
         <Button text="Retry" variant="outline" size="sm" onClick={loadPlans} />
       </div>
     );
@@ -76,14 +86,20 @@ export default function PlanGrid({
 
   if (plans.length === 0) {
     return (
-      <p className="text-sm opacity-70">No plans available right now.</p>
+      <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-[var(--foreground)]/15 py-12 text-center">
+        <PackageOpen size={24} className="opacity-40" />
+        <p className="text-sm opacity-70">No plans available right now.</p>
+      </div>
     );
   }
 
   return (
     <div className="flex flex-col gap-4">
       {checkoutError && (
-        <p className="text-sm text-red-500">{checkoutError}</p>
+        <div className="flex items-center gap-2 rounded-xl bg-red-500/10 px-4 py-3 text-sm font-medium text-red-500">
+          <AlertCircle size={16} className="shrink-0" />
+          {checkoutError}
+        </div>
       )}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {plans.map((plan) => (

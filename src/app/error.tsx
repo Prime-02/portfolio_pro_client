@@ -36,38 +36,31 @@ export default function Error({ error, reset }: ErrorProps) {
         color: "var(--foreground)",
       }}
     >
-      {/* Animated gradient background blob */}
-      <div
-        className="absolute inset-0 overflow-hidden pointer-events-none"
-        aria-hidden="true"
-      >
-        <div
-          className="animated-gradient absolute -top-1/2 -left-1/2 w-[200%] h-[200%] opacity-[0.03]"
-          style={{
-            background:
-              "radial-gradient(circle at 30% 30%, var(--accent), transparent 40%), radial-gradient(circle at 70% 70%, var(--foreground), transparent 40%)",
-          }}
-        />
-      </div>
 
       <div
         className={`relative z-10 text-center max-w-lg transition-all duration-700 ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
           }`}
       >
-        {/* Error Icon */}
+        {/* Error Icon - Fixed */}
         <div
-          className="mx-auto mb-6 flex items-center justify-center w-20 h-20 rounded-2xl"
-          style={{
-            background: "var(--foreground)",
-            opacity: 0.08,
-          }}
+          className="mx-auto mb-6 flex items-center justify-center w-20 h-20 rounded-2xl relative overflow-hidden"
         >
+          {/* Background layer with low opacity */}
+          <div
+            className="absolute inset-0 rounded-2xl"
+            style={{
+              backgroundColor: "var(--foreground)",
+              opacity: 0.08,
+            }}
+          />
+
+          {/* Icon - full visibility */}
           <AlertCircle
             size={36}
             strokeWidth={1.5}
+            className="relative z-10"
             style={{
               color: "var(--foreground)",
-              opacity: 0.7,
             }}
           />
         </div>
@@ -120,17 +113,29 @@ export default function Error({ error, reset }: ErrorProps) {
           again or contact support if the problem persists.
         </p>
 
-        {/* Error digest (Next.js error ID) */}
+        {/* Error digest (Next.js error ID) - Fixed */}
         {error.digest && (
           <div
-            className="inline-block mb-8 px-4 py-2 rounded-md text-xs font-mono"
-            style={{
-              background: "var(--foreground)",
-              color: "var(--background)",
-              opacity: 0.1,
-            }}
+            className="inline-block mb-8 px-4 py-2 rounded-md text-xs font-mono relative overflow-hidden"
           >
-            Error ID: {error.digest}
+            {/* Background layer with low opacity */}
+            <div
+              className="absolute inset-0 rounded-md"
+              style={{
+                backgroundColor: "var(--foreground)",
+                opacity: 0.1,
+              }}
+            />
+
+            {/* Text - full visibility */}
+            <span
+              className="relative z-10"
+              style={{
+                color: "var(--foreground)",
+              }}
+            >
+              Error ID: {error.digest}
+            </span>
           </div>
         )}
 

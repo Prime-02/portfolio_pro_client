@@ -113,8 +113,8 @@ const LandingPageNavbar = () => {
           )}
         </div>
 
-        {/* Bottom section - Auth/User controls */}
-        <div className="flex-1 flex flex-col overflow-y-auto">
+        {/* Bottom section - Auth/User controls with horizontal padding */}
+        <div className="flex-1 flex flex-col overflow-y-auto px-1"> 
           {userInfo?.id ? (
             <div className="flex flex-col h-full">
               {/* Menu takes majority of space */}

@@ -98,7 +98,7 @@ export default function LayoutEditor({
         <>
             {/* Overlay - click to close */}
             <div
-                className="fixed inset-0 z-[140] bg-black/50 backdrop-blur-sm"
+                className="fixed inset-0 z-[140] bg-black/50 backdrop-blur-xs"
                 onClick={handleClose}
             />
 

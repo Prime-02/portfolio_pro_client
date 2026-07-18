@@ -58,7 +58,7 @@ export default function LayoutEditor({
         } finally {
             isSavingRef.current = false;
             setIsSaving(false);
-        }
+        }           
     }, [onSave]);
 
     const handleClose = useCallback(() => {

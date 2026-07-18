@@ -7,14 +7,14 @@ registerBackground({
   type: "solid",
   label: "Solid Color",
   fields: [
-    { kind: "color", label: "Background Color", key: "color", defaultValue: "#0a0a0a" },
+    { kind: "color", label: "Background Color", key: "color", defaultValue: "#000000" },
   ],
   defaults: {
     type: "solid",
-    color: "#0a0a0a",
+    color: "#000000",
   },
   getStyle: (bg) => ({
-    backgroundColor: bg.color || "#0a0a0a",
+    backgroundColor: bg.color || "#000000",
   }),
   supportsOverlay: false,
 });

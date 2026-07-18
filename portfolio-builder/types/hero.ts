@@ -81,6 +81,15 @@ export type HeroMediaShape =
 export type HeroMediaSize = "sm" | "md" | "lg";
 
 /**
+ * How the media element behaves on mobile viewports when the hero
+ * layout is "split". Only relevant for the split layout.
+ * - hide  : Media is not rendered on mobile at all
+ * - above : Media stacks above the text content on mobile
+ * - below : Media stacks below the text content on mobile (default)
+ */
+export type MobileMediaPosition = "hide" | "above" | "below";
+
+/**
  * Configuration for the media element in the hero.
  */
 export interface HeroMedia {
@@ -98,6 +107,23 @@ export interface HeroMedia {
   shape?: HeroMediaShape;
   /** Display size of the media element */
   size?: HeroMediaSize;
+  /**
+   * Split layout only: when true, the media stretches to fill the full
+   * height of the hero section instead of using the fixed `size` box.
+   */
+  fullHeight?: boolean;
+  /**
+   * Split layout only: how the media is positioned on mobile viewports.
+   * Defaults to "below" (media stacks under the text content).
+   */
+  mobilePosition?: MobileMediaPosition;
+  /**
+   * Split layout + fullHeight only: rounds the corner(s) on the inner edge
+   * of the media panel — the side facing the text column — in pixels.
+   * The three outer edges (which run flush with the section's boundary)
+   * are never rounded. Defaults to 0 (sharp, edge-to-edge split).
+   */
+  edgeRadius?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -299,6 +325,11 @@ export interface HeroData {
   height?: HeroHeight;
   /** Position of media in split layout (left or right of text) */
   mediaPosition?: HeroMediaPosition;
+  /**
+   * Split layout only: percentage width (20–80) given to the text column.
+   * The media column takes the remainder. Defaults to 50 (even split).
+   */
+  splitRatio?: number;
   /** Top/bottom padding for the section in pixels */
   padding?: HeroPadding;
 
@@ -374,6 +405,7 @@ export function getEmptyHeroData(): HeroData {
     verticalAlignment: "center",
     height: "screen",
     mediaPosition: "right",
+    splitRatio: 50,
     padding: { top: 0, bottom: 0 },
     name: "",
     title: "",

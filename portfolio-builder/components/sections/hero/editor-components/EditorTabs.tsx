@@ -3,14 +3,13 @@
 interface EditorTabsProps {
     activeTab: string;
     onTabChange: (
-        tab: "content" | "layout" | "media" | "background" | "cta" | "effects" | "animations" | "social"
+        tab: "content" | "layout" | "background" | "cta" | "effects" | "animations" | "social"
     ) => void;
 }
 
 const tabs = [
     { key: "content", label: "Content" },
-    { key: "layout", label: "Layout" },
-    { key: "media", label: "Media" },
+    { key: "layout", label: "Layout & Media" },
     { key: "background", label: "Background" },
     { key: "cta", label: "CTA Buttons" },
     { key: "social", label: "Social Links" },

@@ -133,6 +133,11 @@ export default function HeroRenderer({ data, theme }: HeroRendererProps) {
             verticalAlignment === "bottom" ? "items-end" :
                 "items-center";
 
+    const verticalJustifyClass =
+        verticalAlignment === "top" ? "justify-start" :
+            verticalAlignment === "bottom" ? "justify-end" :
+                "justify-center";
+
     const paddingStyle: React.CSSProperties =
         height === "auto" && !padding?.top && !padding?.bottom
             ? {}
@@ -147,6 +152,40 @@ export default function HeroRenderer({ data, theme }: HeroRendererProps) {
                 "text-center items-center";
 
     const justifyClass = layout !== "split" ? "justify-center" : "";
+
+    // ── Split layout specifics ─────────────────────────────────────────────
+    const splitRatio = Math.min(80, Math.max(20, data.splitRatio ?? 50));
+    const isFullHeightMedia = layout === "split" && !!media?.fullHeight;
+    const mobileMediaPosition = media?.mobilePosition ?? "below";
+    const mediaDesktopOrderClass = mediaPosition === "left" ? "md:order-1" : "md:order-2";
+    const textDesktopOrderClass = mediaPosition === "left" ? "md:order-2" : "md:order-1";
+    const mediaMobileOrderClass =
+        mobileMediaPosition === "hide"
+            ? `hidden md:flex ${mediaDesktopOrderClass}`
+            : mobileMediaPosition === "above"
+                ? `order-first ${mediaDesktopOrderClass}`
+                : `order-last ${mediaDesktopOrderClass}`; // "below" (default)
+    const splitItemsClass = isFullHeightMedia ? "items-stretch" : "items-center";
+
+    // Full-height split media is meant to run flush with the section's
+    // edges (a true two-column split-screen), so it drops the max-width
+    // container, horizontal padding, and inter-column gap that the regular
+    // split layout uses — those move onto the text column only, so text
+    // still gets breathing room while the media panel touches the screen
+    // edges on three sides.
+    const splitContainerClass = isFullHeightMedia
+        ? `relative z-10 flex flex-col md:flex-row w-full ${splitItemsClass} md:h-full`
+        : `relative z-10 flex flex-col md:flex-row gap-8 md:gap-12 ${splitItemsClass} max-w-6xl mx-auto px-6 w-full`;
+    const textColClass = isFullHeightMedia
+        ? `w-full flex flex-col px-6 md:px-12 py-12 md:py-0 ${textDesktopOrderClass} md:h-full ${verticalJustifyClass}`
+        : `w-full flex flex-col ${textDesktopOrderClass}`;
+    const textInnerClass = isFullHeightMedia
+        ? `flex flex-col w-full max-w-xl ${mediaPosition === "left" ? "md:ml-auto" : ""} ${alignClass}`
+        : `flex flex-col ${alignClass}`;
+    const mediaColClass = isFullHeightMedia
+        ? `w-full self-stretch ${mediaMobileOrderClass}`
+        : `flex justify-center w-full ${mediaMobileOrderClass}`;
+    const mediaInnerEdge = isFullHeightMedia ? (mediaPosition === "left" ? "right" : "left") : "none";
 
     const getTextStyle = (fontKey: "greeting" | "name" | "title") => {
         const fieldTypography = typography[fontKey];
@@ -184,7 +223,7 @@ export default function HeroRenderer({ data, theme }: HeroRendererProps) {
                             </p>
                         </AnimatedText>
                     ) : (
-                        <MotionItem isAnimated={isAnimated} shouldAnimate={shouldAnimate} anim={anim}>
+                            <MotionItem isAnimated={isAnimated} shouldAnimate={shouldAnimate} fitWidth={false} anim={anim}>
                             <p
                                 className="text-sm md:text-base font-mono text-[var(--pb-foreground-60)] mb-4"
                                 style={getTextStyle("greeting")}
@@ -211,7 +250,7 @@ export default function HeroRenderer({ data, theme }: HeroRendererProps) {
                             </h1>
                         </AnimatedText>
                     ) : (
-                        <MotionItem isAnimated={isAnimated} shouldAnimate={shouldAnimate} anim={anim}>
+                            <MotionItem isAnimated={isAnimated} shouldAnimate={shouldAnimate} fitWidth={false} anim={anim}>
                             <h1
                                 className="text-4xl md:text-6xl lg:text-7xl font-bold text-[var(--pb-foreground)] mb-4"
                                 style={getTextStyle("name")}
@@ -238,12 +277,9 @@ export default function HeroRenderer({ data, theme }: HeroRendererProps) {
                             </p>
                         </AnimatedText>
                     ) : (
-                        <MotionItem isAnimated={isAnimated} shouldAnimate={shouldAnimate} anim={anim}>
-                            <p
-                                className="text-lg md:text-xl text-[var(--pb-foreground-80)]"
-                                style={getTextStyle("title")}
-                            >
-                                {`${title}`}
+                        <MotionItem isAnimated={isAnimated} shouldAnimate={shouldAnimate} anim={anim} fitWidth={false}>
+                            <p className="text-lg md:text-xl text-[var(--pb-foreground-80)]" style={getTextStyle("title")}>
+                                {title}
                             </p>
                         </MotionItem>
                     )}
@@ -251,13 +287,13 @@ export default function HeroRenderer({ data, theme }: HeroRendererProps) {
             )}
 
             {ctaButtons && ctaButtons.length > 0 && (
-                <MotionItem key={`${animKey}-cta`} isAnimated={isAnimated} shouldAnimate={shouldAnimate} anim={anim}>
+                <MotionItem key={`${animKey}-cta`} isAnimated={isAnimated} shouldAnimate={shouldAnimate} fitWidth={false} anim={anim}>
                     <CTAButtons buttons={ctaButtons} className="mt-8" alignment={alignment} theme={theme} />
                 </MotionItem>
             )}
 
             {data.socialLinks && data.socialLinks.length > 0 && (
-                <MotionItem key={`${animKey}-social`} isAnimated={isAnimated} shouldAnimate={shouldAnimate} anim={anim} className="w-fit">
+                <MotionItem key={`${animKey}-social`} isAnimated={isAnimated} shouldAnimate={shouldAnimate} anim={anim} fitWidth={false} className="w-fit">
                     <SocialLinks
                         links={data.socialLinks}
                         alignment={alignment}
@@ -303,23 +339,31 @@ export default function HeroRenderer({ data, theme }: HeroRendererProps) {
 
             {/* Split Layout */}
             {layout === "split" && (
-                <div className="relative z-10 grid md:grid-cols-2 gap-12 items-center max-w-6xl mx-auto px-6 w-full">
-                    <MotionContainer
-                        key={animKey}
-                        isAnimated={isAnimated}
-                        shouldAnimate={shouldAnimate}
-                        anim={anim}
-                        parallax={anim.parallax}
-                        parallaxY={parallaxY}
-                        className={`flex flex-col ${alignClass} ${mediaPosition === "left" ? "md:order-2" : ""}`}
+                <div className={splitContainerClass}>
+                    <div
+                        className={textColClass}
+                        style={{ flexBasis: `${splitRatio}%` }}
                     >
-                        <div key={animKey}>{textContent}</div>
-                    </MotionContainer>
+                        <MotionContainer
+                            key={animKey}
+                            isAnimated={isAnimated}
+                            shouldAnimate={shouldAnimate}
+                            anim={anim}
+                            parallax={anim.parallax}
+                            parallaxY={parallaxY}
+                            className={textInnerClass}
+                        >
+                            <div key={animKey}>{textContent}</div>
+                        </MotionContainer>
+                    </div>
 
                     <motion.div
                         key={`${animKey}-media`}
-                        className={`flex justify-center ${mediaPosition === "left" ? "md:order-1" : ""}`}
-                        style={anim.parallax ? { y: parallaxYSlow } : undefined}
+                        className={mediaColClass}
+                        style={{
+                            flexBasis: `${100 - splitRatio}%`,
+                            ...(anim.parallax ? { y: parallaxYSlow } : {}),
+                        }}
                         initial={isAnimated ? { opacity: 0, x: mediaPosition === "left" ? -40 : 40 } : false}
                         animate={
                             shouldAnimate
@@ -334,7 +378,13 @@ export default function HeroRenderer({ data, theme }: HeroRendererProps) {
                             ease: resolveEasing(anim.easing ?? "easeOut") as any,
                         }}
                     >
-                        <MediaDisplay media={media} size="lg" />
+                        <MediaDisplay
+                            media={media}
+                            size="lg"
+                            fullHeight={isFullHeightMedia}
+                            innerEdge={mediaInnerEdge}
+                            edgeRadius={media?.edgeRadius ?? 0}
+                        />
                     </motion.div>
                 </div>
             )}

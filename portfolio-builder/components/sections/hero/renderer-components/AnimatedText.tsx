@@ -1,5 +1,3 @@
-// portfolio-builder/components/sections/hero/renderer-components/AnimatedText.tsx
-
 "use client";
 
 import { HeroAnimations } from "@/portfolio-builder/types/hero";
@@ -35,11 +33,12 @@ export function AnimatedText({
         };
 
         return (
-            <div className={`overflow-hidden ${className ?? ""}`}>
+            <div className={`overflow-hidden w-full ${className ?? ""}`}>
                 <motion.div
                     variants={{ hidden: variants.hidden, visible: visibleWithDelay }}
                     initial="hidden"
                     animate={shouldAnimate ? "visible" : "hidden"}
+                    className="w-full"
                 >
                     {children}
                 </motion.div>
@@ -49,11 +48,12 @@ export function AnimatedText({
 
     // Legacy fallback — hardcoded clip-mask reveal (used when no anim config available)
     return (
-        <div className={`overflow-hidden ${className ?? ""}`}>
+        <div className={`overflow-hidden w-full ${className ?? ""}`}>
             <motion.div
                 initial={{ y: "110%" }}
                 animate={shouldAnimate ? { y: "0%" } : { y: "110%" }}
                 transition={{ duration: 0.7, ease: [0.0, 0.0, 0.2, 1], delay }}
+                className="w-full"
             >
                 {children}
             </motion.div>

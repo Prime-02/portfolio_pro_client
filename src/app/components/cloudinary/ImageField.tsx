@@ -1,6 +1,6 @@
 // ImageField.tsx — media upload field (images, videos, lottie)
 // Additions vs original:
-//   • Image cropping via react-easy-crop (free, 1:1, 4:3)
+//   • Image cropping via react-easy-crop (free, 1:1, 4:3, 9:16, full)
 //   • Image compression via browser-image-compression before upload
 //   • Video max-file-size enforcement with clear error messaging
 
@@ -16,13 +16,14 @@ import { useCloudinaryCore } from "@/lib/stores/cloudinary/useCloudinaryCore";
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 type MediaType = "image" | "video" | "lottie";
-type CropAspect = "free" | "1:1" | "4:3" | "9:16";
+type CropAspect = "free" | "1:1" | "4:3" | "9:16" | "full";
 
 const ASPECT_MAP: Record<CropAspect, number | undefined> = {
     free: undefined,
     "1:1": 1,
     "4:3": 4 / 3,
     "9:16": 9 / 16,
+    full: undefined, // Will be calculated dynamically
 };
 
 interface ImageFieldProps {
@@ -135,11 +136,12 @@ function getVideoDuration(file: File): Promise<number | null> {
 interface CropModalProps {
     imageSrc: string;
     mimeType: string;
+    originalAspect: number; // Original image aspect ratio
     onConfirm: (croppedBlob: Blob) => void;
     onCancel: () => void;
 }
 
-function CropModal({ imageSrc, mimeType, onConfirm, onCancel }: CropModalProps) {
+function CropModal({ imageSrc, mimeType, originalAspect, onConfirm, onCancel }: CropModalProps) {
     const [crop, setCrop] = useState<Point>({ x: 0, y: 0 });
     const [zoom, setZoom] = useState(1);
     const [aspect, setAspect] = useState<CropAspect>("free");
@@ -154,6 +156,9 @@ function CropModal({ imageSrc, mimeType, onConfirm, onCancel }: CropModalProps) 
         const blob = await cropImageFile(imageSrc, croppedAreaPixels, mimeType);
         onConfirm(blob);
     }, [croppedAreaPixels, imageSrc, mimeType, onConfirm]);
+
+    // Calculate the current aspect ratio based on selection
+    const currentAspect = aspect === "full" ? originalAspect : ASPECT_MAP[aspect];
 
     return (
         <div
@@ -175,7 +180,7 @@ function CropModal({ imageSrc, mimeType, onConfirm, onCancel }: CropModalProps) 
                     image={imageSrc}
                     crop={crop}
                     zoom={zoom}
-                    aspect={ASPECT_MAP[aspect]}
+                    aspect={currentAspect}
                     onCropChange={setCrop}
                     onZoomChange={setZoom}
                     onCropComplete={handleCropComplete}
@@ -188,8 +193,8 @@ function CropModal({ imageSrc, mimeType, onConfirm, onCancel }: CropModalProps) 
             {/* Controls */}
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px", width: "min(600px, 92vw)" }}>
                 {/* Aspect ratio toggle */}
-                <div style={{ display: "flex", gap: "8px" }}>
-                    {(["free", "1:1", "4:3", "9:16"] as CropAspect[]).map((a) => (
+                <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", justifyContent: "center" }}>
+                    {(["free", "1:1", "4:3", "9:16", "full"] as CropAspect[]).map((a) => (
                         <button
                             key={a}
                             onClick={() => setAspect(a)}
@@ -205,7 +210,7 @@ function CropModal({ imageSrc, mimeType, onConfirm, onCancel }: CropModalProps) 
                                 transition: "all 0.15s",
                             }}
                         >
-                            {a === "free" ? "Free" : a}
+                            {a === "free" ? "Free" : a === "full" ? "Original" : a}
                         </button>
                     ))}
                 </div>
@@ -276,7 +281,12 @@ export function ImageField({
     const { uploadFile, deleteAsset, isLoading, error: cloudinaryError } = useCloudinaryCore();
     const [dragging, setDragging] = useState(false);
     const [localError, setLocalError] = useState<string | null>(null);
-    const [cropState, setCropState] = useState<{ src: string; mimeType: string; originalName: string } | null>(null);
+    const [cropState, setCropState] = useState<{
+        src: string;
+        mimeType: string;
+        originalName: string;
+        originalAspect: number;
+    } | null>(null);
     const [compressing, setCompressing] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
 
@@ -337,10 +347,22 @@ export function ImageField({
 
             const resourceType = detectResourceType(file);
 
-            // ── Image → open crop modal ──────────────────────────────────────
+            // ── Image → get original aspect ratio then open crop modal ──────
             if (resourceType === "image") {
                 const src = URL.createObjectURL(file);
-                setCropState({ src, mimeType: file.type || "image/jpeg", originalName: file.name });
+
+                // Get original image dimensions to calculate aspect ratio
+                const img = new window.Image();
+                img.onload = () => {
+                    const originalAspect = img.width / img.height;
+                    setCropState({
+                        src,
+                        mimeType: file.type || "image/jpeg",
+                        originalName: file.name,
+                        originalAspect
+                    });
+                };
+                img.src = src;
                 return;
             }
 
@@ -440,6 +462,7 @@ export function ImageField({
         <CropModal
             imageSrc={cropState.src}
             mimeType={cropState.mimeType}
+            originalAspect={cropState.originalAspect}
             onConfirm={handleCropConfirm}
             onCancel={() => { URL.revokeObjectURL(cropState.src); setCropState(null); }}
         />

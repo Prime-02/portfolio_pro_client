@@ -1,8 +1,6 @@
 // portfolio-builder/components/sections/hero/editor-components/index.ts
 
 export { default as ContentTab } from "./ContentTab";
-export { default as LayoutTab } from "./LayoutTab";
-export { default as MediaTab } from "./MediaTab";
 export { default as CTATab } from "./CTATab";
 export { default as EffectsTab } from "./EffectsTab";
 export { default as AnimationsTab } from "./AnimationsTab";

@@ -26,6 +26,7 @@ import { BlogsSectionController } from "./sections/blogs";
 import { TestimonialsData } from "../types/testimonials";
 import { TestimonialsSectionController } from "./sections/testimonials";
 import { LayoutController } from "./sections/layout";
+import { toast } from "@/src/context/Toastify";
 
 interface PortfolioMainProps {
   portfolioId: string;
@@ -105,6 +106,16 @@ export default function PortfolioMain({ portfolioId, viewOnly }: PortfolioMainPr
   const { currentPortfolio, error, fetchPortfolioById, updatePortfolio, updateSectionsLocally } =
     usePortfolioStore();
   const { profileContext } = useTheme();
+
+  useEffect(() => {
+    if (error) {
+      toast.error(`${error} - Click to reload portfolio`, {
+        title: "Something went wrong",
+        duration: Infinity,
+        onClose: () => fetchPortfolioById(portfolioId)
+      })
+    }
+  }, [error])
 
   useEffect(() => {
     fetchPortfolioById(portfolioId);
@@ -229,23 +240,6 @@ export default function PortfolioMain({ portfolioId, viewOnly }: PortfolioMainPr
       <div className="flex items-center flex-col justify-center min-h-screen bg-[var(--pb-background)]">
         <PortfolioProLogo scale={0.7} />
         <p className="text-[var(--pb-text-muted)]">Loading portfolio...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-[var(--pb-background)]">
-        <div className="text-center">
-          <p className="text-[var(--pb-error)] mb-4">Failed to load portfolio</p>
-          <p className="text-[var(--pb-text-muted)] text-sm">{error}</p>
-          <button
-            onClick={() => fetchPortfolioById(portfolioId)}
-            className="px-6 py-3 mt-2 bg-[var(--pb-foreground)] text-[var(--pb-background)] rounded-lg font-medium text-sm hover:opacity-90 transition-opacity"
-          >
-            Retry
-          </button>
-        </div>
       </div>
     );
   }

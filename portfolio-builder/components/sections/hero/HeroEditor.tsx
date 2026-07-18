@@ -8,14 +8,13 @@ import { HeroData, HeroCTA, getEmptyHeroData, getDefaultAnimations } from "@/por
 import type { HeroAnimations, SocialLink } from "@/portfolio-builder/types/hero";
 import {
     ContentTab,
-    LayoutTab,
-    MediaTab,
     CTATab,
     EditorTabs,
     EditorActions,
     AnimationsTab,
     EffectsTab,
 } from "./editor-components";
+import LayoutMediaTab from "./editor-components/LayoutMediaTab";
 import HeroRenderer from "./HeroRenderer";
 import SocialLinksTab from "./editor-components/SocialLinksTab";
 import { ResolvedTheme } from "@/portfolio-builder/hooks/usePortfolioTheme";
@@ -71,7 +70,7 @@ export default function HeroEditor({ initialData, onSave, onCancel, theme, setFu
 
     const [data, setData] = useState<HeroData>(() => structuredClone(resolvedInitialData));
     const [activeTab, setActiveTab] = useState<
-        "content" | "layout" | "media" | "background" | "cta" | "effects" | "animations" | "social"
+        "content" | "layout" | "background" | "cta" | "effects" | "animations" | "social"
     >("content");
     const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
 
@@ -171,13 +170,6 @@ export default function HeroEditor({ initialData, onSave, onCancel, theme, setFu
     // ── Field updaters ────────────────────────────────────────────────────
     const updateField = <K extends keyof HeroData>(key: K, value: HeroData[K]) => {
         setData((prev) => ({ ...prev, [key]: value }));
-    };
-
-    const updateMedia = (value: Partial<HeroData["media"]>) => {
-        setData((prev) => ({
-            ...prev,
-            media: { ...prev.media, type: prev.media?.type || "none", ...value },
-        }));
     };
 
     const updateBackground = (value: Partial<HeroData["background"]>) => {
@@ -306,8 +298,7 @@ export default function HeroEditor({ initialData, onSave, onCancel, theme, setFu
     const renderTabContent = () => {
         switch (activeTab) {
             case "content": return <ContentTab data={data} onChange={updateField} />;
-            case "layout": return <LayoutTab data={data} onChange={updateField} />;
-            case "media": return <MediaTab data={data} onUpdate={updateMedia} />;
+            case "layout": return <LayoutMediaTab data={data} onChange={updateField} />;
             case "background": return <BackgroundTab data={data} onUpdate={updateBackground} />;
             case "cta": return <CTATab data={data} onAdd={addCTA} onUpdate={updateCTA} onRemove={removeCTA} onReorder={reorderCTA} />;
             case "social": return <SocialLinksTab data={data} onUpdate={updateSocialLinks} />;

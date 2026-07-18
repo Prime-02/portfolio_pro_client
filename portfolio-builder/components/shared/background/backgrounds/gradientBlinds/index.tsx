@@ -38,7 +38,7 @@ registerBackground({
         gradientBlindsSpotlightOpacity: 1,
         gradientBlindsSpotlightRadius: 0.5,
         gradientBlindsSpotlightSoftness: 1,
-        overlayColor: "#0a0a0a",
+        overlayColor: "#000000",
         overlayOpacity: 0,
     },
     renderer: ({ background }) => (

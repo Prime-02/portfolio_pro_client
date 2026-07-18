@@ -72,7 +72,7 @@ registerBackground({
     defaults: {
         type: "hyperspeed",
         hyperspeedPreset: "one",
-        overlayColor: "#0a0a0a",
+        overlayColor: "#000000",
         overlayOpacity: 0,
     },
     renderer: ({ background }) => {

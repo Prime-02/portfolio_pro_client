@@ -18,11 +18,11 @@ registerBackground({
         silkRotation: 0,
         silkScale: 1,
         silkSpeed: 5,
-        overlayColor: "#0a0a0a",
+        overlayColor: "#000000",
         overlayOpacity: 0,
     },
     renderer: ({ background }) => (
-        <div style={ { position: "absolute", inset: 0, width: "100%", height: "100%" } }>
+        <div style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}>
             <Silk
                 color={background.silkColor || "#7B7481"}
                 noiseIntensity={background.silkNoiseIntensity ?? 1.5}

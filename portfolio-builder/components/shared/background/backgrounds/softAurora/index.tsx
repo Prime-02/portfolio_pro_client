@@ -36,7 +36,7 @@ registerBackground({
         softAuroraOctaveDecay: 0.1,
         softAuroraScale: 1.5,
         softAuroraSpeed: 0.6,
-        overlayColor: "#0a0a0a",
+        overlayColor: "#000000",
         overlayOpacity: 0,
     },
     renderer: ({ background }) => (

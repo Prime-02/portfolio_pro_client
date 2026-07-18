@@ -62,6 +62,12 @@ import type { SectionBackground } from "../types/sectionBackground";
 interface SectionBackgroundProps {
   background?: SectionBackground;
   className?: string;
+  /**
+   * Optional inset (in px) matching the parent section's vertical padding.
+   * When provided, the background is pulled in from the top/bottom edges
+   * of the section instead of bleeding full-bleed behind the padding.
+   */
+  insetPadding?: { top?: number; bottom?: number };
 }
 
 /**
@@ -69,7 +75,11 @@ interface SectionBackgroundProps {
  * Uses the background registry to resolve the correct renderer and styles
  * for any registered background type — no hardcoded types.
  */
-export function SectionBackgroundRenderer({ background, className = "" }: SectionBackgroundProps) {
+export function SectionBackgroundRenderer({
+  background,
+  className = "",
+  insetPadding,
+}: SectionBackgroundProps) {
   if (!background || background.type === "none") {
     return null;
   }
@@ -88,8 +98,23 @@ export function SectionBackgroundRenderer({ background, className = "" }: Sectio
   const overlayOpacity = background.overlayOpacity ?? 0;
   const showOverlay = module.supportsOverlay && overlayOpacity > 0;
 
+  // `inset-0` (top/bottom/left/right: 0) resolves against the padding box
+  // of the nearest positioned ancestor, so it ignores the section's
+  // padding by default. When insetPadding is passed, we override top/bottom
+  // explicitly so the background respects the section's vertical padding
+  // instead of bleeding behind it. Left/right stay flush (0) intentionally.
+  const insetStyle: React.CSSProperties = {
+    top: insetPadding?.top != null ? `${insetPadding.top}px` : 0,
+    bottom: insetPadding?.bottom != null ? `${insetPadding.bottom}px` : 0,
+    left: 0,
+    right: 0,
+  };
+
   return (
-    <div className={`absolute inset-0 w-full h-full z-0 ${className}`} style={cssStyle}>
+    <div
+      className={`absolute w-full h-full z-0 ${className}`}
+      style={{ ...insetStyle, ...cssStyle }}
+    >
       {module.renderer && (
         <div className="absolute inset-0 w-full h-full">
           <module.renderer background={background} />

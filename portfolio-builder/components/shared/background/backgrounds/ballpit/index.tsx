@@ -30,7 +30,7 @@ registerBackground({
         ballpitColor1: "#5227FF",
         ballpitColor2: "#7cff67",
         ballpitColor3: "#ff6b6b",
-        overlayColor: "#0a0a0a",
+        overlayColor: "#000000",
         overlayOpacity: 0,
     },
     renderer: ({ background }) => (

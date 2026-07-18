@@ -41,7 +41,10 @@ export default function SocialLinks({
 
     if (validLinks.length === 0) return null;
 
-    const alignClass = alignment === "left" ? "justify-start" : "justify-center";
+    const alignClass =
+        alignment === "right" ? "justify-end" :
+            alignment === "left" ? "justify-start" :
+                "justify-center";
 
     const containerVariants = {
         hidden: { opacity: isAnimated ? 0 : 1 },

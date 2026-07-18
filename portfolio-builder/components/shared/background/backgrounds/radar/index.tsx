@@ -38,7 +38,7 @@ registerBackground({
         radarSweepLobes: 1,
         radarSweepSpeed: 0.1,
         radarSweepWidth: 20,
-        overlayColor: "#0a0a0a",
+        overlayColor: "#000000",
         overlayOpacity: 0,
     },
     renderer: ({ background }) => (

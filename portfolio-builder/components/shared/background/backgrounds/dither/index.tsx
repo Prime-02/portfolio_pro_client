@@ -26,7 +26,7 @@ registerBackground({
         ditherDisableAnimation: false,
         ditherEnableMouseInteraction: true,
         ditherMouseRadius: 1,
-        overlayColor: "#0a0a0a",
+        overlayColor: "#000000",
         overlayOpacity: 0,
     },
     renderer: ({ background }) => {

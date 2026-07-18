@@ -46,7 +46,7 @@ registerBackground({
         colorBendsIterations: 1,
         colorBendsIntensity: 1.5,
         colorBendsBandWidth: 6,
-        overlayColor: "#0a0a0a",
+        overlayColor: "#000000",
         overlayOpacity: 0,
     },
     renderer: ({ background }) => (

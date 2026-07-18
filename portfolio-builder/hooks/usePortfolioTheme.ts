@@ -82,6 +82,14 @@ export function getURLThemeOverride(): "light" | "dark" | null {
 // Resolution Logic
 // ---------------------------------------------------------------------------
 
+function isValidColors(c: unknown): c is ThemeColors {
+  return (
+    !!c &&
+    typeof (c as ThemeColors).background === "string" &&
+    typeof (c as ThemeColors).foreground === "string"
+  );
+}
+
 /**
  * Resolves a PortfolioThemeData object into a flat ResolvedTheme,
  * respecting the themeVariant and system preference.
@@ -90,8 +98,9 @@ export function getURLThemeOverride(): "light" | "dark" | null {
  * stored themeVariant and the system preference — this is how the
  * ?theme= URL param forces a deterministic render for screenshot tools.
  *
- * `fallbackTheme` provides default colors when no portfolio theme data exists.
- * This should be the current app theme to maintain visual consistency.
+ * `fallbackTheme` provides default colors when no portfolio theme data exists,
+ * or when the theme data present is malformed/incomplete (e.g. older saved
+ * portfolios missing `lightTheme`/`darkTheme`).
  *
  * Exported so other modules (e.g. ThemeTab) can inject CSS directly.
  */
@@ -115,20 +124,20 @@ export function resolveTheme(
     if (override === "light") {
       return {
         background: "#ffffff",
-        foreground: "#0a0a0a",
+        foreground: "#000000",
         accent: themePresets[0].accent,
         isDark: false,
       };
     }
     return {
-      background: "#0a0a0a",
+      background: "#000000",
       foreground: "#ededed",
       accent: themePresets[0].accent,
       isDark: true,
     };
   }
 
-  let resolved: ThemeColors;
+  let resolved: ThemeColors | undefined;
   let isDark: boolean;
 
   const effectiveVariant = override ?? data.themeVariant;
@@ -153,10 +162,33 @@ export function resolveTheme(
     }
   }
 
+  // `data` can exist while `lightTheme`/`darkTheme` is missing or malformed
+  // (e.g. a portfolio saved before these fields existed, or a partial
+  // layout.theme object). Fall back instead of crashing on
+  // `resolved.background`.
+  if (!isValidColors(resolved)) {
+    if (fallbackTheme) {
+      return fallbackTheme;
+    }
+    return isDark
+      ? {
+          background: "#000000",
+          foreground: "#ededed",
+          accent: data.accent ?? themePresets[0].accent,
+          isDark: true,
+        }
+      : {
+          background: "#ffffff",
+          foreground: "#000000",
+          accent: data.accent ?? themePresets[0].accent,
+          isDark: false,
+        };
+  }
+
   return {
     background: resolved.background,
     foreground: resolved.foreground,
-    accent: data.accent,
+    accent: data.accent ?? themePresets[0].accent,
     isDark,
   };
 }

@@ -24,7 +24,7 @@ registerBackground({
         auroraColor3: "#5227FF",
         auroraAmplitude: 1.6,
         auroraBlend: 1,
-        overlayColor: "#0a0a0a",
+        overlayColor: "#000000",
         overlayOpacity: 0,
     },
     renderer: ({ background }) => (

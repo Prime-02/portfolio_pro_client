@@ -30,11 +30,11 @@ registerBackground({
         galaxyStarSpeed: 0.5,
         galaxyTransparent: true,
         galaxyTwinkleIntensity: 0.3,
-        overlayColor: "#0a0a0a",
+        overlayColor: "#000000",
         overlayOpacity: 0,
     },
     renderer: ({ background }) => (
-        <div style={ { position: "absolute", inset: 0, width: "100%", height: "100%" } }>
+        <div style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}>
             <Galaxy
                 density={background.galaxyDensity ?? 1}
                 glowIntensity={background.galaxyGlowIntensity ?? 0.3}

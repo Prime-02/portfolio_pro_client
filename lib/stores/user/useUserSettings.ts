@@ -53,7 +53,7 @@ export interface UserProfileRequest {
 }
 
 export interface UserUpdateRequest extends UserResponse {
-  updatedAt?: string | null
+  updatedAt?: string | null;
 }
 
 export interface UpdateUserInfoPayload {
@@ -133,7 +133,7 @@ const defaultLightTheme: Theme = {
   foreground: "#171717",
 };
 const defaultDarkTheme: Theme = {
-  background: "#0a0a0a",
+  background: "#000000",
   foreground: "#ededed",
 };
 const defaultAccent: Accent = { color: themePresets[0].accent };

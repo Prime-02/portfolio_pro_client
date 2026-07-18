@@ -30,7 +30,7 @@ registerBackground({
         prismaticBurstIntensity: 2,
         prismaticBurstRayCount: 0,
         prismaticBurstSpeed: 0.5,
-        overlayColor: "#0a0a0a",
+        overlayColor: "#000000",
         overlayOpacity: 0,
     },
     renderer: ({ background }) => (

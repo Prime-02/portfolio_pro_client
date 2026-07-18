@@ -1,6 +1,8 @@
+// Updated ColorPicker.tsx - Add a PBColorPicker wrapper at the bottom
+
 import React, { useState, useEffect, useRef, useCallback } from "react";
 
-interface ColorPickerProps {
+export interface ColorPickerProps {
   value?: string;
   onChange?: (color: string) => void;
   onChangeComplete?: (color: string) => void;
@@ -75,8 +77,7 @@ const hsvToHex = (h: number, s: number, v: number): string => {
 // Get pure hue color (max saturation and value)
 const getPureHueColor = (hue: number): string => hsvToHex(hue, 1, 1);
 
-// Apply a new color to all internal state atomically. Used by preset click,
-// hex input, and external value sync so the logic lives in one place.
+// Apply a new color to all internal state atomically
 const applyColorToHsv = (hex: string) => {
   const rgb = hexToRgb(hex);
   return rgbToHsv(rgb.r, rgb.g, rgb.b);
@@ -114,10 +115,6 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
   const brightnessRef = useRef(brightness);
   const hueRef = useRef(hue);
 
-  // Tracks the most recent color this component emitted via onChange so we
-  // can distinguish our own echoed value from a genuine external change.
-  // CRITICAL: must be set synchronously before calling onChange, not after,
-  // so the useEffect sync guard sees it on the very next render.
   const lastEmittedRef = useRef(value);
 
   useEffect(() => { saturationRef.current = saturation; }, [saturation]);
@@ -130,19 +127,14 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
     lg: "w-12 h-12",
   };
 
-  // Sync external value changes into internal HSV state.
-  // Skipped while dragging (onChange round-trips back here on every mousemove)
-  // and when the incoming value is just an echo of what we last emitted.
+  // Sync external value changes
   useEffect(() => {
     if (isDragging) return;
     if (value === currentColor) return;
     if (value === lastEmittedRef.current) {
-      // Our own edit echoed back unchanged — reconcile currentColor only,
-      // no HSV recompute (hex->HSV is lossy so it can perturb hue mid-drag).
       setCurrentColor(value);
       return;
     }
-    // Genuine external change (e.g. theme preset selected in parent).
     setCurrentColor(value);
     const hsv = applyColorToHsv(value);
     setHue(hsv.h);
@@ -164,8 +156,6 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Shared emit helper — always set lastEmittedRef BEFORE calling onChange
-  // so any synchronous re-render triggered by onChange sees the guard value.
   const emit = useCallback((color: string, complete = false) => {
     lastEmittedRef.current = color;
     onChange?.(color);
@@ -238,8 +228,6 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
     };
   }, [isDragging, dragType, updateSaturation, updateHue, onChangeComplete, currentColor]);
 
-  // Apply a fully-resolved color to all internal state and emit it.
-  // Used by preset swatches and hex input to avoid duplicating this logic.
   const applyColor = useCallback((hex: string, complete = false) => {
     const hsv = applyColorToHsv(hex);
     setCurrentColor(hex);
@@ -309,7 +297,6 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
               if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
                 applyColor(val);
               } else {
-                // Allow typing incomplete values without emitting
                 setCurrentColor(val);
               }
             }}
@@ -320,7 +307,7 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
                 onChangeComplete?.(currentColor);
               }
             }}
-            className="w-full px-3 py-2 border border-[var(--foreground)] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] mb-3"
+            className="w-full px-3 py-2 border border-[var(--foreground)] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] mb-3 bg-[var(--background)] text-[var(--foreground)]"
             placeholder="#000000"
           />
 
@@ -345,4 +332,5 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
   );
 };
 
-export default ColorPicker;
+
+export default ColorPicker

@@ -34,7 +34,7 @@ registerBackground({
         faultyTerminalScale: 1,
         faultyTerminalScanlineIntensity: 0.3,
         faultyTerminalTint: "#ffffff",
-        overlayColor: "#0a0a0a",
+        overlayColor: "#000000",
         overlayOpacity: 0,
     },
     renderer: ({ background }) => (

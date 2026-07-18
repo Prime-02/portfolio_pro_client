@@ -34,7 +34,7 @@ registerBackground({
         prismScale: 3.6,
         prismTimeScale: 0.5,
         prismTransparent: true,
-        overlayColor: "#0a0a0a",
+        overlayColor: "#000000",
         overlayOpacity: 0,
     },
     renderer: ({ background }) => (

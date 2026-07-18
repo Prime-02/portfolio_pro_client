@@ -32,7 +32,7 @@ registerBackground({
         pixelSnowPixelResolution: 200,
         pixelSnowSpeed: 1.25,
         pixelSnowVariant: "square",
-        overlayColor: "#0a0a0a",
+        overlayColor: "#000000",
         overlayOpacity: 0,
     },
     renderer: ({ background }) => (

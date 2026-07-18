@@ -2,12 +2,11 @@
 
 import { registerBackground } from "../../editor/BackgroundRegistry";
 
-
 registerBackground({
   type: "image",
   label: "Image",
   fields: [
-    { kind: "text", label: "Image URL", key: "imageUrl", defaultValue: ""},
+    { kind: "text", label: "Image URL", key: "imageUrl", defaultValue: "" },
     {
       kind: "dropdown",
       label: "Size",
@@ -19,8 +18,19 @@ registerBackground({
         { id: "auto", code: "Auto" },
       ],
     },
-    { kind: "text", label: "Position", key: "backgroundPosition", defaultValue: "center", placeholder: "center" },
-    { kind: "checkbox", label: "Repeat background", key: "backgroundRepeat", defaultValue: false },
+    {
+      kind: "text",
+      label: "Position",
+      key: "backgroundPosition",
+      defaultValue: "center",
+      placeholder: "center",
+    },
+    {
+      kind: "checkbox",
+      label: "Repeat background",
+      key: "backgroundRepeat",
+      defaultValue: false,
+    },
   ],
   defaults: {
     type: "image",
@@ -28,7 +38,7 @@ registerBackground({
     backgroundSize: "cover",
     backgroundPosition: "center",
     backgroundRepeat: false,
-    overlayColor: "#0a0a0a",
+    overlayColor: "#000000",
     overlayOpacity: 0,
   },
   getStyle: (bg) =>

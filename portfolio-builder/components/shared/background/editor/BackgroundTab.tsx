@@ -1,7 +1,7 @@
 // portfolio-builder/components/shared/background/editor/BackgroundTab.tsx
 
 import type { SectionBackground, SectionBackgroundType } from "../types/sectionBackground";
-import { PBDropdown, PBRangeInput } from "../../ui/inputs";
+import { PBColorPicker, PBDropdown, PBRangeInput, PBTextInput } from "../../ui/inputs";
 import {
   getAllBackgroundModules,
   getBackgroundModule,
@@ -227,21 +227,16 @@ function OverlayFields({
         Overlay
       </h4>
       <div>
-        <label className="block text-xs text-[var(--pb-text-muted)] mb-1">Overlay Color</label>
-        <div className="flex gap-2">
-          {/* Reuse your ColorPicker here */}
-          <input
-            type="color"
-            value={bg.overlayColor || "#0a0a0a"}
-            onChange={(e) => onUpdate({ overlayColor: e.target.value })}
-            className="w-10 h-10 rounded border border-[var(--pb-border)] cursor-pointer"
-          />
-          <input
-            type="text"
-            value={bg.overlayColor || "#0a0a0a"}
-            onChange={(e) => onUpdate({ overlayColor: e.target.value })}
-            className="flex-1 bg-[var(--pb-input-bg)] border border-[var(--pb-input-border)] rounded-lg px-3 py-2 text-sm"
-          />
+        <div className="flex gap-x-3">
+          <PBColorPicker
+            value={bg.overlayColor || "#000000"}
+            onChange={(e) => onUpdate({ overlayColor: e })}
+            className="w-10 h-10 rounded border border-[var(--pb-border)] cursor-pointer" />
+          <PBTextInput
+            value={bg.overlayColor || "#000000"}
+            onChange={(e) => onUpdate({ overlayColor: e })}
+            label="Overlay Color"
+            className="flex-1 bg-[var(--pb-input-bg)] border border-[var(--pb-input-border)] rounded-lg px-3 py-2 text-sm" />
         </div>
       </div>
       <div>

@@ -6,7 +6,7 @@ registerBackground({
     label: "Threads",
     fields: [
         { kind: "slider", label: "Amplitude", key: "threadsAmplitude", defaultValue: 1, min: 0, max: 3, step: 0.1 },
-        { kind: "color", label: "Color", key: "threadsColor", defaultValue: "#5226FF"},
+        { kind: "color", label: "Color", key: "threadsColor", defaultValue: "#5226FF" },
         { kind: "slider", label: "Distance", key: "threadsDistance", defaultValue: 0, min: 0, max: 2, step: 0.1 },
         { kind: "checkbox", label: "Enable Mouse Interaction", key: "threadsEnableMouseInteraction", defaultValue: true },
     ],
@@ -16,7 +16,7 @@ registerBackground({
         threadsColor: "#5226FF",
         threadsDistance: 0,
         threadsEnableMouseInteraction: true,
-        overlayColor: "#0a0a0a",
+        overlayColor: "#000000",
         overlayOpacity: 0,
     },
     renderer: ({ background }) => (

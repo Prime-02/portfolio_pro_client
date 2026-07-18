@@ -18,11 +18,11 @@ registerBackground({
         noisePatternScaleX: 1,
         noisePatternScaleY: 1,
         noisePatternSize: 250,
-        overlayColor: "#0a0a0a",
+        overlayColor: "#000000",
         overlayOpacity: 0,
     },
     renderer: ({ background }) => (
-        <div style={ { position: "absolute", inset: 0, width: "100%", height: "100%" } }>
+        <div style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}>
             <Noise
                 patternAlpha={background.noisePatternAlpha ?? 15}
                 patternRefreshInterval={background.noisePatternRefreshInterval ?? 2}

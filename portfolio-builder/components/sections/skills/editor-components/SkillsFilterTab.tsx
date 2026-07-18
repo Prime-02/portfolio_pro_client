@@ -11,6 +11,7 @@ import { ProfessionalSkill, useSkills } from "@/lib/stores/skills/useSkills";
 import Link from "next/link";
 import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 import { RefreshCcwDot } from "lucide-react";
+import { PBDropdown } from "@/portfolio-builder/components/shared/ui/inputs";
 
 interface SkillsFilterTabProps {
   data: SkillsData;
@@ -127,7 +128,7 @@ export default function SkillsFilterTab({ data, onUpdate }: SkillsFilterTabProps
       <div className={sectionClass}>
         <Toggle
           label="Match all filters (AND)"
-          description="When ON, skills must match ALL active filters. When OFF, skills matching ANY filter are shown."
+          description="When ON, skills matching ANY active filter are shown. When OFF, skills must match ALL active filters."
           checked={filters.merge_filters ?? true}
           onChange={(v) => onUpdate({ merge_filters: v })}
         />
@@ -142,7 +143,7 @@ export default function SkillsFilterTab({ data, onUpdate }: SkillsFilterTabProps
 
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Dropdown
+            <PBDropdown
               id="filter-category"
               label="Category"
               value={filters.category || ""}
@@ -150,8 +151,12 @@ export default function SkillsFilterTab({ data, onUpdate }: SkillsFilterTabProps
               options={categoryOptions}
               placeholder="All categories"
               clearable
+              type="datalist"
+              multiple
+              mergeSelections
+              delimiter="|"
             />
-            <Dropdown
+            <PBDropdown
               id="filter-subcategory"
               label="Subcategory"
               value={filters.subcategory || ""}
@@ -159,11 +164,15 @@ export default function SkillsFilterTab({ data, onUpdate }: SkillsFilterTabProps
               options={subcategoryOptions}
               placeholder="All subcategories"
               clearable
+              type="datalist"
+              multiple
+              mergeSelections
+              delimiter="|"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Dropdown
+            <PBDropdown
               id="filter-difficulty"
               label="Difficulty Level"
               value={filters.difficulty_level || ""}
@@ -171,6 +180,10 @@ export default function SkillsFilterTab({ data, onUpdate }: SkillsFilterTabProps
               options={difficultyOptions}
               placeholder="All difficulty levels"
               clearable
+              type="datalist"
+              multiple
+              mergeSelections
+              delimiter="|"
             />
             <div className="flex items-end">
               <Toggle
@@ -229,14 +242,14 @@ export default function SkillsFilterTab({ data, onUpdate }: SkillsFilterTabProps
                     type="button"
                     onClick={() => toggleSkillId(skill.id || "")}
                     className={`group flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all duration-200 border ${isSelected
-                        ? "border-[var(--pb-foreground-30)] bg-[var(--pb-foreground-10)] shadow-sm"
-                        : "border-[var(--pb-border)] bg-[var(--pb-surface)] hover:bg-[var(--pb-surface-hover)] hover:border-[var(--pb-border-hover)]"
+                      ? "border-[var(--pb-foreground-30)] bg-[var(--pb-foreground-10)] shadow-sm"
+                      : "border-[var(--pb-border)] bg-[var(--pb-surface)] hover:bg-[var(--pb-surface-hover)] hover:border-[var(--pb-border-hover)]"
                       }`}
                   >
                     <div
                       className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-all duration-200 ${isSelected
-                          ? "bg-[var(--pb-foreground)] border-[var(--pb-foreground)] scale-100"
-                          : "border-[var(--pb-border)] bg-[var(--pb-background-5)] group-hover:border-[var(--pb-border-hover)]"
+                        ? "bg-[var(--pb-foreground)] border-[var(--pb-foreground)] scale-100"
+                        : "border-[var(--pb-border)] bg-[var(--pb-background-5)] group-hover:border-[var(--pb-border-hover)]"
                         }`}
                     >
                       {isSelected && (
@@ -332,44 +345,56 @@ export default function SkillsFilterTab({ data, onUpdate }: SkillsFilterTabProps
               </span>
             )}
 
-            {filters.category && (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[var(--pb-surface-elevated)] border border-[var(--pb-border)] text-xs text-[var(--pb-text-secondary)] group">
-                Category: {filters.category}
+            {/* Split category by "|" and map to pills */}
+            {filters.category && filters.category.split("|").filter(Boolean).map((cat, idx) => (
+              <span key={`cat-${idx}`} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[var(--pb-surface-elevated)] border border-[var(--pb-border)] text-xs text-[var(--pb-text-secondary)] group">
+                Category: {cat}
                 <button
-                  onClick={() => onUpdate({ category: undefined })}
+                  onClick={() => {
+                    const categories = filters.category?.split("|").filter(c => c !== cat).join("|");
+                    onUpdate({ category: categories || undefined });
+                  }}
                   className="hover:text-[var(--pb-error)] transition-colors opacity-50 hover:opacity-100"
-                  aria-label={`Remove ${filters.category} filter`}
+                  aria-label={`Remove ${cat} category filter`}
                 >
                   ✕
                 </button>
               </span>
-            )}
+            ))}
 
-            {filters.subcategory && (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[var(--pb-surface-elevated)] border border-[var(--pb-border)] text-xs text-[var(--pb-text-secondary)] group">
-                Subcategory: {filters.subcategory}
+            {/* Split subcategory by "|" and map to pills */}
+            {filters.subcategory && filters.subcategory.split("|").filter(Boolean).map((subcat, idx) => (
+              <span key={`subcat-${idx}`} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[var(--pb-surface-elevated)] border border-[var(--pb-border)] text-xs text-[var(--pb-text-secondary)] capitalize group">
+                Subcategory: {subcat}
                 <button
-                  onClick={() => onUpdate({ subcategory: undefined })}
+                  onClick={() => {
+                    const subcategories = filters.subcategory?.split("|").filter(s => s !== subcat).join("|");
+                    onUpdate({ subcategory: subcategories || undefined });
+                  }}
                   className="hover:text-[var(--pb-error)] transition-colors opacity-50 hover:opacity-100"
-                  aria-label={`Remove ${filters.subcategory} filter`}
+                  aria-label={`Remove ${subcat} subcategory filter`}
                 >
                   ✕
                 </button>
               </span>
-            )}
+            ))}
 
-            {filters.difficulty_level && (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[var(--pb-surface-elevated)] border border-[var(--pb-border)] text-xs text-[var(--pb-text-secondary)] capitalize group">
-                Difficulty: {filters.difficulty_level}
+            {/* Split difficulty_level by "|" and map to pills */}
+            {filters.difficulty_level && filters.difficulty_level.split("|").filter(Boolean).map((level, idx) => (
+              <span key={`diff-${idx}`} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[var(--pb-surface-elevated)] border border-[var(--pb-border)] text-xs text-[var(--pb-text-secondary)] capitalize group">
+                Difficulty: {level}
                 <button
-                  onClick={() => onUpdate({ difficulty_level: undefined })}
+                  onClick={() => {
+                    const levels = filters.difficulty_level?.split("|").filter(l => l !== level).join("|");
+                    onUpdate({ difficulty_level: levels || undefined });
+                  }}
                   className="hover:text-[var(--pb-error)] transition-colors opacity-50 hover:opacity-100"
-                  aria-label={`Remove ${filters.difficulty_level} filter`}
+                  aria-label={`Remove ${level} difficulty filter`}
                 >
                   ✕
                 </button>
               </span>
-            )}
+            ))}
 
             {filters.is_major && (
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[var(--pb-surface-elevated)] border border-[var(--pb-border)] text-xs text-[var(--pb-text-secondary)] group">

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=League+Spartan:wght@100..900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=League+Spartan:wght@100..900&display=swap");
 @import "tailwindcss";
 /* src/styles.css */
 /* 
@@ -12,13 +12,13 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  --font-league: 'League Spartan', sans-serif;
+  --font-league: "League Spartan", sans-serif;
   /* Add custom font family */
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
+    --background: #000000;
     --foreground: #ededed;
   }
 }
@@ -123,7 +123,8 @@ h6 {
 
 .custom-shadow {
   --tw-shadow-color: var(--accent);
-  box-shadow: 0 4px 6px -1px var(--tw-shadow-color),
+  box-shadow:
+    0 4px 6px -1px var(--tw-shadow-color),
     0 2px 4px -2px var(--tw-shadow-color);
 }
 
@@ -139,7 +140,7 @@ h6 {
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background-color: var(--accent);
   border-radius: 0.25rem;
-  opacity: 0
+  opacity: 0;
 }
 
 /* Hide scrollbar */

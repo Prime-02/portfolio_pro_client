@@ -530,8 +530,8 @@ export default function BioRenderer({ data }: BioRendererProps) {
       className="relative overflow-hidden"
       style={paddingStyle}
     >
-      <SectionBackgroundRenderer background={background} />
-
+      <SectionBackgroundRenderer background={background} insetPadding={padding} />
+      
       <MotionContainer
         isAnimated={isAnimated}
         shouldAnimate={shouldAnimate}

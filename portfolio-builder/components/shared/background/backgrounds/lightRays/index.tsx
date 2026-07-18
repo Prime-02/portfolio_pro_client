@@ -32,11 +32,11 @@ registerBackground({
         lightRaysRaysOrigin: "top-center",
         lightRaysRaysSpeed: 1,
         lightRaysSaturation: 1,
-        overlayColor: "#0a0a0a",
+        overlayColor: "#000000",
         overlayOpacity: 0,
     },
     renderer: ({ background }) => (
-        <div style={ { position: "absolute", inset: 0, width: "100%", height: "100%" } }>
+        <div style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}>
             <LightRays
                 distortion={background.lightRaysDistortion ?? 0}
                 fadeDistance={background.lightRaysFadeDistance ?? 1}

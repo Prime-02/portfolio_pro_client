@@ -38,7 +38,7 @@ registerBackground({
         particlesParticleSpread: 10,
         particlesSizeRandomness: 1,
         particlesSpeed: 0.1,
-        overlayColor: "#0a0a0a",
+        overlayColor: "#000000",
         overlayOpacity: 0,
     },
     renderer: ({ background }) => (

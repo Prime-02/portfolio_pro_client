@@ -32,7 +32,7 @@ registerBackground({
         dotFieldGradientFrom: "rgba(168, 85, 247, 0.35)",
         dotFieldGradientTo: "rgba(180, 151, 207, 0.25)",
         dotFieldGlowColor: "#120F17",
-        overlayColor: "#0a0a0a",
+        overlayColor: "#000000",
         overlayOpacity: 0,
     },
     renderer: ({ background }) => (

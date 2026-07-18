@@ -30,7 +30,7 @@ registerBackground({
         wavesWaveSpeedY: 0.01,
         wavesXGap: 12,
         wavesYGap: 36,
-        overlayColor: "#0a0a0a",
+        overlayColor: "#000000",
         overlayOpacity: 0,
     },
     renderer: ({ background }) => (

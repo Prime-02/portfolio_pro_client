@@ -32,7 +32,7 @@ registerBackground({
         pixelBlastSpeed: 0.5,
         pixelBlastTransparent: false,
         pixelBlastVariant: "square",
-        overlayColor: "#0a0a0a",
+        overlayColor: "#000000",
         overlayOpacity: 0,
     },
     renderer: ({ background }) => (

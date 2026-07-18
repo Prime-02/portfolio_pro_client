@@ -36,7 +36,7 @@ registerBackground({
         liquidEtherMouseForce: 20,
         liquidEtherResolution: 0.5,
         liquidEtherViscous: 30,
-        overlayColor: "#0a0a0a",
+        overlayColor: "#000000",
         overlayOpacity: 0,
     },
     renderer: ({ background }) => (

@@ -30,11 +30,11 @@ registerBackground({
         sideRaysSpeed: 2.5,
         sideRaysSpread: 2,
         sideRaysTilt: 0,
-        overlayColor: "#0a0a0a",
+        overlayColor: "#000000",
         overlayOpacity: 0,
     },
     renderer: ({ background }) => (
-        <div style={ { position: "absolute", inset: 0, width: "100%", height: "100%" } }>
+        <div style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}>
             <SideRays
                 blend={background.sideRaysBlend ?? 0.75}
                 falloff={background.sideRaysFalloff ?? 1.6}

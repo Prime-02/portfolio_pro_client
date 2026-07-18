@@ -236,7 +236,7 @@ export function getEmptyFooterData(): FooterData {
     borderTop: true,
     paddingX: 24,
     paddingY: 40,
-    background: { type: "none", color: "#0a0a0a" },
+    background: { type: "none", color: "#000000" },
     showThemeToggle: false,
   };
 }

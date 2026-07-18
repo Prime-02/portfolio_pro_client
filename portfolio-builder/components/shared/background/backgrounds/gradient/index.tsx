@@ -29,11 +29,10 @@ registerBackground({
                 key={t}
                 type="button"
                 onClick={() => onUpdate({ gradientType: t })}
-                className={`flex-1 px-3 py-1.5 rounded-md text-xs border capitalize ${
-                  type === t
+                className={`flex-1 px-3 py-1.5 rounded-md text-xs border capitalize ${type === t
                     ? "border-[#ffffff] bg-[var(--pb-foreground-10)]"
                     : "border-[var(--pb-border)] text-[var(--pb-text-muted)]"
-                }`}
+                  }`}
               >
                 {t}
               </button>
@@ -43,7 +42,7 @@ registerBackground({
       },
     },
     { kind: "color", label: "From", key: "gradientFrom", defaultValue: "#1a1a2e" },
-    { kind: "color", label: "To", key: "gradientTo", defaultValue: "#0a0a0a" },
+    { kind: "color", label: "To", key: "gradientTo", defaultValue: "#000000" },
     {
       kind: "slider",
       label: "Angle",
@@ -66,13 +65,13 @@ registerBackground({
     type: "gradient",
     gradientType: "linear",
     gradientFrom: "#1a1a2e",
-    gradientTo: "#0a0a0a",
+    gradientTo: "#000000",
     gradientAngle: 135,
     radialPosition: "center",
   },
   getStyle: (bg) => {
     const from = bg.gradientFrom || "#1a1a2e";
-    const to = bg.gradientTo || "#0a0a0a";
+    const to = bg.gradientTo || "#000000";
     const angle = typeof bg.gradientAngle === "string" ? parseFloat(bg.gradientAngle) || 135 : (bg.gradientAngle ?? 135);
     const position = bg.radialPosition || "center";
     const gradientCSS =

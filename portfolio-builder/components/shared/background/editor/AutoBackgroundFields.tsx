@@ -2,10 +2,10 @@
 
 import type { SectionBackground } from "../types/sectionBackground";
 import type { BackgroundModule, FieldType } from "./BackgroundRegistry.tsx";
-import ColorPicker from "@/src/app/components/inputs/ColorPicker";
-import { PBCheckBox, PBDropdown, PBRangeInput } from "../../ui/inputs";
+import { PBCheckBox, PBColorPicker, PBDropdown, PBRangeInput, PBTextInput } from "../../ui/inputs";
 import CheckBox from "@/src/app/components/inputs/CheckBox";
 import { ImageField } from "@/src/app/components/cloudinary/ImageField";
+import { Textinput } from "@/src/app/components/inputs/Textinput";
 
 interface AutoBackgroundFieldsProps {
   module: BackgroundModule;
@@ -39,9 +39,13 @@ function FieldRenderer({
   switch (field.kind) {
     case "color":
       return (
-        <div>
-          <label className="block text-xs text-[var(--pb-text-muted)] mb-1">{field.label}</label>
-          <ColorPicker value={(bg as any)[field.key] ?? field.defaultValue} onChange={(v) => onUpdate({ [field.key]: v })} />
+        <div className="flex gap-x-3">
+          <PBColorPicker
+            value={(bg as any)[field.key] ?? field.defaultValue} onChange={(v) => onUpdate({ [field.key]: v })}
+          />
+          <Textinput
+            value={(bg as any)[field.key] ?? field.defaultValue} onChange={(v) => onUpdate({ [field.key]: v })} label={field.label}
+          />
         </div>
       );
     case "image":
@@ -71,11 +75,11 @@ function FieldRenderer({
     case "text":
       return (
         <div>
-          <label className="block text-sm font-medium text-[var(--pb-text-secondary)] mb-1.5">{field.label}</label>
-          <input
+          <PBTextInput
             type="text"
+            label={field.label}
             value={(bg as any)[field.key] ?? field.defaultValue}
-            onChange={(e) => onUpdate({ [field.key]: e.target.value })}
+            onChange={(e) => onUpdate({ [field.key]: e })}
             className="w-full bg-[var(--pb-input-bg)] border border-[var(--pb-input-border)] rounded-lg px-3 py-2 text-sm"
             placeholder={field.placeholder}
           />
@@ -138,7 +142,7 @@ export function ColorField({
   return (
     <div>
       <label className="block text-xs text-[var(--pb-text-muted)] mb-1">{label}</label>
-      <ColorPicker value={value} onChange={onChange} />
+      <PBColorPicker value={value} onChange={onChange} />
     </div>
   );
 }

@@ -16,11 +16,11 @@ registerBackground({
         orbHoverIntensity: 0.5,
         orbHue: 0,
         orbRotateOnHover: true,
-        overlayColor: "#0a0a0a",
+        overlayColor: "#000000",
         overlayOpacity: 0,
     },
     renderer: ({ background }) => (
-        <div style={ { position: "absolute", inset: 0, width: "100%", height: "100%" } }>
+        <div style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}>
             <Orb
                 forceHoverState={background.orbForceHoverState ?? false}
                 hoverIntensity={background.orbHoverIntensity ?? 0.5}

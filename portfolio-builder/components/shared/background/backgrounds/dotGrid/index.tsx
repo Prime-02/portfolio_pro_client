@@ -30,7 +30,7 @@ registerBackground({
         dotGridMaxSpeed: 5000,
         dotGridResistance: 750,
         dotGridReturnDuration: 1.5,
-        overlayColor: "#0a0a0a",
+        overlayColor: "#000000",
         overlayOpacity: 0,
     },
     renderer: ({ background }) => (

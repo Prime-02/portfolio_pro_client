@@ -9,31 +9,99 @@
 @layer base {
   :root {
     /* Core theme colors — injected dynamically by usePortfolioTheme */
-    /* --pb-background: #0a0a0a;
+    /* --pb-background: #000000;
     --pb-foreground: #ededed;
     --pb-accent: #737373; */
 
     /* ── Derived opacity variants for foreground ─────────────────────────── */
-    --pb-foreground-10: color-mix(in srgb, var(--pb-foreground) 10%, transparent);
-    --pb-foreground-15: color-mix(in srgb, var(--pb-foreground) 15%, transparent);
-    --pb-foreground-20: color-mix(in srgb, var(--pb-foreground) 20%, transparent);
-    --pb-foreground-30: color-mix(in srgb, var(--pb-foreground) 30%, transparent);
-    --pb-foreground-40: color-mix(in srgb, var(--pb-foreground) 40%, transparent);
-    --pb-foreground-50: color-mix(in srgb, var(--pb-foreground) 50%, transparent);
-    --pb-foreground-60: color-mix(in srgb, var(--pb-foreground) 60%, transparent);
-    --pb-foreground-70: color-mix(in srgb, var(--pb-foreground) 70%, transparent);
-    --pb-foreground-80: color-mix(in srgb, var(--pb-foreground) 80%, transparent);
-    --pb-foreground-90: color-mix(in srgb, var(--pb-foreground) 90%, transparent);
+    --pb-foreground-10: color-mix(
+      in srgb,
+      var(--pb-foreground) 10%,
+      transparent
+    );
+    --pb-foreground-15: color-mix(
+      in srgb,
+      var(--pb-foreground) 15%,
+      transparent
+    );
+    --pb-foreground-20: color-mix(
+      in srgb,
+      var(--pb-foreground) 20%,
+      transparent
+    );
+    --pb-foreground-30: color-mix(
+      in srgb,
+      var(--pb-foreground) 30%,
+      transparent
+    );
+    --pb-foreground-40: color-mix(
+      in srgb,
+      var(--pb-foreground) 40%,
+      transparent
+    );
+    --pb-foreground-50: color-mix(
+      in srgb,
+      var(--pb-foreground) 50%,
+      transparent
+    );
+    --pb-foreground-60: color-mix(
+      in srgb,
+      var(--pb-foreground) 60%,
+      transparent
+    );
+    --pb-foreground-70: color-mix(
+      in srgb,
+      var(--pb-foreground) 70%,
+      transparent
+    );
+    --pb-foreground-80: color-mix(
+      in srgb,
+      var(--pb-foreground) 80%,
+      transparent
+    );
+    --pb-foreground-90: color-mix(
+      in srgb,
+      var(--pb-foreground) 90%,
+      transparent
+    );
 
     /* ── Derived opacity variants for background ─────────────────────────── */
     --pb-background-5: color-mix(in srgb, var(--pb-background) 5%, transparent);
-    --pb-background-10: color-mix(in srgb, var(--pb-background) 10%, transparent);
-    --pb-background-20: color-mix(in srgb, var(--pb-background) 20%, transparent);
-    --pb-background-30: color-mix(in srgb, var(--pb-background) 30%, transparent);
-    --pb-background-50: color-mix(in srgb, var(--pb-background) 50%, transparent);
-    --pb-background-70: color-mix(in srgb, var(--pb-background) 70%, transparent);
-    --pb-background-80: color-mix(in srgb, var(--pb-background) 80%, transparent);
-    --pb-background-90: color-mix(in srgb, var(--pb-background) 90%, transparent);
+    --pb-background-10: color-mix(
+      in srgb,
+      var(--pb-background) 10%,
+      transparent
+    );
+    --pb-background-20: color-mix(
+      in srgb,
+      var(--pb-background) 20%,
+      transparent
+    );
+    --pb-background-30: color-mix(
+      in srgb,
+      var(--pb-background) 30%,
+      transparent
+    );
+    --pb-background-50: color-mix(
+      in srgb,
+      var(--pb-background) 50%,
+      transparent
+    );
+    --pb-background-70: color-mix(
+      in srgb,
+      var(--pb-background) 70%,
+      transparent
+    );
+    --pb-background-80: color-mix(
+      in srgb,
+      var(--pb-background) 80%,
+      transparent
+    );
+    --pb-background-90: color-mix(
+      in srgb,
+      var(--pb-background) 90%,
+      transparent
+    );
 
     /* ── Accent variants ─────────────────────────────────────────────────── */
     --pb-accent-10: color-mix(in srgb, var(--pb-accent) 10%, transparent);

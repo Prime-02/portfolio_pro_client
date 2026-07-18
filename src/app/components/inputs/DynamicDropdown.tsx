@@ -8,7 +8,7 @@ export interface DropdownOption {
   code: string;
 }
 
-interface DropdownProps {
+export interface DropdownProps {
   id?: string;
   options?: DropdownOption[];
   onSelect?: (value: string | string[]) => void;
@@ -36,6 +36,11 @@ interface DropdownProps {
   maxSelections?: number;
   selectAll?: boolean;
   style?: React.CSSProperties;
+  /** When true (and `multiple` is true), selected values are emitted to onSelect
+   * as a single string joined by `delimiter` instead of a string array. */
+  mergeSelections?: boolean;
+  /** Delimiter used to join/split selections when `mergeSelections` is true. Default "|". */
+  delimiter?: string;
 }
 
 const Dropdown: React.FC<DropdownProps> = ({
@@ -64,6 +69,8 @@ const Dropdown: React.FC<DropdownProps> = ({
   maxSelections,
   selectAll = false,
   style,
+  mergeSelections = false,
+  delimiter = "|",
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState<DropdownOption | null>(null);
@@ -168,10 +175,30 @@ const Dropdown: React.FC<DropdownProps> = ({
     }
   }, [dropdownId]);
 
+  // Emit selection to consumer, merging into a delimited string when mergeSelections is on
+  const emitSelection = useCallback((newSelected: DropdownOption[]) => {
+    const values = newSelected.map(opt => String(opt[valueKey]));
+    if (mergeSelections) {
+      onSelect?.(values.join(delimiter));
+    } else {
+      onSelect?.(values);
+    }
+  }, [onSelect, valueKey, mergeSelections, delimiter]);
+
   // Initialize selected option(s) based on value prop
   useEffect(() => {
     if (multiple) {
-      if (Array.isArray(value) && value.length > 0) {
+      if (mergeSelections && typeof value === "string") {
+        if (value.trim() !== "") {
+          const values = value.split(delimiter);
+          const foundOptions = values
+            .map(v => options.find(option => String(option[valueKey]) === String(v)))
+            .filter((option): option is DropdownOption => option !== undefined);
+          setSelectedOptions(foundOptions);
+        } else {
+          setSelectedOptions([]);
+        }
+      } else if (Array.isArray(value) && value.length > 0) {
         const foundOptions = value
           .map(v => options.find(option => String(option[valueKey]) === String(v)))
           .filter((option): option is DropdownOption => option !== undefined);
@@ -196,7 +223,7 @@ const Dropdown: React.FC<DropdownProps> = ({
         setSelectedOption(null);
       }
     }
-  }, [value, options, valueKey, displayKey, multiple]);
+  }, [value, options, valueKey, displayKey, multiple, mergeSelections, delimiter]);
 
   // Handle click outside
   useEffect(() => {
@@ -312,7 +339,7 @@ const Dropdown: React.FC<DropdownProps> = ({
         }
 
         Promise.resolve().then(() => {
-          onSelect?.(newSelected.map(opt => String(opt[valueKey])));
+          emitSelection(newSelected);
         });
 
         return newSelected;
@@ -328,7 +355,7 @@ const Dropdown: React.FC<DropdownProps> = ({
 
       handleClose();
     }
-  }, [onSelect, valueKey, multiple, maxSelections]);
+  }, [onSelect, valueKey, multiple, maxSelections, emitSelection]);
 
   const handleSelectAll = useCallback(() => {
     if (!multiple) return;
@@ -363,9 +390,9 @@ const Dropdown: React.FC<DropdownProps> = ({
     setSelectedOptions(newSelected);
 
     Promise.resolve().then(() => {
-      onSelect?.(newSelected.map(opt => String(opt[valueKey])));
+      emitSelection(newSelected);
     });
-  }, [multiple, filteredOptions, selectedOptions, maxSelections, onSelect, valueKey]);
+  }, [multiple, filteredOptions, selectedOptions, maxSelections, emitSelection]);
 
   const handleClose = useCallback(() => {
     setIsOpen(false);
@@ -378,7 +405,7 @@ const Dropdown: React.FC<DropdownProps> = ({
     if (multiple) {
       setSelectedOptions([]);
       Promise.resolve().then(() => {
-        onSelect?.([]);
+        emitSelection([]);
       });
     } else {
       setSelectedOption(null);
@@ -396,7 +423,7 @@ const Dropdown: React.FC<DropdownProps> = ({
     );
     setSelectedOptions(newSelected);
     Promise.resolve().then(() => {
-      onSelect?.(newSelected.map(opt => String(opt[valueKey])));
+      emitSelection(newSelected);
     });
   };
 

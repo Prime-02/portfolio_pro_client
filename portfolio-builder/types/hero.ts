@@ -411,7 +411,7 @@ export function getEmptyHeroData(): HeroData {
     title: "",
     background: {
       type: "solid",
-      color: "#0a0a0a",
+      color: "#000000",
     },
     effects: {
       typewriter: false,
@@ -450,7 +450,7 @@ export function getDefaultHeroData(userProfile?: {
       : { type: "none" },
     background: {
       type: "solid",
-      color: "#0a0a0a",
+      color: "#000000",
     },
     effects: {
       typewriter: false,

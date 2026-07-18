@@ -23,7 +23,7 @@ export interface ThemeProps {
 // Fallbacks, mirrored from useUserSettings.ts, used only when a saved theme
 // record has a null/empty field.
 const fallbackLight: Theme = { background: "#ffffff", foreground: "#171717" };
-const fallbackDark: Theme = { background: "#0a0a0a", foreground: "#ededed" };
+const fallbackDark: Theme = { background: "#000000", foreground: "#ededed" };
 
 const Pro = () => {
   const {
@@ -432,7 +432,7 @@ const Pro = () => {
                   />
                   <div
                     className="w-6 h-6 rounded-full border border-white/10"
-                    style={{ backgroundColor: theme.secondary_theme_dark || "#0a0a0a" }}
+                    style={{ backgroundColor: theme.secondary_theme_dark || "#000000" }}
                     title="Dark text"
                   />
                 </div>

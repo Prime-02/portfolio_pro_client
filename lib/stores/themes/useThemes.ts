@@ -63,7 +63,7 @@ const defaultTheme: CreateUserTheme = {
   secondary_theme: "#ffffff",
   accent: "#737373",
   primary_theme_dark: "#ededed",
-  secondary_theme_dark: "#0a0a0a",
+  secondary_theme_dark: "#000000",
 };
 
 export const useUserThemeStore = create<UserThemeStore>((set, get) => ({

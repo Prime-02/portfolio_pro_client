@@ -38,7 +38,7 @@ registerBackground({
         gridScanScanOpacity: 0.4,
         gridScanScanSoftness: 2,
         gridScanSensitivity: 0.55,
-        overlayColor: "#0a0a0a",
+        overlayColor: "#000000",
         overlayOpacity: 0,
     },
     renderer: ({ background }) => (

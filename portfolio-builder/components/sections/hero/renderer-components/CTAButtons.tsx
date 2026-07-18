@@ -11,7 +11,10 @@ interface CTAButtonsProps {
 }
 
 export function CTAButtons({ buttons, className, alignment, theme }: CTAButtonsProps) {
-    const justifyClass = alignment === "left" ? "justify-start" : "justify-start";
+    const justifyClass =
+        alignment === "right" ? "justify-end" :
+            alignment === "center" ? "justify-center" :
+                "justify-start";
     return (
         <div className={`flex flex-wrap gap-4 ${justifyClass} ${className ?? ""}`}>
             {buttons.map((btn, index) => (

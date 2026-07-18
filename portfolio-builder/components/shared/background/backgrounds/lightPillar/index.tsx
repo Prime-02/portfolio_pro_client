@@ -28,11 +28,11 @@ registerBackground({
         lightPillarPillarWidth: 3,
         lightPillarRotationSpeed: 0.3,
         lightPillarTopColor: "#5227FF",
-        overlayColor: "#0a0a0a",
+        overlayColor: "#000000",
         overlayOpacity: 0,
     },
     renderer: ({ background }) => (
-        <div style={ { position: "absolute", inset: 0, width: "100%", height: "100%" } }>
+        <div style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}>
             <LightPillar
                 bottomColor={background.lightPillarBottomColor || "#FF9FFC"}
                 glowAmount={background.lightPillarGlowAmount ?? 0.005}

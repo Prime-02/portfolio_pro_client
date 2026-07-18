@@ -27,6 +27,7 @@ import { TestimonialsData } from "../types/testimonials";
 import { TestimonialsSectionController } from "./sections/testimonials";
 import { LayoutController } from "./sections/layout";
 import { toast } from "@/src/context/Toastify";
+import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 
 interface PortfolioMainProps {
   portfolioId: string;
@@ -106,6 +107,7 @@ export default function PortfolioMain({ portfolioId, viewOnly }: PortfolioMainPr
   const { currentPortfolio, error, fetchPortfolioById, updatePortfolio, updateSectionsLocally } =
     usePortfolioStore();
   const { profileContext } = useTheme();
+  const { fetchProfile } = useUserSettings()
 
   useEffect(() => {
     if (error) {
@@ -116,6 +118,12 @@ export default function PortfolioMain({ portfolioId, viewOnly }: PortfolioMainPr
       })
     }
   }, [error])
+
+  useEffect(() => {
+    if (!viewOnly) {
+      fetchProfile()
+    }
+  }, [viewOnly])
 
   useEffect(() => {
     fetchPortfolioById(portfolioId);

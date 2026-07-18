@@ -1,10 +1,12 @@
 // portfolio-builder/components/PBTextInput.tsx
 import React from "react";
 import { Textinput, TextInputProps } from "@/src/app/components/inputs/Textinput";
-import Dropdown, { DropdownOption } from "@/src/app/components/inputs/DynamicDropdown";
+import Dropdown, { DropdownOption, DropdownProps } from "@/src/app/components/inputs/DynamicDropdown";
 import RangeInput, { RangeInputProps } from "@/src/app/components/inputs/RangeInput";
 import CheckBox, { CheckBoxProps } from "@/src/app/components/inputs/CheckBox";
 import Switch, { SwitchProps } from "@/src/app/components/inputs/Switch";
+import ColorPicker, { ColorPickerProps } from "@/src/app/components/inputs/ColorPicker";
+
 
 
 export const PBTextInput: React.FC<TextInputProps> = (props) => {
@@ -37,36 +39,8 @@ export const PBTextInput: React.FC<TextInputProps> = (props) => {
         </div>
     );
 };
-interface PBDropdownProps {
-    id?: string;
-    options?: DropdownOption[];
-    onSelect?: (value: string | string[]) => void;
-    tag?: string;
-    placeholder?: string;
-    valueKey?: string;
-    displayKey?: string;
-    className?: string;
-    containerClassName?: string;
-    emptyMessage?: string;
-    onFocus?: () => void;
-    type?: string;
-    value?: string | string[] | number | number[];
-    label?: string;
-    disabled?: boolean;
-    includeNoneOption?: boolean;
-    includeQueryAsOption?: boolean;
-    error?: string;
-    required?: boolean;
-    loading?: boolean;
-    clearable?: boolean;
-    size?: "sm" | "md" | "lg";
-    variant?: "outlined" | "filled";
-    multiple?: boolean;
-    maxSelections?: number;
-    selectAll?: boolean;
-}
 
-export const PBDropdown: React.FC<PBDropdownProps> = (props) => {
+export const PBDropdown: React.FC<DropdownProps> = (props) => {
     return (
         <div
             style={{
@@ -150,3 +124,27 @@ export const PBSwitch: React.FC<SwitchProps> = (props) => {
         </div>
     );
 };
+
+
+
+// Add the PB wrapper component
+export const PBColorPicker: React.FC<ColorPickerProps> = (props) => {
+    return (
+        <div
+            style={{
+                "--foreground": "var(--pb-foreground)",
+                "--background": "var(--pb-background)",
+                "--accent": "var(--pb-accent)",
+            } as React.CSSProperties}
+        >
+            <ColorPicker
+                {...props}
+                className={`
+          ${props.className || ""}
+        `}
+            />
+        </div>
+    );
+};
+
+export default ColorPicker;

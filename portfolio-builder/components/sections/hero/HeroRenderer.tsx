@@ -175,12 +175,12 @@ export default function HeroRenderer({ data, theme }: HeroRendererProps) {
     // edges on three sides.
     const splitContainerClass = isFullHeightMedia
         ? `relative z-10 flex flex-col md:flex-row w-full ${splitItemsClass} md:h-full`
-        : `relative z-10 flex flex-col md:flex-row gap-8 md:gap-12 ${splitItemsClass} max-w-6xl mx-auto px-6 w-full`;
+        : `relative z-10 flex flex-col md:flex-row gap-8 md:gap-12 ${splitItemsClass}  mx-auto px-6 w-full`;
     const textColClass = isFullHeightMedia
         ? `w-full flex flex-col px-6 md:px-12 py-12 md:py-0 ${textDesktopOrderClass} md:h-full ${verticalJustifyClass}`
         : `w-full flex flex-col ${textDesktopOrderClass}`;
     const textInnerClass = isFullHeightMedia
-        ? `flex flex-col w-full max-w-xl ${mediaPosition === "left" ? "md:ml-auto" : ""} ${alignClass}`
+        ? `flex flex-col w-full  ${mediaPosition === "left" ? "md:ml-auto" : ""} ${alignClass}`
         : `flex flex-col ${alignClass}`;
     const mediaColClass = isFullHeightMedia
         ? `w-full self-stretch ${mediaMobileOrderClass}`
@@ -333,7 +333,7 @@ export default function HeroRenderer({ data, theme }: HeroRendererProps) {
                         </MotionItem>
                     )}
 
-                    <div key={animKey} className={`max-w-4xl mx-auto px-6 flex flex-col ${alignClass}`}>{textContent}</div>
+                    <div key={animKey} className={`mx-auto px-6 flex flex-col ${alignClass}`}>{textContent}</div>
                 </MotionContainer>
             )}
 
@@ -398,7 +398,7 @@ export default function HeroRenderer({ data, theme }: HeroRendererProps) {
                     anim={anim}
                     parallax={anim.parallax}
                     parallaxY={parallaxY}
-                    className={`relative z-10 max-w-3xl mx-auto px-6 flex flex-col ${alignClass}`}
+                    className={`relative z-10  mx-auto px-6 flex flex-col ${alignClass}`}
                 >
                     <div key={animKey}>{textContent}</div>
                 </MotionContainer>

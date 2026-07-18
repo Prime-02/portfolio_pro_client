@@ -20,11 +20,11 @@ registerBackground({
         plasmaOpacity: 1,
         plasmaScale: 1,
         plasmaSpeed: 1,
-        overlayColor: "#0a0a0a",
+        overlayColor: "#000000",
         overlayOpacity: 0,
     },
     renderer: ({ background }) => (
-        <div style={ { position: "absolute", inset: 0, width: "100%", height: "100%" } }>
+        <div style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}>
             <Plasma
                 color={background.plasmaColor || "#ffffff"}
                 direction={background.plasmaDirection || "forward"}

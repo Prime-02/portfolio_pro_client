@@ -34,7 +34,7 @@ registerBackground({
         lineWavesRotation: -45,
         lineWavesSpeed: 0.3,
         lineWavesWarpIntensity: 1,
-        overlayColor: "#0a0a0a",
+        overlayColor: "#000000",
         overlayOpacity: 0,
     },
     renderer: ({ background }) => (

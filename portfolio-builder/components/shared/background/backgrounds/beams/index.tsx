@@ -24,7 +24,7 @@ registerBackground({
         beamsNoiseIntensity: 1.75,
         beamsScale: 0.2,
         beamsRotation: 0,
-        overlayColor: "#0a0a0a",
+        overlayColor: "#000000",
         overlayOpacity: 0,
     },
     renderer: ({ background }) => (

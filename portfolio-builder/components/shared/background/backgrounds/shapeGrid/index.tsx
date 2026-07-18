@@ -22,11 +22,11 @@ registerBackground({
         shapeGridShape: "square",
         shapeGridSpeed: 0.5,
         shapeGridSquareSize: 40,
-        overlayColor: "#0a0a0a",
+        overlayColor: "#000000",
         overlayOpacity: 0,
     },
     renderer: ({ background }) => (
-        <div style={ { position: "absolute", inset: 0, width: "100%", height: "100%" } }>
+        <div style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}>
             <ShapeGrid
                 borderColor={background.shapeGridBorderColor || "#999"}
                 direction={background.shapeGridDirection || "diagonal"}

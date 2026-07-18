@@ -28,7 +28,7 @@ registerBackground({
         plasmaWaveFocalLength: 0.8,
         plasmaWaveSpeed1: 0.05,
         plasmaWaveSpeed2: 0.05,
-        overlayColor: "#0a0a0a",
+        overlayColor: "#000000",
         overlayOpacity: 0,
     },
     renderer: ({ background }) => (

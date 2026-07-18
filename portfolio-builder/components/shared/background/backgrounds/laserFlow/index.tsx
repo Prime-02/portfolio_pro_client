@@ -34,7 +34,7 @@ registerBackground({
         laserFlowWispDensity: 1,
         laserFlowWispIntensity: 5,
         laserFlowWispSpeed: 15,
-        overlayColor: "#0a0a0a",
+        overlayColor: "#000000",
         overlayOpacity: 0,
     },
     renderer: ({ background }) => (

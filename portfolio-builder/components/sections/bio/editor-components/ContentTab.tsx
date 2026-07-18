@@ -14,6 +14,9 @@ import { inputClass, textareaClass, sectionClass, sectionTitleClass } from "./st
 import MarkdownEditor from "@/src/app/components/markdown/MarkdownEditor";
 import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 import { PBDropdown, PBTextInput } from "@/portfolio-builder/components/shared/ui/inputs";
+import AIAssistant from "@/src/app/components/ai/AIAsistant";
+import { getBioPromptOptions } from "@/src/app/components/profile/edit-components/form/bioPromptOptions";
+import { toast } from "@/src/context/Toastify";
 
 
 interface ContentTabProps {
@@ -115,6 +118,29 @@ function CollapsibleSection({
 export default function ContentTab({ data, onChange }: ContentTabProps) {
   const { userInfo, profile } = useUserSettings();
   const hasAutoPopulated = useRef(false);
+
+  const handleEmptyClick = () => {
+    const missingFields = [];
+    if (!data.headline) missingFields.push("Job Title");
+    if (!data.yearsExperience) missingFields.push("Years of Experience");
+
+    if (missingFields.length > 0) {
+      toast.warning(
+        `Please complete your profile details to unlock AI bio suggestions. Missing: ${missingFields.join(", ")}`,
+        {
+          title: "Incomplete Profile",
+        }
+      );
+    } else {
+      toast.info(
+        "Start typing a bio to enable AI-powered suggestions and improvements",
+        {
+          title: "Start Writing",
+        }
+      );
+    }
+  };
+
 
   // ── Auto-populate fields from profile and userInfo on first load ────────
   useEffect(() => {
@@ -269,16 +295,33 @@ export default function ContentTab({ data, onChange }: ContentTabProps) {
         desc="Short punchy statement about yourself"
       />
 
-      {/* ── Bio / Description ── */}
-      <MarkdownEditor
-        label="Bio / Description"
-        value={data.bio || ""}
-        hint="Your story, background, or professional narrative"
-        onChange={(e) => onChange("bio", e)}
-        placeholder="Tell your story..."
-        minHeight="250px"
-      />
-
+      <div className="relative">
+        <MarkdownEditor
+          value={data.bio || ""}
+          onChange={(value) => onChange("bio", value)}
+          placeholder="Tell others about yourself, your experience, and what you're passionate about..."
+          minHeight="200px"
+          showCopy={false}
+          showDownload={false}
+        />
+        <div className="absolute bottom-0 right-0">
+          <AIAssistant
+            options={getBioPromptOptions({
+              currentText: data.bio || "",
+              profession: data.headline || "Unavailable",
+              jobTitle: data.status?.label || "Unavailable",
+              yearsOfExperience: data.yearsExperience ? String(data.yearsExperience) : "Unavailable",
+            })}
+            onEmptyClick={handleEmptyClick}
+            onChange={(e) => {
+              onChange("bio", e)
+              toast.info("The AI has finished processing your request. Please review the output before saving.", {
+                title: "Prompt Ready",
+              })
+            }}
+          />
+        </div>
+      </div>
       {/* ── Location ── */}
       <PBTextInput
         label="Location"

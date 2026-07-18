@@ -6,22 +6,20 @@ import {
   FaIdCard,
   FaCog,
   FaBriefcase,
-  FaBriefcase as FaExperience, // or use a different icon for experience
-  FaUserShield,
-  FaHistory,
+  FaCreditCard,
 } from "react-icons/fa";
 import {
-  FiImage,
   FiMessageSquare,
   FiGrid,
   FiShare2,
   FiClock,
-  FiSettings,
   FiActivity,
+  FiBarChart2,
+  FiTrendingUp,
 } from "react-icons/fi";
 import { MdSchool } from "react-icons/md";
 import { GiSkills } from "react-icons/gi";
-import { Settings2 } from "lucide-react";
+import { IoAnalytics, IoSettingsSharp } from "react-icons/io5";
 
 interface Route {
   slug: string;
@@ -41,6 +39,7 @@ export const unprotectedRoutes = [
   "/projects",
   "/test-endpoints",
   "/install-app",
+  "/subscription",
 ];
 
 export const privateRoutes: Route[] = [
@@ -133,7 +132,7 @@ export const privateRoutes: Route[] = [
     slug: "account-settings",
     link: "/settings/account",
     name: "Account Settings",
-    icon: Settings2,
+    icon: IoSettingsSharp,
     description:
       "Manage your account security, password, and personal settings",
   },
@@ -143,5 +142,27 @@ export const privateRoutes: Route[] = [
     name: "Session Management",
     icon: FiActivity,
     description: "View and manage your active login sessions and devices",
+  },
+  {
+    slug: "analytics",
+    link: "/analytics",
+    name: "Analytics",
+    icon: IoAnalytics,
+    description:
+      "View detailed analytics and insights for your profile and content performance",
+  },
+  {
+    slug: "subscription",
+    link: "/billing",
+    name: "Subscription",
+    icon: FaCreditCard,
+    description: "Manage your subscription plan and billing information",
+  },
+  {
+    slug: "usage",
+    link: "/billing/usage",
+    name: "Usage",
+    icon: FiBarChart2,
+    description: "Monitor your resource usage and consumption metrics",
   },
 ];

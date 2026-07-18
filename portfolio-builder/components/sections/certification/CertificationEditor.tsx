@@ -42,6 +42,9 @@ function mergeWithDefaults(partial: CertificationData): CertificationData {
   };
 }
 
+// Fixed interval for the periodic background save (ms).
+const SAVE_INTERVAL_MS = 30_000;
+
 interface CertificationEditorProps {
   initialData: CertificationData;
   onSave: (data: CertificationData) => Promise<void>;
@@ -59,9 +62,6 @@ export default function CertificationEditor({
 }: CertificationEditorProps) {
   // ── Resolve data with defaults ─────────────────────────────────────────
   const resolvedInitialData = mergeWithDefaults(initialData);
-  const usingDefaultsRef = useRef(
-    JSON.stringify(resolvedInitialData) !== JSON.stringify(initialData)
-  );
 
   const [data, setData] = useState<CertificationData>(() => structuredClone(resolvedInitialData));
   const [activeTab, setActiveTab] = useState<
@@ -72,21 +72,20 @@ export default function CertificationEditor({
   // ── Animation replay counter ─────────────────────────────────────────────
   const [animationKey, setAnimationKey] = useState(0);
 
-  // ── Stable serialised baseline ───────────────────────────────────────────
-  // Left blank when defaults were used so the mount-save effect below forces
-  // an initial persist instead of treating unsaved defaults as already saved.
-  const savedSnapshotRef = useRef(
-    usingDefaultsRef.current ? "" : JSON.stringify(resolvedInitialData)
-  );
-  const hasChanges = JSON.stringify(data) !== savedSnapshotRef.current;
+  // ── Latest data ref (so timers/unmount/unload always save current data) ──
+  const dataRef = useRef(data);
+  useEffect(() => {
+    dataRef.current = data;
+  }, [data]);
 
   // ── Save orchestration refs ──────────────────────────────────────────────
   const isSavingRef = useRef(false);
-  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingSaveRef = useRef<CertificationData | null>(null);
   const savedStatusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ── Core save executor ───────────────────────────────────────────────────
+  // No "has changes" tracking - callers trigger this whenever a save should
+  // happen, and duplicate saves are fine (better than stale state).
   const executeSave = useCallback(
     (nextData: CertificationData) => {
       if (isSavingRef.current) {
@@ -99,7 +98,6 @@ export default function CertificationEditor({
 
       Promise.resolve(onSave(nextData))
         .then(() => {
-          savedSnapshotRef.current = JSON.stringify(nextData);
           setSaveStatus("saved");
 
           if (savedStatusTimerRef.current) clearTimeout(savedStatusTimerRef.current);
@@ -122,54 +120,33 @@ export default function CertificationEditor({
     [onSave]
   );
 
-  // ── Debounced auto-save ──────────────────────────────────────────────────
-  const scheduleSave = useCallback(
-    (nextData: CertificationData) => {
-      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-      saveTimerRef.current = setTimeout(() => executeSave(nextData), 800);
-    },
-    [executeSave]
-  );
-
+  // ── Fixed-interval save ────────────────────────────────────────────────────
+  // Saves periodically regardless of whether anything changed - simpler and
+  // safer than tracking dirty state, and duplicate saves are harmless.
   useEffect(() => {
-    if (hasChanges) {
-      scheduleSave(data);
-    }
+    const interval = setInterval(() => {
+      executeSave(dataRef.current);
+    }, SAVE_INTERVAL_MS);
+    return () => clearInterval(interval);
+  }, [executeSave]);
+
+  // ── Save on unmount ──────────────────────────────────────────────────────────
+  useEffect(() => {
     return () => {
-      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      executeSave(dataRef.current);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data]);
-
-  // ── Persist defaults right away when they weren't already saved ──────────
-  useEffect(() => {
-    if (usingDefaultsRef.current) {
-      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-      executeSave(data);
-    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ── Prevent accidental page unload ───────────────────────────────────────
+  // ── Save on page reload/close ─────────────────────────────────────────────────
   useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (!hasChanges && saveStatus !== "saving" && saveStatus !== "error") return;
-
-      const message =
-        saveStatus === "saving"
-          ? "Changes are still being saved. Please wait..."
-          : saveStatus === "error"
-            ? "Save failed! You have unsaved changes. Leave anyway?"
-            : "You have unsaved changes. Are you sure you want to leave?";
-
-      e.preventDefault();
-      e.returnValue = message;
-      return message;
+    const handleBeforeUnload = () => {
+      executeSave(dataRef.current);
     };
 
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [hasChanges, saveStatus]);
+  }, [executeSave]);
 
   // ── Field updaters ───────────────────────────────────────────────────────
   const updateField = <K extends keyof CertificationData>(key: K, value: CertificationData[K]) => {
@@ -200,45 +177,32 @@ export default function CertificationEditor({
 
   // ── Manual save ──────────────────────────────────────────────────────────
   const handleSave = () => {
-    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     executeSave(data);
   };
 
   // ── Cancel ───────────────────────────────────────────────────────────────
   const handleCancel = () => {
-    if (saveStatus === "saving") {
-      alert("Cannot cancel while saving is in progress. Please wait...");
-      return;
-    }
-
-    if (saveStatus === "error") {
-      const confirmed = window.confirm(
-        "Save failed and you have unsaved changes. Are you sure you want to discard your changes?"
-      );
-      if (!confirmed) return;
-    } else if (hasChanges) {
-      const confirmed = window.confirm("You have unsaved changes. Discard them?");
-      if (!confirmed) return;
-    }
-
     onCancel();
   };
 
   // ── Fullscreen ───────────────────────────────────────────────────────────
+  // Preview only, but also triggers a save so the fullscreen view (and
+  // whatever consumes it) reflects the latest edits.
   const handleFullscreen = () => {
+    executeSave(data);
     setFullScreen(data);
   };
 
   // ── Save status display ──────────────────────────────────────────────────
   const saveStatusText = {
-    idle: hasChanges ? "Unsaved changes" : "Saved",
+    idle: "Idle",
     saving: "Saving...",
     saved: "Saved",
     error: "Save failed",
   };
 
   const saveStatusColor = {
-    idle: hasChanges ? "text-[var(--pb-warning)]" : "text-[var(--pb-text-muted)]",
+    idle: "text-[var(--pb-text-muted)]",
     saving: "text-[var(--pb-info)]",
     saved: "text-[var(--pb-success)]",
     error: "text-[var(--pb-error)]",
@@ -276,8 +240,8 @@ export default function CertificationEditor({
       {(saveStatus === "saving" || saveStatus === "error") && (
         <div
           className={`fixed bottom-4 right-4 z-50 px-4 py-2 rounded-lg shadow-lg ${saveStatus === "saving"
-              ? "bg-[var(--pb-info-bg)] text-[var(--pb-info)] border border-[var(--pb-info-border)]"
-              : "bg-[var(--pb-error-bg)] text-[var(--pb-error)] border border-[var(--pb-error-border)]"
+            ? "bg-[var(--pb-info-bg)] text-[var(--pb-info)] border border-[var(--pb-info-border)]"
+            : "bg-[var(--pb-error-bg)] text-[var(--pb-error)] border border-[var(--pb-error-border)]"
             }`}
         >
           <div className="flex items-center gap-2">
@@ -302,7 +266,7 @@ export default function CertificationEditor({
         </div>
 
         <CertificationEditorActions
-          hasChanges={hasChanges}
+          hasChanges={true}
           saveStatus={saveStatusText[saveStatus]}
           saveStatusColor={saveStatusColor[saveStatus]}
           onSave={handleSave}

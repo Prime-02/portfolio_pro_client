@@ -9,7 +9,6 @@ import type { HeroAnimations } from "@/portfolio-builder/types/hero";
 import { AnimatedText } from "./renderer-components/AnimatedText";
 import { MediaDisplay } from "./renderer-components/MediaDisplay";
 import { CTAButtons } from "./renderer-components/CTAButtons";
-import { ScrollIndicator } from "./renderer-components/ScrollIndicator";
 import { MotionContainer, MotionItem } from "./renderer-components/MotionWrappers";
 import { resolveEasing } from "./renderer-components/animations";
 import SocialLinks from "./renderer-components/SocialLinks";

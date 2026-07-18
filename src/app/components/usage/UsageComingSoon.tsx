@@ -128,9 +128,9 @@ export default function UsageComingSoon() {
                         marginRight: "auto",
                     }}
                 >
-                    We're building detailed usage insights and analytics to help you
+                   {` We're building detailed usage insights and analytics to help you
                     understand your activity patterns. Stay tuned for powerful
-                    visualizations and tracking features.
+                    visualizations and tracking features.`}
                 </p>
 
                 {/* CTA Button */}

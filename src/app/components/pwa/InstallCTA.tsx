@@ -136,7 +136,7 @@ const InstallCTA: React.FC<InstallCTAProps> = ({ isInstallable }) => {
                             {isInstalling
                                 ? "Installing..."
                                 : isInstallable
-                                    ? "Install PortfolioPro"
+                                    ? "Install Portfolio Pro"
                                     : "Not Available"}
                         </button>
 

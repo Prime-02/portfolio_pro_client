@@ -14,6 +14,7 @@ import { useUIStore } from "@/lib/stores/ui/useUIStore";
 import { getImageSrc } from "@/lib/utilities/syncFunctions/syncs";
 import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 import { usePWA } from "@/lib/hooks/pwa/usePWA";
+import { SubscriptionTier } from "@/lib/stores/billing/payment-types";
 
 const LandingPageNavbar = () => {
   const { userInfo } = useUserSettings();
@@ -198,8 +199,8 @@ const LandingPageNavbar = () => {
                       {(isSidebarExpanded || mobileMenuOpen) && (
                         <span className="flex flex-col items-start ">
                           <p className="font-semibold">{userInfo?.username}</p>
-                          <p className="text-xs opacity-65">
-                            {userInfo.subscription_tier || "free"}
+                          <p className="text-xs opacity-65 capitalize">
+                            {userInfo.subscription_tier || SubscriptionTier.FREE}
                           </p>
                         </span>
                       )}

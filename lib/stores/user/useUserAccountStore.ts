@@ -1,11 +1,11 @@
 import { create } from "zustand";
 import { api } from "@/lib/client/api";
 import type { AxiosError } from "axios";
+import { SubscriptionTier } from "../billing/payment-types";
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
-export type UserSubscriptionTier = "free" | "pro" | "enterprise";
 export interface UserResponse {
   id: string;
   username: string | null;
@@ -19,7 +19,7 @@ export interface UserResponse {
   is_active: boolean;
   is_superuser: boolean;
   role: string;
-  subscription_tier: UserSubscriptionTier | null;
+  subscription_tier: SubscriptionTier | null;
   subscription_expires: string | null;
 }
 

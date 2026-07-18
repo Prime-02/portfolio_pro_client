@@ -1,17 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const BACKEND_URL = process.env.API_URL; // server-only, no NEXT_PUBLIC_ prefix
+const SERVER_URL = process.env.API_URL;
+const BACKUP_SERVER_URL = process.env.BACKUP_SERVER;
 const API_KEY = process.env.X_API_KEY; // server-only
 
 async function proxy(req: NextRequest, path: string[]) {
-  if (!BACKEND_URL) {
+  if (!SERVER_URL && !BACKUP_SERVER_URL) {
     return NextResponse.json(
       { message: "Server misconfigured: API_URL is not set" },
       { status: 500 },
     );
   }
-
-  const targetUrl = `${BACKEND_URL}/api/v1/${path.join("/")}${req.nextUrl.search}`;
 
   const headers = new Headers(req.headers);
   headers.set("X_Api_Key", API_KEY!);
@@ -22,25 +21,54 @@ async function proxy(req: NextRequest, path: string[]) {
       ? undefined
       : await req.arrayBuffer();
 
-  let res: Response;
-  try {
-    res = await fetch(targetUrl, {
-      method: req.method,
-      headers,
-      body,
-      redirect: "follow",
-    });
-  } catch (err) {
-    // fetch() throws on network-level failures: backend down, wrong host,
-    // DNS failure, TLS error, connection refused, etc. This is almost
-    // always the cause of an opaque 500 with no JSON body reaching the client.
-    console.error(`[proxy] fetch failed for ${targetUrl}:`, err);
+  const candidates = [SERVER_URL, BACKUP_SERVER_URL].filter(
+    (url): url is string => Boolean(url),
+  );
+
+  let res: Response | undefined;
+  const errors: { targetUrl: string; cause: string }[] = [];
+
+  for (let i = 0; i < candidates.length; i++) {
+    const base = candidates[i];
+    const targetUrl = `${base}/api/v1/${path.join("/")}${req.nextUrl.search}`;
+    const isLastAttempt = i === candidates.length - 1;
+
+    try {
+      res = await fetch(targetUrl, {
+        method: req.method,
+        headers,
+        // body is an ArrayBuffer read once above; reuse across attempts is fine
+        // since arrayBuffer() already fully consumed the original stream.
+        body,
+        redirect: "follow",
+      });
+      // Got a response (even a non-2xx one) — backend is reachable, stop here.
+      break;
+    } catch (err) {
+      // fetch() throws on network-level failures: backend down, wrong host,
+      // DNS failure, TLS error, connection refused, etc.
+      const cause = err instanceof Error ? err.message : String(err);
+      console.error(`[proxy] fetch failed for ${targetUrl}:`, err);
+      errors.push({ targetUrl, cause });
+
+      if (isLastAttempt) {
+        return NextResponse.json(
+          {
+            message: "Failed to reach backend (primary and backup)",
+            attempts: errors,
+          },
+          { status: 502 },
+        );
+      }
+      // otherwise fall through to try the next candidate
+    }
+  }
+
+  // Should be unreachable given the checks above, but keep TypeScript happy
+  // and guard against an empty candidates array edge case.
+  if (!res) {
     return NextResponse.json(
-      {
-        message: "Failed to reach backend",
-        targetUrl,
-        cause: err instanceof Error ? err.message : String(err),
-      },
+      { message: "Failed to reach backend", attempts: errors },
       { status: 502 },
     );
   }

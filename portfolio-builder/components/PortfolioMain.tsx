@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useCallback } from "react";
+import { useEffect, useMemo, useCallback, useRef } from "react";
 import { usePortfolioStore } from "@/portfolio-builder/store/usePortfolioStore";
 import HeroSectionController from "@/portfolio-builder/components/sections/hero/HeroSectionController";
 import BioSectionController from "@/portfolio-builder/components/sections/bio/BioSectionController";
@@ -173,57 +173,90 @@ export default function PortfolioMain({ portfolioId, viewOnly }: PortfolioMainPr
   const blogsData = useMemo(() => getSectionData<BlogsData>(layout, "blogs"), [layout]);
   const testimonialsData = useMemo(() => getSectionData<TestimonialsData>(layout, "testimonials"), [layout]);
 
+  // ── Serialized save queue ────────────────────────────────────────────────
+  // Root cause of the "section A overwrites section B" bug: every
+  // handle*Save below used to close over the `layout` memo from its own
+  // render. Since every section's editor autosaves independently (interval,
+  // unmount, beforeunload) and `updatePortfolio` does a full-object PUT,
+  // two saves in flight at once could each be built from the same stale
+  // snapshot — whichever response landed last would silently wipe out the
+  // other section's edit.
+  //
+  // Fix: funnel every save through this queue. Each queued job reads
+  // currentPortfolio.layout directly from the store *at the moment it runs*
+  // (not from a render-time closure) and jobs are awaited strictly one at a
+  // time, so a save can never be built on top of data that's about to be
+  // superseded by another in-flight save.
+  const saveQueueRef = useRef<Promise<void>>(Promise.resolve());
+
+  const queueLayoutSave = useCallback(
+    (mutate: (latestLayout: Record<string, unknown> | null) => Record<string, unknown>) => {
+      const run = async () => {
+        const latestLayout = usePortfolioStore.getState().currentPortfolio?.layout ?? null;
+        await updatePortfolio(portfolioId, { layout: mutate(latestLayout) });
+      };
+      // Chain onto whatever's currently queued so saves run strictly in
+      // order; swallow prior errors so one failed save doesn't jam the
+      // queue for subsequent sections.
+      const next = saveQueueRef.current.then(run, run);
+      saveQueueRef.current = next.catch(() => { });
+      return next;
+    },
+    [portfolioId, updatePortfolio]
+  );
+
   // ── Save handlers ─────────────────────────────────────────────────────────
   const handleHeroSave = useCallback(async (updated: HeroData) => {
-    await updatePortfolio(portfolioId, { layout: setSectionData(layout, "hero", updated) });
-  }, [layout, portfolioId, updatePortfolio]);
+    await queueLayoutSave((latest) => setSectionData(latest, "hero", updated));
+  }, [queueLayoutSave]);
 
   const handleBioSave = useCallback(async (updated: BioData) => {
-    await updatePortfolio(portfolioId, { layout: setSectionData(layout, "bio", updated) });
-  }, [layout, portfolioId, updatePortfolio]);
+    await queueLayoutSave((latest) => setSectionData(latest, "bio", updated));
+  }, [queueLayoutSave]);
 
   const handleSkillsSave = useCallback(async (updated: SkillsData) => {
-    await updatePortfolio(portfolioId, { layout: setSectionData(layout, "skills", updated) });
-  }, [layout, portfolioId, updatePortfolio]);
+    await queueLayoutSave((latest) => setSectionData(latest, "skills", updated));
+  }, [queueLayoutSave]);
 
   const handleExperienceSave = useCallback(async (updated: ExperienceData) => {
-    await updatePortfolio(portfolioId, { layout: setSectionData(layout, "experience", updated) });
-  }, [layout, portfolioId, updatePortfolio]);
+    await queueLayoutSave((latest) => setSectionData(latest, "experience", updated));
+  }, [queueLayoutSave]);
 
   const handleEducationSave = useCallback(async (updated: EducationData) => {
-    await updatePortfolio(portfolioId, { layout: setSectionData(layout, "education", updated) });
-  }, [layout, portfolioId, updatePortfolio]);
+    await queueLayoutSave((latest) => setSectionData(latest, "education", updated));
+  }, [queueLayoutSave]);
 
   const handleCertificationSave = useCallback(async (updated: CertificationData) => {
-    await updatePortfolio(portfolioId, { layout: setSectionData(layout, "certification", updated) });
-  }, [layout, portfolioId, updatePortfolio]);
+    await queueLayoutSave((latest) => setSectionData(latest, "certification", updated));
+  }, [queueLayoutSave]);
 
   const handleProjectsSave = useCallback(async (updated: ProjectsData) => {
-    await updatePortfolio(portfolioId, { layout: setSectionData(layout, "projects", updated) });
-  }, [layout, portfolioId, updatePortfolio]);
+    await queueLayoutSave((latest) => setSectionData(latest, "projects", updated));
+  }, [queueLayoutSave]);
 
   const handleBlogsSave = useCallback(async (updated: BlogsData) => {
-    await updatePortfolio(portfolioId, { layout: setSectionData(layout, "blogs", updated) });
-  }, [layout, portfolioId, updatePortfolio]);
+    await queueLayoutSave((latest) => setSectionData(latest, "blogs", updated));
+  }, [queueLayoutSave]);
 
   const handleTestimonialsSave = useCallback(async (updated: TestimonialsData) => {
-    await updatePortfolio(portfolioId, { layout: setSectionData(layout, "testimonials", updated) });
-  }, [layout, portfolioId, updatePortfolio]);
+    await queueLayoutSave((latest) => setSectionData(latest, "testimonials", updated));
+  }, [queueLayoutSave]);
 
   // ── Layout save ───────────────────────────────────────────────────────────
   // Persists the layout structure (navbar, footer, etc.) alongside whatever
-  // theme is currently in the store (from local toggle/tab changes).
-  // Theme is stored top-level at layout.theme, layout structure at layout.layout.
+  // theme is currently in the store. Also routed through the queue, and
+  // reads the theme off the freshest layout rather than the stale `layout`
+  // memo, for the same reason as above.
   const handleLayoutSave = useCallback(async (updated: LayoutData) => {
-    const currentTheme = (layout?.theme ?? {}) as PortfolioThemeData;
-    await updatePortfolio(portfolioId, {
-      layout: {
-        ...layout,
+    await queueLayoutSave((latest) => {
+      const currentTheme = ((latest as Record<string, unknown> | null)?.theme ?? {}) as PortfolioThemeData;
+      return {
+        ...latest,
         layout: updated,        // persist the navbar/footer/background draft
         theme: currentTheme,    // persist whatever theme is in the store right now
-      },
+      };
     });
-  }, [layout, portfolioId, updatePortfolio]);
+  }, [queueLayoutSave]);
 
   // ── Add section ───────────────────────────────────────────────────────────
   // Seeds an empty data object for the new section type. Individual

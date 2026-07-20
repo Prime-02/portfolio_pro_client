@@ -50,9 +50,12 @@ function TypewriterCursor({ visible }: { visible: boolean }) {
 }
 
 export default function TestimonialsRenderer({ data, username, animationKey }: TestimonialsRendererProps) {
+  // ── Destructure with proper defaults ─────────────────────────────────────
   const {
     layout = "grid",
     alignment = "center",
+    columns = 3,
+    gap = "medium",
     maxWidth = 1200,
     padding,
     headline,
@@ -61,10 +64,40 @@ export default function TestimonialsRenderer({ data, username, animationKey }: T
     animations,
     ctaButtons,
     filters,
+    cardStyle = "standard",
+    cardSize = "medium",
+    showAvatar = true,
+    avatarDisplay = "circle",
+    showAuthorName = true,
+    showAuthorTitle = true,
+    showAuthorCompany = true,
+    showAuthorRelationship = false,
+    showContent = true,
+    showRating = true,
+    ratingDisplay = "stars",
+    showDate = false,
+    dateDisplay = "relative",
+    showFeaturedBadge = true,
+    cardOverrides = [],
   } = data;
 
-  const safeFilters = filters ?? ({} as TestimonialsData["filters"]);
-  const anim: BioAnimations = { ...DEFAULT_ANIM, ...(animations ?? {}) };
+  // ── Safe defaults for nested objects ─────────────────────────────────────
+  const safeFilters: Required<TestimonialsData>["filters"] = {
+    ids: filters?.ids ?? undefined,
+    is_featured: filters?.is_featured ?? undefined,
+    author_company: filters?.author_company ?? undefined,
+    author_relationship: filters?.author_relationship ?? undefined,
+    min_rating: filters?.min_rating ?? undefined,
+    merge_filters: filters?.merge_filters ?? false,
+    _sortBy: filters?._sortBy ?? "default",
+  };
+
+  const safeBackground = background ?? { type: "none" as const };
+
+  const anim: BioAnimations = animations
+    ? { ...DEFAULT_ANIM, ...animations }
+    : DEFAULT_ANIM;
+
   const isAnimated = anim.preset !== "none";
 
   const { rendererTestimonials, isLoadingTestimonials } = useDebouncedTestimonialsFetch(username, safeFilters);
@@ -114,7 +147,38 @@ export default function TestimonialsRenderer({ data, username, animationKey }: T
 
   const contentStyle: React.CSSProperties = { maxWidth: `${maxWidth}px` };
 
-  const layoutProps = { testimonials: sortedTestimonials, data, isAnimated, shouldAnimate, anim };
+  const layoutProps = {
+    testimonials: sortedTestimonials,
+    data: {
+      ...data,
+      filters: safeFilters,
+      background: safeBackground,
+      animations: anim,
+      layout,
+      alignment,
+      columns,
+      gap,
+      maxWidth,
+      cardStyle,
+      cardSize,
+      showAvatar,
+      avatarDisplay,
+      showAuthorName,
+      showAuthorTitle,
+      showAuthorCompany,
+      showAuthorRelationship,
+      showContent,
+      showRating,
+      ratingDisplay,
+      showDate,
+      dateDisplay,
+      showFeaturedBadge,
+      cardOverrides,
+    },
+    isAnimated,
+    shouldAnimate,
+    anim,
+  };
 
   const renderLayout = () => {
     switch (layout) {
@@ -130,7 +194,7 @@ export default function TestimonialsRenderer({ data, username, animationKey }: T
   if (isLoadingTestimonials) {
     return (
       <section ref={sectionRef} className="relative" style={paddingStyle}>
-        <SectionBackgroundRenderer background={background} />
+        <SectionBackgroundRenderer background={safeBackground} />
         <div className={`relative z-10 mx-auto w-full px-4 sm:px-6 lg:px-8 ${alignClass}`} style={contentStyle}>
           <div className="flex items-center justify-center py-20">
             <div className="animate-spin rounded-full h-8 w-8 border-2 border-[var(--pb-foreground)] border-t-transparent" />
@@ -152,7 +216,7 @@ export default function TestimonialsRenderer({ data, username, animationKey }: T
 
   return (
     <section ref={sectionRef} className={`relative ${sectionOverflow}`} style={paddingStyle}>
-      <SectionBackgroundRenderer background={background} />
+      <SectionBackgroundRenderer background={safeBackground} />
 
       <MotionContainer
         motionKey={animationKey}

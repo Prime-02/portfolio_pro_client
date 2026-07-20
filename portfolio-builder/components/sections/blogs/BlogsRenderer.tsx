@@ -50,9 +50,12 @@ function TypewriterCursor({ visible }: { visible: boolean }) {
 }
 
 export default function BlogsRenderer({ data, username, animationKey }: BlogsRendererProps) {
+  // ── Destructure with proper defaults ─────────────────────────────────────
   const {
     layout = "timeline",
     alignment = "left",
+    columns = 2,
+    gap = "medium",
     maxWidth = 1200,
     padding,
     headline,
@@ -61,10 +64,42 @@ export default function BlogsRenderer({ data, username, animationKey }: BlogsRen
     animations,
     ctaButtons,
     filters,
+    cardStyle = "standard",
+    cardSize = "medium",
+    showImage = true,
+    showTitle = true,
+    showExcerpt = true,
+    showBody = false,
+    showAuthor = true,
+    showDates = true,
+    dateDisplay = "relative",
+    showStatus = true,
+    statusDisplay = "badge",
+    showTags = true,
+    showCategory = true,
+    showReactions = true,
+    reactionDisplay = "icons",
+    showComments = true,
+    showViews = true,
+    showReadTime = true,
+    showShare = false,
+    showBookmark = false,
+    showUrl = true,
+    cardOverrides = [],
   } = data;
 
-  const safeFilters = filters ?? ({} as BlogsData["filters"]);
-  const anim: BioAnimations = { ...DEFAULT_ANIM, ...(animations ?? {}) };
+  // ── Safe defaults for nested objects ─────────────────────────────────────
+  const safeFilters: BlogsData["filters"] = {
+    ...filters,
+    _sortBy: filters?._sortBy ?? "default",
+  };
+
+  const safeBackground = background ?? { type: "none" as const };
+
+  const anim: BioAnimations = animations
+    ? { ...DEFAULT_ANIM, ...animations }
+    : DEFAULT_ANIM;
+
   const isAnimated = anim.preset !== "none";
 
   // ── Blogs fetch ──────────────────────────────────────────────────────────
@@ -119,7 +154,45 @@ export default function BlogsRenderer({ data, username, animationKey }: BlogsRen
 
   const contentStyle: React.CSSProperties = { maxWidth: `${maxWidth}px` };
 
-  const layoutProps = { blogs: sortedBlogs, data, isAnimated, shouldAnimate, anim };
+  const layoutProps = {
+    blogs: sortedBlogs,
+    data: {
+      ...data,
+      filters: safeFilters,
+      background: safeBackground,
+      animations: anim,
+      layout,
+      alignment,
+      columns,
+      gap,
+      maxWidth,
+      cardStyle,
+      cardSize,
+      showImage,
+      showTitle,
+      showExcerpt,
+      showBody,
+      showAuthor,
+      showDates,
+      dateDisplay,
+      showStatus,
+      statusDisplay,
+      showTags,
+      showCategory,
+      showReactions,
+      reactionDisplay,
+      showComments,
+      showViews,
+      showReadTime,
+      showShare,
+      showBookmark,
+      showUrl,
+      cardOverrides,
+    },
+    isAnimated,
+    shouldAnimate,
+    anim,
+  };
 
   const renderLayout = () => {
     switch (layout) {
@@ -136,7 +209,7 @@ export default function BlogsRenderer({ data, username, animationKey }: BlogsRen
   if (isLoadingBlogs) {
     return (
       <section ref={sectionRef} className="relative" style={paddingStyle}>
-        <SectionBackgroundRenderer background={background} />
+        <SectionBackgroundRenderer background={safeBackground} />
         <div
           className={`relative z-10 mx-auto w-full px-4 sm:px-6 lg:px-8 ${alignClass}`}
           style={contentStyle}
@@ -160,7 +233,7 @@ export default function BlogsRenderer({ data, username, animationKey }: BlogsRen
 
   return (
     <section ref={sectionRef} className="relative overflow-hidden" style={paddingStyle}>
-      <SectionBackgroundRenderer background={background} />
+      <SectionBackgroundRenderer background={safeBackground} />
 
       <MotionContainer
         motionKey={animationKey}

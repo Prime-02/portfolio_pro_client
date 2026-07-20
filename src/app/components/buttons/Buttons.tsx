@@ -6,6 +6,7 @@ import React, {
   useMemo,
   useRef,
   useEffect,
+  useLayoutEffect,
   useCallback,
 } from "react";
 import { getLoader, SpinLoader } from "../loaders/Loader";
@@ -36,48 +37,38 @@ export type ButtonProps = {
   maxWidth?: string;
 };
 
-// Custom hook to watch CSS custom property changes
-const useCSSVariable = (variableName: string, fallback: string): string => {
-  const [value, setValue] = useState(() => {
-    if (typeof document === "undefined") return fallback;
-    const computedValue = getComputedStyle(document.documentElement)
-      .getPropertyValue(variableName)
-      .trim();
-    return computedValue || fallback;
-  });
+// Custom hook to watch CSS custom property changes.
+// Resolves the variable from a specific element (via ref) rather than the
+// document root, so it correctly picks up local overrides set by ancestor
+// wrapper elements (e.g. PBButton's --accent: var(--pb-accent) override),
+// while still reacting to global theme changes anywhere in the tree above it.
+const useCSSVariable = (
+  ref: React.RefObject<HTMLElement | null>,
+  variableName: string,
+  fallback: string
+): string => {
+  const [value, setValue] = useState(fallback);
 
-  useEffect(() => {
-    // Initial read
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el || typeof window === "undefined") return;
+
     const updateValue = () => {
-      const newValue = getComputedStyle(document.documentElement)
-        .getPropertyValue(variableName)
-        .trim();
-      if (newValue && newValue !== value) {
-        setValue(newValue);
-      }
+      const newValue = getComputedStyle(el).getPropertyValue(variableName).trim();
+      setValue((prev) => (newValue && newValue !== prev ? newValue : prev || fallback));
     };
 
-    // Update on mount
+    // Initial read, synchronous before paint
     updateValue();
 
-    // Watch for style/class changes on :root that might affect CSS variables
-    const observer = new MutationObserver((mutations) => {
-      for (const mutation of mutations) {
-        if (
-          mutation.type === "attributes" &&
-          (mutation.attributeName === "style" ||
-            mutation.attributeName === "class" ||
-            mutation.attributeName === "data-theme")
-        ) {
-          updateValue();
-          break;
-        }
-      }
-    });
-
+    // Watch for style/class/data-theme changes anywhere in the ancestor
+    // chain (subtree: true), not just on document root, since local
+    // overrides can be set on any wrapper between the root and this element.
+    const observer = new MutationObserver(updateValue);
     observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ["style", "class", "data-theme"],
+      subtree: true,
     });
 
     // Also listen for custom events that might trigger theme changes
@@ -90,7 +81,7 @@ const useCSSVariable = (variableName: string, fallback: string): string => {
       window.removeEventListener("themechange", handleThemeChange);
       window.removeEventListener("storage", handleThemeChange);
     };
-  }, [variableName, value]);
+  }, [ref, variableName, fallback]);
 
   return value;
 };
@@ -232,10 +223,12 @@ const Button = ({
   const [isFocused, setIsFocused] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
 
-  // Watch CSS variable changes to trigger re-renders
-  const cssAccent = useCSSVariable("--accent", themePresets[0].accent);
-  const cssBackground = useCSSVariable("--background", "#ffffff");
-  const cssForeground = useCSSVariable("--foreground", "#000000");
+  // Watch CSS variable changes, scoped to this button's own position in the
+  // DOM tree so ancestor overrides (e.g. PBButton's --pb-accent remap) are
+  // respected instead of always reading the global :root value.
+  const cssAccent = useCSSVariable(buttonRef, "--accent", themePresets[0].accent);
+  const cssBackground = useCSSVariable(buttonRef, "--background", "#ffffff");
+  const cssForeground = useCSSVariable(buttonRef, "--foreground", "#000000");
 
   // Track hydration to prevent mismatches
   useEffect(() => {

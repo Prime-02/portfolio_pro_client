@@ -14,7 +14,7 @@ import { useContentStore } from "@/lib/stores/contents/useContentStore";
 
 interface BlogsSectionControllerProps {
   blogsData: BlogsData | null;
-  onSave: (updatedBlogsData: BlogsData) => Promise<void>;
+  onChange: (updatedBlogsData: BlogsData) => void;
   username: string;
   viewOnly: boolean
 }
@@ -25,18 +25,12 @@ interface BlogsSectionControllerProps {
 
 export default function BlogsSectionController({
   blogsData,
-  onSave,
+  onChange,
   username,
   viewOnly
 }: BlogsSectionControllerProps) {
   const [isEditing, setIsEditing] = useState(false);
   const { fetchPublicContent } = useContentStore();
-
-  // ── Optimistic local state ────────────────────────────────────────────────
-  const [localData, setLocalData] = useState<BlogsData | null>(blogsData);
-  useEffect(() => {
-    if (blogsData) setLocalData(blogsData);
-  }, [blogsData]);
 
   // Prefetch with the real filter config as soon as both username and
   // blogsData are available.
@@ -61,32 +55,20 @@ export default function BlogsSectionController({
     });
   }, [username, blogsData]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ---- Save ----------------------------------------------------------------
-  const handleSave = async (updatedBlogsData: BlogsData) => {
-    setLocalData(updatedBlogsData);
-    await onSave(updatedBlogsData);
-  };
-
-  // ---- Cancel --------------------------------------------------------------
-  const handleCancel = () => {
-    setLocalData(blogsData);
-    setIsEditing(false);
-  };
-
-  // ---- Fullscreen ----------------------------------------------------------
-  const handleSetFullscreen = (latestData: BlogsData) => {
-    setLocalData(latestData);
-    setIsEditing(false);
+  // ---- Add section -----------------------------------------------------
+  const handleAdd = () => {
+    onChange(blogsData ?? getEmptyBlogsData());
+    setIsEditing(true);
   };
 
   // ---- No blogs data, not editing — show placeholder -----------------------
-  if (!localData && !isEditing) {
+  if (!blogsData && !isEditing) {
     return (
       <div className="flex items-center justify-center min-h-[40vh]">
         <div className="text-center">
           <p className="text-[var(--pb-text-muted)] text-sm mb-4">Blogs section not set up</p>
           <button
-            onClick={() => setIsEditing(true)}
+            onClick={handleAdd}
             className="px-6 py-3 bg-[var(--pb-foreground)] text-[var(--pb-background)] rounded-lg font-medium text-sm hover:opacity-90 transition-opacity"
           >
             Add Blogs Section
@@ -96,14 +78,15 @@ export default function BlogsSectionController({
     );
   }
 
+  const resolvedData = blogsData ?? getEmptyBlogsData();
+
   // ---- Editing — show editor -----------------------------------------------
   if (isEditing) {
     return (
       <BlogsEditor
-        initialData={localData || getEmptyBlogsData()}
-        onSave={handleSave}
-        onCancel={handleCancel}
-        setFullScreen={handleSetFullscreen}
+        data={resolvedData}
+        onChange={onChange}
+        onDone={() => setIsEditing(false)}
         username={username}
       />
     );
@@ -112,7 +95,7 @@ export default function BlogsSectionController({
   // ---- Viewing — show renderer ---------------------------------------------
   return (
     <div className="relative">
-      <BlogsRenderer data={localData!} username={username} />
+      <BlogsRenderer data={resolvedData} username={username} />
 
       {/* Edit button */}
       {

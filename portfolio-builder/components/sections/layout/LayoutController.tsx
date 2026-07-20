@@ -2,16 +2,15 @@
 
 "use client";
 
-import { useState, useCallback, useMemo, useEffect, Children } from "react";
+import { useState, useMemo, useEffect, Children } from "react";
 import { LayoutData, getEmptyLayoutData, SectionLink, syncSectionLinks } from "@/portfolio-builder/types/layout";
 import LayoutEditor from "./LayoutEditor";
 import LayoutRenderer from "./LayoutRenderer";
-import { useRouting } from "@/lib/hooks/routing/useRouting";
 import { ScrollIndicator } from "@/portfolio-builder/components/sections/hero/renderer-components/ScrollIndicator";
 
 interface LayoutControllerProps {
     layoutData: LayoutData | null;
-    onSave: (updated: LayoutData) => Promise<void>;
+    onChange: (updated: LayoutData) => void;
     availableSections: string[];
     sectionLinks: SectionLink[];
     missingSections: string[];
@@ -23,7 +22,7 @@ interface LayoutControllerProps {
 
 export default function LayoutController({
     layoutData,
-    onSave,
+    onChange,
     availableSections,
     sectionLinks,
     missingSections,
@@ -33,43 +32,34 @@ export default function LayoutController({
     viewOnly
 }: LayoutControllerProps) {
     const [isEditing, setIsEditing] = useState(false);
-    const { router } = useRouting()
 
-    const populateLayoutData = useCallback((data: LayoutData | null, links: SectionLink[]): LayoutData => {
-        const populated = data ?? getEmptyLayoutData();
+    // Fully controlled: `layoutData` is the live value owned by PortfolioMain
+    // (via the store). `resolved` fills in navbar.sectionLinks whenever the
+    // stored draft doesn't have them yet (first load) or when they've drifted
+    // from availableSections (a section was just added/removed upstream) —
+    // recomputed every render, nothing kept in local state. Every edit in
+    // LayoutEditor computes the next value and hands it straight back via
+    // onChange; PortfolioMain's autosave flush is what eventually persists it.
+    const resolved = useMemo((): LayoutData => {
+        const populated = layoutData ?? getEmptyLayoutData();
         const navbar = populated.navbar ?? getEmptyLayoutData().navbar!;
+        const currentLinks = navbar.sectionLinks ?? [];
 
-        if (!navbar.sectionLinks || navbar.sectionLinks.length === 0) {
-            const synced = syncSectionLinks(links, availableSections);
-            return {
-                ...populated,
-                navbar: { ...navbar, sectionLinks: synced },
-            };
-        }
+        const synced = currentLinks.length === 0
+            ? syncSectionLinks(sectionLinks, availableSections)
+            : syncSectionLinks(currentLinks, availableSections);
 
-        return populated;
-    }, [availableSections]);
+        const unchanged =
+            synced.length === currentLinks.length &&
+            synced.every((l, i) => l.sectionType === currentLinks[i]?.sectionType);
 
-    const [draftData, setDraftData] = useState<LayoutData>(() =>
-        populateLayoutData(layoutData, sectionLinks)
-    );
+        if (unchanged && currentLinks.length > 0) return populated;
 
-    // Keep draftData's sectionLinks in sync when availableSections changes
-    // (e.g. a new section was just added, or one was removed upstream).
-    useEffect(() => {
-        setDraftData((prev) => {
-            const currentLinks = prev.navbar?.sectionLinks ?? [];
-            const synced = syncSectionLinks(currentLinks, availableSections);
-            const unchanged =
-                synced.length === currentLinks.length &&
-                synced.every((l, i) => l.sectionType === currentLinks[i]?.sectionType);
-            if (unchanged) return prev;
-            return {
-                ...prev,
-                navbar: { ...(prev.navbar ?? getEmptyLayoutData().navbar!), sectionLinks: synced },
-            };
-        });
-    }, [availableSections]);
+        return {
+            ...populated,
+            navbar: { ...navbar, sectionLinks: synced },
+        };
+    }, [layoutData, sectionLinks, availableSections]);
 
     // Toggle editor visibility with Ctrl + .
     useEffect(() => {
@@ -89,26 +79,13 @@ export default function LayoutController({
         setIsEditing(true);
     }
 
-    const handleGoBack = () => {
-        router.back()
-    }
-
-    const handleEditorChange = useCallback((updated: LayoutData) => {
-        setDraftData(updated);
-    }, []);
-
-    const handleSave = useCallback(async () => {
-        await onSave(draftData);
+    const handleClose = () => {
         setIsEditing(false);
-    }, [draftData, onSave]);
-
-    const handleClose = useCallback(() => {
-        setIsEditing(false);
-    }, []);
+    };
 
     const orderedVisibleLinks = useMemo(() => {
-        return (draftData.navbar?.sectionLinks ?? sectionLinks).filter((l) => l.visible);
-    }, [draftData.navbar?.sectionLinks, sectionLinks]);
+        return (resolved.navbar?.sectionLinks ?? sectionLinks).filter((l) => l.visible);
+    }, [resolved.navbar?.sectionLinks, sectionLinks]);
 
     const childrenArray = useMemo(() => {
         return Children.toArray(children);
@@ -135,7 +112,7 @@ export default function LayoutController({
 
     return (
         <>
-            <LayoutRenderer data={draftData}>
+            <LayoutRenderer data={resolved}>
                 {visibleOrderedChildren}
             </LayoutRenderer>
 
@@ -151,21 +128,9 @@ export default function LayoutController({
                     Edit Layout
                 </button>
             )}
-
-            {!isEditing && !viewOnly && (
-                <button
-                    onClick={handleGoBack}
-                    className="absolute bottom-6 right-6 z-[120] flex items-center gap-2 px-4 py-2.5 bg-[var(--pb-foreground-10)] backdrop-blur text-[var(--pb-text-primary)] border border-[var(--pb-border)] rounded-lg font-medium text-sm hover:bg-[var(--pb-foreground-20)] transition-colors shadow-lg"
-                >
-                    Go Back
-                </button>
-            )}
-
-
             <LayoutEditor
-                data={draftData}
-                onChange={handleEditorChange}
-                onSave={handleSave}
+                data={resolved}
+                onChange={onChange}
                 onClose={handleClose}
                 availableSections={availableSections}
                 sectionLinks={sectionLinks}

@@ -1,10 +1,11 @@
 // src/stores/usePortfolioStore.ts
 
 import { create } from "zustand";
-import { api } from "@/lib/client/api";
+import { api, sendKeepaliveRequest } from "@/lib/client/api";
 import { PortfolioThemeData } from "@/portfolio-builder/hooks/usePortfolioTheme";
 import { useCloudinaryCore } from "@/lib/stores/cloudinary";
 import { UserResponse } from "@/lib/stores/user/useUserAccountStore";
+import { LayoutData } from "@/portfolio-builder/types/layout";
 
 // ---------------------------------------------------------------------------
 // Types — derived from schemas.py
@@ -101,7 +102,7 @@ interface PortfolioState {
    * Synchronously updates layout.theme inside currentPortfolio (and the
    * matching entry in portfolios[]) without touching the API. Use this for
    * live-preview changes (ThemeTab color picker, ThemeToggle variant switch)
-   * that should be held locally until the user clicks "Save Layout".
+   * that should be held locally until the next autosave flush.
    */
   updateThemeLocally: (
     portfolioSlug: string,
@@ -112,12 +113,48 @@ interface PortfolioState {
    * Synchronously replaces layout.sections inside currentPortfolio (and the
    * matching entry in portfolios[]) without touching the API. Use this for
    * add/remove-section edits in the layout editor that should be held
-   * locally until the user clicks "Save Layout" (updatePortfolio).
+   * locally until the next autosave flush (or the explicit "Save Layout"
+   * action for navbar/footer structure).
    */
   updateSectionsLocally: (
     portfolioSlug: string,
     sections: Record<string, unknown>[],
   ) => void;
+
+  /**
+   * Synchronously merges `data` into a single section of
+   * currentPortfolio.layout.sections (and the matching entry in
+   * portfolios[]) without touching the API. This is the write path for
+   * every editor's onChange now that editors are pure controlled
+   * components — PortfolioMain is the only thing that persists to the
+   * server, via its own interval/manual/unmount-triggered flush.
+   */
+  updateSectionDataLocally: (
+    portfolioSlug: string,
+    sectionType: string,
+    data: Record<string, unknown>,
+  ) => void;
+
+  /**
+   * Synchronously merges `data` into layout.layout (navbar/footer/
+   * pageBackground) of currentPortfolio (and the matching entry in
+   * portfolios[]) without touching the API. This is the write path for
+   * LayoutEditor now that it's a pure controlled component — it never
+   * saves anything itself. PortfolioMain is the only thing that persists
+   * to the server, via its own interval/manual/unmount-triggered flush,
+   * same contract as updateSectionDataLocally.
+   */
+  updateLayoutDataLocally: (portfolioSlug: string, data: LayoutData) => void;
+
+  /**
+   * Fire-and-forget PUT for beforeunload/page-teardown. Bypasses the normal
+   * `updatePortfolio` (axios) path — axios can't do keepalive requests, and
+   * beforeunload handlers can't reliably await a promise anyway. Not part
+   * of the optimistic-update contract: no local state mutation, no
+   * isLoading flag, nothing to roll back. It's purely "try to get this out
+   * the door before the tab dies."
+   */
+  savePortfolioOnUnload: (portfolioId: string, data: PortfolioUpdate) => void;
 
   // Helpers
   clearError: () => void;
@@ -263,14 +300,22 @@ export const usePortfolioStore = create<PortfolioState>()((set, get) => ({
         data,
       );
       const updated = response.data;
-      // Reconcile with the authoritative server response (e.g. updated_at, slug)
+      // Reconcile with the authoritative server response (e.g. updated_at,
+      // slug) — but NOT `layout`. `updated.layout` is just an echo of the
+      // snapshot we sent at request-start time; the store's live layout is
+      // always at least as fresh (the user may have kept editing while this
+      // PUT was in flight via updateSectionDataLocally/updateLayoutDataLocally/
+      // updateSectionsLocally). Blindly taking `updated` here would clobber
+      // those in-flight edits with the stale snapshot. `layout` is a
+      // one-way street: the store is the source of truth for it, the
+      // server response never overwrites it.
       set((state) => ({
         portfolios: state.portfolios.map((p) =>
-          p.id === portfolioId ? updated : p,
+          p.id === portfolioId ? { ...updated, layout: p.layout } : p,
         ),
         currentPortfolio:
           state.currentPortfolio?.id === portfolioId
-            ? updated
+            ? { ...updated, layout: state.currentPortfolio.layout }
             : state.currentPortfolio,
         isLoading: false,
       }));
@@ -319,8 +364,8 @@ export const usePortfolioStore = create<PortfolioState>()((set, get) => ({
   // updateThemeLocally — no API call, no loading flag.
   // Deep-merges `theme` into layout.theme of the matching portfolio so
   // ThemeToggle and ThemeTab stay in sync through the store without an
-  // extra round-trip. The caller is responsible for persisting via
-  // updatePortfolio (triggered by "Save Layout").
+  // extra round-trip. The caller is responsible for persisting via the
+  // autosave flush in PortfolioMain.
   // ------------------------------------------------------------------
   updateThemeLocally: (portfolioSlug, theme) => {
     const mergeTheme = (portfolio: PortfolioResponse): PortfolioResponse => {
@@ -350,8 +395,8 @@ export const usePortfolioStore = create<PortfolioState>()((set, get) => ({
   // updateSectionsLocally — no API call, no loading flag.
   // Replaces layout.sections of the matching portfolio so add/remove
   // section edits in the layout editor reflect immediately. The caller
-  // is responsible for persisting via updatePortfolio (triggered by
-  // "Save Layout"), same contract as updateThemeLocally.
+  // is responsible for persisting via the autosave flush in PortfolioMain,
+  // same contract as updateThemeLocally.
   // ------------------------------------------------------------------
   updateSectionsLocally: (portfolioSlug, sections) => {
     const mergeSections = (
@@ -379,6 +424,78 @@ export const usePortfolioStore = create<PortfolioState>()((set, get) => ({
           ? mergeSections(state.currentPortfolio)
           : state.currentPortfolio,
     }));
+  },
+
+  // ------------------------------------------------------------------
+  // updateSectionDataLocally — no API call, no loading flag.
+  // Single-section-granularity counterpart to updateSectionsLocally.
+  // Every editor's onChange now flows here directly: it's the live,
+  // optimistic source of truth that PortfolioMain's renderers read from
+  // and that its autosave flush eventually persists.
+  // ------------------------------------------------------------------
+  updateSectionDataLocally: (portfolioSlug, sectionType, data) => {
+    const mergeSection = (portfolio: PortfolioResponse): PortfolioResponse => {
+      const sections =
+        (portfolio.layout?.sections as
+          | { type: string; data: Record<string, unknown> }[]
+          | undefined) ?? [];
+      const idx = sections.findIndex((s) => s.type === sectionType);
+      const nextSections =
+        idx >= 0
+          ? sections.map((s, i) =>
+              i === idx ? { type: sectionType, data } : s,
+            )
+          : [...sections, { type: sectionType, data }];
+      return {
+        ...portfolio,
+        layout: { ...portfolio.layout, sections: nextSections },
+      };
+    };
+
+    set((state) => ({
+      portfolios: state.portfolios.map((p) =>
+        p.slug === portfolioSlug ? mergeSection(p) : p,
+      ),
+      currentPortfolio:
+        state.currentPortfolio?.slug === portfolioSlug
+          ? mergeSection(state.currentPortfolio)
+          : state.currentPortfolio,
+    }));
+  },
+
+  // ------------------------------------------------------------------
+  // updateLayoutDataLocally — no API call, no loading flag.
+  // Layout-data counterpart to updateSectionDataLocally. LayoutEditor's
+  // onChange flows here directly now that it's fully controlled and has
+  // no save/persistence responsibility of its own.
+  // ------------------------------------------------------------------
+  updateLayoutDataLocally: (portfolioSlug, data) => {
+    const mergeLayout = (portfolio: PortfolioResponse): PortfolioResponse => ({
+      ...portfolio,
+      layout: {
+        ...portfolio.layout,
+        layout: data,
+      },
+    });
+
+    set((state) => ({
+      portfolios: state.portfolios.map((p) =>
+        p.slug === portfolioSlug ? mergeLayout(p) : p,
+      ),
+      currentPortfolio:
+        state.currentPortfolio?.slug === portfolioSlug
+          ? mergeLayout(state.currentPortfolio)
+          : state.currentPortfolio,
+    }));
+  },
+
+  // ------------------------------------------------------------------
+  // savePortfolioOnUnload — bypasses axios entirely. See interface doc
+  // comment above for why this exists as a separate path from
+  // updatePortfolio.
+  // ------------------------------------------------------------------
+  savePortfolioOnUnload: (portfolioId, data) => {
+    sendKeepaliveRequest(`/portfolios/${portfolioId}`, "PUT", data);
   },
 
   // ------------------------------------------------------------------

@@ -50,9 +50,12 @@ function TypewriterCursor({ visible }: { visible: boolean }) {
 }
 
 export default function ProjectsRenderer({ data, username, animationKey }: ProjectsRendererProps) {
+  // ── Destructure with proper defaults ─────────────────────────────────────
   const {
     layout = "grid",
     alignment = "left",
+    columns = 3,
+    gap = "medium",
     maxWidth = 1200,
     padding,
     headline,
@@ -61,17 +64,51 @@ export default function ProjectsRenderer({ data, username, animationKey }: Proje
     animations,
     ctaButtons,
     filters,
+    cardStyle = "standard",
+    cardSize = "medium",
+    showImage = true,
+    showDescription = true,
+    showUrl = true,
+    showDates = true,
+    dateDisplay = "relative",
+    showStatus = true,
+    statusDisplay = "badge",
+    showPlatform = true,
+    platformDisplay = "text",
+    showCategory = true,
+    categoryDisplay = "badge",
+    showStack = true,
+    showBudget = false,
+    showClient = false,
+    showContribution = false,
+    cardOverrides = [],
   } = data;
 
-  const safeFilters = filters ?? ({} as ProjectsData["filters"]);
-  const anim: BioAnimations = { ...DEFAULT_ANIM, ...(animations ?? {}) };
+  // ── Safe defaults for nested objects ─────────────────────────────────────
+  const safeFilters: Required<ProjectsData>["filters"] = {
+    ids: filters?.ids ?? undefined,
+    is_completed: filters?.is_completed ?? undefined,
+    is_concept: filters?.is_concept ?? undefined,
+    project_category: filters?.project_category ?? undefined,
+    project_platform: filters?.project_platform ?? undefined,
+    project_status: filters?.project_status ?? undefined,
+    merge_filters: filters?.merge_filters ?? false,
+    _sortBy: filters?._sortBy ?? "default",
+  };
+
+  const safeBackground = background ?? { type: "none" as const };
+
+  const anim: BioAnimations = animations
+    ? { ...DEFAULT_ANIM, ...animations }
+    : DEFAULT_ANIM;
+
   const isAnimated = anim.preset !== "none";
 
-  // ── Projects fetch ──────────────────────────────────────────────────────────
+  // ── Projects fetch ──────────────────────────────────────────────────────
   const { rendererProjects, isLoadingProjects } = useDebouncedProjectsFetch(username, safeFilters);
   const sortedProjects = sortProjects(rendererProjects, safeFilters._sortBy || "default");
 
-  // ── Scroll / parallax refs ────────────────────────────────────────────────
+  // ── Scroll / parallax refs ──────────────────────────────────────────────
   const sectionRef = useRef<HTMLElement>(null);
 
   const isInView = useInView(sectionRef, { once: anim.scrollOnce, amount: 0.15 });
@@ -89,7 +126,7 @@ export default function ProjectsRenderer({ data, username, animationKey }: Proje
 
   const shouldAnimate = isAnimated ? (anim.scrollTrigger ? isInView : true) : false;
 
-  // ── Typewriter hooks ──────────────────────────────────────────────────────
+  // ── Typewriter hooks ────────────────────────────────────────────────────
   const headlineTypewriter = useTypewriter({
     text: headline || "",
     enabled: isAnimated && !!anim.textReveal && !!headline && shouldAnimate,
@@ -104,7 +141,7 @@ export default function ProjectsRenderer({ data, username, animationKey }: Proje
     delay: Math.round((anim.textRevealDelay ?? 0.2) * 1000) + (headline?.length || 0) * 40,
   });
 
-  // ── Derived styles ────────────────────────────────────────────────────────
+  // ── Derived styles ──────────────────────────────────────────────────────
   const alignClass =
     alignment === "center"
       ? "text-center items-center"
@@ -119,24 +156,58 @@ export default function ProjectsRenderer({ data, username, animationKey }: Proje
 
   const contentStyle: React.CSSProperties = { maxWidth: `${maxWidth}px` };
 
-  const layoutProps = { projects: sortedProjects, data, isAnimated, shouldAnimate, anim };
+  const layoutProps = {
+    projects: sortedProjects,
+    data: {
+      ...data,
+      filters: safeFilters,
+      background: safeBackground,
+      animations: anim,
+      layout,
+      alignment,
+      columns,
+      gap,
+      maxWidth,
+      cardStyle,
+      cardSize,
+      showImage,
+      showDescription,
+      showUrl,
+      showDates,
+      dateDisplay,
+      showStatus,
+      statusDisplay,
+      showPlatform,
+      platformDisplay,
+      showCategory,
+      categoryDisplay,
+      showStack,
+      showBudget,
+      showClient,
+      showContribution,
+      cardOverrides,
+    },
+    isAnimated,
+    shouldAnimate,
+    anim,
+  };
 
   const renderLayout = () => {
     switch (layout) {
-      case "masonry": return <MasonryLayout          {...layoutProps} />;
+      case "masonry": return <MasonryLayout {...layoutProps} />;
       case "horizontal-scroll": return <HorizontalScrollLayout {...layoutProps} />;
-      case "list": return <ListLayout             {...layoutProps} />;
-      case "carousel": return <CarouselLayout         {...layoutProps} />;
+      case "list": return <ListLayout {...layoutProps} />;
+      case "carousel": return <CarouselLayout {...layoutProps} />;
       case "grid":
-      default: return <GridLayout             {...layoutProps} />;
+      default: return <GridLayout {...layoutProps} />;
     }
   };
 
-  // ── Loading state ─────────────────────────────────────────────────────────
+  // ── Loading state ───────────────────────────────────────────────────────
   if (isLoadingProjects) {
     return (
       <section ref={sectionRef} className="relative" style={paddingStyle}>
-        <SectionBackgroundRenderer background={background} />
+        <SectionBackgroundRenderer background={safeBackground} />
         <div
           className={`relative z-10 mx-auto w-full px-4 sm:px-6 lg:px-8 ${alignClass}`}
           style={contentStyle}
@@ -149,7 +220,7 @@ export default function ProjectsRenderer({ data, username, animationKey }: Proje
     );
   }
 
-  // ── Empty state ───────────────────────────────────────────────────────────
+  // ── Empty state ─────────────────────────────────────────────────────────
   if (sortedProjects.length === 0) return null;
 
   // horizontal-scroll must not clip its negative-margin bleed track
@@ -163,7 +234,7 @@ export default function ProjectsRenderer({ data, username, animationKey }: Proje
 
   return (
     <section ref={sectionRef} className={`relative ${sectionOverflow}`} style={paddingStyle}>
-      <SectionBackgroundRenderer background={background} />
+      <SectionBackgroundRenderer background={safeBackground} />
 
       <MotionContainer
         motionKey={animationKey}
@@ -211,6 +282,11 @@ export default function ProjectsRenderer({ data, username, animationKey }: Proje
               </div>
             )}
 
+            {/*
+             * horizontal-scroll is NOT wrapped in MotionItem because Framer Motion
+             * entrance variants add overflow:hidden during the animation, which clips
+             * the negative-margin bleed and hides the scroll controls entirely.
+             */}
             {renderLayout()}
 
             {ctaButtons && ctaButtons.length > 0 && (

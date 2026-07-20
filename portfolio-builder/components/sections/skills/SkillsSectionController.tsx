@@ -14,7 +14,7 @@ import { useSkills } from "@/lib/stores/skills/useSkills";
 
 interface SkillsSectionControllerProps {
   skillsData: SkillsData | null;
-  onSave: (updatedSkillsData: SkillsData) => Promise<void>;
+  onChange: (updatedSkillsData: SkillsData) => void;
   username: string;
   viewOnly: boolean
 }
@@ -25,20 +25,12 @@ interface SkillsSectionControllerProps {
 
 export default function SkillsSectionController({
   skillsData,
-  onSave,
+  onChange,
   username,
   viewOnly
 }: SkillsSectionControllerProps) {
   const [isEditing, setIsEditing] = useState(false);
   const { fetchPublicSkillsByUsername } = useSkills();
-
-  // ── Optimistic local state ────────────────────────────────────────────────
-  // The renderer always reads from here so we never show stale data after
-  // the editor unmounts.  Sync with the prop whenever it changes from above.
-  const [localData, setLocalData] = useState<SkillsData | null>(skillsData);
-  useEffect(() => {
-    if (skillsData) setLocalData(skillsData);
-  }, [skillsData]);
 
   // Prefetch with the real filter config as soon as both username and
   // skillsData are available. This starts the fetch one render cycle earlier
@@ -58,36 +50,20 @@ export default function SkillsSectionController({
     });
   }, [username, skillsData]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ---- Save ----------------------------------------------------------------
-  const handleSave = async (updatedSkillsData: SkillsData) => {
-    setLocalData(updatedSkillsData);   // optimistic — renderer sees it immediately
-    await onSave(updatedSkillsData);   // persist
-  };
-
-  // ---- Cancel --------------------------------------------------------------
-  const handleCancel = () => {
-    setLocalData(skillsData);          // rollback to last known server state
-    setIsEditing(false);
-  };
-
-  // ---- Fullscreen ----------------------------------------------------------
-  // The editor calls this with its latest in-memory data.  We update our
-  // optimistic state so the renderer shows the freshest config immediately.
-  // We do NOT call onSave here — the editor's pending auto-save will flush
-  // naturally, or the user can hit "Save Now" manually.
-  const handleSetFullscreen = (latestData: SkillsData) => {
-    setLocalData(latestData);
-    setIsEditing(false);
+  // ---- Add section -----------------------------------------------------
+  const handleAdd = () => {
+    onChange(skillsData ?? getEmptySkillsData());
+    setIsEditing(true);
   };
 
   // ---- No skills data, not editing — show placeholder ----------------------
-  if (!localData && !isEditing) {
+  if (!skillsData && !isEditing) {
     return (
       <div className="flex items-center justify-center min-h-[40vh]">
         <div className="text-center">
           <p className="text-[var(--pb-text-muted)] text-sm mb-4">Skills section not set up</p>
           <button
-            onClick={() => setIsEditing(true)}
+            onClick={handleAdd}
             className="px-6 py-3 bg-[var(--pb-foreground)] text-[var(--pb-background)] rounded-lg font-medium text-sm hover:opacity-90 transition-opacity"
           >
             Add Skills Section
@@ -97,14 +73,15 @@ export default function SkillsSectionController({
     );
   }
 
+  const resolvedData = skillsData ?? getEmptySkillsData();
+
   // ---- Editing — show editor -----------------------------------------------
   if (isEditing) {
     return (
       <SkillsEditor
-        initialData={localData || getEmptySkillsData()}
-        onSave={handleSave}
-        onCancel={handleCancel}
-        setFullScreen={handleSetFullscreen}
+        data={resolvedData}
+        onChange={onChange}
+        onDone={() => setIsEditing(false)}
         username={username}
       />
     );
@@ -113,7 +90,7 @@ export default function SkillsSectionController({
   // ---- Viewing — show renderer ---------------------------------------------
   return (
     <div className="relative">
-      <SkillsRenderer data={localData!} username={username} />
+      <SkillsRenderer data={resolvedData} username={username} />
 
       {/* Edit button */}
       {

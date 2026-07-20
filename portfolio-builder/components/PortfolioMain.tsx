@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useCallback, useRef } from "react";
+import { useEffect, useMemo, useCallback, useRef, useState } from "react";
+import { Loader2 } from "lucide-react";
 import { usePortfolioStore } from "@/portfolio-builder/store/usePortfolioStore";
 import HeroSectionController from "@/portfolio-builder/components/sections/hero/HeroSectionController";
 import BioSectionController from "@/portfolio-builder/components/sections/bio/BioSectionController";
@@ -8,7 +9,7 @@ import PortfolioProLogo from "@/src/app/components/logo/PortfolioProTextLogo";
 import { HeroData } from "@/portfolio-builder/types/hero";
 import { BioData } from "@/portfolio-builder/types/bio";
 import { LayoutData, syncSectionLinks } from "@/portfolio-builder/types/layout";
-import { usePortfolioTheme, PortfolioThemeData } from "@/portfolio-builder/hooks/usePortfolioTheme";
+import { usePortfolioTheme } from "@/portfolio-builder/hooks/usePortfolioTheme";
 import "@/portfolio-builder/styles/portfolio-theme.css";
 import { SkillsSectionController } from "./sections/skills";
 import { SkillsData } from "../types/skills";
@@ -55,6 +56,12 @@ const ALL_SECTION_TYPES = [
   "blogs",
   "testimonials",
 ];
+
+// How often the autosave interval checks for dirty state. This is a
+// backstop, not the primary trigger — the manual "Save changes" button and
+// unmount both call the exact same flush(), and flush() itself is what
+// decides whether there's actually anything new to send.
+const AUTOSAVE_INTERVAL_MS = 30_000;
 
 function getSectionData<T>(
   layout: Record<string, unknown> | null,
@@ -104,8 +111,16 @@ function removeSectionData(
 }
 
 export default function PortfolioMain({ portfolioId, viewOnly }: PortfolioMainProps) {
-  const { currentPortfolio, error, fetchPortfolioById, updatePortfolio, updateSectionsLocally } =
-    usePortfolioStore();
+  const {
+    currentPortfolio,
+    error,
+    fetchPortfolioById,
+    updatePortfolio,
+    updateSectionsLocally,
+    updateSectionDataLocally,
+    updateLayoutDataLocally,
+    savePortfolioOnUnload,
+  } = usePortfolioStore();
   const { profileContext } = useTheme();
   const { fetchProfile } = useUserSettings()
 
@@ -125,8 +140,34 @@ export default function PortfolioMain({ portfolioId, viewOnly }: PortfolioMainPr
     }
   }, [viewOnly])
 
+  // ── Baseline for dirty-tracking ──────────────────────────────────────────
+  // JSON snapshot of the layout as it exists on the server (or as it was
+  // after the last successful save). Compared against the live layout to
+  // decide whether there's anything worth saving — this is what lets the
+  // interval, the manual button, and unmount all share one flush() without
+  // ever sending a duplicate PUT of unchanged data, no matter which one
+  // fires first.
+  const lastSavedLayoutRef = useRef<string>("");
+
+  // Guards against a stale-data window during in-app navigation between two
+  // portfolio editors (not a hard refresh): usePortfolioStore is global, so
+  // `currentPortfolio` keeps holding the *previous* portfolio's data for a
+  // moment while fetchPortfolioById for the new portfolioId is in flight.
+  // Without this guard, isDirty could read true against stale data before
+  // lastSavedLayoutRef has been (re)set for the portfolio actually being
+  // viewed, which would let the Save button fire a save under the wrong ID.
+  const [loadedPortfolioId, setLoadedPortfolioId] = useState<string | null>(null);
+
   useEffect(() => {
-    fetchPortfolioById(portfolioId);
+    setLoadedPortfolioId(null);
+    fetchPortfolioById(portfolioId)
+      .then((p) => {
+        lastSavedLayoutRef.current = JSON.stringify(p.layout ?? null);
+        setLoadedPortfolioId(portfolioId);
+      })
+      .catch(() => {
+        // Failure already surfaces via the `error` state above.
+      });
   }, [portfolioId]);
 
   // usePortfolioTheme now reads from the store itself — no args needed.
@@ -135,6 +176,7 @@ export default function PortfolioMain({ portfolioId, viewOnly }: PortfolioMainPr
   const resolvedTheme = usePortfolioTheme();
 
   const layout = currentPortfolio?.layout ?? null;
+  const portfolioSlug = currentPortfolio?.slug;
 
   // ── Layout data ───────────────────────────────────────────────────────────
   const layoutData = useMemo(
@@ -174,19 +216,12 @@ export default function PortfolioMain({ portfolioId, viewOnly }: PortfolioMainPr
   const testimonialsData = useMemo(() => getSectionData<TestimonialsData>(layout, "testimonials"), [layout]);
 
   // ── Serialized save queue ────────────────────────────────────────────────
-  // Root cause of the "section A overwrites section B" bug: every
-  // handle*Save below used to close over the `layout` memo from its own
-  // render. Since every section's editor autosaves independently (interval,
-  // unmount, beforeunload) and `updatePortfolio` does a full-object PUT,
-  // two saves in flight at once could each be built from the same stale
-  // snapshot — whichever response landed last would silently wipe out the
-  // other section's edit.
-  //
-  // Fix: funnel every save through this queue. Each queued job reads
-  // currentPortfolio.layout directly from the store *at the moment it runs*
-  // (not from a render-time closure) and jobs are awaited strictly one at a
-  // time, so a save can never be built on top of data that's about to be
-  // superseded by another in-flight save.
+  // Every network write to the portfolio (autosave flush, or the explicit
+  // "Save Layout" action from LayoutController) goes through here so two
+  // writes can never race each other. Each queued job reads the layout
+  // fresh from the store at execution time and, on success, updates
+  // lastSavedLayoutRef so dirty-tracking stays accurate no matter which
+  // caller triggered the save.
   const saveQueueRef = useRef<Promise<void>>(Promise.resolve());
 
   const queueLayoutSave = useCallback(
@@ -194,10 +229,10 @@ export default function PortfolioMain({ portfolioId, viewOnly }: PortfolioMainPr
       const run = async () => {
         const latestLayout = usePortfolioStore.getState().currentPortfolio?.layout ?? null;
         await updatePortfolio(portfolioId, { layout: mutate(latestLayout) });
+        lastSavedLayoutRef.current = JSON.stringify(
+          usePortfolioStore.getState().currentPortfolio?.layout ?? null
+        );
       };
-      // Chain onto whatever's currently queued so saves run strictly in
-      // order; swallow prior errors so one failed save doesn't jam the
-      // queue for subsequent sections.
       const next = saveQueueRef.current.then(run, run);
       saveQueueRef.current = next.catch(() => { });
       return next;
@@ -205,60 +240,130 @@ export default function PortfolioMain({ portfolioId, viewOnly }: PortfolioMainPr
     [portfolioId, updatePortfolio]
   );
 
-  // ── Save handlers ─────────────────────────────────────────────────────────
-  const handleHeroSave = useCallback(async (updated: HeroData) => {
-    await queueLayoutSave((latest) => setSectionData(latest, "hero", updated));
-  }, [queueLayoutSave]);
+  // ── Autosave flush ───────────────────────────────────────────────────────
+  // Re-checks freshness against lastSavedLayoutRef every time it's called —
+  // this single check is what makes it safe for the interval, the manual
+  // button, and unmount to all call the exact same function: whichever one
+  // fires first does the save, and the others become no-ops because
+  // there's nothing new since the last successful write.
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "error">("idle");
 
-  const handleBioSave = useCallback(async (updated: BioData) => {
-    await queueLayoutSave((latest) => setSectionData(latest, "bio", updated));
-  }, [queueLayoutSave]);
+  const flush = useCallback(async () => {
+    if (loadedPortfolioId !== portfolioId) return;
+    const latestLayout = usePortfolioStore.getState().currentPortfolio?.layout ?? null;
+    if (JSON.stringify(latestLayout) === lastSavedLayoutRef.current) return;
 
-  const handleSkillsSave = useCallback(async (updated: SkillsData) => {
-    await queueLayoutSave((latest) => setSectionData(latest, "skills", updated));
-  }, [queueLayoutSave]);
+    setSaveStatus("saving");
+    try {
+      await queueLayoutSave((latest) => latest ?? {});
+      setSaveStatus("idle");
+    } catch {
+      setSaveStatus("error");
+    }
+  }, [queueLayoutSave, loadedPortfolioId, portfolioId]);
 
-  const handleExperienceSave = useCallback(async (updated: ExperienceData) => {
-    await queueLayoutSave((latest) => setSectionData(latest, "experience", updated));
-  }, [queueLayoutSave]);
+  // 30s interval trigger — backstop for whenever the user just keeps
+  // editing without pausing long enough to naturally trigger anything else.
+  useEffect(() => {
+    const id = setInterval(() => {
+      flush();
+    }, AUTOSAVE_INTERVAL_MS);
+    return () => clearInterval(id);
+  }, [flush]);
 
-  const handleEducationSave = useCallback(async (updated: EducationData) => {
-    await queueLayoutSave((latest) => setSectionData(latest, "education", updated));
-  }, [queueLayoutSave]);
+  // Unmount trigger — covers in-app navigation away from the editor
+  // (e.g. routing to a different page) where beforeunload never fires.
+  useEffect(() => {
+    return () => {
+      flush();
+    };
+  }, [flush]);
 
-  const handleCertificationSave = useCallback(async (updated: CertificationData) => {
-    await queueLayoutSave((latest) => setSectionData(latest, "certification", updated));
-  }, [queueLayoutSave]);
+  // Tab close / reload trigger — bypasses the queue (can't be awaited from
+  // inside beforeunload) in favor of the keepalive path, but keeps the same
+  // dedupe check so a clean close with nothing pending doesn't fire an
+  // unnecessary request.
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (loadedPortfolioId !== portfolioId) return;
+      const latestLayout = usePortfolioStore.getState().currentPortfolio?.layout ?? null;
+      if (JSON.stringify(latestLayout) === lastSavedLayoutRef.current) return;
+      savePortfolioOnUnload(portfolioId, { layout: latestLayout || undefined });
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [portfolioId, savePortfolioOnUnload, loadedPortfolioId]);
 
-  const handleProjectsSave = useCallback(async (updated: ProjectsData) => {
-    await queueLayoutSave((latest) => setSectionData(latest, "projects", updated));
-  }, [queueLayoutSave]);
+  const isDirty = useMemo(
+    () =>
+      loadedPortfolioId === portfolioId &&
+      JSON.stringify(layout) !== lastSavedLayoutRef.current,
+    [layout, loadedPortfolioId, portfolioId]
+  );
 
-  const handleBlogsSave = useCallback(async (updated: BlogsData) => {
-    await queueLayoutSave((latest) => setSectionData(latest, "blogs", updated));
-  }, [queueLayoutSave]);
+  // ── Section change handlers ──────────────────────────────────────────────
+  // Every editor is now a pure controlled component: it calls onChange on
+  // every edit, and we write straight into the store (optimistic,
+  // synchronous, no network call). flush() is what eventually persists it —
+  // these handlers never touch the network directly.
+  const handleHeroChange = useCallback((updated: HeroData) => {
+    if (!portfolioSlug) return;
+    updateSectionDataLocally(portfolioSlug, "hero", updated as unknown as Record<string, unknown>);
+  }, [portfolioSlug, updateSectionDataLocally]);
 
-  const handleTestimonialsSave = useCallback(async (updated: TestimonialsData) => {
-    await queueLayoutSave((latest) => setSectionData(latest, "testimonials", updated));
-  }, [queueLayoutSave]);
+  const handleBioChange = useCallback((updated: BioData) => {
+    if (!portfolioSlug) return;
+    updateSectionDataLocally(portfolioSlug, "bio", updated as unknown as Record<string, unknown>);
+  }, [portfolioSlug, updateSectionDataLocally]);
 
-  // ── Layout save ───────────────────────────────────────────────────────────
-  // Persists the layout structure (navbar, footer, etc.) alongside whatever
-  // theme is currently in the store. Also routed through the queue, and
-  // reads the theme off the freshest layout rather than the stale `layout`
-  // memo, for the same reason as above.
-  const handleLayoutSave = useCallback(async (updated: LayoutData) => {
-    await queueLayoutSave((latest) => {
-      const currentTheme = ((latest as Record<string, unknown> | null)?.theme ?? {}) as PortfolioThemeData;
-      return {
-        ...latest,
-        layout: updated,        // persist the navbar/footer/background draft
-        theme: currentTheme,    // persist whatever theme is in the store right now
-      };
-    });
-  }, [queueLayoutSave]);
+  const handleSkillsChange = useCallback((updated: SkillsData) => {
+    if (!portfolioSlug) return;
+    updateSectionDataLocally(portfolioSlug, "skills", updated as unknown as Record<string, unknown>);
+  }, [portfolioSlug, updateSectionDataLocally]);
 
-  // ── Add section ───────────────────────────────────────────────────────────
+  const handleExperienceChange = useCallback((updated: ExperienceData) => {
+    if (!portfolioSlug) return;
+    updateSectionDataLocally(portfolioSlug, "experience", updated as unknown as Record<string, unknown>);
+  }, [portfolioSlug, updateSectionDataLocally]);
+
+  const handleEducationChange = useCallback((updated: EducationData) => {
+    if (!portfolioSlug) return;
+    updateSectionDataLocally(portfolioSlug, "education", updated as unknown as Record<string, unknown>);
+  }, [portfolioSlug, updateSectionDataLocally]);
+
+  const handleCertificationChange = useCallback((updated: CertificationData) => {
+    if (!portfolioSlug) return;
+    updateSectionDataLocally(portfolioSlug, "certification", updated as unknown as Record<string, unknown>);
+  }, [portfolioSlug, updateSectionDataLocally]);
+
+  const handleProjectsChange = useCallback((updated: ProjectsData) => {
+    if (!portfolioSlug) return;
+    updateSectionDataLocally(portfolioSlug, "projects", updated as unknown as Record<string, unknown>);
+  }, [portfolioSlug, updateSectionDataLocally]);
+
+  const handleBlogsChange = useCallback((updated: BlogsData) => {
+    if (!portfolioSlug) return;
+    updateSectionDataLocally(portfolioSlug, "blogs", updated as unknown as Record<string, unknown>);
+  }, [portfolioSlug, updateSectionDataLocally]);
+
+  const handleTestimonialsChange = useCallback((updated: TestimonialsData) => {
+    if (!portfolioSlug) return;
+    updateSectionDataLocally(portfolioSlug, "testimonials", updated as unknown as Record<string, unknown>);
+  }, [portfolioSlug, updateSectionDataLocally]);
+
+  // ── Layout change ─────────────────────────────────────────────────────────
+  // LayoutController/LayoutEditor are pure controlled components now — they
+  // never save anything themselves. Every edit lands here and writes
+  // straight into the store (optimistic, synchronous, no network call),
+  // exactly like every other section's onChange. flush() (via the existing
+  // autosave interval/manual button/unmount triggers) is the only thing
+  // that ever persists it to the server.
+  const handleLayoutChange = useCallback((updated: LayoutData) => {
+    if (!portfolioSlug) return;
+    updateLayoutDataLocally(portfolioSlug, updated);
+  }, [portfolioSlug, updateLayoutDataLocally]);
+
+  // ── Add / remove section ─────────────────────────────────────────────────
   // Seeds an empty data object for the new section type. Individual
   // *SectionController components are expected to render sensibly against
   // an empty/null data shape (same contract they already have on first load).
@@ -276,7 +381,7 @@ export default function PortfolioMain({ portfolioId, viewOnly }: PortfolioMainPr
 
   const currentUsername = profileContext.username;
 
-  if (!currentPortfolio) {
+  if (!currentPortfolio || loadedPortfolioId !== portfolioId) {
     return (
       <div className="flex items-center flex-col justify-center min-h-screen bg-[var(--pb-background)]">
         <PortfolioProLogo scale={0.7} />
@@ -290,55 +395,55 @@ export default function PortfolioMain({ portfolioId, viewOnly }: PortfolioMainPr
       case "hero":
         return (
           <section id="hero" key="hero">
-            <HeroSectionController heroData={heroData} viewOnly={viewOnly} onSave={handleHeroSave} theme={resolvedTheme} />
+            <HeroSectionController heroData={heroData} viewOnly={viewOnly} onChange={handleHeroChange} theme={resolvedTheme} />
           </section>
         );
       case "bio":
         return (
           <section id="bio" key="bio">
-            <BioSectionController bioData={bioData} viewOnly={viewOnly} onSave={handleBioSave} />
+            <BioSectionController bioData={bioData} viewOnly={viewOnly} onChange={handleBioChange} />
           </section>
         );
       case "skills":
         return (
           <section id="skills" key="skills">
-            <SkillsSectionController skillsData={skillsData} viewOnly={viewOnly} onSave={handleSkillsSave} username={currentUsername || ""} />
+            <SkillsSectionController skillsData={skillsData} viewOnly={viewOnly} onChange={handleSkillsChange} username={currentUsername || ""} />
           </section>
         );
       case "experience":
         return (
           <section id="experience" key="experience">
-            <ExperienceSectionController experienceData={experienceData} viewOnly={viewOnly} onSave={handleExperienceSave} username={currentUsername || ""} />
+            <ExperienceSectionController experienceData={experienceData} viewOnly={viewOnly} onChange={handleExperienceChange} username={currentUsername || ""} />
           </section>
         );
       case "education":
         return (
           <section id="education" key="education">
-            <EducationSectionController educationData={educationData} viewOnly={viewOnly} onSave={handleEducationSave} username={currentUsername || ""} />
+            <EducationSectionController educationData={educationData} viewOnly={viewOnly} onChange={handleEducationChange} username={currentUsername || ""} />
           </section>
         );
       case "certification":
         return (
           <section id="certification" key="certification">
-            <CertificationSectionController certificationData={certificationData} viewOnly={viewOnly} onSave={handleCertificationSave} username={currentUsername || ""} />
+            <CertificationSectionController certificationData={certificationData} viewOnly={viewOnly} onChange={handleCertificationChange} username={currentUsername || ""} />
           </section>
         );
       case "projects":
         return (
           <section id="projects" key="projects">
-            <ProjectsSectionController projectsData={projectsData} viewOnly={viewOnly} onSave={handleProjectsSave} username={currentUsername || ""} />
+            <ProjectsSectionController projectsData={projectsData} viewOnly={viewOnly} onChange={handleProjectsChange} username={currentUsername || ""} />
           </section>
         );
       case "blogs":
         return (
           <section id="blogs" key="blogs">
-            <BlogsSectionController blogsData={blogsData} viewOnly={viewOnly} onSave={handleBlogsSave} username={currentUsername || ""} />
+            <BlogsSectionController blogsData={blogsData} viewOnly={viewOnly} onChange={handleBlogsChange} username={currentUsername || ""} />
           </section>
         );
       case "testimonials":
         return (
           <section id="testimonials" key="testimonials">
-            <TestimonialsSectionController testimonialsData={testimonialsData} viewOnly={viewOnly} onSave={handleTestimonialsSave} username={currentUsername || ""} />
+            <TestimonialsSectionController testimonialsData={testimonialsData} viewOnly={viewOnly} onChange={handleTestimonialsChange} username={currentUsername || ""} />
           </section>
         );
       default:
@@ -347,16 +452,43 @@ export default function PortfolioMain({ portfolioId, viewOnly }: PortfolioMainPr
   };
 
   return (
-    <LayoutController
-      layoutData={layoutData}
-      viewOnly={viewOnly} onSave={handleLayoutSave}
-      availableSections={availableSections}
-      sectionLinks={sectionLinks}
-      missingSections={missingSections}
-      onAddSection={handleAddSection}
-      onRemoveSection={handleRemoveSection}
-    >
-      {ALL_SECTION_TYPES.map((sectionType) => renderSection(sectionType))}
-    </LayoutController>
+    <>
+      <LayoutController
+        layoutData={layoutData}
+        viewOnly={viewOnly}
+        onChange={handleLayoutChange}
+        availableSections={availableSections}
+        sectionLinks={sectionLinks}
+        missingSections={missingSections}
+        onAddSection={handleAddSection}
+        onRemoveSection={handleRemoveSection}
+      >
+        {ALL_SECTION_TYPES.map((sectionType) => renderSection(sectionType))}
+      </LayoutController>
+
+      {!viewOnly && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+          <button
+            onClick={flush}
+            disabled={saveStatus === "saving" || !isDirty}
+            className={`px-5 py-2.5 rounded-full font-medium text-sm shadow-lg backdrop-blur transition-colors flex items-center gap-2 border ${saveStatus === "error"
+              ? "bg-[var(--pb-error-bg)] text-[var(--pb-error)] border-[var(--pb-error-border)]"
+              : isDirty
+                ? "bg-[var(--pb-foreground)] text-[var(--pb-background)] border-transparent hover:opacity-90"
+                : "bg-[var(--pb-foreground-10)] text-[var(--pb-text-muted)] border-[var(--pb-border)] cursor-default"
+              }`}
+          >
+            {saveStatus === "saving" && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+            {saveStatus === "saving"
+              ? "Saving..."
+              : saveStatus === "error"
+                ? "Save failed — Retry"
+                : isDirty
+                  ? "Save changes"
+                  : "All changes saved"}
+          </button>
+        </div>
+      )}
+    </>
   );
 }

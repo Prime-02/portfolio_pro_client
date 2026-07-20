@@ -2,8 +2,8 @@
 
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
-import { AlertTriangle, RefreshCw, Maximize, Loader2 } from "lucide-react";
+import { useState, useMemo } from "react";
+import { RefreshCw, Check } from "lucide-react";
 import { ProjectsData, getEmptyProjectsData } from "@/portfolio-builder/types/projects";
 import type { BioAnimations } from "@/portfolio-builder/types/bio";
 import {
@@ -14,9 +14,7 @@ import {
   ProjectsAnimationsTab,
   ProjectsCTATab,
   ProjectsEditorTabs,
-  ProjectsEditorActions,
 } from "./editor-components";
-import { usePortfolioStore } from "@/portfolio-builder/store/usePortfolioStore";
 import ProjectsRenderer from "./ProjectsRenderer";
 
 // ---------------------------------------------------------------------------
@@ -45,197 +43,70 @@ function mergeWithDefaults(partial: ProjectsData): ProjectsData {
   };
 }
 
-// Fixed interval for the periodic background save (ms).
-const SAVE_INTERVAL_MS = 30_000;
-
 interface ProjectsEditorProps {
-  initialData: ProjectsData;
-  onSave: (data: ProjectsData) => Promise<void>;
-  onCancel: () => void;
-  setFullScreen: (latestData: ProjectsData) => void;
+  // Fully controlled: `data` is the live value owned by PortfolioMain (via
+  // the store). Every field updater below computes the next value and
+  // hands it straight back via onChange. PortfolioMain's autosave flush is
+  // what eventually persists it.
+  data: ProjectsData;
+  onChange: (data: ProjectsData) => void;
+  onDone: () => void;
   username: string;
 }
 
 export default function ProjectsEditor({
-  initialData,
-  onSave,
-  onCancel,
-  setFullScreen,
+  data,
+  onChange,
+  onDone,
   username,
 }: ProjectsEditorProps) {
-  // ── Resolve data with defaults ─────────────────────────────────────────
-  const resolvedInitialData = mergeWithDefaults(initialData);
+  const resolved = useMemo(() => mergeWithDefaults(data), [data]);
 
-  const [data, setData] = useState<ProjectsData>(() => structuredClone(resolvedInitialData));
   const [activeTab, setActiveTab] = useState<
     "filters" | "card-layout" | "layout" | "background" | "animations" | "cta"
   >("filters");
-  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
 
-  // True while this editor OR any other portfolio save is in flight.
-  const isPortfolioSaving = usePortfolioStore((state) => state.isLoading);
-  const isSaving = saveStatus === "saving" || isPortfolioSaving;
-
-  // ── Animation replay counter ─────────────────────────────────────────────
+  // ── Animation replay counter — purely a preview concern, stays local ────
   const [animationKey, setAnimationKey] = useState(0);
-
-  // ── Latest data ref (so timers/unmount/unload always save current data) ──
-  const dataRef = useRef(data);
-  useEffect(() => {
-    dataRef.current = data;
-  }, [data]);
-
-  // ── Save orchestration refs ──────────────────────────────────────────────
-  const isSavingRef = useRef(false);
-  const pendingSaveRef = useRef<ProjectsData | null>(null);
-  const savedStatusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // ── Core save executor ───────────────────────────────────────────────────
-  // No "has changes" tracking - callers trigger this whenever a save should
-  // happen, and duplicate saves are fine (better than stale state).
-  const executeSave = useCallback(
-    (nextData: ProjectsData) => {
-      if (isSavingRef.current) {
-        pendingSaveRef.current = nextData;
-        return;
-      }
-
-      isSavingRef.current = true;
-      setSaveStatus("saving");
-
-      Promise.resolve(onSave(nextData))
-        .then(() => {
-          setSaveStatus("saved");
-
-          if (savedStatusTimerRef.current) clearTimeout(savedStatusTimerRef.current);
-          savedStatusTimerRef.current = setTimeout(() => setSaveStatus("idle"), 2000);
-
-          if (pendingSaveRef.current) {
-            const queued = pendingSaveRef.current;
-            pendingSaveRef.current = null;
-            executeSave(queued);
-          }
-        })
-        .catch(() => {
-          setSaveStatus("error");
-          pendingSaveRef.current = null;
-        })
-        .finally(() => {
-          isSavingRef.current = false;
-        });
-    },
-    [onSave]
-  );
-
-  // ── Fixed-interval save ────────────────────────────────────────────────────
-  // Saves periodically regardless of whether anything changed - simpler and
-  // safer than tracking dirty state, and duplicate saves are harmless.
-  useEffect(() => {
-    const interval = setInterval(() => {
-      executeSave(dataRef.current);
-    }, SAVE_INTERVAL_MS);
-    return () => clearInterval(interval);
-  }, [executeSave]);
-
-  // ── Save on unmount ──────────────────────────────────────────────────────────
-  useEffect(() => {
-    return () => {
-      executeSave(dataRef.current);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // ── Save on page reload/close ─────────────────────────────────────────────────
-  useEffect(() => {
-    const handleBeforeUnload = () => {
-      executeSave(dataRef.current);
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [executeSave]);
 
   // ── Field updaters ───────────────────────────────────────────────────────
   const updateField = <K extends keyof ProjectsData>(key: K, value: ProjectsData[K]) => {
-    setData((prev) => ({ ...prev, [key]: value }));
+    onChange({ ...resolved, [key]: value });
   };
 
   const updateFilters = (value: Partial<ProjectsData["filters"]>) => {
-    setData((prev) => ({
-      ...prev,
-      filters: { ...prev.filters, ...value },
-    }));
+    onChange({ ...resolved, filters: { ...resolved.filters, ...value } });
   };
 
   const updateBackground = (value: Partial<ProjectsData["background"]>) => {
-    setData((prev) => ({
-      ...prev,
-      background: { ...prev.background, ...value },
-    }));
+    onChange({ ...resolved, background: { ...resolved.background, ...value } });
   };
 
   const updateAnimations = (value: Partial<BioAnimations>) => {
-    setData((prev) => ({
-      ...prev,
-      animations: { ...prev.animations, ...value },
-    }));
+    onChange({ ...resolved, animations: { ...resolved.animations, ...value } });
     setAnimationKey((k) => k + 1);
-  };
-
-  // ── Manual save ──────────────────────────────────────────────────────────
-  const handleSave = () => {
-    if (isSaving) return;
-    executeSave(data);
-  };
-
-  // ── Cancel ───────────────────────────────────────────────────────────────
-  const handleCancel = () => {
-    onCancel();
-  };
-
-  // ── Fullscreen ───────────────────────────────────────────────────────────
-  // Preview only, but also triggers a save so the fullscreen view (and
-  // whatever consumes it) reflects the latest edits.
-  const handleFullscreen = () => {
-    if (!isSaving) executeSave(data);
-    setFullScreen(data);
-  };
-
-  // ── Save status display ──────────────────────────────────────────────────
-  const saveStatusText = {
-    idle: "Idle",
-    saving: "Saving...",
-    saved: "Saved",
-    error: "Save failed",
-  };
-
-  const saveStatusColor = {
-    idle: "text-[var(--pb-text-muted)]",
-    saving: "text-[var(--pb-info)]",
-    saved: "text-[var(--pb-success)]",
-    error: "text-[var(--pb-error)]",
   };
 
   // ── Tab content ──────────────────────────────────────────────────────────
   const renderTabContent = () => {
     switch (activeTab) {
       case "filters":
-        return <ProjectsFilterTab data={data} onUpdate={updateFilters} />;
+        return <ProjectsFilterTab data={resolved} onUpdate={updateFilters} />;
       case "card-layout":
-        return <ProjectsCardLayoutTab data={data} onChange={updateField} />;
+        return <ProjectsCardLayoutTab data={resolved} onChange={updateField} />;
       case "layout":
-        return <ProjectsLayoutTab data={data} onChange={updateField} />;
+        return <ProjectsLayoutTab data={resolved} onChange={updateField} />;
       case "background":
         return (
           <ProjectsBackgroundTab
-            data={data}
+            data={resolved}
             onUpdate={updateBackground}
           />
         );
       case "animations":
-        return <ProjectsAnimationsTab data={data} onUpdate={updateAnimations} />;
+        return <ProjectsAnimationsTab data={resolved} onUpdate={updateAnimations} />;
       case "cta":
-        return <ProjectsCTATab data={data} onChange={updateField} />;
+        return <ProjectsCTATab data={resolved} onChange={updateField} />;
       default:
         return null;
     }
@@ -244,27 +115,6 @@ export default function ProjectsEditor({
   // ── Render ───────────────────────────────────────────────────────────────
   return (
     <div className="flex flex-col lg:flex-row gap-6 h-full">
-      {/* Save status banner */}
-      {(saveStatus === "saving" || saveStatus === "error") && (
-        <div
-          className={`fixed bottom-4 right-4 z-50 px-4 py-2 rounded-lg shadow-lg ${saveStatus === "saving"
-            ? "bg-[var(--pb-info-bg)] text-[var(--pb-info)] border border-[var(--pb-info-border)]"
-            : "bg-[var(--pb-error-bg)] text-[var(--pb-error)] border border-[var(--pb-error-border)]"
-            }`}
-        >
-          <div className="flex items-center gap-2">
-            {saveStatus === "saving" ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <AlertTriangle className="w-4 h-4" />
-            )}
-            <span className="text-sm font-medium">
-              {saveStatus === "saving" ? "Saving..." : "Save failed! Don't close the page"}
-            </span>
-          </div>
-        </div>
-      )}
-
       {/* Editor panel */}
       <div className="h-fit flex-1 flex bg-[var(--pb-background)] flex-col min-w-0 border border-[var(--pb-border)] rounded-xl overflow-hidden">
         <ProjectsEditorTabs activeTab={activeTab} onTabChange={setActiveTab} />
@@ -272,15 +122,6 @@ export default function ProjectsEditor({
         <div className="p-6 overflow-y-auto flex-1 space-y-6">
           {renderTabContent()}
         </div>
-
-        <ProjectsEditorActions
-          hasChanges={true}
-          isSaving={isSaving}
-          saveStatus={saveStatusText[saveStatus]}
-          saveStatusColor={saveStatusColor[saveStatus]}
-          onSave={handleSave}
-          onCancel={handleCancel}
-        />
       </div>
 
       {/* Preview panel */}
@@ -297,19 +138,18 @@ export default function ProjectsEditor({
               Replay
             </button>
             <button
-              onClick={handleFullscreen}
-              disabled={isSaving}
-              className="text-xs text-[var(--pb-text-secondary)] hover:text-[var(--pb-text-primary)] transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-[var(--pb-text-secondary)]"
-              title={isSaving ? "Cannot open fullscreen while saving" : "Hide editor for fullscreen preview"}
+              onClick={onDone}
+              className="text-xs text-[var(--pb-text-secondary)] hover:text-[var(--pb-text-primary)] transition-colors flex items-center gap-1"
+              title="Exit editing — changes autosave in the background"
             >
-              <Maximize className="w-3.5 h-3.5" />
-              Fullscreen
+              <Check className="w-3.5 h-3.5" />
+              Done
             </button>
           </div>
         </div>
         <div className="h-[calc(100%-37px)] overflow-y-auto">
           <ProjectsRenderer
-            data={data}
+            data={resolved}
             username={username}
             animationKey={animationKey}
           />

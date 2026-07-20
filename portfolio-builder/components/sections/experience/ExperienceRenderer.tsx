@@ -51,9 +51,12 @@ function TypewriterCursor({ visible }: { visible: boolean }) {
 }
 
 export default function ExperienceRenderer({ data, username, animationKey }: ExperienceRendererProps) {
+  // ── Destructure with proper defaults ───────────────────────────────────
   const {
     layout = "timeline",
     alignment = "left",
+    columns = 2,
+    gap = "medium",
     maxWidth = 1200,
     padding,
     headline,
@@ -62,17 +65,45 @@ export default function ExperienceRenderer({ data, username, animationKey }: Exp
     animations,
     ctaButtons,
     filters,
+    cardStyle = "standard",
+    cardSize = "medium",
+    showCompanyLogo = true,
+    showDescription = true,
+    showEmploymentType = true,
+    showLocationType = true,
+    showDuration = true,
+    showSkills = true,
+    showCompanyName = true,
+    showJobTitle = true,
+    dateDisplayFormat = "month-year",
+    cardOverrides = [],
   } = data;
 
-  const safeFilters = filters ?? ({} as ExperienceData["filters"]);
-  const anim: BioAnimations = { ...DEFAULT_ANIM, ...(animations ?? {}) };
+  // ── Safe defaults for nested objects ───────────────────────────────────
+  const safeFilters: Required<ExperienceData>["filters"] = {
+    ids: filters?.ids ?? undefined,
+    is_featured: filters?.is_featured ?? undefined,
+    is_current: filters?.is_current ?? undefined,
+    employment_type: filters?.employment_type ?? undefined,
+    location_type: filters?.location_type ?? undefined,
+    industry: filters?.industry ?? undefined,
+    merge_filters: filters?.merge_filters ?? false,
+    _sortBy: filters?._sortBy ?? "default",
+  };
+
+  const safeBackground = background ?? { type: "none" as const };
+
+  const anim: BioAnimations = animations
+    ? { ...DEFAULT_ANIM, ...animations }
+    : DEFAULT_ANIM;
+
   const isAnimated = anim.preset !== "none";
 
-  // ── Experience fetch ──────────────────────────────────────────────────────
+  // ── Experience fetch ──────────────────────────────────────────────────
   const { rendererExperiences, isLoadingExperiences } = useDebouncedExperiencesFetch(username, safeFilters);
   const sortedExperiences = sortExperiences(rendererExperiences, safeFilters._sortBy || "default");
 
-  // ── Scroll / parallax refs ──────────────────────────────────────────────
+  // ── Scroll / parallax refs ────────────────────────────────────────────
   const sectionRef = useRef<HTMLElement>(null);
 
   const isInView = useInView(sectionRef, { once: anim.scrollOnce, amount: 0.15 });
@@ -90,7 +121,7 @@ export default function ExperienceRenderer({ data, username, animationKey }: Exp
 
   const shouldAnimate = isAnimated ? (anim.scrollTrigger ? isInView : true) : false;
 
-  // ── Typewriter hooks ────────────────────────────────────────────────────
+  // ── Typewriter hooks ──────────────────────────────────────────────────
   const headlineTypewriter = useTypewriter({
     text: headline || "",
     enabled: isAnimated && !!anim.textReveal && !!headline && shouldAnimate,
@@ -105,7 +136,7 @@ export default function ExperienceRenderer({ data, username, animationKey }: Exp
     delay: Math.round((anim.textRevealDelay ?? 0.2) * 1000) + (headline?.length || 0) * 40,
   });
 
-  // ── Derived styles ────────────────────────────────────────────────────────
+  // ── Derived styles ────────────────────────────────────────────────────
   const alignClass =
     alignment === "center"
       ? "text-center items-center"
@@ -120,7 +151,35 @@ export default function ExperienceRenderer({ data, username, animationKey }: Exp
 
   const contentStyle: React.CSSProperties = { maxWidth: `${maxWidth}px` };
 
-  const layoutProps = { experiences: sortedExperiences, data, isAnimated, shouldAnimate, anim };
+  const layoutProps = {
+    experiences: sortedExperiences,
+    data: {
+      ...data,
+      filters: safeFilters,
+      background: safeBackground,
+      animations: anim,
+      layout,
+      alignment,
+      columns,
+      gap,
+      maxWidth,
+      cardStyle,
+      cardSize,
+      showCompanyLogo,
+      showDescription,
+      showEmploymentType,
+      showLocationType,
+      showDuration,
+      showSkills,
+      showCompanyName,
+      showJobTitle,
+      dateDisplayFormat,
+      cardOverrides,
+    },
+    isAnimated,
+    shouldAnimate,
+    anim,
+  };
 
   const renderLayout = () => {
     switch (layout) {
@@ -134,11 +193,11 @@ export default function ExperienceRenderer({ data, username, animationKey }: Exp
     }
   };
 
-  // ── Loading state ─────────────────────────────────────────────────────────
+  // ── Loading state ─────────────────────────────────────────────────────
   if (isLoadingExperiences) {
     return (
       <section ref={sectionRef} className="relative" style={paddingStyle}>
-        <SectionBackgroundRenderer background={background} />
+        <SectionBackgroundRenderer background={safeBackground} />
         <div
           className={`relative z-10 mx-auto w-full px-4 sm:px-6 lg:px-8 ${alignClass}`}
           style={contentStyle}
@@ -151,7 +210,7 @@ export default function ExperienceRenderer({ data, username, animationKey }: Exp
     );
   }
 
-  // ── Empty state ─────────────────────────────────────────────────────────
+  // ── Empty state ───────────────────────────────────────────────────────
   if (sortedExperiences.length === 0) return null;
 
   const showTypewriter = isAnimated && !!anim.textReveal;
@@ -162,7 +221,7 @@ export default function ExperienceRenderer({ data, username, animationKey }: Exp
 
   return (
     <section ref={sectionRef} className="relative overflow-hidden" style={paddingStyle}>
-      <SectionBackgroundRenderer background={background} />
+      <SectionBackgroundRenderer background={safeBackground} />
 
       <MotionContainer
         motionKey={animationKey}

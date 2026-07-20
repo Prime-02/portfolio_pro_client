@@ -2,15 +2,14 @@
 
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
-import { AlertTriangle, Loader2, Maximize } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Check } from "lucide-react";
 import { HeroData, HeroCTA, getEmptyHeroData, getDefaultAnimations } from "@/portfolio-builder/types/hero";
 import type { HeroAnimations, SocialLink } from "@/portfolio-builder/types/hero";
 import {
     ContentTab,
     CTATab,
     EditorTabs,
-    EditorActions,
     AnimationsTab,
     EffectsTab,
 } from "./editor-components";
@@ -19,7 +18,6 @@ import HeroRenderer from "./HeroRenderer";
 import SocialLinksTab from "./editor-components/SocialLinksTab";
 import { ResolvedTheme } from "@/portfolio-builder/hooks/usePortfolioTheme";
 import BackgroundTab from "@/portfolio-builder/components/shared/background/editor/BackgroundTab";
-import { usePortfolioStore } from "@/portfolio-builder/store/usePortfolioStore";
 
 // ---------------------------------------------------------------------------
 // Deep merge with defaults to handle missing/legacy keys
@@ -54,223 +52,99 @@ function mergeWithDefaults(partial: HeroData): HeroData {
     };
 }
 
-// Fixed interval for the periodic background save (ms).
-const SAVE_INTERVAL_MS = 30_000;
-
 interface HeroEditorProps {
-    initialData: HeroData;
-    onSave: (data: HeroData) => Promise<void>;
-    onCancel: () => void;
+    // Fully controlled: `data` is the live value owned by PortfolioMain (via
+    // the store). Every field updater below computes the next value and
+    // hands it straight back via onChange — there is no local state, no
+    // save button, no cancel/rollback. PortfolioMain's autosave flush is
+    // what eventually persists it.
+    data: HeroData;
+    onChange: (data: HeroData) => void;
     theme: ResolvedTheme;
-    setFullScreen: (latestData: HeroData) => void;
+    onDone: () => void;
 }
 
-export default function HeroEditor({ initialData, onSave, onCancel, theme, setFullScreen }: HeroEditorProps) {
-    // ── Resolve data with defaults ─────────────────────────────────────────
-    const resolvedInitialData = mergeWithDefaults(initialData);
+export default function HeroEditor({ data, onChange, theme, onDone }: HeroEditorProps) {
+    const resolved = useMemo(() => mergeWithDefaults(data), [data]);
 
-    const [data, setData] = useState<HeroData>(() => structuredClone(resolvedInitialData));
     const [activeTab, setActiveTab] = useState<
         "content" | "layout" | "background" | "cta" | "effects" | "animations" | "social"
     >("content");
-    const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
-
-    // True while this editor OR any other portfolio save is in flight.
-    const isPortfolioSaving = usePortfolioStore((state) => state.isLoading);
-    const isSaving = saveStatus === "saving" || isPortfolioSaving;
-
-    // ── Latest data ref (so timers/unmount/unload always save current data) ─
-    const dataRef = useRef(data);
-    useEffect(() => {
-        dataRef.current = data;
-    }, [data]);
-
-    // ── Save orchestration refs ───────────────────────────────────────────
-    const isSavingRef = useRef(false);
-    const pendingSaveRef = useRef<HeroData | null>(null);
-    const savedStatusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-    // ── Core save executor ────────────────────────────────────────────────
-    // No "has changes" tracking - callers trigger this whenever a save should
-    // happen, and duplicate saves are fine (better than stale state).
-    const executeSave = useCallback((nextData: HeroData) => {
-        if (isSavingRef.current) {
-            pendingSaveRef.current = nextData;
-            return;
-        }
-
-        if (!isValidData(nextData)) return;
-
-        isSavingRef.current = true;
-        setSaveStatus("saving");
-
-        Promise.resolve(onSave(nextData))
-            .then(() => {
-                setSaveStatus("saved");
-
-                if (savedStatusTimerRef.current) clearTimeout(savedStatusTimerRef.current);
-                savedStatusTimerRef.current = setTimeout(() => setSaveStatus("idle"), 2000);
-
-                if (pendingSaveRef.current) {
-                    const queued = pendingSaveRef.current;
-                    pendingSaveRef.current = null;
-                    executeSave(queued);
-                }
-            })
-            .catch(() => {
-                setSaveStatus("error");
-                pendingSaveRef.current = null;
-            })
-            .finally(() => {
-                isSavingRef.current = false;
-            });
-    }, [onSave]);
-
-    // ── Fixed-interval save ─────────────────────────────────────────────────
-    // Saves periodically regardless of whether anything changed - simpler and
-    // safer than tracking dirty state, and duplicate saves are harmless.
-    useEffect(() => {
-        const interval = setInterval(() => {
-            executeSave(dataRef.current);
-        }, SAVE_INTERVAL_MS);
-        return () => clearInterval(interval);
-    }, [executeSave]);
-
-    // ── Save on unmount ──────────────────────────────────────────────────────
-    useEffect(() => {
-        return () => {
-            executeSave(dataRef.current);
-        };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    // ── Save on page reload/close ────────────────────────────────────────────
-    useEffect(() => {
-        const handleBeforeUnload = () => {
-            executeSave(dataRef.current);
-        };
-
-        window.addEventListener("beforeunload", handleBeforeUnload);
-        return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-    }, [executeSave]);
 
     // ── Field updaters ────────────────────────────────────────────────────
     const updateField = <K extends keyof HeroData>(key: K, value: HeroData[K]) => {
-        setData((prev) => ({ ...prev, [key]: value }));
+        onChange({ ...resolved, [key]: value });
     };
 
     const updateBackground = (value: Partial<HeroData["background"]>) => {
-        setData((prev) => ({
-            ...prev,
-            background: { ...prev.background, type: prev.background?.type || "solid", ...value },
-        }));
+        onChange({
+            ...resolved,
+            background: { ...resolved.background, type: resolved.background?.type || "solid", ...value },
+        });
     };
 
     const updateEffects = (value: Partial<HeroData["effects"]>) => {
-        setData((prev) => ({
-            ...prev,
-            effects: { ...prev.effects, ...value },
-        }));
+        onChange({
+            ...resolved,
+            effects: { ...resolved.effects, ...value },
+        });
     };
 
     const updateAnimations = (value: Partial<HeroAnimations>) => {
-        setData((prev) => ({
-            ...prev,
+        onChange({
+            ...resolved,
             animations: {
                 ...getDefaultAnimations(),
-                ...prev.animations,
+                ...resolved.animations,
                 ...value,
             },
-        }));
+        });
     };
 
     const updateSocialLinks = (links: SocialLink[]) => {
-        setData((prev) => ({ ...prev, socialLinks: links }));
+        onChange({ ...resolved, socialLinks: links });
     };
 
     // ── CTA helpers ───────────────────────────────────────────────────────
     const addCTA = () => {
         const newCTA: HeroCTA = { label: "", url: "", variant: "primary" };
-        setData((prev) => ({
-            ...prev,
-            ctaButtons: [...(prev.ctaButtons || []), newCTA],
-        }));
+        onChange({
+            ...resolved,
+            ctaButtons: [...(resolved.ctaButtons || []), newCTA],
+        });
     };
 
     const updateCTA = (index: number, value: Partial<HeroCTA>) => {
-        setData((prev) => {
-            const updated = [...(prev.ctaButtons || [])];
-            updated[index] = { ...updated[index], ...value };
-            return { ...prev, ctaButtons: updated };
-        });
+        const updated = [...(resolved.ctaButtons || [])];
+        updated[index] = { ...updated[index], ...value };
+        onChange({ ...resolved, ctaButtons: updated });
     };
 
     const removeCTA = (index: number) => {
-        setData((prev) => ({
-            ...prev,
-            ctaButtons: (prev.ctaButtons || []).filter((_, i) => i !== index),
-        }));
-    };
-
-    const reorderCTA = (from: number, to: number) => {
-        setData((prev) => {
-            const buttons = [...(prev.ctaButtons || [])];
-            if (to < 0 || to >= buttons.length) return prev;
-            const [moved] = buttons.splice(from, 1);
-            buttons.splice(to, 0, moved);
-            return { ...prev, ctaButtons: buttons };
+        onChange({
+            ...resolved,
+            ctaButtons: (resolved.ctaButtons || []).filter((_, i) => i !== index),
         });
     };
 
-    // ── Validation ────────────────────────────────────────────────────────
-    const isValidData = (d: HeroData): boolean => {
-        if (!d.name?.trim()) return false;
-        if (d.ctaButtons?.some((btn) => !btn.label.trim() || !btn.url.trim())) return false;
-        return true;
-    };
-
-    // ── Manual save ───────────────────────────────────────────────────────
-    const handleSave = () => {
-        if (isSaving) return;
-        executeSave(data);
-    };
-
-    // ── Cancel ────────────────────────────────────────────────────────────
-    const handleCancel = () => {
-        onCancel();
-    };
-
-    // ── Fullscreen ────────────────────────────────────────────────────────
-    const handleFullscreen = () => {
-        if (!isSaving) executeSave(data);
-        setFullScreen(data);
-    };
-
-    // ── Save status display ───────────────────────────────────────────────
-    const saveStatusText = {
-        idle: "Idle",
-        saving: "Saving...",
-        saved: "Saved",
-        error: "Save failed",
-    };
-
-    const saveStatusColor = {
-        idle: "text-[var(--pb-text-muted)]",
-        saving: "text-[var(--pb-info)]",
-        saved: "text-[var(--pb-success)]",
-        error: "text-[var(--pb-error)]",
+    const reorderCTA = (from: number, to: number) => {
+        const buttons = [...(resolved.ctaButtons || [])];
+        if (to < 0 || to >= buttons.length) return;
+        const [moved] = buttons.splice(from, 1);
+        buttons.splice(to, 0, moved);
+        onChange({ ...resolved, ctaButtons: buttons });
     };
 
     // ── Tab content ───────────────────────────────────────────────────────
     const renderTabContent = () => {
         switch (activeTab) {
-            case "content": return <ContentTab data={data} onChange={updateField} />;
-            case "layout": return <LayoutMediaTab data={data} onChange={updateField} />;
-            case "background": return <BackgroundTab data={data} onUpdate={updateBackground} />;
-            case "cta": return <CTATab data={data} onAdd={addCTA} onUpdate={updateCTA} onRemove={removeCTA} onReorder={reorderCTA} />;
-            case "social": return <SocialLinksTab data={data} onUpdate={updateSocialLinks} />;
-            case "effects": return <EffectsTab data={data} onUpdate={updateEffects} />;
-            case "animations": return <AnimationsTab data={data} onUpdate={updateAnimations} />;
+            case "content": return <ContentTab data={resolved} onChange={updateField} />;
+            case "layout": return <LayoutMediaTab data={resolved} onChange={updateField} />;
+            case "background": return <BackgroundTab data={resolved} onUpdate={updateBackground} />;
+            case "cta": return <CTATab data={resolved} onAdd={addCTA} onUpdate={updateCTA} onRemove={removeCTA} onReorder={reorderCTA} />;
+            case "social": return <SocialLinksTab data={resolved} onUpdate={updateSocialLinks} />;
+            case "effects": return <EffectsTab data={resolved} onUpdate={updateEffects} />;
+            case "animations": return <AnimationsTab data={resolved} onUpdate={updateAnimations} />;
             default: return null;
         }
     };
@@ -278,25 +152,6 @@ export default function HeroEditor({ initialData, onSave, onCancel, theme, setFu
     // ── Render ────────────────────────────────────────────────────────────
     return (
         <div className="flex flex-col lg:flex-row gap-6 h-full ">
-            {/* Save status banner */}
-            {(saveStatus === "saving" || saveStatus === "error") && (
-                <div className={`fixed bottom-4 right-4 z-50 px-4 py-2 rounded-lg shadow-lg ${saveStatus === "saving"
-                    ? "bg-[var(--pb-info-bg)] text-[var(--pb-info)] border border-[var(--pb-info-border)]"
-                    : "bg-[var(--pb-error-bg)] text-[var(--pb-error)] border border-[var(--pb-error-border)]"
-                    }`}>
-                    <div className="flex items-center gap-2">
-                        {saveStatus === "saving" ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                            <AlertTriangle className="w-4 h-4" />
-                        )}
-                        <span className="text-sm font-medium">
-                            {saveStatus === "saving" ? "Saving..." : "Save failed! Don't close the page"}
-                        </span>
-                    </div>
-                </div>
-            )}
-
             {/* Editor panel */}
             <div className="flex-1 flex flex-col h-fit min-w-0 border bg-[var(--pb-background)] border-[var(--pb-border)] rounded-xl overflow-hidden">
                 <EditorTabs activeTab={activeTab} onTabChange={setActiveTab} />
@@ -304,16 +159,6 @@ export default function HeroEditor({ initialData, onSave, onCancel, theme, setFu
                 <div className="p-6 overflow-y-auto flex-1 space-y-6 ">
                     {renderTabContent()}
                 </div>
-
-                <EditorActions
-                    hasChanges={true}
-                    isValid={isValidData(data)}
-                    saveStatus={saveStatusText[saveStatus]}
-                    saveStatusColor={saveStatusColor[saveStatus]}
-                    onSave={handleSave}
-                    onCancel={handleCancel}
-                    isSaving={isSaving}
-                />
             </div>
 
             {/* Preview panel */}
@@ -321,17 +166,16 @@ export default function HeroEditor({ initialData, onSave, onCancel, theme, setFu
                 <div className="px-4 py-2 border-b border-[var(--pb-border)] flex items-center justify-between">
                     <span className="text-xs text-[var(--pb-text-muted)] uppercase tracking-wide">Preview</span>
                     <button
-                        onClick={handleFullscreen}
-                        disabled={isSaving}
-                        className="text-xs text-[var(--pb-text-secondary)] hover:text-[var(--pb-text-primary)] transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-[var(--pb-text-secondary)]"
-                        title={isSaving ? "Cannot open fullscreen while saving" : "Hide editor for fullscreen preview"}
+                        onClick={onDone}
+                        className="text-xs text-[var(--pb-text-secondary)] hover:text-[var(--pb-text-primary)] transition-colors flex items-center gap-1"
+                        title="Exit editing — changes autosave in the background"
                     >
-                        <Maximize className="w-3.5 h-3.5" />
-                        Fullscreen
+                        <Check className="w-3.5 h-3.5" />
+                        Done
                     </button>
                 </div>
                 <div className="h-[calc(100%-37px)] overflow-y-auto">
-                    <HeroRenderer data={data} theme={theme} />
+                    <HeroRenderer data={resolved} theme={theme} />
                 </div>
             </div>
         </div>

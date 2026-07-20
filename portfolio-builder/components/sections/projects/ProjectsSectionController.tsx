@@ -14,7 +14,7 @@ import { useProjectStore } from "@/lib/stores/projects/useProjectsStore";
 
 interface ProjectsSectionControllerProps {
   projectsData: ProjectsData | null;
-  onSave: (updatedProjectsData: ProjectsData) => Promise<void>;
+  onChange: (updatedProjectsData: ProjectsData) => void;
   username: string;
   viewOnly: boolean
 }
@@ -25,18 +25,12 @@ interface ProjectsSectionControllerProps {
 
 export default function ProjectsSectionController({
   projectsData,
-  onSave,
+  onChange,
   username,
   viewOnly
 }: ProjectsSectionControllerProps) {
   const [isEditing, setIsEditing] = useState(false);
   const { fetchProjectsByUser } = useProjectStore();
-
-  // ── Optimistic local state ────────────────────────────────────────────────
-  const [localData, setLocalData] = useState<ProjectsData | null>(projectsData);
-  useEffect(() => {
-    if (projectsData) setLocalData(projectsData);
-  }, [projectsData]);
 
   // Prefetch with the real filter config as soon as both username and
   // projectsData are available.
@@ -55,32 +49,20 @@ export default function ProjectsSectionController({
     });
   }, [username, projectsData]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ---- Save ----------------------------------------------------------------
-  const handleSave = async (updatedProjectsData: ProjectsData) => {
-    setLocalData(updatedProjectsData);
-    await onSave(updatedProjectsData);
-  };
-
-  // ---- Cancel --------------------------------------------------------------
-  const handleCancel = () => {
-    setLocalData(projectsData);
-    setIsEditing(false);
-  };
-
-  // ---- Fullscreen ----------------------------------------------------------
-  const handleSetFullscreen = (latestData: ProjectsData) => {
-    setLocalData(latestData);
-    setIsEditing(false);
+  // ---- Add section -----------------------------------------------------
+  const handleAdd = () => {
+    onChange(projectsData ?? getEmptyProjectsData());
+    setIsEditing(true);
   };
 
   // ---- No projects data, not editing — show placeholder --------------------
-  if (!localData && !isEditing) {
+  if (!projectsData && !isEditing) {
     return (
       <div className="flex items-center justify-center min-h-[40vh]">
         <div className="text-center">
           <p className="text-[var(--pb-text-muted)] text-sm mb-4">Projects section not set up</p>
           <button
-            onClick={() => setIsEditing(true)}
+            onClick={handleAdd}
             className="px-6 py-3 bg-[var(--pb-foreground)] text-[var(--pb-background)] rounded-lg font-medium text-sm hover:opacity-90 transition-opacity"
           >
             Add Projects Section
@@ -90,14 +72,15 @@ export default function ProjectsSectionController({
     );
   }
 
+  const resolvedData = projectsData ?? getEmptyProjectsData();
+
   // ---- Editing — show editor -----------------------------------------------
   if (isEditing) {
     return (
       <ProjectsEditor
-        initialData={localData || getEmptyProjectsData()}
-        onSave={handleSave}
-        onCancel={handleCancel}
-        setFullScreen={handleSetFullscreen}
+        data={resolvedData}
+        onChange={onChange}
+        onDone={() => setIsEditing(false)}
         username={username}
       />
     );
@@ -106,7 +89,7 @@ export default function ProjectsSectionController({
   // ---- Viewing — show renderer ---------------------------------------------
   return (
     <div className="relative">
-      <ProjectsRenderer data={localData!} username={username} />
+      <ProjectsRenderer data={resolvedData} username={username} />
 
       {/* Edit button */}
       {

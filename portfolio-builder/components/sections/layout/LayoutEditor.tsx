@@ -1,7 +1,7 @@
 // portfolio-builder/components/sections/layout/LayoutEditor.tsx
 
 "use client";
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback } from "react";
 import {
     LayoutData,
     getEmptyNavbarData,
@@ -21,9 +21,12 @@ import {
 import SectionLinksTab from "./editor-components/SectionLinksTab";
 
 interface LayoutEditorProps {
+    // Fully controlled: `data` is the live value owned by PortfolioMain (via
+    // the store). Every field updater below computes the next value and
+    // hands it straight back via onChange. PortfolioMain's autosave flush is
+    // what eventually persists it.
     data: LayoutData;
     onChange: (updated: LayoutData) => void;
-    onSave: () => Promise<void>;
     onClose: () => void;
     availableSections: string[];
     sectionLinks: SectionLink[];
@@ -36,7 +39,6 @@ interface LayoutEditorProps {
 export default function LayoutEditor({
     data,
     onChange,
-    onSave,
     onClose,
     availableSections,
     sectionLinks,
@@ -46,25 +48,6 @@ export default function LayoutEditor({
     visible,
 }: LayoutEditorProps) {
     const [activeTab, setActiveTab] = useState<LayoutTab>("links");
-    const [isSaving, setIsSaving] = useState(false);
-    const isSavingRef = useRef(false);
-
-    const handleSave = useCallback(async () => {
-        if (isSavingRef.current) return;
-        isSavingRef.current = true;
-        setIsSaving(true);
-        try {
-            await onSave();
-        } finally {
-            isSavingRef.current = false;
-            setIsSaving(false);
-        }           
-    }, [onSave]);
-
-    const handleClose = useCallback(() => {
-        handleSave(); // Fire and forget - don't await
-        onClose();    // Close immediately
-    }, [handleSave, onClose]);
 
     const handleSectionLinksChange = useCallback((links: SectionLink[]) => {
         onChange({
@@ -99,7 +82,7 @@ export default function LayoutEditor({
             {/* Overlay - click to close */}
             <div
                 className="fixed inset-0 z-[140] bg-black/50"
-                onClick={handleClose}
+                onClick={onClose}
             />
 
             {/* Editor panel */}
@@ -150,8 +133,7 @@ export default function LayoutEditor({
                         )}
                     </div>
 
-                    {/* Actions */}
-                    <LayoutEditorActions isSaving={isSaving} onSave={handleSave} onCancel={onClose} />
+                    <LayoutEditorActions onCLose={onClose} />
                 </div>
             </div>
         </>

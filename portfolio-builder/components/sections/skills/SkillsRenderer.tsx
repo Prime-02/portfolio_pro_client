@@ -50,9 +50,12 @@ function TypewriterCursor({ visible }: { visible: boolean }) {
 }
 
 export default function SkillsRenderer({ data, username, animationKey }: SkillsRendererProps) {
+  // ── Destructure with proper defaults ─────────────────────────────────────
   const {
     layout = "grid",
     alignment = "left",
+    columns = 3,
+    gap = "medium",
     maxWidth = 1200,
     padding,
     headline,
@@ -61,17 +64,42 @@ export default function SkillsRenderer({ data, username, animationKey }: SkillsR
     animations,
     ctaButtons,
     filters,
+    cardStyle = "standard",
+    cardSize = "medium",
+    showLogo = true,
+    showDescription = true,
+    showProficiency = true,
+    proficiencyDisplay = "dots",
+    showDifficulty = false,
+    difficultyDisplay = "badge",
+    showCategory = true,
+    cardOverrides = [],
   } = data;
 
-  const safeFilters = filters ?? ({} as SkillsData["filters"]);
-  const anim: BioAnimations = { ...DEFAULT_ANIM, ...(animations ?? {}) };
+  // ── Safe defaults for nested objects ─────────────────────────────────────
+  const safeFilters: Required<SkillsData>["filters"] = {
+    ids: filters?.ids ?? undefined,
+    category: filters?.category ?? undefined,
+    subcategory: filters?.subcategory ?? undefined,
+    difficulty_level: filters?.difficulty_level ?? undefined,
+    is_major: filters?.is_major ?? undefined,
+    merge_filters: filters?.merge_filters ?? false,
+    _sortBy: filters?._sortBy ?? "default",
+  };
+
+  const safeBackground = background ?? { type: "none" as const };
+
+  const anim: BioAnimations = animations
+    ? { ...DEFAULT_ANIM, ...animations }
+    : DEFAULT_ANIM;
+
   const isAnimated = anim.preset !== "none";
 
-  // ── Skills fetch ──────────────────────────────────────────────────────────
+  // ── Skills fetch ─────────────────────────────────────────────────────────
   const { rendererSkills, isLoadingSkills } = useDebouncedSkillsFetch(username, safeFilters);
   const sortedSkills = sortSkills(rendererSkills, safeFilters._sortBy || "default");
 
-  // ── Scroll / parallax refs ────────────────────────────────────────────────
+  // ── Scroll / parallax refs ───────────────────────────────────────────────
   const sectionRef = useRef<HTMLElement>(null);
 
   const isInView = useInView(sectionRef, { once: anim.scrollOnce, amount: 0.15 });
@@ -89,7 +117,7 @@ export default function SkillsRenderer({ data, username, animationKey }: SkillsR
 
   const shouldAnimate = isAnimated ? (anim.scrollTrigger ? isInView : true) : false;
 
-  // ── Typewriter hooks ──────────────────────────────────────────────────────
+  // ── Typewriter hooks ─────────────────────────────────────────────────────
   const headlineTypewriter = useTypewriter({
     text: headline || "",
     enabled: isAnimated && !!anim.textReveal && !!headline && shouldAnimate,
@@ -104,7 +132,7 @@ export default function SkillsRenderer({ data, username, animationKey }: SkillsR
     delay: Math.round((anim.textRevealDelay ?? 0.2) * 1000) + (headline?.length || 0) * 40,
   });
 
-  // ── Derived styles ────────────────────────────────────────────────────────
+  // ── Derived styles ───────────────────────────────────────────────────────
   const alignClass =
     alignment === "center"
       ? "text-center items-center"
@@ -119,24 +147,50 @@ export default function SkillsRenderer({ data, username, animationKey }: SkillsR
 
   const contentStyle: React.CSSProperties = { maxWidth: `${maxWidth}px` };
 
-  const layoutProps = { skills: sortedSkills, data, isAnimated, shouldAnimate, anim };
+  const layoutProps = {
+    skills: sortedSkills,
+    data: {
+      ...data,
+      filters: safeFilters,
+      background: safeBackground,
+      animations: anim,
+      layout,
+      alignment,
+      columns,
+      gap,
+      maxWidth,
+      cardStyle,
+      cardSize,
+      showLogo,
+      showDescription,
+      showProficiency,
+      proficiencyDisplay,
+      showDifficulty,
+      difficultyDisplay,
+      showCategory,
+      cardOverrides,
+    },
+    isAnimated,
+    shouldAnimate,
+    anim,
+  };
 
   const renderLayout = () => {
     switch (layout) {
-      case "masonry": return <MasonryLayout          {...layoutProps} />;
+      case "masonry": return <MasonryLayout {...layoutProps} />;
       case "horizontal-scroll": return <HorizontalScrollLayout {...layoutProps} />;
-      case "list": return <ListLayout             {...layoutProps} />;
-      case "carousel": return <CarouselLayout         {...layoutProps} />;
+      case "list": return <ListLayout {...layoutProps} />;
+      case "carousel": return <CarouselLayout {...layoutProps} />;
       case "grid":
-      default: return <GridLayout             {...layoutProps} />;
+      default: return <GridLayout {...layoutProps} />;
     }
   };
 
-  // ── Loading state ─────────────────────────────────────────────────────────
+  // ── Loading state ────────────────────────────────────────────────────────
   if (isLoadingSkills) {
     return (
       <section ref={sectionRef} className="relative" style={paddingStyle}>
-        <SectionBackgroundRenderer background={background} />
+        <SectionBackgroundRenderer background={safeBackground} />
         <div
           className={`relative z-10 mx-auto w-full px-4 sm:px-6 lg:px-8 ${alignClass}`}
           style={contentStyle}
@@ -149,7 +203,7 @@ export default function SkillsRenderer({ data, username, animationKey }: SkillsR
     );
   }
 
-  // ── Empty state ───────────────────────────────────────────────────────────
+  // ── Empty state ──────────────────────────────────────────────────────────
   if (sortedSkills.length === 0) return null;
 
   // horizontal-scroll must not clip its negative-margin bleed track
@@ -163,7 +217,7 @@ export default function SkillsRenderer({ data, username, animationKey }: SkillsR
 
   return (
     <section ref={sectionRef} className={`relative ${sectionOverflow}`} style={paddingStyle}>
-      <SectionBackgroundRenderer background={background} />
+      <SectionBackgroundRenderer background={safeBackground} />
 
       <MotionContainer
         motionKey={animationKey}

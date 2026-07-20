@@ -423,4 +423,52 @@ api.interceptors.response.use(
   },
 );
 
+// ---------------------------------------------------------------------------
+// Keepalive save — for beforeunload / page-teardown persistence
+// ---------------------------------------------------------------------------
+// Regular `api.put(...)` calls (axios) aren't guaranteed to complete once
+// the page starts unloading — the browser can abort them mid-flight, and
+// beforeunload handlers can't reliably await a promise anyway. `fetch` with
+// `keepalive: true` is the browser-native way to let a request finish after
+// the initiating page is gone (subject to a ~64KB body limit per spec,
+// enforced somewhat differently across browsers).
+//
+// This intentionally skips token refresh even if the current session token
+// is expired — there's no time for that round trip during unload. It uses
+// whatever token is currently in storage; if that's stale, this save is a
+// no-op from the server's point of view (401), same as if no unload save
+// existed. It's a best-effort last line of defense, not a replacement for
+// the normal save path.
+//
+// Not awaited by callers, by design — fire-and-forget is the only option
+// inside a beforeunload handler.
+export function sendKeepaliveRequest(
+  path: string,
+  method: "POST" | "PUT" | "PATCH",
+  data: unknown,
+): void {
+  if (typeof window === "undefined") return;
+
+  const sessionToken = tokenStore.getSessionToken();
+  const sessionId = tokenStore.getSessionId();
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    "ngrok-skip-browser-warning": "true",
+  };
+  if (sessionToken) headers.Authorization = `Bearer ${sessionToken}`;
+  if (sessionId) headers["X-Session-Id"] = sessionId;
+
+  try {
+    fetch(normaliseUrl(path), {
+      method,
+      headers,
+      body: JSON.stringify(data),
+      keepalive: true,
+    });
+  } catch {
+    // Nothing to recover from here — this is already the last-resort path.
+  }
+}
+
 export { api };

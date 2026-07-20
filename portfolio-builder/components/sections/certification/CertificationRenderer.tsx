@@ -1,3 +1,4 @@
+// portfolio-builder/components/sections/certifications/CertificationRenderer.tsx
 "use client";
 
 import { useRef } from "react";
@@ -50,9 +51,12 @@ function TypewriterCursor({ visible }: { visible: boolean }) {
 }
 
 export default function CertificationRenderer({ data, username, animationKey }: CertificationRendererProps) {
+  // ── Destructure with proper defaults ─────────────────────────────────────
   const {
     layout = "badge-grid",
     alignment = "left",
+    columns = 3,
+    gap = "medium",
     maxWidth = 1200,
     padding,
     headline,
@@ -61,10 +65,37 @@ export default function CertificationRenderer({ data, username, animationKey }: 
     animations,
     ctaButtons,
     filters,
+    cardStyle = "badge",
+    cardSize = "medium",
+    showCertificationName = true,
+    showIssuingOrganization = true,
+    showIssueDate = true,
+    showExpirationDate = true,
+    showCertificateLink = true,
+    showVerificationBadge = true,
+    showValidityIndicator = true,
+    showDescription = true,
+    dateDisplayFormat = "month-year",
+    cardOverrides = [],
   } = data;
 
-  const safeFilters = filters ?? ({} as CertificationData["filters"]);
-  const anim: BioAnimations = { ...DEFAULT_ANIM, ...(animations ?? {}) };
+  // ── Safe defaults for nested objects ─────────────────────────────────────
+  const safeFilters: Required<CertificationData>["filters"] = {
+    ids: filters?.ids ?? undefined,
+    issuing_organization: filters?.issuing_organization ?? undefined,
+    certification_name: filters?.certification_name ?? undefined,
+    is_expired: filters?.is_expired ?? undefined,
+    is_valid: filters?.is_valid ?? undefined,
+    merge_filters: filters?.merge_filters ?? false,
+    _sortBy: filters?._sortBy ?? "default",
+  };
+
+  const safeBackground = background ?? { type: "none" as const };
+
+  const anim: BioAnimations = animations
+    ? { ...DEFAULT_ANIM, ...animations }
+    : DEFAULT_ANIM;
+
   const isAnimated = anim.preset !== "none";
 
   // ── Certification fetch ─────────────────────────────────────────────────
@@ -125,7 +156,35 @@ export default function CertificationRenderer({ data, username, animationKey }: 
 
   const contentStyle: React.CSSProperties = { maxWidth: `${maxWidth}px` };
 
-  const layoutProps = { certifications: sortedCertifications, data, isAnimated, shouldAnimate, anim };
+  const layoutProps = {
+    certifications: sortedCertifications,
+    data: {
+      ...data,
+      filters: safeFilters,
+      background: safeBackground,
+      animations: anim,
+      layout,
+      alignment,
+      columns,
+      gap,
+      maxWidth,
+      cardStyle,
+      cardSize,
+      showCertificationName,
+      showIssuingOrganization,
+      showIssueDate,
+      showExpirationDate,
+      showCertificateLink,
+      showVerificationBadge,
+      showValidityIndicator,
+      showDescription,
+      dateDisplayFormat,
+      cardOverrides,
+    },
+    isAnimated,
+    shouldAnimate,
+    anim,
+  };
 
   const renderLayout = () => {
     switch (layout) {
@@ -143,7 +202,7 @@ export default function CertificationRenderer({ data, username, animationKey }: 
   if (isLoadingCertifications) {
     return (
       <section ref={sectionRef} className="relative" style={paddingStyle}>
-        <SectionBackgroundRenderer background={background} />
+        <SectionBackgroundRenderer background={safeBackground} />
         <div
           className={`relative z-10 mx-auto w-full px-4 sm:px-6 lg:px-8 ${alignClass}`}
           style={contentStyle}
@@ -167,7 +226,7 @@ export default function CertificationRenderer({ data, username, animationKey }: 
 
   return (
     <section ref={sectionRef} className="relative overflow-hidden" style={paddingStyle}>
-      <SectionBackgroundRenderer background={background} />
+      <SectionBackgroundRenderer background={safeBackground} />
 
       <MotionContainer
         motionKey={animationKey}

@@ -2,10 +2,10 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import HeroRenderer from "@/portfolio-builder/components/sections/hero/HeroRenderer";
 import HeroEditor from "@/portfolio-builder/components/sections/hero/HeroEditor";
-import { HeroData, getEmptyHeroData, getDefaultHeroData } from "@/portfolio-builder/types/hero";
+import { HeroData, getDefaultHeroData } from "@/portfolio-builder/types/hero";
 import { ResolvedTheme } from "@/portfolio-builder/hooks/usePortfolioTheme";
 import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 
@@ -15,7 +15,7 @@ import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 
 interface HeroSectionControllerProps {
     heroData: HeroData | null;
-    onSave: (updatedHeroData: HeroData) => Promise<void>;
+    onChange: (updatedHeroData: HeroData) => void;
     theme: ResolvedTheme;
     viewOnly: boolean
 }
@@ -24,42 +24,30 @@ interface HeroSectionControllerProps {
 // Component
 // ---------------------------------------------------------------------------
 
-export default function HeroSectionController({ heroData, onSave, theme, viewOnly }: HeroSectionControllerProps) {
+export default function HeroSectionController({ heroData, onChange, theme, viewOnly }: HeroSectionControllerProps) {
     const [isEditing, setIsEditing] = useState(false);
     const { userInfo } = useUserSettings()
 
-    // ── Optimistic local state ─────────────────────────────────────────────
-    const [localData, setLocalData] = useState<HeroData | null>(heroData);
-    useEffect(() => {
-        if (heroData) setLocalData(heroData);
-    }, [heroData]);
+    const buildSeed = () =>
+        getDefaultHeroData({
+            name: `${userInfo?.firstname} ${userInfo?.lastname}`,
+            avatar: `${userInfo?.profile_picture}`
+        });
 
-    // ---- Save ----------------------------------------------------------------
-    const handleSave = async (updatedHeroData: HeroData) => {
-        setLocalData(updatedHeroData);   // optimistic
-        await onSave(updatedHeroData);
-    };
-
-    // ---- Cancel --------------------------------------------------------------
-    const handleCancel = () => {
-        setLocalData(heroData);            // rollback
-        setIsEditing(false);
-    };
-
-    // ---- Fullscreen ----------------------------------------------------------
-    const handleSetFullscreen = (latestData: HeroData) => {
-        setLocalData(latestData);
-        setIsEditing(false);
+    // ---- Add section -----------------------------------------------------
+    const handleAdd = () => {
+        onChange(heroData ?? buildSeed());
+        setIsEditing(true);
     };
 
     // ---- No hero data, not editing — show placeholder ------------------------
-    if (!localData && !isEditing) {
+    if (!heroData && !isEditing) {
         return (
             <div className="flex items-center justify-center min-h-[60vh]">
                 <div className="text-center">
                     <p className="text-[var(--pb-text-muted)] text-sm mb-4">Hero section not set up</p>
                     <button
-                        onClick={() => setIsEditing(true)}
+                        onClick={handleAdd}
                         className="px-6 py-3 bg-[var(--pb-foreground)] text-[var(--pb-background)] rounded-lg font-medium text-sm hover:opacity-90 transition-opacity"
                     >
                         Add Hero Section
@@ -69,18 +57,16 @@ export default function HeroSectionController({ heroData, onSave, theme, viewOnl
         );
     }
 
+    const resolvedData = heroData ?? buildSeed();
+
     // ---- Editing — show editor -----------------------------------------------
     if (isEditing) {
         return (
             <HeroEditor
-                initialData={localData || getDefaultHeroData({
-                    name: `${userInfo?.firstname} ${userInfo?.lastname}`,
-                    avatar: `${userInfo?.profile_picture}`
-                })}
-                onSave={handleSave}
-                onCancel={handleCancel}
+                data={resolvedData}
+                onChange={onChange}
                 theme={theme}
-                setFullScreen={handleSetFullscreen}
+                onDone={() => setIsEditing(false)}
             />
         );
     }
@@ -88,7 +74,7 @@ export default function HeroSectionController({ heroData, onSave, theme, viewOnl
     // ---- Viewing — show renderer ---------------------------------------------
     return (
         <div className="relative">
-            <HeroRenderer data={localData!} theme={theme} />
+            <HeroRenderer data={resolvedData} theme={theme} />
 
             {/* Edit button */}
             {

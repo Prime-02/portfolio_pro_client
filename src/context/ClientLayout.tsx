@@ -44,7 +44,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
 
       {/* Render the page content */}
       <div
-        className={`w-full max-h-screen h-screen overflow-auto custom-scrollbar pt-16 relative z-10 ${!shouldHideNavbar && isMobile ? "" : ""
+        className={`w-full max-h-screen h-screen overflow-auto custom-scrollbar relative z-10 ${!shouldHideNavbar && isMobile ? "" : ""
           }`}
       >
         {children}

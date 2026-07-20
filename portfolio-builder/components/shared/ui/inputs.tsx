@@ -6,6 +6,8 @@ import RangeInput, { RangeInputProps } from "@/src/app/components/inputs/RangeIn
 import CheckBox, { CheckBoxProps } from "@/src/app/components/inputs/CheckBox";
 import Switch, { SwitchProps } from "@/src/app/components/inputs/Switch";
 import ColorPicker, { ColorPickerProps } from "@/src/app/components/inputs/ColorPicker";
+import Button, { ButtonProps } from "@/src/app/components/buttons/Buttons";
+
 
 
 
@@ -148,3 +150,24 @@ export const PBColorPicker: React.FC<ColorPickerProps> = (props) => {
 };
 
 export default ColorPicker;
+
+
+export const PBButton: React.FC<ButtonProps> = (props) => {
+    return (
+        <div
+            style={{
+                // Remap standard theme variables to portfolio theme variables
+                "--foreground": "var(--pb-foreground)",
+                "--background": "var(--pb-background)",
+                "--accent": "var(--pb-accent)",
+            } as React.CSSProperties}
+        >
+            <Button
+                {...props}
+                className={`
+                    ${props.className || ""}
+                `}
+            />
+        </div>
+    );
+};

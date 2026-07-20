@@ -2,8 +2,8 @@
 
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
-import { AlertTriangle, Loader2, Maximize } from "lucide-react";
+import { useState, useMemo, useRef, useEffect } from "react";
+import { Check } from "lucide-react";
 import { BioData, getEmptyBioData } from "@/portfolio-builder/types/bio";
 import { getDefaultAnimations } from "@/portfolio-builder/types/hero";
 import type { BioAnimations } from "@/portfolio-builder/types/bio";
@@ -12,11 +12,9 @@ import {
   LayoutTab,
   CTATab,
   EditorTabs,
-  EditorActions,
   AnimationsTab,
 } from "./editor-components";
-import { usePortfolioStore } from "@/portfolio-builder/store/usePortfolioStore";
-import BioRenderer from "./BioRenderer";
+import BioRenderer from "@/portfolio-builder/components/sections/bio/BioRenderer";
 import BackgroundTab from "@/portfolio-builder/components/shared/background/editor/BackgroundTab";
 
 // ---------------------------------------------------------------------------
@@ -51,187 +49,91 @@ function mergeWithDefaults(partial: BioData): BioData {
   };
 }
 
-// Fixed interval for the periodic background save (ms).
-const SAVE_INTERVAL_MS = 30_000;
-
 interface BioEditorProps {
-  initialData: BioData;
-  onSave: (data: BioData) => Promise<void>;
-  onCancel: () => void;
-  setFullScreen: (latestData: BioData) => void;
+  // Fully controlled: `data` is the live value owned by PortfolioMain (via
+  // the store). Every field updater below computes the next value and
+  // hands it straight back via onChange — there is no local state, no
+  // save button, no cancel/rollback. PortfolioMain's autosave flush is
+  // what eventually persists it.
+  data: BioData;
+  onChange: (data: BioData) => void;
+  onDone: () => void;
 }
 
-export default function BioEditor({ initialData, onSave, onCancel, setFullScreen }: BioEditorProps) {
-  // ── Resolve data with defaults ─────────────────────────────────────────
-  const resolvedInitialData = mergeWithDefaults(initialData);
+export default function BioEditor({ data, onChange, onDone }: BioEditorProps) {
+  const resolved = useMemo(() => mergeWithDefaults(data), [data]);
 
-  const [data, setData] = useState<BioData>(() => structuredClone(resolvedInitialData));
+  // `resolved` only advances once the `data` prop round-trips back down
+  // from PortfolioMain (store update -> re-render -> new prop). That
+  // round trip doesn't happen synchronously, so if a caller fires several
+  // onChange calls back-to-back in the same event handler (e.g.
+  // ContentTab's "Load Profile Data" button, which calls onChange four
+  // times in a row), every one of those calls would otherwise spread from
+  // the *same* stale `resolved` snapshot and clobber each other — only
+  // the last call would actually survive.
+  //
+  // latestRef tracks the value we've most recently emitted so each
+  // updater builds on top of the previous one instead of the stale prop.
+  // It's resynced from `resolved` whenever a fresh prop does land, so it
+  // never drifts from the source of truth between edits.
+  const latestRef = useRef(resolved);
+  useEffect(() => {
+    latestRef.current = resolved;
+  }, [resolved]);
+
   const [activeTab, setActiveTab] = useState<
     "content" | "layout" | "background" | "cta" | "animations"
   >("content");
-  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
-
-  // True while this editor OR any other portfolio save is in flight.
-  const isPortfolioSaving = usePortfolioStore((state) => state.isLoading);
-  const isSaving = saveStatus === "saving" || isPortfolioSaving;
-
-  // ── Latest data ref (so timers/unmount/unload always save current data) ──
-  const dataRef = useRef(data);
-  useEffect(() => {
-    dataRef.current = data;
-  }, [data]);
-
-  // ── Save orchestration refs ──────────────────────────────────────────────
-  const isSavingRef = useRef(false);
-  const pendingSaveRef = useRef<BioData | null>(null);
-  const savedStatusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // ── Core save executor ───────────────────────────────────────────────────
-  // No "has changes" tracking - callers trigger this whenever a save should
-  // happen, and duplicate saves are fine (better than stale state).
-  const executeSave = useCallback(
-    (nextData: BioData) => {
-      if (isSavingRef.current) {
-        pendingSaveRef.current = nextData;
-        return;
-      }
-
-      if (!isValidData(nextData)) return;
-
-      isSavingRef.current = true;
-      setSaveStatus("saving");
-
-      Promise.resolve(onSave(nextData))
-        .then(() => {
-          setSaveStatus("saved");
-
-          if (savedStatusTimerRef.current) clearTimeout(savedStatusTimerRef.current);
-          savedStatusTimerRef.current = setTimeout(() => setSaveStatus("idle"), 2000);
-
-          if (pendingSaveRef.current) {
-            const queued = pendingSaveRef.current;
-            pendingSaveRef.current = null;
-            executeSave(queued);
-          }
-        })
-        .catch(() => {
-          setSaveStatus("error");
-          pendingSaveRef.current = null;
-        })
-        .finally(() => {
-          isSavingRef.current = false;
-        });
-    },
-    [onSave]
-  );
-
-  // ── Fixed-interval save ────────────────────────────────────────────────────
-  // Saves periodically regardless of whether anything changed - simpler and
-  // safer than tracking dirty state, and duplicate saves are harmless.
-  useEffect(() => {
-    const interval = setInterval(() => {
-      executeSave(dataRef.current);
-    }, SAVE_INTERVAL_MS);
-    return () => clearInterval(interval);
-  }, [executeSave]);
-
-  // ── Save on unmount ─────────────────────────────────────────────────────────
-  useEffect(() => {
-    return () => {
-      executeSave(dataRef.current);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // ── Save on page reload/close ───────────────────────────────────────────────
-  useEffect(() => {
-    const handleBeforeUnload = () => {
-      executeSave(dataRef.current);
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [executeSave]);
 
   // ── Field updaters ───────────────────────────────────────────────────────
   const updateField = <K extends keyof BioData>(key: K, value: BioData[K]) => {
-    setData((prev) => ({ ...prev, [key]: value }));
+    const next = { ...latestRef.current, [key]: value };
+    latestRef.current = next;
+    onChange(next);
   };
 
   const updateBackground = (value: Partial<BioData["background"]>) => {
-    setData((prev) => ({
-      ...prev,
-      background: { ...prev.background, type: prev.background?.type || "none", ...value },
-    }));
+    const current = latestRef.current;
+    const next = {
+      ...current,
+      background: { ...current.background, type: current.background?.type || "none", ...value },
+    };
+    latestRef.current = next;
+    onChange(next);
   };
 
   const updateAnimations = (value: Partial<BioAnimations>) => {
-    setData((prev) => ({
-      ...prev,
+    const current = latestRef.current;
+    const next = {
+      ...current,
       animations: {
         ...getDefaultAnimations(),
-        ...prev.animations,
+        ...current.animations,
         ...value,
       },
-    }));
-  };
-
-  // ── Validation ───────────────────────────────────────────────────────────
-  const isValidData = (d: BioData): boolean => {
-    if (!d.bio?.trim()) return false;
-    return true;
-  };
-
-  // ── Manual save ──────────────────────────────────────────────────────────
-  const handleSave = () => {
-    if (isSaving) return;
-    executeSave(data);
-  };
-
-  // ── Cancel ───────────────────────────────────────────────────────────────
-  const handleCancel = () => {
-    onCancel();
-  };
-
-  // ── Fullscreen ───────────────────────────────────────────────────────────
-  const handleFullscreen = () => {
-    if (!isSaving) executeSave(data);
-    setFullScreen(data);
-  };
-
-  // ── Save status display ──────────────────────────────────────────────────
-  const saveStatusText = {
-    idle: "Idle",
-    saving: "Saving...",
-    saved: "Saved",
-    error: "Save failed",
-  };
-
-  const saveStatusColor = {
-    idle: "text-[var(--pb-text-muted)]",
-    saving: "text-[var(--pb-info)]",
-    saved: "text-[var(--pb-success)]",
-    error: "text-[var(--pb-error)]",
+    };
+    latestRef.current = next;
+    onChange(next);
   };
 
   // ── Tab content ──────────────────────────────────────────────────────────
   const renderTabContent = () => {
     switch (activeTab) {
       case "content":
-        return <ContentTab data={data} onChange={updateField} />;
+        return <ContentTab data={resolved} onChange={updateField} />;
       case "layout":
-        return <LayoutTab data={data} onChange={updateField} />;
+        return <LayoutTab data={resolved} onChange={updateField} />;
       case "background":
         return (
           <BackgroundTab
-            data={data}
+            data={resolved}
             onUpdate={updateBackground}
           />
         );
       case "cta":
-        return <CTATab data={data} onChange={updateField} />;
+        return <CTATab data={resolved} onChange={updateField} />;
       case "animations":
-        return <AnimationsTab data={data} onUpdate={updateAnimations} />;
+        return <AnimationsTab data={resolved} onUpdate={updateAnimations} />;
       default:
         return null;
     }
@@ -240,27 +142,6 @@ export default function BioEditor({ initialData, onSave, onCancel, setFullScreen
   // ── Render ───────────────────────────────────────────────────────────────
   return (
     <div className="flex flex-col lg:flex-row gap-6 h-full">
-      {/* Save status banner */}
-      {(saveStatus === "saving" || saveStatus === "error") && (
-        <div
-          className={`fixed bottom-4 right-4 z-50 px-4 py-2 rounded-lg shadow-lg ${saveStatus === "saving"
-            ? "bg-[var(--pb-info-bg)] text-[var(--pb-info)] border border-[var(--pb-info-border)]"
-            : "bg-[var(--pb-error-bg)] text-[var(--pb-error)] border border-[var(--pb-error-border)]"
-            }`}
-        >
-          <div className="flex items-center gap-2">
-            {saveStatus === "saving" ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <AlertTriangle className="w-4 h-4" />
-            )}
-            <span className="text-sm font-medium">
-              {saveStatus === "saving" ? "Saving..." : "Save failed! Don't close the page"}
-            </span>
-          </div>
-        </div>
-      )}
-
       {/* Editor panel */}
       <div className="h-fit bg-[var(--pb-background)] flex-1 flex flex-col min-w-0 border border-[var(--pb-border)] rounded-xl overflow-hidden ">
         <EditorTabs activeTab={activeTab} onTabChange={setActiveTab} />
@@ -268,16 +149,6 @@ export default function BioEditor({ initialData, onSave, onCancel, setFullScreen
         <div className="p-6 overflow-y-auto flex-1 space-y-6">
           {renderTabContent()}
         </div>
-
-        <EditorActions
-          hasChanges={true}
-          isSaving={isSaving}
-          isValid={isValidData(data)}
-          saveStatus={saveStatusText[saveStatus]}
-          saveStatusColor={saveStatusColor[saveStatus]}
-          onSave={handleSave}
-          onCancel={handleCancel}
-        />
       </div>
 
       {/* Preview panel */}
@@ -285,17 +156,16 @@ export default function BioEditor({ initialData, onSave, onCancel, setFullScreen
         <div className="px-4 py-2 border-b border-[var(--pb-border)] flex items-center justify-between">
           <span className="text-xs text-[var(--pb-text-muted)] uppercase tracking-wide">Preview</span>
           <button
-            onClick={handleFullscreen}
-            disabled={isSaving}
-            className="text-xs text-[var(--pb-text-secondary)] hover:text-[var(--pb-text-primary)] transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-[var(--pb-text-secondary)]"
-            title={isSaving ? "Cannot open fullscreen while saving" : "Hide editor for fullscreen preview"}
+            onClick={onDone}
+            className="text-xs text-[var(--pb-text-secondary)] hover:text-[var(--pb-text-primary)] transition-colors flex items-center gap-1"
+            title="Exit editing — changes autosave in the background"
           >
-            <Maximize className="w-3.5 h-3.5" />
-            Fullscreen
+            <Check className="w-3.5 h-3.5" />
+            Done
           </button>
         </div>
         <div className="h-[calc(100%-37px)] overflow-y-auto">
-          <BioRenderer data={data} />
+          <BioRenderer data={resolved} />
         </div>
       </div>
     </div>

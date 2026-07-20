@@ -9,24 +9,19 @@ import { useTestimonialsStore } from "@/lib/stores/testimonials/useTestimonial";
 
 interface TestimonialsSectionControllerProps {
   testimonialsData: TestimonialsData | null;
-  onSave: (updatedTestimonialsData: TestimonialsData) => Promise<void>;
+  onChange: (updatedTestimonialsData: TestimonialsData) => void;
   username: string;
   viewOnly: boolean
 }
 
 export default function TestimonialsSectionController({
   testimonialsData,
-  onSave,
+  onChange,
   username,
   viewOnly
 }: TestimonialsSectionControllerProps) {
   const [isEditing, setIsEditing] = useState(false);
   const { fetchUserTestimonials } = useTestimonialsStore();
-
-  const [localData, setLocalData] = useState<TestimonialsData | null>(testimonialsData);
-  useEffect(() => {
-    if (testimonialsData) setLocalData(testimonialsData);
-  }, [testimonialsData]);
 
   const prefetchedRef = useRef(false);
   useEffect(() => {
@@ -43,28 +38,19 @@ export default function TestimonialsSectionController({
     });
   }, [username, testimonialsData]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleSave = async (updatedTestimonialsData: TestimonialsData) => {
-    setLocalData(updatedTestimonialsData);
-    await onSave(updatedTestimonialsData);
+  // ---- Add section -----------------------------------------------------
+  const handleAdd = () => {
+    onChange(testimonialsData ?? getEmptyTestimonialsData());
+    setIsEditing(true);
   };
 
-  const handleCancel = () => {
-    setLocalData(testimonialsData);
-    setIsEditing(false);
-  };
-
-  const handleSetFullscreen = (latestData: TestimonialsData) => {
-    setLocalData(latestData);
-    setIsEditing(false);
-  };
-
-  if (!localData && !isEditing) {
+  if (!testimonialsData && !isEditing) {
     return (
       <div className="flex items-center justify-center min-h-[40vh]">
         <div className="text-center">
           <p className="text-[var(--pb-text-muted)] text-sm mb-4">Testimonials section not set up</p>
           <button
-            onClick={() => setIsEditing(true)}
+            onClick={handleAdd}
             className="px-6 py-3 bg-[var(--pb-foreground)] text-[var(--pb-background)] rounded-lg font-medium text-sm hover:opacity-90 transition-opacity"
           >
             Add Testimonials Section
@@ -74,13 +60,14 @@ export default function TestimonialsSectionController({
     );
   }
 
+  const resolvedData = testimonialsData ?? getEmptyTestimonialsData();
+
   if (isEditing) {
     return (
       <TestimonialsEditor
-        initialData={localData || getEmptyTestimonialsData()}
-        onSave={handleSave}
-        onCancel={handleCancel}
-        setFullScreen={handleSetFullscreen}
+        data={resolvedData}
+        onChange={onChange}
+        onDone={() => setIsEditing(false)}
         username={username}
       />
     );
@@ -88,8 +75,7 @@ export default function TestimonialsSectionController({
 
   return (
     <div className="relative">
-      <TestimonialsRenderer data={localData!} username={username} />
-
+      <TestimonialsRenderer data={resolvedData} username={username} />
 
       {
         !viewOnly &&

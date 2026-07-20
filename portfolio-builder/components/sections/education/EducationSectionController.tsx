@@ -14,7 +14,7 @@ import { useEducation } from "@/lib/stores/education/useEducation";
 
 interface EducationSectionControllerProps {
   educationData: EducationData | null;
-  onSave: (updatedEducationData: EducationData) => Promise<void>;
+  onChange: (updatedEducationData: EducationData) => void;
   username: string;
   viewOnly: boolean
 }
@@ -25,18 +25,12 @@ interface EducationSectionControllerProps {
 
 export default function EducationSectionController({
   educationData,
-  onSave,
+  onChange,
   username,
   viewOnly
 }: EducationSectionControllerProps) {
   const [isEditing, setIsEditing] = useState(false);
   const { fetchPublicUserEducations } = useEducation();
-
-  // ── Optimistic local state ────────────────────────────────────────────────
-  const [localData, setLocalData] = useState<EducationData | null>(educationData);
-  useEffect(() => {
-    if (educationData) setLocalData(educationData);
-  }, [educationData]);
 
   // Prefetch with the real filter config as soon as both username and
   // educationData are available.
@@ -54,32 +48,20 @@ export default function EducationSectionController({
     });
   }, [username, educationData, fetchPublicUserEducations]);
 
-  // ---- Save ----------------------------------------------------------------
-  const handleSave = async (updatedEducationData: EducationData) => {
-    setLocalData(updatedEducationData);
-    await onSave(updatedEducationData);
-  };
-
-  // ---- Cancel --------------------------------------------------------------
-  const handleCancel = () => {
-    setLocalData(educationData);
-    setIsEditing(false);
-  };
-
-  // ---- Fullscreen ----------------------------------------------------------
-  const handleSetFullscreen = (latestData: EducationData) => {
-    setLocalData(latestData);
-    setIsEditing(false);
+  // ---- Add section -----------------------------------------------------
+  const handleAdd = () => {
+    onChange(educationData ?? getEmptyEducationData());
+    setIsEditing(true);
   };
 
   // ---- No education data, not editing — show placeholder ------------------
-  if (!localData && !isEditing) {
+  if (!educationData && !isEditing) {
     return (
       <div className="flex items-center justify-center min-h-[40vh]">
         <div className="text-center">
           <p className="text-[var(--pb-text-muted)] text-sm mb-4">Education section not set up</p>
           <button
-            onClick={() => setIsEditing(true)}
+            onClick={handleAdd}
             className="px-6 py-3 bg-[var(--pb-foreground)] text-[var(--pb-background)] rounded-lg font-medium text-sm hover:opacity-90 transition-opacity"
           >
             Add Education Section
@@ -89,14 +71,15 @@ export default function EducationSectionController({
     );
   }
 
+  const resolvedData = educationData ?? getEmptyEducationData();
+
   // ---- Editing — show editor -----------------------------------------------
   if (isEditing) {
     return (
       <EducationEditor
-        initialData={localData || getEmptyEducationData()}
-        onSave={handleSave}
-        onCancel={handleCancel}
-        setFullScreen={handleSetFullscreen}
+        data={resolvedData}
+        onChange={onChange}
+        onDone={() => setIsEditing(false)}
         username={username}
       />
     );
@@ -105,7 +88,7 @@ export default function EducationSectionController({
   // ---- Viewing — show renderer ---------------------------------------------
   return (
     <div className="relative">
-      <EducationRenderer data={localData!} username={username} />
+      <EducationRenderer data={resolvedData} username={username} />
 
       {/* Edit button */}
       {

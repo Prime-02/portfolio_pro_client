@@ -51,9 +51,12 @@ function TypewriterCursor({ visible }: { visible: boolean }) {
 }
 
 export default function EducationRenderer({ data, username, animationKey }: EducationRendererProps) {
+  // ── Destructure with proper defaults ─────────────────────────────────────
   const {
     layout = "academic-timeline",
     alignment = "left",
+    columns = 2,
+    gap = "medium",
     maxWidth = 1200,
     padding,
     headline,
@@ -62,10 +65,37 @@ export default function EducationRenderer({ data, username, animationKey }: Educ
     animations,
     ctaButtons,
     filters,
+    cardStyle = "academic",
+    cardSize = "medium",
+    showInstitutionLogo = true,
+    showInstitution = true,
+    showDegree = true,
+    showFieldOfStudy = true,
+    showDates = true,
+    showDuration = true,
+    showDescription = true,
+    showCurrentIndicator = true,
+    dateDisplayFormat = "month-year",
+    cardOverrides = [],
   } = data;
 
-  const safeFilters = filters ?? ({} as EducationData["filters"]);
-  const anim: BioAnimations = { ...DEFAULT_ANIM, ...(animations ?? {}) };
+  // ── Safe defaults for nested objects ─────────────────────────────────────
+  const safeFilters: Required<EducationData>["filters"] = {
+    ids: filters?.ids ?? undefined,
+    is_current: filters?.is_current ?? undefined,
+    institution: filters?.institution ?? undefined,
+    degree: filters?.degree ?? undefined,
+    field_of_study: filters?.field_of_study ?? undefined,
+    merge_filters: filters?.merge_filters ?? false,
+    _sortBy: filters?._sortBy ?? "default",
+  };
+
+  const safeBackground = background ?? { type: "none" as const };
+
+  const anim: BioAnimations = animations
+    ? { ...DEFAULT_ANIM, ...animations }
+    : DEFAULT_ANIM;
+
   const isAnimated = anim.preset !== "none";
 
   // ── Education fetch ─────────────────────────────────────────────────────
@@ -120,7 +150,35 @@ export default function EducationRenderer({ data, username, animationKey }: Educ
 
   const contentStyle: React.CSSProperties = { maxWidth: `${maxWidth}px` };
 
-  const layoutProps = { educations: sortedEducations, data, isAnimated, shouldAnimate, anim };
+  const layoutProps = {
+    educations: sortedEducations,
+    data: {
+      ...data,
+      filters: safeFilters,
+      background: safeBackground,
+      animations: anim,
+      layout,
+      alignment,
+      columns,
+      gap,
+      maxWidth,
+      cardStyle,
+      cardSize,
+      showInstitutionLogo,
+      showInstitution,
+      showDegree,
+      showFieldOfStudy,
+      showDates,
+      showDuration,
+      showDescription,
+      showCurrentIndicator,
+      dateDisplayFormat,
+      cardOverrides,
+    },
+    isAnimated,
+    shouldAnimate,
+    anim,
+  };
 
   const renderLayout = () => {
     switch (layout) {
@@ -138,7 +196,7 @@ export default function EducationRenderer({ data, username, animationKey }: Educ
   if (isLoadingEducations) {
     return (
       <section ref={sectionRef} className="relative" style={paddingStyle}>
-        <SectionBackgroundRenderer background={background} />
+        <SectionBackgroundRenderer background={safeBackground} />
         <div
           className={`relative z-10 mx-auto w-full px-4 sm:px-6 lg:px-8 ${alignClass}`}
           style={contentStyle}
@@ -162,7 +220,7 @@ export default function EducationRenderer({ data, username, animationKey }: Educ
 
   return (
     <section ref={sectionRef} className="relative overflow-hidden" style={paddingStyle}>
-      <SectionBackgroundRenderer background={background} />
+      <SectionBackgroundRenderer background={safeBackground} />
 
       <MotionContainer
         motionKey={animationKey}

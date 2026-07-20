@@ -12,7 +12,7 @@ import { useCertifications } from "@/lib/stores/certifications/useCertifications
 
 interface CertificationSectionControllerProps {
   certificationData: CertificationData | null;
-  onSave: (updatedCertificationData: CertificationData) => Promise<void>;
+  onChange: (updatedCertificationData: CertificationData) => void;
   username: string;
   viewOnly: boolean
 }
@@ -23,18 +23,12 @@ interface CertificationSectionControllerProps {
 
 export default function CertificationSectionController({
   certificationData,
-  onSave,
+  onChange,
   username,
   viewOnly
 }: CertificationSectionControllerProps) {
   const [isEditing, setIsEditing] = useState(false);
   const { fetchPublicCertifications } = useCertifications();
-
-  // ── Optimistic local state ────────────────────────────────────────────────
-  const [localData, setLocalData] = useState<CertificationData | null>(certificationData);
-  useEffect(() => {
-    if (certificationData) setLocalData(certificationData);
-  }, [certificationData]);
 
   // Prefetch with the real filter config as soon as both username and
   // certificationData are available.
@@ -49,32 +43,20 @@ export default function CertificationSectionController({
     });
   }, [username, certificationData, fetchPublicCertifications]);
 
-  // ---- Save ----------------------------------------------------------------
-  const handleSave = async (updatedCertificationData: CertificationData) => {
-    setLocalData(updatedCertificationData);
-    await onSave(updatedCertificationData);
-  };
-
-  // ---- Cancel --------------------------------------------------------------
-  const handleCancel = () => {
-    setLocalData(certificationData);
-    setIsEditing(false);
-  };
-
-  // ---- Fullscreen ----------------------------------------------------------
-  const handleSetFullscreen = (latestData: CertificationData) => {
-    setLocalData(latestData);
-    setIsEditing(false);
+  // ---- Add section -----------------------------------------------------
+  const handleAdd = () => {
+    onChange(certificationData ?? getEmptyCertificationData());
+    setIsEditing(true);
   };
 
   // ---- No certification data, not editing — show placeholder ----------------
-  if (!localData && !isEditing) {
+  if (!certificationData && !isEditing) {
     return (
       <div className="flex items-center justify-center min-h-[40vh]">
         <div className="text-center">
           <p className="text-[var(--pb-text-muted)] text-sm mb-4">Certification section not set up</p>
           <button
-            onClick={() => setIsEditing(true)}
+            onClick={handleAdd}
             className="px-6 py-3 bg-[var(--pb-foreground)] text-[var(--pb-background)] rounded-lg font-medium text-sm hover:opacity-90 transition-opacity"
           >
             Add Certification Section
@@ -84,14 +66,15 @@ export default function CertificationSectionController({
     );
   }
 
+  const resolvedData = certificationData ?? getEmptyCertificationData();
+
   // ---- Editing — show editor -----------------------------------------------
   if (isEditing) {
     return (
       <CertificationEditor
-        initialData={localData || getEmptyCertificationData()}
-        onSave={handleSave}
-        onCancel={handleCancel}
-        setFullScreen={handleSetFullscreen}
+        data={resolvedData}
+        onChange={onChange}
+        onDone={() => setIsEditing(false)}
         username={username}
       />
     );
@@ -100,7 +83,7 @@ export default function CertificationSectionController({
   // ---- Viewing — show renderer ---------------------------------------------
   return (
     <div className="relative">
-      <CertificationRenderer data={localData!} username={username} />
+      <CertificationRenderer data={resolvedData} username={username} />
 
       {/* Edit button */}
       {

@@ -196,7 +196,7 @@ export default function SkillCard({ skill, config, cardSize, fullWidth = true }:
                 </div>
 
                 {showDescription && skill.description && (
-                    <p className="text-sm text-[var(--pb-text-secondary)] leading-relaxed line-clamp-3">
+                    <p className="text-sm text-[var(--pb-text-secondary)] leading-relaxed">
                         {skill.description}
                     </p>
                 )}

@@ -150,7 +150,10 @@ const RangeInput = ({
       {/* Label row */}
       {label && (
         <div className="flex items-center justify-between mb-3">
-          <label htmlFor={id} className={`${config.fontSize} font-medium opacity-70`}>
+          <label
+            htmlFor={id}
+            className={`${config.fontSize} font-medium text-[var(--foreground)] opacity-70`}
+          >
             {label}
           </label>
           {showValue && (
@@ -176,7 +179,7 @@ const RangeInput = ({
             style={{ width: `${percentage}%` }}
           />
 
-        {/* Ruler ticks — INSIDE the track */}
+          {/* Ruler ticks — INSIDE the track */}
           {showSteps && stepPositions.length > 0 && (
             <div className="absolute inset-0 pointer-events-none flex items-end">
               {stepPositions.map((step, index) => {
@@ -237,7 +240,7 @@ const RangeInput = ({
 
       {/* Min/Max labels */}
       {showMinMax && (
-        <div className="flex justify-between text-xs opacity-50 mt-2 font-medium">
+        <div className="flex justify-between text-xs text-[var(--foreground)] opacity-50 mt-2 font-medium">
           <span>{min}</span>
           <span>{max}</span>
         </div>
@@ -247,3 +250,25 @@ const RangeInput = ({
 };
 
 export default RangeInput;
+
+
+
+export const PBRangeInput: React.FC<RangeInputProps> = (props) => {
+  return (
+    <div
+      style={{
+        // Remap standard theme variables to portfolio theme variables
+        "--foreground": "var(--pb-foreground)",
+        "--background": "var(--pb-background)",
+        "--accent": "var(--pb-accent)",
+      } as React.CSSProperties}
+    >
+      <RangeInput
+        {...props}
+        className={`
+          ${props.className || ""}
+        `}
+      />
+    </div>
+  );
+};

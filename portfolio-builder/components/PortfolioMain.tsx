@@ -452,7 +452,7 @@ export default function PortfolioMain({ portfolioId, viewOnly }: PortfolioMainPr
   };
 
   return (
-    <>
+    <main data-portfolio-builder>
       <LayoutController
         layoutData={layoutData}
         viewOnly={viewOnly}
@@ -489,6 +489,6 @@ export default function PortfolioMain({ portfolioId, viewOnly }: PortfolioMainPr
           </button>
         </div>
       )}
-    </>
+    </main>
   );
 }               

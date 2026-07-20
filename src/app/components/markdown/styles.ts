@@ -68,10 +68,10 @@ const STYLES = `
   font-family: 'Lora', serif; font-weight: 700;
   color: var(--foreground); margin: 0.9em 0 0.3em; line-height: 1.25;
 }
-.mde2-mdx-pane .mde2-editor h1 { font-size: 2rem; border-bottom: 2px solid var(--foreground); padding-bottom: 6px; }
-.mde2-mdx-pane .mde2-editor h2 { font-size: 1.5rem; border-bottom: 1px solid var(--foreground); padding-bottom: 4px; }
-.mde2-mdx-pane .mde2-editor h3 { font-size: 1.2rem; }
-.mde2-mdx-pane .mde2-editor h4 { font-size: 1.05rem; }
+.mde2-mdx-pane .mde2-editor h1 { font-size: clamp(1.5rem, 5vw, 2rem); border-bottom: 2px solid var(--foreground); padding-bottom: 6px; }
+.mde2-mdx-pane .mde2-editor h2 { font-size: clamp(1.25rem, 4vw, 1.5rem); border-bottom: 1px solid var(--foreground); padding-bottom: 4px; }
+.mde2-mdx-pane .mde2-editor h3 { font-size: clamp(1.1rem, 3vw, 1.2rem); }
+.mde2-mdx-pane .mde2-editor h4 { font-size: clamp(1rem, 2.5vw, 1.05rem); }
 .mde2-mdx-pane .mde2-editor p  { margin: 0.4em 0; color: var(--foreground); }
 .mde2-mdx-pane .mde2-editor strong, .mde2-mdx-pane .mde2-editor b { font-weight: 700; color: var(--foreground); }
 .mde2-mdx-pane .mde2-editor em, .mde2-mdx-pane .mde2-editor i { font-style: italic; }
@@ -130,17 +130,41 @@ const STYLES = `
    your installed @mdxeditor/editor version's style.css if colors look
    off — this is a best-effort mapping, not guaranteed 1:1 across versions.
    ────────────────────────────────────────────────────────────────────── */
-.mde2-mdx-pane .mdxeditor {
-  --baseBase: var(--background);
-  --baseBg: var(--background);
-  --baseBgSubtle: color-mix(in srgb, var(--background) 70%, var(--foreground) 30%);
-  --baseBorder: var(--foreground);
-  --baseText: var(--foreground);
-  --accentBase: var(--foreground);
-  --accentBorder: var(--foreground);
-  --accentText: var(--foreground);
+/* Full semantic palette MDXEditor's compiled CSS actually reads from
+   (verified against @mdxeditor/editor/dist/style.css — it's a 12-step
+   Radix-style scale under the hood: base1..12 + accent1..12, aliased to
+   these semantic names). Our previous override only set ~7 of these, so
+   anything using the others (dropdown triggers, dialog backgrounds,
+   hover/active states) silently fell back to MDXEditor's default light
+   theme. --basePageBg in particular is what select/dialog backgrounds
+   and toolbar dropdown triggers use, and it defaults to a hardcoded
+   "white" if left unset. */
+.mde2-mdx-pane .mdxeditor,
+.mdxeditor-popup-container {
+  --basePageBg: var(--background) !important;
+  --baseBase: var(--background) !important;
+  --baseBgSubtle: color-mix(in srgb, var(--background) 94%, var(--foreground) 6%) !important;
+  --baseBg: color-mix(in srgb, var(--background) 88%, var(--foreground) 12%) !important;
+  --baseBgHover: color-mix(in srgb, var(--background) 80%, var(--foreground) 20%) !important;
+  --baseBgActive: color-mix(in srgb, var(--background) 72%, var(--foreground) 28%) !important;
+  --baseLine: color-mix(in srgb, var(--foreground) 20%, transparent) !important;
+  --baseBorder: var(--foreground) !important;
+  --baseBorderHover: var(--foreground) !important;
+  --baseSolid: var(--foreground) !important;
+  --baseSolidHover: color-mix(in srgb, var(--foreground) 85%, var(--background) 15%) !important;
+  --baseText: var(--foreground) !important;
+  --baseTextContrast: var(--foreground) !important;
+  --accentBase: var(--foreground) !important;
+  --accentBg: color-mix(in srgb, var(--background) 88%, var(--foreground) 12%) !important;
+  --accentBgActive: color-mix(in srgb, var(--background) 72%, var(--foreground) 28%) !important;
+  --accentBorder: var(--foreground) !important;
+  --accentLine: color-mix(in srgb, var(--foreground) 20%, transparent) !important;
+  --accentSolid: var(--foreground) !important;
+  --accentSolidHover: color-mix(in srgb, var(--foreground) 85%, var(--background) 15%) !important;
+  --accentText: var(--foreground) !important;
   font-family: 'Lora', Georgia, serif;
 }
+
 .mde2-mdx-pane .mde2-mdx-toolbar {
   border-bottom: 1.5px solid var(--foreground);
   background: color-mix(in srgb, var(--background) 70%, var(--foreground) 30%);
@@ -195,6 +219,15 @@ const STYLES = `
 .mde2-mdx-pane .mde2-mdx-toolbar svg rect {
   stroke: currentColor;
 }
+/* This single container (mdxeditor-popup-container) is what MDXEditor
+   appends directly to <body> and portals BOTH the block-type/language
+   dropdowns AND the link/image/table dialogs into (confirmed in its
+   source — same ref is passed to Radix's Select.Portal and
+   Dialog.Portal). It ships with z-index: 2, while our sticky toolbar
+   above is z-index: 30, so without this override every dropdown and
+   dialog rendered behind the toolbar/editor card. !important is needed
+   because MDXEditor's own rule has the same selector specificity and
+   stylesheet load order isn't guaranteed. */
 .mdxeditor-select-content,
 .mdxeditor-popup-container {
   font-family: 'Lora', Georgia, serif;
@@ -202,6 +235,7 @@ const STYLES = `
   color: var(--foreground) !important;
   border: 1.5px solid var(--foreground) !important;
   border-radius: 8px !important;
+  z-index: 9999 !important;
 }
 .mdxeditor-select-content [role="option"] {
   color: var(--foreground) !important;
@@ -222,6 +256,21 @@ const STYLES = `
   color: var(--foreground) !important;
   fill: currentColor !important;
   stroke: currentColor !important;
+}
+
+/* Small screens — the editor's padding, toolbar spacing, and sticky
+   offset were fixed desktop values; on a phone-width viewport they ate
+   an outsized share of the screen and the block sizes above didn't
+   have room to shrink further via clamp() alone. */
+@media (max-width: 640px) {
+  .mde2-editor { padding: 12px 14px; font-size: 0.95rem; }
+  .mde2-mdx-pane .mde2-mdx-toolbar {
+    padding: 4px 6px;
+    gap: 0;
+    top: var(--mde2-toolbar-sticky-offset-mobile, 56px);
+  }
+  .mde2-footer { padding: 5px 10px; flex-wrap: wrap; gap: 6px; }
+  .mde2-label { font-size: 0.8rem; }
 }
 `;
 
@@ -255,12 +304,12 @@ export const RENDERER_STYLES = `
   margin: 0.9em 0 0.3em;
   line-height: 1.25;
 }
-.mdr h1 { font-size: 2rem;   border-bottom: 2px solid var(--foreground); padding-bottom: 6px; }
-.mdr h2 { font-size: 1.5rem; border-bottom: 1px solid var(--foreground); padding-bottom: 4px; }
-.mdr h3 { font-size: 1.2rem; }
-.mdr h4 { font-size: 1.05rem; }
-.mdr h5 { font-size: 0.95rem; }
-.mdr h6 { font-size: 0.85rem; }
+.mdr h1 { font-size: clamp(1.5rem, 5vw, 2rem);     border-bottom: 2px solid var(--foreground); padding-bottom: 6px; }
+.mdr h2 { font-size: clamp(1.25rem, 4vw, 1.5rem);  border-bottom: 1px solid var(--foreground); padding-bottom: 4px; }
+.mdr h3 { font-size: clamp(1.1rem, 3vw, 1.2rem); }
+.mdr h4 { font-size: clamp(1rem, 2.5vw, 1.05rem); }
+.mdr h5 { font-size: clamp(0.9rem, 2vw, 0.95rem); }
+.mdr h6 { font-size: clamp(0.8rem, 1.8vw, 0.85rem); }
 
 .mdr p  { margin: 0.4em 0; }
 .mdr strong, .mdr b { font-weight: 700; }
@@ -379,4 +428,10 @@ export const RENDERER_STYLES = `
   color: var(--foreground);
 }
 .mdr summary:hover { opacity: 0.8; }
+
+@media (max-width: 640px) {
+  .mdr { padding: 12px 14px; font-size: 0.95rem; }
+  .mdr table { display: block; overflow-x: auto; white-space: nowrap; }
+  .mdr pre { padding: 10px 12px; }
+}
 `;

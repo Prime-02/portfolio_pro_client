@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import React, { useEffect, useState, useRef } from 'react'
 import { Textinput } from '../inputs/Textinput';
 import { Home, Briefcase, Users, Search, X, Sparkles } from 'lucide-react';
+import Button from '../buttons/Buttons';
 
 // All tabs in one array
 const TABS = [
@@ -79,9 +80,9 @@ const NavBar = () => {
       <>
         {/* Search Overlay */}
         {showSearch && (
-          <div className="fixed inset-0 z-30 bg-[var(--background)]/95 backdrop-blur-xl">
+          <div className="fixed inset-0 z-[999999] bg-[var(--background)]/95 backdrop-blur-xl">
             <div className="flex flex-col h-full">
-              <div className="flex items-center gap-3 px-4 py-4 border-b border-[var(--foreground)]/10">
+              <div className="flex flex-col gap-3 px-2 py-4 border-b border-[var(--foreground)]/10">
                 <form onSubmit={handleSearch} className="flex-1">
                   <Textinput
                     ref={searchInputRef}
@@ -91,13 +92,11 @@ const NavBar = () => {
                     className="w-full"
                   />
                 </form>
-                <button
+                <Button
+                  text='Close'
                   onClick={() => setShowSearch(false)}
-                  className="p-2 rounded-full hover:bg-[var(--foreground)]/10 
-                    transition-colors duration-200"
-                >
-                  <X className="w-5 h-5 text-[var(--foreground)]" />
-                </button>
+                  size='sm'
+                />
               </div>
 
               <div className="flex-1 px-4 py-6">
@@ -161,8 +160,6 @@ const NavBar = () => {
             </button>
           </div>
         </nav>
-
-        <div className="h-20" />
       </>
     )
   }
@@ -179,7 +176,7 @@ const NavBar = () => {
             className={`flex items-center gap-2 flex-1 ${isDesktop ? 'max-w-md' : 'max-w-xs'} mr-auto`}
           >
             <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 
+              <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 
                 text-[var(--foreground)]/40 pointer-events-none" />
               <Textinput
                 ref={searchInputRef}

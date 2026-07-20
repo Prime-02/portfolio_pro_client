@@ -19,7 +19,7 @@ const routeCategories = {
   ],
   CONTENT: ["testimonials", "blogs"],
   SETTINGS: ["preference", "account-settings", 'session-management'],
-  "USAGE AND SUBSCRIPTION": ["subscription", "usage", 'analytics'],
+  "USAGE AND SUBSCRIPTION": ["subscription", "usage"],
 };
 
 const Menu = ({ isCollapsed, setIsCollapsed }: { isCollapsed: boolean, setIsCollapsed: (isCollapsed: boolean) => void }) => {

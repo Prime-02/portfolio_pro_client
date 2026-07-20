@@ -144,14 +144,6 @@ export const privateRoutes: Route[] = [
     description: "View and manage your active login sessions and devices",
   },
   {
-    slug: "analytics",
-    link: "/analytics",
-    name: "Analytics",
-    icon: IoAnalytics,
-    description:
-      "View detailed analytics and insights for your profile and content performance",
-  },
-  {
     slug: "subscription",
     link: "/billing",
     name: "Subscription",
@@ -161,7 +153,7 @@ export const privateRoutes: Route[] = [
   {
     slug: "usage",
     link: "/billing/usage",
-    name: "Usage",
+    name: "Usage & Analysis",
     icon: FiBarChart2,
     description: "Monitor your resource usage and consumption metrics",
   },

@@ -98,7 +98,7 @@ export default function CreatePostBar({ onPostCreated }: CreatePostBarProps) {
           setTagQuery(query);
           setShowTagDropdown(true);
           setSelectedTagIndex(0);
-          fetchTags({ search: query, is_trending: true, page_size: 100 });
+          fetchTags({ search: query, is_trending: false, page_size: 100 });
         }
       } else {
         setShowTagDropdown(false);
@@ -259,7 +259,7 @@ export default function CreatePostBar({ onPostCreated }: CreatePostBarProps) {
             {showTagDropdown && (
               <div
                 ref={dropdownRef}
-                className="absolute z-50 left-0 right-0 mt-1 rounded-xl border border-[var(--foreground)]/10 shadow-xl overflow-hidden"
+                className="absolute z-50 left-0 right-0 mt-1 rounded-xl border custom-scrollbar border-[var(--foreground)]/10 shadow-xl overflow-hidden"
                 style={{
                   backgroundColor: "var(--background)",
                   maxHeight: "240px",
@@ -285,19 +285,8 @@ export default function CreatePostBar({ onPostCreated }: CreatePostBarProps) {
                         : "hover:bg-[var(--foreground)]/5"
                         }`}
                     >
-                      <div className="flex items-center gap-2">
-                        <Hash size={14} className="text-[var(--accent)]" />
-                        <div>
-                          <span className="font-semibold text-sm text-[var(--foreground)]">
-                            {tag.tag_name}
-                          </span>
-                          <span className="block text-xs text-[var(--foreground)]/50">
-                            {tag.normalized_name}
-                          </span>
-                        </div>
-                      </div>
-                      <span className="text-xs text-[var(--foreground)]/40 font-medium">
-                        {tag.usage_count.toLocaleString()} uses
+                      <span className="block text-xs text-[var(--foreground)]/50">
+                        #{tag.normalized_name}
                       </span>
                     </button>
                   ))

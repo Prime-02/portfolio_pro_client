@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { api } from "@/lib/client/api";
 
 // Types
-interface UserTheme {
+export interface UserTheme {
   id: string;
   name: string;
   loader?: string;

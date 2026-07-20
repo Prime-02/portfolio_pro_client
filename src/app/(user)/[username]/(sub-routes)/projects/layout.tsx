@@ -2,10 +2,8 @@
 
 export default function ConnectLayout({
   children,
-  // connect,
 }: {
   children: React.ReactNode;
-  // connect: React.ReactNode;
 }) {
 
 
@@ -13,7 +11,6 @@ export default function ConnectLayout({
   return (
     <div>
       {children}
-      {/* {connect || null} */}
     </div>
   );
 }

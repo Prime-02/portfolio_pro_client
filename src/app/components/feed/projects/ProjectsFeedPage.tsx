@@ -100,8 +100,8 @@ export default function ProjectsFeedPage() {
   const projectsWithAuthor = filteredProjects.map(enrichWithAuthor);
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "var(--background)" }}>
-      <div className="max-w-2xl mx-auto px-4 space-y-6">
+    <div className="min-h-screen">
+      <div className="max-w-2xl mx-auto space-y-3">
         {/* Create Project CTA */}
         {userInfo?.username && (
           <div
@@ -109,8 +109,10 @@ export default function ProjectsFeedPage() {
             style={{ backgroundColor: "var(--background)" }}
           >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-[var(--accent)]/15 flex items-center justify-center">
-                <Plus size={20} className="text-[var(--accent)]" />
+              <div
+                onClick={() => router.push(`/${userInfo.username}/projects/create`)}
+                className="w-10 h-10 rounded-full bg-[var(--accent)]/15 flex items-center justify-center">
+                <Plus size={20} className="text-[var(--accent)] cursor-pointer" />
               </div>
               <div>
                 <p className="font-semibold text-sm text-[var(--foreground)]">
@@ -121,11 +123,6 @@ export default function ProjectsFeedPage() {
                 </p>
               </div>
             </div>
-            <Button
-              text="Create Project"
-              onClick={() => router.push(`/${userInfo.username}/projects/create`)}
-              size="sm"
-            />
           </div>
         )}
 

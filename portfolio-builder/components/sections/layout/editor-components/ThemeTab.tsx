@@ -47,6 +47,7 @@ export default function ThemeTab({ }: ThemeTabProps) {
             values={themeValues}
             onChange={handleThemeChange}
             description="Customize the colors and mode of your portfolio. Defaults to your current app theme settings."
+            fetchCustomTheme
         />
     );
 }

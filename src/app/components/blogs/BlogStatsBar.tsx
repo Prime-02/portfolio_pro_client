@@ -45,13 +45,13 @@ export function BlogStatsBar({ blogs }: BlogStatsBarProps) {
       color: "#3b82f6",
       bgColor: "rgba(59,130,246,0.1)",
     },
-    {
-      icon: Eye,
-      label: "Total Views",
-      value: totalViews,
-      color: "#8b5cf6",
-      bgColor: "rgba(139,92,246,0.1)",
-    },
+    // {
+    //   icon: Eye,
+    //   label: "Total Views",
+    //   value: totalViews,
+    //   color: "#8b5cf6",
+    //   bgColor: "rgba(139,92,246,0.1)",
+    // },
     {
       icon: Heart,
       label: "Total Likes",
@@ -62,7 +62,7 @@ export function BlogStatsBar({ blogs }: BlogStatsBarProps) {
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-8">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-8">
       {items.map((item, i) => (
         <motion.div
           key={item.label}
@@ -72,10 +72,10 @@ export function BlogStatsBar({ blogs }: BlogStatsBarProps) {
           className="relative overflow-hidden rounded-2xl border border-[var(--foreground)]/10 
                      bg-[var(--background)] p-4 hover:border-[var(--accent)]/20 transition-colors"
         >
-          <div
+          {/* <div
             className="absolute top-0 right-0 w-16 h-16 rounded-full -translate-y-1/2 translate-x-1/2 opacity-30"
             style={{ backgroundColor: item.color.replace(")", ")").replace("var(--accent)", "var(--accent)") }}
-          />
+          /> */}
           <div className="relative">
             <div
               className="w-8 h-8 rounded-lg flex items-center justify-center mb-3"

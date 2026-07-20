@@ -5,7 +5,7 @@ import type { ThemeVariant } from "../types and interfaces/loaderTypes";
 import { ThemePreset } from "../../(user)/[username]/(sub-routes)/settings/preference/tabs/Themes";
 import { hexToRgb } from "@/lib/utilities/syncFunctions/syncs";
 import { useTheme } from "../../../context/ThemeContext";
-
+import { UserTheme, useUserThemeStore } from "@/lib/stores/themes/useThemes";
 
 export interface PortfolioThemeValues {
   themeVariant: ThemeVariant;
@@ -20,19 +20,23 @@ interface PortfolioThemePickerProps {
   values: PortfolioThemeValues;
   onChange: (values: PortfolioThemeValues) => void; // always full object
   description?: string;
+  fetchCustomTheme?: boolean;
 }
 
 const PortfolioThemePicker = ({
   values,
   onChange,
   description = "Customize the appearance of your portfolio. Defaults to your current theme settings.",
+  fetchCustomTheme = false,
 }: PortfolioThemePickerProps) => {
   // Get current app theme context for defaults
   const { lightTheme, darkTheme, accentColor, themeVariant: appThemeVariant } = useTheme();
 
+  const { themes, fetchThemes, isLoading: themesLoading, error: themesError } =
+    useUserThemeStore();
+
   // Detect system dark mode for "system" variant
   const [systemDark, setSystemDark] = useState(false);
-
   useEffect(() => {
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
     setSystemDark(mq.matches);
@@ -40,6 +44,15 @@ const PortfolioThemePicker = ({
     mq.addEventListener("change", handler);
     return () => mq.removeEventListener("change", handler);
   }, []);
+
+  // Pull the user's saved custom themes in when this picker is asked for them.
+  useEffect(() => {
+    if (fetchCustomTheme) {
+      fetchThemes();
+    }
+    // fetchThemes identity is stable from the store; only re-run if the flag changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchCustomTheme]);
 
   // Get effective default values from app theme context
   const getDefaultValues = (): PortfolioThemeValues => ({
@@ -55,7 +68,6 @@ const PortfolioThemePicker = ({
   const isDark =
     values.themeVariant === "dark" ||
     (values.themeVariant === "system" && systemDark);
-
   const chromeBg = isDark ? values.darkBg : values.lightBg;
   const chromeFg = isDark ? values.darkFg : values.lightFg;
   const chromeAccent = values.accent;
@@ -85,6 +97,39 @@ const PortfolioThemePicker = ({
       darkFg: preset.dark.foreground,
       accent: preset.accent,
     });
+  };
+
+  // --- Custom (user-saved) themes ---------------------------------------
+  // UserTheme fields are all optional except `name`, so unlike presets we
+  // can't assume every field is present. Build only the keys that exist,
+  // then spread over `values` so anything the saved theme didn't set
+  // (e.g. themeVariant) is left exactly as-is instead of going undefined.
+  //
+  // Field mapping assumption (inferred from defaultTheme in the store):
+  //   primary_theme / primary_theme_dark    -> foreground (text)
+  //   secondary_theme / secondary_theme_dark -> background
+  // Flip lightFg/lightBg and darkFg/darkBg below if that's backwards.
+  const mapUserThemeToPartial = (theme: UserTheme): Partial<PortfolioThemeValues> => {
+    const partial: Partial<PortfolioThemeValues> = {};
+    if (theme.theme === "light" || theme.theme === "dark" || theme.theme === "system") {
+      partial.themeVariant = theme.theme as ThemeVariant;
+    }
+    if (theme.primary_theme) partial.lightFg = theme.primary_theme;
+    if (theme.secondary_theme) partial.lightBg = theme.secondary_theme;
+    if (theme.primary_theme_dark) partial.darkFg = theme.primary_theme_dark;
+    if (theme.secondary_theme_dark) partial.darkBg = theme.secondary_theme_dark;
+    if (theme.accent) partial.accent = theme.accent;
+    return partial;
+  };
+
+  const handleUserThemeSelect = (theme: UserTheme) => {
+    onChange({ ...values, ...mapUserThemeToPartial(theme) });
+  };
+
+  const isUserThemeActive = (theme: UserTheme) => {
+    const partial = mapUserThemeToPartial(theme);
+    const keys = Object.keys(partial) as (keyof PortfolioThemeValues)[];
+    return keys.length > 0 && keys.every((key) => partial[key] === values[key]);
   };
 
   // Reset to app theme defaults
@@ -190,6 +235,90 @@ const PortfolioThemePicker = ({
               : "Always uses dark mode"}
         </p>
       </div>
+
+      {/* Your Custom Themes — kept visually and structurally distinct from
+          the built-in Presets grid below, so it's unambiguous which one(s)
+          belong to the user. */}
+      {fetchCustomTheme && (
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <h4 className="text-xs font-medium" style={{ color: chromeFg, opacity: 0.7 }}>
+              Your Themes
+            </h4>
+            <span
+              className="text-[9px] px-1.5 py-0.5 rounded-full font-medium"
+              style={{
+                backgroundColor: `${chromeAccent}20`,
+                color: chromeAccent,
+              }}
+            >
+              Custom
+            </span>
+          </div>
+
+          {themesLoading && themes.length === 0 && (
+            <p className="text-[11px]" style={{ color: chromeFg, opacity: 0.4 }}>
+              Loading your saved themes…
+            </p>
+          )}
+
+          {!themesLoading && themesError && (
+            <p className="text-[11px]" style={{ color: chromeFg, opacity: 0.5 }}>
+              {`Couldn't load your saved themes.`}
+            </p>
+          )}
+
+          {!themesLoading && !themesError && themes.length === 0 && (
+            <p className="text-[11px]" style={{ color: chromeFg, opacity: 0.4 }}>
+             {` You don't have any saved themes yet.`}
+            </p>
+          )}
+
+          {themes.length > 0 && (
+            <div className="grid grid-cols-2 gap-2">
+              {themes.map((theme) => {
+                const active = isUserThemeActive(theme);
+                const swatchAccent = theme.accent ?? chromeAccent;
+                const swatchLightBg = theme.secondary_theme ?? values.lightBg;
+                const swatchDarkBg = theme.secondary_theme_dark ?? values.darkBg;
+                return (
+                  <button
+                    key={theme.id}
+                    type="button"
+                    onClick={() => handleUserThemeSelect(theme)}
+                    className="relative rounded-lg border-2 p-2.5 transition-all hover:scale-[1.02] text-left flex items-center gap-2"
+                    style={{
+                      borderColor: active ? chromeAccent : borderColor(0.12),
+                      boxShadow: active ? `0 0 0 2px ${chromeAccent}33` : undefined,
+                    }}
+                  >
+                    <div className="flex -space-x-1 flex-shrink-0">
+                      <div
+                        className="w-4 h-4 rounded-full border"
+                        style={{ backgroundColor: swatchLightBg, borderColor: borderColor(0.2) }}
+                      />
+                      <div
+                        className="w-4 h-4 rounded-full border"
+                        style={{ backgroundColor: swatchDarkBg, borderColor: borderColor(0.2) }}
+                      />
+                      <div
+                        className="w-4 h-4 rounded-full border"
+                        style={{ backgroundColor: swatchAccent, borderColor: borderColor(0.2) }}
+                      />
+                    </div>
+                    <span
+                      className="text-xs font-medium truncate"
+                      style={{ color: chromeFg }}
+                    >
+                      {theme.name}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Theme Presets */}
       <div>
@@ -360,7 +489,6 @@ const PortfolioThemePicker = ({
           </div>
         </div>
       </div>
-
     </div>
   );
 };

@@ -2,19 +2,19 @@ import React, { useEffect, useState } from "react";
 import PortfolioProLogo from "../../logo/PortfolioProLogo";
 import Popover from "../../containers/divs/PopOver";
 import { ChevronDown, DownloadIcon, User } from "lucide-react";
-import { Menu as MenuIcon } from "lucide-react";
 import Link from "next/link";
 import Button from "../../buttons/Buttons";
 import Menu from "../../containers/cards/landing-page-nav-cards/Menu";
 import Profile from "../../containers/cards/landing-page-nav-cards/Profile";
 import Image from "next/image";
-import CloseButton from "../../buttons/CloseButton";
 import NotificationsButton from "../../buttons/NotificationsButton";
 import { useUIStore } from "@/lib/stores/ui/useUIStore";
 import { getImageSrc } from "@/lib/utilities/syncFunctions/syncs";
 import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 import { usePWA } from "@/lib/hooks/pwa/usePWA";
 import { SubscriptionTier } from "@/lib/stores/billing/payment-types";
+import MenuIcon from "../../svgs/MenuIcon";
+import { useTheme } from "@/src/context/ThemeContext";
 
 const LandingPageNavbar = () => {
   const { userInfo } = useUserSettings();
@@ -26,10 +26,11 @@ const LandingPageNavbar = () => {
     isSidebarExpanded,
     setSidebarExpanded,
   } = useUIStore();
+  const { accentColor } = useTheme();
 
   const [imageError, setImageError] = useState(false);
 
-  // Use the custom PWA hook - replaces all the manual PWA logic
+  // Use the custom PWA hook
   const { isInstalled: isPWAInstalled } = usePWA();
 
   const handleImageError = () => {
@@ -65,23 +66,14 @@ const LandingPageNavbar = () => {
 
   return (
     <>
-      {/* Mobile Top Bar */}
+      {/* Mobile Top Bar - CORRECTED */}
       {isMobile && (
-        <div className="fixed top-0 left-0 right-0 z-[999999] h-16 border-b bg-[var(--background)] border-[var(--accent)]/20 flex items-center justify-between px-4">
-          <Link href="/feed">
-            <PortfolioProLogo variant="banner" scale={0.3} />
-          </Link>
-          {mobileMenuOpen ? (
-            <CloseButton onClick={() => toggleMobileMenu(false)} />
-          ) : (
-            <button
-              onClick={() => toggleMobileMenu(true)}
-              className="p-2 rounded-full hover:bg-[var(--accent)]/10 transition-colors"
-              title="Menu"
-            >
-              <MenuIcon size={24} />
-            </button>
-          )}
+        <div className="fixed top-0 right-0 z-30 p-3">
+          <MenuIcon
+            isOpen={mobileMenuOpen}
+            onToggle={(isOpen) => toggleMobileMenu(isOpen)}
+            color={accentColor.color}
+          />
         </div>
       )}
 
@@ -91,7 +83,6 @@ const LandingPageNavbar = () => {
           ${isMobile ? "fixed" : "relative"} top-0 z-50 h-screen max-h-screen overflow-auto bg-[var(--background)] border-r border-[var(--accent)]/20 flex flex-col transition-all duration-300 ease-in-out
           ${isMobile ? `${mobileMenuOpen ? "left-0" : "-left-full"}` : ""}
           ${isSidebarExpanded || mobileMenuOpen ? "w-64" : "w-16"}
-          ${isMobile ? "pt-16" : ""}
         `}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
@@ -100,21 +91,19 @@ const LandingPageNavbar = () => {
         <div
           className={`items-center flex flex-col gap-2 py-4 ${isSidebarExpanded || mobileMenuOpen ? "px-4" : ""}`}
         >
-          {!isMobile && (
-            <Link
-              className={`${isSidebarExpanded ? "w-full flex items-center justify-between " : "mx-auto"}`}
-              href="/feed"
-            >
-              <PortfolioProLogo
-                variant={isSidebarExpanded ? "banner" : "logo"}
-                scale={!isSidebarExpanded ? 0.2 : 0.3}
-              />
-            </Link>
-          )}
+          <Link
+            className={`${isSidebarExpanded ? "w-full flex items-center justify-between " : "mx-auto"}`}
+            href="/feed"
+          >
+            <PortfolioProLogo
+              variant={mobileMenuOpen || isSidebarExpanded ? "banner" : "logo"}
+              scale={!(mobileMenuOpen || isSidebarExpanded) ? 0.25 : 0.4}
+            />
+          </Link>
         </div>
 
         {/* Bottom section - Auth/User controls with horizontal padding */}
-        <div className="flex-1 flex flex-col overflow-y-auto px-1"> 
+        <div className="flex-1 flex flex-col overflow-y-auto px-1">
           {userInfo?.id ? (
             <div className="flex flex-col h-full">
               {/* Menu takes majority of space */}
@@ -220,7 +209,7 @@ const LandingPageNavbar = () => {
               </div>
             </div>
           ) : (
-            <div className="h-full flex flex-col pb-6 items-center gap-3">
+            <div className="h-full flex flex-col items-center gap-3">
               {isSidebarExpanded || mobileMenuOpen ? (
                 <>
                   <Link
@@ -257,7 +246,7 @@ const LandingPageNavbar = () => {
       {/* Mobile overlay when menu is open */}
       {isMobile && mobileMenuOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-30 top-16"
+          className="fixed inset-0 bg-black/50 z-30"
           onClick={() => toggleMobileMenu(false)}
         />
       )}

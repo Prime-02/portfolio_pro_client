@@ -93,7 +93,7 @@ export default function LayoutEditor({
                     <LayoutEditorTabs activeTab={activeTab} onChange={setActiveTab} />
 
                     {/* Scrollable tab content */}
-                    <div className="flex-1 overflow-y-auto p-5">
+                    <div className="flex-1 overflow-y-auto custom-scrollbar p-5">
                         {activeTab === "navbar" && (
                             <NavbarTab
                                 data={data.navbar ?? getEmptyNavbarData()}

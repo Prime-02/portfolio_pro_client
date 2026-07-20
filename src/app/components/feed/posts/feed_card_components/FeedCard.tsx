@@ -63,7 +63,7 @@ export default function FeedCard({ content }: FeedCardProps) {
   return (
     <>
       <article
-        className="rounded-2xl border border-[var(--foreground)]/10 p-5 transition-shadow hover:shadow-md"
+        className="rounded-2xl border border-[var(--foreground)]/10 p-3 transition-shadow hover:shadow-md"
         style={{ backgroundColor: "var(--background)" }}
       >
         {/* Author Header */}
@@ -157,7 +157,7 @@ export default function FeedCard({ content }: FeedCardProps) {
           )}
 
           {/* Tags */}
-          {content.tags && content.tags.length > 0 && (
+          {content.tags && content.content_type !== "POST" && content.tags.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mt-3">
               {content.tags.map((tag) => (
                 <span

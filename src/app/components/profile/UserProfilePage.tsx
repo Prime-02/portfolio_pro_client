@@ -153,7 +153,7 @@ export const UserProfilePage = () => {
 
     // ─── Main Render ──────────────────────────────────────────────────────────
     return (
-        <div className="max-w-6xl mx-auto py-8">
+        <div className="max-w-6xl mx-auto">
             {/* User Not Found Notice for authenticated users viewing missing profiles */}
             {showUserNotFound && (
                 <UserNotFoundNotice username={userInfo?.username ?? ""} />

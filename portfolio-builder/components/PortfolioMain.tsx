@@ -467,11 +467,11 @@ export default function PortfolioMain({ portfolioId, viewOnly }: PortfolioMainPr
       </LayoutController>
 
       {!viewOnly && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+        <div className="fixed bottom-6 right-5 z-50">
           <button
             onClick={flush}
             disabled={saveStatus === "saving" || !isDirty}
-            className={`px-5 py-2.5 rounded-full font-medium text-sm shadow-lg backdrop-blur transition-colors flex items-center gap-2 border ${saveStatus === "error"
+            className={`px-5 py-2.5 rounded-lg font-medium text-sm shadow-lg backdrop-blur transition-colors flex items-center gap-2 border ${saveStatus === "error"
               ? "bg-[var(--pb-error-bg)] text-[var(--pb-error)] border-[var(--pb-error-border)]"
               : isDirty
                 ? "bg-[var(--pb-foreground)] text-[var(--pb-background)] border-transparent hover:opacity-90"

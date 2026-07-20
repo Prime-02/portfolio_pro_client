@@ -54,10 +54,10 @@ export function ProjectStatsBar({ stats, totalProjects }: ProjectStatsBarProps) 
           className="relative overflow-hidden rounded-2xl border border-[var(--foreground)]/10 
                      bg-[var(--background)] p-4 hover:border-[var(--accent)]/20 transition-colors"
         >
-          <div
+          {/* <div
             className="absolute top-0 right-0 w-20 h-20 rounded-full -translate-y-1/2 translate-x-1/2 opacity-30"
             style={{ backgroundColor: item.color.replace(")", ")").replace("var(--accent)", "var(--accent)") }}
-          />
+          /> */}
           <div className="relative">
             <div
               className="w-8 h-8 rounded-lg flex items-center justify-center mb-3"

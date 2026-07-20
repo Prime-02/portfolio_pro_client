@@ -194,9 +194,8 @@ export default function SuggestionsFeedPage() {
   return (
     <div
       className="min-h-screen"
-      style={{ backgroundColor: "var(--background)" }}
     >
-      <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+      <div className="max-w-2xl mx-auto space-y-3">
         {/* Header */}
         <div className="text-center py-8">
           <h1 className="text-2xl font-bold text-[var(--foreground)] mb-2">

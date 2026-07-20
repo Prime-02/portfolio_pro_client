@@ -51,7 +51,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
   return (
     <>
       <article
-        className="rounded-2xl border border-[var(--foreground)]/10 p-5 transition-shadow hover:shadow-md"
+        className="rounded-2xl border border-[var(--foreground)]/10 p-3 transition-shadow hover:shadow-md"
         style={{ backgroundColor: "var(--background)" }}
       >
         {/* Author Header */}

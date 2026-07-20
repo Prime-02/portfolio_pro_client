@@ -72,6 +72,7 @@ export const useContentTagStore = create<ContentTagState & ContentTagActions>(
         const response = await api.get<ContentTagListResponse>("/content/tags/", {
           params: filters,
         });
+        console.log(JSON.stringify(response.data))
         set({ tags: response.data.items, total: response.data.total });
       } catch (err: unknown) {
         set({ error: extractMessage(err) });

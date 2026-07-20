@@ -6,7 +6,6 @@ import { useState, useMemo, useEffect, Children } from "react";
 import { LayoutData, getEmptyLayoutData, SectionLink, syncSectionLinks } from "@/portfolio-builder/types/layout";
 import LayoutEditor from "./LayoutEditor";
 import LayoutRenderer from "./LayoutRenderer";
-import { ScrollIndicator } from "@/portfolio-builder/components/sections/hero/renderer-components/ScrollIndicator";
 
 interface LayoutControllerProps {
     layoutData: LayoutData | null;
@@ -115,8 +114,6 @@ export default function LayoutController({
             <LayoutRenderer data={resolved}>
                 {visibleOrderedChildren}
             </LayoutRenderer>
-
-            <ScrollIndicator />
 
             {!isEditing && !viewOnly && (
                 <button

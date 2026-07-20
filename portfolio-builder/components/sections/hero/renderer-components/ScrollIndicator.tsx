@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, RefObject } from "react";
 import { createPortal } from "react-dom";
 import { motion, useScroll, useSpring, useTransform } from "framer-motion";
 
@@ -10,8 +10,20 @@ const RADIUS = 20;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 const NEAR_BOTTOM_THRESHOLD = 0.96;
 
-function ScrollIndicatorInner() {
-    const { scrollYProgress } = useScroll();
+interface ScrollIndicatorProps {
+    /**
+     * Ref to the element that actually scrolls, if the page's real scroll
+     * root isn't <html>/<body> (e.g. an app shell with a fixed-height body
+     * and an inner `overflow-y-auto` wrapper). When omitted, falls back to
+     * window/document scroll tracking.
+     */
+    containerRef?: RefObject<HTMLElement | null>;
+}
+
+function ScrollIndicatorInner({ containerRef }: ScrollIndicatorProps) {
+    const { scrollYProgress } = useScroll(
+        containerRef ? { container: containerRef } : undefined
+    );
     const [isNearBottom, setIsNearBottom] = useState(false);
 
     const progress = useSpring(scrollYProgress, {
@@ -30,7 +42,12 @@ function ScrollIndicatorInner() {
     }, [scrollYProgress]);
 
     const handleClick = () => {
-        window.scrollTo({ top: window.innerHeight, behavior: "smooth" });
+        const el = containerRef?.current;
+        if (el) {
+            el.scrollTo({ top: el.clientHeight, behavior: "smooth" });
+        } else {
+            window.scrollTo({ top: window.innerHeight, behavior: "smooth" });
+        }
     };
 
     return (
@@ -85,7 +102,7 @@ function ScrollIndicatorInner() {
     );
 }
 
-export function ScrollIndicator() {
+export function ScrollIndicator({ containerRef }: ScrollIndicatorProps) {
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -94,5 +111,5 @@ export function ScrollIndicator() {
 
     if (!mounted) return null;
 
-    return createPortal(<ScrollIndicatorInner />, document.body);
+    return createPortal(<ScrollIndicatorInner containerRef={containerRef} />, document.body);
 }

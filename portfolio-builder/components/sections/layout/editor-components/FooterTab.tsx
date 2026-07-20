@@ -5,7 +5,7 @@
 import { useEffect } from "react";
 import { FooterData, FooterColumn, FooterSocialLink, SectionLink } from "@/portfolio-builder/types/layout";
 import BackgroundTab from "@/portfolio-builder/components/shared/background/editor/BackgroundTab";
-import { PBDropdown, PBTextInput } from "@/portfolio-builder/components/shared/ui/inputs";
+import { PBDropdown, PBRangeInput, PBTextInput } from "@/portfolio-builder/components/shared/ui/inputs";
 import { SectionDivider } from "./NavbarTab";
 import { useSocialLinks, SocialLink as UserSocialLink } from "@/lib/stores/social_links/useSocialLinks";
 import { socialMediaPlatforms } from "@/lib/utilities/indices/DropDownItems";
@@ -100,21 +100,14 @@ function RangeSlider({
     unit?: string;
 }) {
     return (
-        <div>
-            <div className="flex justify-between mb-1">
-                <label className="text-xs text-[var(--pb-text-muted)]">{label}</label>
-                <span className="text-xs text-[var(--pb-text-muted)] tabular-nums">{value}{unit}</span>
-            </div>
-            <input
-                type="range"
-                min={min}
-                max={max}
-                step={step}
-                value={value}
-                onChange={(e) => onChange(Number(e.target.value))}
-                className="w-full h-1.5 appearance-none bg-[var(--pb-foreground-20)] rounded-full accent-[var(--pb-foreground)] cursor-pointer"
-            />
-        </div>
+      <PBRangeInput
+      label={label}
+      value={value}
+      onChange={onChange}
+      min={min}
+      max={max}
+      step={step}
+      />
     );
 }
 
@@ -566,7 +559,7 @@ export default function FooterTab({ data, onChange, sectionLinks, onSectionLinks
 
                     <SectionDivider label="Spacing" />
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4">
                         <RangeSlider
                             label="Horizontal Padding"
                             value={data.paddingX ?? 0}

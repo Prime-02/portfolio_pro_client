@@ -7,7 +7,7 @@ import { NavbarData, getEmptyNavbarData, SectionLink } from "@/portfolio-builder
 import BackgroundTab from "@/portfolio-builder/components/shared/background/editor/BackgroundTab";
 import { BioCTA } from "@/portfolio-builder/types/bio";
 import { useUserSettings } from "@/lib/stores/user/useUserSettings";
-import { PBDropdown, PBTextInput } from "@/portfolio-builder/components/shared/ui/inputs";
+import { PBDropdown, PBRangeInput, PBTextInput } from "@/portfolio-builder/components/shared/ui/inputs";
 import { ImageField } from "@/src/app/components/cloudinary/ImageField";
 import { useParams } from "next/navigation";
 import { useCloudinaryCore } from "@/lib/stores/cloudinary/useCloudinaryCore";
@@ -425,21 +425,14 @@ function RangeSlider({
     unit?: string;
 }) {
     return (
-        <div>
-            <div className="flex justify-between mb-1">
-                <label className="text-xs text-[var(--pb-text-muted)]">{label}</label>
-                <span className="text-xs text-[var(--pb-text-muted)] tabular-nums">{value}{unit}</span>
-            </div>
-            <input
-                type="range"
-                min={min}
-                max={max}
-                step={step}
-                value={value}
-                onChange={(e) => onChange(Number(e.target.value))}
-                className="w-full h-1.5 appearance-none bg-[var(--pb-foreground-20)] rounded-full accent-[var(--pb-foreground)] cursor-pointer"
-            />
-        </div>
+        <PBRangeInput
+            label={label}
+            value={value}
+            onChange={onChange}
+            min={min}
+            max={max}
+            step={step}
+        />
     );
 }
 
@@ -591,7 +584,7 @@ export default function NavbarTab({ data, onChange, availableSections, sectionLi
                     <SectionDivider label="Spacing" />
 
                     {/* Padding */}
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4">
                         <RangeSlider
                             label="Horizontal Padding"
                             value={data.paddingX ?? 0}
@@ -609,7 +602,7 @@ export default function NavbarTab({ data, onChange, availableSections, sectionLi
                     </div>
 
                     {/* Margin */}
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4">
                         <RangeSlider
                             label="Horizontal Margin"
                             value={data.marginX ?? 0}

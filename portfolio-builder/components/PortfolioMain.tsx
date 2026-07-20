@@ -491,4 +491,4 @@ export default function PortfolioMain({ portfolioId, viewOnly }: PortfolioMainPr
       )}
     </>
   );
-}
+}               

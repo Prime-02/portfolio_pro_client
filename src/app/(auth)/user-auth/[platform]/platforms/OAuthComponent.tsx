@@ -174,7 +174,7 @@ const OAuthComponent: React.FC<OAuthComponentProps> = ({
     startLoading("verify_email_in_progress");
     try {
       const verificationData = Object.assign(params, { email: email });
-      const { data } = await api.post("`/canva-auth/verify-email", verificationData);
+      const { data } = await api.post("canva-auth/verify-email", verificationData);
       if (data?.message) {
         toast.success(data.message, {
           title: "Verification Email Sent",
@@ -195,7 +195,6 @@ const OAuthComponent: React.FC<OAuthComponentProps> = ({
   };
 
   const canvaVerification = async () => {
-    startLoading("canva_verification")
     try {
       if (mode === "approved") {
         if (provider === "canva") {
@@ -206,11 +205,11 @@ const OAuthComponent: React.FC<OAuthComponentProps> = ({
             setEmailVerification(true);
           }
         } else {
-          approveUser();
+          await approveUser();
         }
       }
-    } finally {
-      stopLoading("canva_verification")
+    } catch (error) {
+      // approveUser already handles errors and loading state
     }
   }
 
@@ -301,11 +300,11 @@ const OAuthComponent: React.FC<OAuthComponentProps> = ({
             <div className="w-full flex flex-col gap-y-2">
               <div className="flex mt-4 justify-center gap-3">
                 <Button
-                  disabled={isLoading("canva_verification")}
-                  loading={isLoading("canva_verification")}
+                  disabled={isLoading(config.loadingKey)}
+                  loading={isLoading(config.loadingKey)}
                   variant="ghost"
                   onClick={() => {
-                    if (verifiedEmail && !isLoading("canva_verification")) {
+                    if (verifiedEmail && !isLoading(config.loadingKey)) {
                       canvaVerification()
                     } else {
                       setEmailVerification(true);

@@ -6,6 +6,7 @@ import { useTheme } from "@/src/context/ThemeContext";
 import { toast } from "@/src/context/Toastify";
 import Image from "next/image";
 import React from "react";
+import VercelButton from "./vercel/VercelButton";
 
 // Configuration for different OAuth providers
 const OAUTH_BUTTON_CONFIG = {
@@ -62,13 +63,15 @@ interface OAuthButtonProps {
   className?: string;
   fullWidth?: boolean;
   redirect?: boolean
+  buttonText?: string
 }
 
 const OAuthButton: React.FC<OAuthButtonProps> = ({
   provider,
   className = "",
   fullWidth = false,
-  redirect = false
+  redirect = false,
+  buttonText
 }) => {
   const { isDarkMode } = useTheme();
   const { isLoading, startLoading, stopLoading } = useUIStore();
@@ -105,6 +108,8 @@ const OAuthButton: React.FC<OAuthButtonProps> = ({
       : config.logoSrc;
   };
 
+  if (provider === "vercel") return <VercelButton buttonText={buttonText} />
+
   return (
     <div className={fullWidth ? "w-full" : ""}>
       <Button
@@ -128,7 +133,7 @@ const OAuthButton: React.FC<OAuthButtonProps> = ({
         variant="outline"
         className={`${fullWidth ? "w-full" : ""} ${className}`}
         size="sm"
-        text={config.buttonText}
+        text={buttonText ? buttonText : config.buttonText}
         loading={isLoading(config.loadingKey)}
       />
     </div>

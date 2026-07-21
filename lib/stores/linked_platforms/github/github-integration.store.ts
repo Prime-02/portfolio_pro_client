@@ -20,6 +20,7 @@ export interface GitHubImportRequest {
   github_username: string;
   import_all: boolean;
   project_names?: string[];
+  installation_id?: string; // Added installation_id
 }
 
 export interface GitHubImportResponse {
@@ -32,12 +33,14 @@ export interface GitHubImportResponse {
   pages_fetched?: number;
   github_username: string;
   import_type: "all" | "specific";
+  installation_id?: string; // Added installation_id
   details?: Record<string, any>;
 }
 
 export interface GitHubInstallationImportRequest {
   import_all: boolean;
   project_names?: string[];
+  installation_id: string; // Made required since it's needed for installation imports
 }
 
 export interface GitHubRepositoryInfo {
@@ -62,6 +65,7 @@ export interface GitHubRepositoryInfo {
   has_pages: boolean;
   default_branch?: string;
   permissions?: Record<string, boolean>;
+  installation_id?: string; // Added installation_id
 }
 
 export interface GitHubRepositoriesListResponse {
@@ -72,6 +76,7 @@ export interface GitHubRepositoriesListResponse {
   page: number;
   per_page: number;
   has_more: boolean;
+  installation_id?: string; // Added installation_id
 }
 
 export interface GitHubInstallationRepositoriesResponse {
@@ -97,6 +102,7 @@ export interface GitHubPreviewResponse {
     new: number;
     existing: number;
   };
+  installation_id?: string; // Added installation_id
 }
 
 export interface GitHubProjectPreview {
@@ -108,6 +114,7 @@ export interface GitHubProjectPreview {
   updated_at?: string;
   existing_id?: string;
   existing_name?: string;
+  installation_id?: string; // Added installation_id
 }
 
 export interface GitHubImportResult {
@@ -136,6 +143,7 @@ export interface GitHubDuplicateCheckResponse {
     name?: string;
     html_url?: string;
     id?: number;
+    installation_id?: string; // Added installation_id
   };
   message: string;
 }
@@ -159,6 +167,7 @@ export interface GitHubSingleImportResponse {
     | "skipped_existing_association";
   repo_name?: string;
   repo_url?: string;
+  installation_id?: string; // Added installation_id
 }
 
 export interface GitHubDeleteResponse {
@@ -168,6 +177,7 @@ export interface GitHubDeleteResponse {
   action?: "deleted";
   repo_name?: string;
   repo_url?: string;
+  installation_id?: string; // Added installation_id
 }
 
 export interface GitHubBatchImportResponse {
@@ -176,6 +186,7 @@ export interface GitHubBatchImportResponse {
   imported: number;
   skipped: number;
   errors: number;
+  installation_id: string; // Made required
   projects: Array<{
     repo_name: string;
     result: GitHubSingleImportResponse;
@@ -198,6 +209,7 @@ interface GitHubIntegrationState {
     page: number;
     per_page: number;
     has_more: boolean;
+    installation_id?: string; // Added installation_id
   } | null;
   repositoriesError: string | null;
 
@@ -209,6 +221,7 @@ interface GitHubIntegrationState {
     page: number;
     per_page: number;
     has_more: boolean;
+    installation_id: string; // Made required
   } | null;
   installationReposError: string | null;
 
@@ -224,6 +237,7 @@ interface GitHubIntegrationState {
     message: string;
     import_all: boolean;
     repository_count: number | string;
+    installation_id: string; // Made required
   } | null;
   installationImportError: string | null;
 
@@ -257,6 +271,9 @@ interface GitHubIntegrationState {
   installationTokenData: GitHubInstallationTokenResponse | null;
   installationTokenError: string | null;
 
+  // Active Installation ID (global state)
+  activeInstallationId: string | null;
+
   // Actions
   validateGitHubUser: (username: string) => Promise<void>;
   listGitHubRepositories: (params: {
@@ -265,10 +282,12 @@ interface GitHubIntegrationState {
     per_page?: number;
     sort?: "created" | "updated" | "pushed" | "full_name";
     direction?: "asc" | "desc";
+    installation_id?: string; // Added installation_id
   }) => Promise<void>;
   getInstallationRepositories: (params: {
     page?: number;
     per_page?: number;
+    installation_id?: string; // Added installation_id
   }) => Promise<void>;
   importByUsername: (request: GitHubImportRequest) => Promise<void>;
   importByInstallation: (
@@ -279,7 +298,7 @@ interface GitHubIntegrationState {
     repo_data: Record<string, any>;
     installation_id?: string;
     skip_duplicates?: boolean;
-  }) => Promise<void>;
+  }) => Promise<GitHubSingleImportResponse>;
   importMultipleRepositories: (params: {
     repositories: Record<string, any>[];
     installation_id: string;
@@ -290,10 +309,14 @@ interface GitHubIntegrationState {
     repo_data: Record<string, any>;
     installation_id?: string;
   }) => Promise<void>;
-  checkDuplicateProjects: (repo_data: Record<string, any>) => Promise<void>;
+  checkDuplicateProjects: (
+    repo_data: Record<string, any>,
+    installation_id?: string, // Added installation_id
+  ) => Promise<void>;
   getInstallationAccessToken: (installation_id: number) => Promise<void>;
 
   // Utility Actions
+  setActiveInstallationId: (installation_id: string | null) => void;
   resetUserValidation: () => void;
   resetRepositoriesList: () => void;
   resetInstallationRepos: () => void;
@@ -353,6 +376,8 @@ const initialState = {
   isLoadingInstallationToken: false,
   installationTokenData: null,
   installationTokenError: null,
+
+  activeInstallationId: null, // Added active installation ID
 };
 
 // ============ Store Implementation ============
@@ -408,6 +433,8 @@ export const useGitHubIntegrationStore = create<GitHubIntegrationState>()(
             if (params.sort) queryParams.append("sort", params.sort);
             if (params.direction)
               queryParams.append("direction", params.direction);
+            if (params.installation_id)
+              queryParams.append("installation_id", params.installation_id);
 
             const url = `/github/repositories/${encodeURIComponent(params.username)}?${queryParams.toString()}`;
             const response = await api.get<GitHubRepositoriesListResponse>(url);
@@ -418,6 +445,7 @@ export const useGitHubIntegrationStore = create<GitHubIntegrationState>()(
                 page: response.data.page,
                 per_page: response.data.per_page,
                 has_more: response.data.has_more,
+                installation_id: response.data.installation_id,
               },
               isLoadingRepositories: false,
             });
@@ -455,6 +483,11 @@ export const useGitHubIntegrationStore = create<GitHubIntegrationState>()(
             const response =
               await api.get<GitHubInstallationRepositoriesResponse>(url);
 
+            // Update active installation ID if returned
+            if (response.data.installation_id) {
+              set({ activeInstallationId: response.data.installation_id });
+            }
+
             set({
               installationRepositories: response.data.repositories,
               installationReposTotalCount: response.data.total_count,
@@ -462,6 +495,7 @@ export const useGitHubIntegrationStore = create<GitHubIntegrationState>()(
                 page: response.data.page,
                 per_page: response.data.per_page,
                 has_more: response.data.has_more,
+                installation_id: response.data.installation_id,
               },
               isLoadingInstallationRepos: false,
             });
@@ -525,6 +559,7 @@ export const useGitHubIntegrationStore = create<GitHubIntegrationState>()(
               message: string;
               import_all: boolean;
               repository_count: number | string;
+              installation_id: string;
             }>("/github/installations/import", request);
 
             set({
@@ -583,6 +618,11 @@ export const useGitHubIntegrationStore = create<GitHubIntegrationState>()(
             const queryParams = new URLSearchParams();
             if (params.installation_id)
               queryParams.append("installation_id", params.installation_id);
+            else if (get().activeInstallationId)
+              queryParams.append(
+                "installation_id",
+                get().activeInstallationId!,
+              );
             if (params.skip_duplicates !== undefined)
               queryParams.append(
                 "skip_duplicates",
@@ -599,6 +639,7 @@ export const useGitHubIntegrationStore = create<GitHubIntegrationState>()(
               singleImportResult: response.data,
               isImportingSingle: false,
             });
+            return response.data;
           } catch (error: any) {
             const errorMessage =
               error.response?.data?.detail ||
@@ -665,6 +706,11 @@ export const useGitHubIntegrationStore = create<GitHubIntegrationState>()(
             const queryParams = new URLSearchParams();
             if (params.installation_id)
               queryParams.append("installation_id", params.installation_id);
+            else if (get().activeInstallationId)
+              queryParams.append(
+                "installation_id",
+                get().activeInstallationId!,
+              );
 
             const url = `/github/repositories/delete-single?${queryParams.toString()}`;
             const response = await api.delete<GitHubDeleteResponse>(url, {
@@ -691,12 +737,25 @@ export const useGitHubIntegrationStore = create<GitHubIntegrationState>()(
         },
 
         // Check Duplicate Projects
-        checkDuplicateProjects: async (repo_data: Record<string, any>) => {
+        checkDuplicateProjects: async (
+          repo_data: Record<string, any>,
+          installation_id?: string,
+        ) => {
           set({ isCheckingDuplicates: true, duplicateCheckError: null });
 
           try {
+            const queryParams = new URLSearchParams();
+            if (installation_id)
+              queryParams.append("installation_id", installation_id);
+            else if (get().activeInstallationId)
+              queryParams.append(
+                "installation_id",
+                get().activeInstallationId!,
+              );
+
+            const url = `/github/projects/check-duplicates?${queryParams.toString()}`;
             const response = await api.post<GitHubDuplicateCheckResponse>(
-              "/github/projects/check-duplicates",
+              url,
               repo_data,
             );
 
@@ -748,6 +807,11 @@ export const useGitHubIntegrationStore = create<GitHubIntegrationState>()(
 
             throw new Error(errorMessage);
           }
+        },
+
+        // Set Active Installation ID
+        setActiveInstallationId: (installation_id: string | null) => {
+          set({ activeInstallationId: installation_id });
         },
 
         // Reset Actions
@@ -829,6 +893,7 @@ export const useGitHubIntegrationStore = create<GitHubIntegrationState>()(
           // Only persist these fields
           userValidationResult: state.userValidationResult,
           repositoriesPagination: state.repositoriesPagination,
+          activeInstallationId: state.activeInstallationId, // Persist active installation
         }),
       },
     ),
@@ -949,5 +1014,14 @@ export const useGitHubInstallationToken = () => {
     installationTokenData: store.installationTokenData,
     installationTokenError: store.installationTokenError,
     getInstallationAccessToken: store.getInstallationAccessToken,
+  };
+};
+
+// New hook for installation ID management
+export const useGitHubInstallationId = () => {
+  const store = useGitHubIntegrationStore();
+  return {
+    activeInstallationId: store.activeInstallationId,
+    setActiveInstallationId: store.setActiveInstallationId,
   };
 };

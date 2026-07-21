@@ -22,7 +22,7 @@ export const logoutAll = async (revokeSession: boolean = true) => {
   useSocialLinks.getState().reset();
   useTestimonialsStore.getState().reset();
   useUserSettings.getState().reset();
-  useUserSettings.getState().clearPublicData();
+  useUserSettings.getState().reset();
   useSessionsStore.getState().reset();
 
   if (revokeSession) await useSessionsStore.getState().revokeAllSessions();

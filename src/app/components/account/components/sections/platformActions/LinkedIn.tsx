@@ -6,8 +6,29 @@ import Button from '@/src/app/components/buttons/Buttons'
 import Switch from '@/src/app/components/inputs/Switch'
 import React, { useState, useEffect } from 'react'
 
+const LinkedInSkeleton = () => {
+    return (
+        <div className="w-full space-y-3 animate-pulse">
+            {/* Header Skeleton */}
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--foreground)]/30">
+                <div className="flex items-center gap-2">
+                    <div className="w-12 h-12 bg-[var(--foreground)]/30 rounded-lg" />
+                    <div className="space-y-2">
+                        <div className="h-5 w-24 bg-[var(--foreground)]/30 rounded" />
+                        <div className="h-3 w-20 bg-[var(--foreground)]/30 rounded" />
+                    </div>
+                </div>
+                <div className="flex items-center gap-2">
+                    <div className="h-3 w-16 bg-[var(--foreground)]/30 rounded hidden sm:block" />
+                    <div className="h-9 w-24 bg-[var(--foreground)]/30 rounded-lg" />
+                </div>
+            </div>
+        </div>
+    )
+}
+
 const LinkedIn = ({ linkedinData }: { linkedinData: Record<string, any> }) => {
-    const { toggleLinkedInActions } = useUserAccountStore()
+    const { toggleLinkedInActions, isLoadingLinkedPlatforms } = useUserAccountStore()
     const { userInfo, localUpdateUserInfo } = useUserSettings()
     const { setLoading, isLoading } = useUIStore()
     const [manage, setManage] = useState(false)
@@ -44,10 +65,14 @@ const LinkedIn = ({ linkedinData }: { linkedinData: Record<string, any> }) => {
         setManage(!manage)
     }
 
+    if (isLoadingLinkedPlatforms) {
+        return <LinkedInSkeleton />
+    }
+
     return (
         <div className="w-full space-y-3">
             {/* Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-gray-700">
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--foreground)]/30">
                 <div className="flex items-center gap-2">
                     <img className='w-12 h-12 object-contain' src="/socials/linkedin/in-logo/LI-In-Bug.png" alt="LinkedIn" />
                     <div>

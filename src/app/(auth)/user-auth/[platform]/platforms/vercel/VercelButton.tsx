@@ -9,8 +9,9 @@ import { useTheme } from "@/src/context/ThemeContext";
 import { toast } from "@/src/context/Toastify";
 import Image from "next/image";
 import React, { FormEvent, useState } from "react";
+import TokenGuideDropdown from "./TokenGuideDropdown";
 
-const VercelButton = () => {
+const VercelButton = ({ buttonText }: { buttonText?: string }) => {
   const { isDarkMode } = useTheme();
   const { startLoading, stopLoading, isLoading } = useUIStore()
   const {
@@ -18,6 +19,7 @@ const VercelButton = () => {
     clearQueryParam,
     router,
     currentPathWithQuery,
+    pathname
   } = useRouting()
   const tokenModal = checkParams("token_modal");
   const [token, setToken] = useState("");
@@ -30,16 +32,17 @@ const VercelButton = () => {
     }
     startLoading("validating_token");
     try {
-      const verificationRes: { valid: boolean } = await api.post(`/vercel/validate-token?token=${token.trim()}`);
+      const { data: verificationRes } = await api.post(`/vercel/validate-token?token=${token.trim()}`);
+      const onSuccess = () => {
+        toast.info("Reloading")
+        router.replace(pathname)
+      }
       if (verificationRes.valid) {
-        toast.success("Your vercel token has been validated. Redirecting...", {
+        toast.success("Your Vercel token has been validated. You can now import your projects—newly created projects will also be automatically imported for the duration of your token's validity.", {
           title: "Validation successful",
+          onClose: () => onSuccess()
         });
-        router.push(
-          `${PathUtil.buildUrlWithQuery(`/user-auth/vercel`, {
-            code: token,
-          })}`
-        );
+        onSuccess()
       } else {
         toast.error(
           "Your token appears to be invalid, ensure you copied it correctly from the vercel platform, or view guide to learn more.",
@@ -71,11 +74,7 @@ const VercelButton = () => {
         }}
       >
         <form className="flex flex-col w-full gap-y-3" onSubmit={validateToken}>
-          <Button
-            text="Show Guide"
-            size="sm"
-            type="button"
-          />
+          <TokenGuideDropdown />
           <span>
             <Textinput
               value={token}
@@ -104,7 +103,7 @@ const VercelButton = () => {
             alt={"Vercel Logo"}
           />
         }
-        text="Continue with vercel"
+        text={buttonText ? buttonText : "Continue with vercel"}
         variant="outline"
         size="sm"
         className="w-full"

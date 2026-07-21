@@ -18,6 +18,7 @@
     "axios": "^1.10.0",
     "browser-image-compression": "^2.0.2",
     "clipboard-copy": "^4.0.1",
+    "clsx": "^2.1.1",
     "date-fns": "^4.4.0",
     "face-api.js": "^0.22.2",
     "framer-motion": "^12.23.3",
@@ -38,6 +39,7 @@
     "rehype-slug": "^6.0.0",
     "remark-gfm": "^4.0.1",
     "serwist": "^9.5.11",
+    "tailwind-merge": "^3.6.0",
     "three": "^0.180.0",
     "zustand": "^5.0.8"
   },

@@ -1,3 +1,4 @@
+import { useRouting } from '@/lib/hooks/routing/useRouting'
 import { useUserAccountStore } from '@/lib/stores/user/useUserAccountStore'
 import { useUserSettings } from '@/lib/stores/user/useUserSettings'
 import OAuthButton from '@/src/app/(auth)/user-auth/[platform]/platforms/OAuthButton'
@@ -7,6 +8,7 @@ import React, { useState } from 'react'
 const LinkedIn = ({ linkedinData }: { linkedinData: Record<string, any> }) => {
     const { toggleLinkedInActions } = useUserAccountStore()
     const { userInfo } = useUserSettings()
+    const { pathname, redirectUrl, setRedirectUrl } = useRouting()
     const [linkedInActionsAllowed, setLinkedActionsAllowed] = useState(false)
 
     const getTokenStatus = () => {
@@ -64,12 +66,19 @@ const LinkedIn = ({ linkedinData }: { linkedinData: Record<string, any> }) => {
             {/* Actions */}
             {linkedInActionsAllowed && (
                 <div className="flex flex-wrap gap-2">
-                    {tokenInfo.status !== 'active' && (
-                        <OAuthButton
-                            provider="linkedin"
-                            redirect={true}
-                        />
-                    )}
+                    <Button
+                        onClick={() => {
+                            setRedirectUrl(pathname)
+                        }}
+                        text='Set redirect'
+                        size='sm'
+                    />
+                    <p><strong>Redirect: </strong> {redirectUrl}</p>
+                    <p><strong>Pathname: </strong> {pathname}</p>
+                    <OAuthButton
+                        provider="linkedin"
+                        redirect={true}
+                    />
                 </div>
             )}
         </div>

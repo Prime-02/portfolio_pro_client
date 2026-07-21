@@ -44,7 +44,7 @@ const LinkedIn = ({ linkedinData }: { linkedinData: Record<string, any> }) => {
                             toggleLinkedInActions()
                         }}
                         text={linkedInActionsAllowed ? 'Lock' : 'Manage'}
-                        className="!py-1 !px-3 !text-xs"
+                        size='sm'
                     />
                 </div>
             </div>
@@ -67,7 +67,7 @@ const LinkedIn = ({ linkedinData }: { linkedinData: Record<string, any> }) => {
                     {tokenInfo.status !== 'active' && (
                         <OAuthButton
                             provider="linkedin"
-                            redirect
+                            redirect={true}
                         />
                     )}
                 </div>

@@ -9,21 +9,21 @@ export const useRouting = () => {
   // State for storing redirect URLs
   const [redirectUrl, setRedirectUrl] = useState<string | null>(null);
 
-  // Initialize from sessionStorage on mount
+  // Initialize from localStorage on mount
   useEffect(() => {
-    const storedRedirect = sessionStorage.getItem("redirectUrl");
+    const storedRedirect = localStorage.getItem("redirectUrl");
     if (storedRedirect) {
       setRedirectUrl(storedRedirect);
     }
   }, []);
 
-  // Setter that syncs with sessionStorage
+  // Setter that syncs with localStorage
   const setRedirectUrlWithStorage = useCallback((url: string | null) => {
     setRedirectUrl(url);
     if (url) {
-      sessionStorage.setItem("redirectUrl", url);
+      localStorage.setItem("redirectUrl", url);
     } else {
-      sessionStorage.removeItem("redirectUrl");
+      localStorage.removeItem("redirectUrl");
     }
   }, []);
 
@@ -32,7 +32,7 @@ export const useRouting = () => {
     if (redirectUrl) {
       router.push(redirectUrl);
       setRedirectUrl(null);
-      sessionStorage.removeItem("redirectUrl");
+      localStorage.removeItem("redirectUrl");
     }
   }, [redirectUrl, router]);
 

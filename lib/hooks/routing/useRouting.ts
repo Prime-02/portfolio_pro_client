@@ -29,12 +29,15 @@ export const useRouting = () => {
 
   // Navigate to stored redirect URL and clear it
   const navigateToRedirect = useCallback(() => {
-    if (redirectUrl) {
-      router.push(redirectUrl);
-      setRedirectUrl(null);
+    // Read directly from localStorage to avoid stale closure
+    const storedUrl = localStorage.getItem("redirectUrl");
+    if (storedUrl) {
+      // Clear storage first before navigation
       localStorage.removeItem("redirectUrl");
+      setRedirectUrl(null);
+      router.replace(storedUrl);
     }
-  }, [redirectUrl, router]);
+  }, [router]); // Only depend on router, not redirectUrl
 
   const currentPathWithQuery = searchParams.toString()
     ? `${pathname}?${searchParams.toString()}`

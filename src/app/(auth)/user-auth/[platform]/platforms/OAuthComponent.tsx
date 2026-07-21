@@ -128,6 +128,7 @@ const OAuthComponent: React.FC<OAuthComponentProps> = ({
       ? PathUtil.buildUrlWithQuery(`/${config.endpoint}`, params)
       : "";
 
+  // In OAuthComponent, update approveUser:
   const approveUser = async () => {
     startLoading(config.loadingKey);
     try {
@@ -140,19 +141,22 @@ const OAuthComponent: React.FC<OAuthComponentProps> = ({
           toast.success(data.message);
         }
 
-        if (data.session_token) {
-          console.log("Data retrieved after verification", data);
-        }
+        // Debug logs
+        const storedRedirect = localStorage.getItem("redirectUrl");
+        console.log("Stored redirect URL:", storedRedirect);
+        console.log("State redirectUrl:", redirectUrl);
 
-        // Improved redirect logic with clear priority
-        if (redirectUrl) {
+        if (storedRedirect) {
           // Priority 1: Navigate to saved redirect URL
+          console.log("Navigating to redirect URL:", storedRedirect);
           navigateToRedirect();
         } else if (data.is_new) {
           // Priority 2: New users go to edit profile
+          console.log("New user, navigating to edit profile");
           router.replace(`/${data?.user?.username}?edit_profile=true`);
         } else {
           // Priority 3: Existing users go to home
+          console.log("No redirect URL, navigating to home");
           router.replace(`/`);
         }
       } else {

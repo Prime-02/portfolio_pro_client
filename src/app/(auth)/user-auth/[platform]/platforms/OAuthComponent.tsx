@@ -143,20 +143,15 @@ const OAuthComponent: React.FC<OAuthComponentProps> = ({
 
         // Debug logs
         const storedRedirect = localStorage.getItem("redirectUrl");
-        console.log("Stored redirect URL:", storedRedirect);
-        console.log("State redirectUrl:", redirectUrl);
 
         if (storedRedirect) {
           // Priority 1: Navigate to saved redirect URL
-          console.log("Navigating to redirect URL:", storedRedirect);
           navigateToRedirect();
         } else if (data.is_new) {
           // Priority 2: New users go to edit profile
-          console.log("New user, navigating to edit profile");
           router.replace(`/${data?.user?.username}?edit_profile=true`);
         } else {
           // Priority 3: Existing users go to home
-          console.log("No redirect URL, navigating to home");
           router.replace(`/`);
         }
       } else {
@@ -169,7 +164,6 @@ const OAuthComponent: React.FC<OAuthComponentProps> = ({
       toast.error("We were unable to verify you. Please try again", {
         title: "Verification Error",
       });
-      console.log("Something went wrong: ", error);
       clearQueryParam();
     } finally {
       stopLoading(config.loadingKey);
@@ -190,13 +184,11 @@ const OAuthComponent: React.FC<OAuthComponentProps> = ({
         toast.error("We were unable to verify your email. Please try again", {
           title: "Email Verification Error",
         });
-        console.log("Data gotten: ", data);
       }
     } catch (error) {
       toast.error("We were unable to verify your email. Please try again", {
         title: "Email Verification Error",
       });
-      console.log("Something went wrong: ", error);
     } finally {
       stopLoading("verify_email_in_progress");
     }

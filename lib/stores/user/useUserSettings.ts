@@ -120,6 +120,11 @@ interface UserSettingsState {
   getThemeVariant: (source?: UserSettings | null) => ThemeVariant;
   getLoader: (source?: UserSettings | null) => Loader;
 
+  // ── Local State Updates ──────────────────────────────────────────────
+  localUpdateUserInfo: (payload: Partial<UserUpdateRequest>) => void;
+  localUpdateSettings: (payload: Partial<UserSettings>) => void;
+  localUpdateProfile: (payload: Partial<UserProfileRequest>) => void;
+
   // ── Helpers ────────────────────────────────────────────────────────────
   clearError: () => void;
   reset: () => void;
@@ -380,6 +385,30 @@ export const useUserSettings = create<UserSettingsState>()((set, get) => ({
       findMatch(langCode || "en", systemLanguages, ["code"], true) ||
       defaultLanguage
     );
+  },
+
+  localUpdateUserInfo: (payload: Partial<UserUpdateRequest>) => {
+    set((state) => ({
+      userInfo: state.userInfo
+        ? { ...state.userInfo, ...payload }
+        : (payload as UserUpdateRequest),
+    }));
+  },
+
+  localUpdateSettings: (payload: Partial<UserSettings>) => {
+    set((state) => ({
+      settings: state.settings
+        ? { ...state.settings, ...payload }
+        : (payload as UserSettings),
+    }));
+  },
+
+  localUpdateProfile: (payload: Partial<UserProfileRequest>) => {
+    set((state) => ({
+      profile: state.profile
+        ? { ...state.profile, ...payload }
+        : (payload as UserProfileRequest),
+    }));
   },
 
   // ═══════════════════════════════════════════════════════════════════════

@@ -4,6 +4,8 @@ import { ASSectionTitle } from '../ui/SectionTitle'
 import { ASSectionDesc } from '../ui/SectionDesc'
 import LinkedIn from './platformActions/LinkedIn'
 import { useUserAccountStore } from '@/lib/stores/user/useUserAccountStore'
+import GitHub from './platformActions/GitHub'
+import Vercel from './platformActions/Vercel'
 
 export const LinkedAccounts = () => {
     const { fetchLinkedPlatforms, linkedPlatforms } = useUserAccountStore()
@@ -21,6 +23,8 @@ export const LinkedAccounts = () => {
             </ASSectionDesc>
             <div className='flex flex-col mt-6 gap-y-3'>
                 <LinkedIn linkedinData={linkedPlatforms?.linked_platforms["linkedin"] as Record<string, any>} />
+                <GitHub gitHubData={linkedPlatforms?.linked_platforms["github"] as Record<string, any>} />
+                <Vercel vercelData={linkedPlatforms?.linked_platforms["vercel"] as Record<string, any>} />
             </div>
         </ASCard>
     )

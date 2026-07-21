@@ -1,5 +1,6 @@
 import React, { useRef, useMemo } from "react";
 import { FaInfoCircle } from "react-icons/fa";
+import { LoaderComponent } from "../loaders/Loader";
 
 export interface SwitchProps {
   isSwitched: boolean;
@@ -8,6 +9,8 @@ export interface SwitchProps {
   showDescriptionOn?: "hover" | "switched" | "always";
   direction?: "left" | "right" | "top" | "bottom";
   className?: string;
+  disabled?: boolean;
+  loading?: boolean;
 }
 
 const Switch: React.FC<SwitchProps> = ({
@@ -17,6 +20,8 @@ const Switch: React.FC<SwitchProps> = ({
   showDescriptionOn = "hover",
   direction = "right",
   className = "",
+  disabled = false,
+  loading = false,
 }) => {
   const descriptionRef = useRef<HTMLDivElement>(null);
 
@@ -27,7 +32,9 @@ const Switch: React.FC<SwitchProps> = ({
   );
 
   const handleToggle = () => {
-    onSwitch(!isSwitched);
+    if (!disabled && !loading) {
+      onSwitch(!isSwitched);
+    }
   };
 
   const shouldShowDescription = (): boolean => {
@@ -132,31 +139,57 @@ const Switch: React.FC<SwitchProps> = ({
     .${uniqueId}-info-wrapper:hover .${uniqueId}-info-icon {
       opacity: 0.8;
     }
+
+    @keyframes ${uniqueId}-spin {
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .${uniqueId}-loader {
+      animation: ${uniqueId}-spin 1s linear infinite;
+    }
   `;
 
   return (
     <>
       <style>{scopedStyles}</style>
       <div className={`flex items-center gap-3 ${className}`}>
-        <button
-          type="button"
-          className={`${uniqueId}-switch relative inline-flex h-6 w-12 items-center rounded-full focus:outline-none transition-colors duration-200`}
-          style={{
-            backgroundColor: isSwitched ? "var(--foreground)" : "var(--background)",
-            border: "2px solid var(--accent)",
-          }}
-          onClick={handleToggle}
-          aria-checked={isSwitched}
-          aria-describedby={description ? `switch-${description}` : undefined}
-        >
-          <span
-            className={`${uniqueId}-knob absolute inline-block h-4 w-4 cursor-pointer rounded-full`}
+        <div className="relative inline-flex items-center">
+          <button
+            type="button"
+            className={`${uniqueId}-switch relative inline-flex h-6 w-12 items-center rounded-full focus:outline-none transition-colors duration-200 ${disabled || loading ? "cursor-not-allowed opacity-50" : ""
+              }`}
             style={{
-              backgroundColor: "var(--accent)",
-              transform: isSwitched ? "translateX(24px)" : "translateX(4px)",
+              backgroundColor: isSwitched ? "var(--foreground)" : "var(--background)",
+              border: "2px solid var(--accent)",
             }}
-          />
-        </button>
+            onClick={handleToggle}
+            disabled={disabled || loading}
+            aria-checked={isSwitched}
+            aria-disabled={disabled || loading}
+            aria-busy={loading}
+            aria-describedby={description ? `switch-${description}` : undefined}
+          >
+            <span
+              className={`${uniqueId}-knob absolute inline-block h-4 w-4 rounded-full ${disabled || loading ? "" : "cursor-pointer"
+                }`}
+              style={{
+                backgroundColor: "var(--accent)",
+                transform: isSwitched ? "translateX(24px)" : "translateX(4px)",
+              }}
+            />
+          </button>
+
+          {loading && (
+            <LoaderComponent
+              size={10}
+            />
+          )}
+        </div>
 
         {description && (
           <div

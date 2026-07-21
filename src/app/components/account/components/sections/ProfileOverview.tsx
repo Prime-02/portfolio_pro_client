@@ -47,7 +47,7 @@ export function ProfileOverview() {
                     </p>
                     {userInfo?.phone_number && (
                         <p className="text-sm text-(--foreground)/50">
-                            {userInfo.phone_number}
+                            @{userInfo.username}
                         </p>
                     )}
                 </div>

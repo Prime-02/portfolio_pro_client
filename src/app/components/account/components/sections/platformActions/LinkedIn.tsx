@@ -1,15 +1,17 @@
-import { useRouting } from '@/lib/hooks/routing/useRouting'
+import { useUIStore } from '@/lib/stores/ui/useUIStore'
 import { useUserAccountStore } from '@/lib/stores/user/useUserAccountStore'
 import { useUserSettings } from '@/lib/stores/user/useUserSettings'
 import OAuthButton from '@/src/app/(auth)/user-auth/[platform]/platforms/OAuthButton'
 import Button from '@/src/app/components/buttons/Buttons'
-import React, { useState } from 'react'
+import Switch from '@/src/app/components/inputs/Switch'
+import React, { useState, useEffect } from 'react'
 
 const LinkedIn = ({ linkedinData }: { linkedinData: Record<string, any> }) => {
     const { toggleLinkedInActions } = useUserAccountStore()
-    const { userInfo } = useUserSettings()
-    const { pathname, redirectUrl, setRedirectUrl } = useRouting()
-    const [linkedInActionsAllowed, setLinkedActionsAllowed] = useState(false)
+    const { userInfo, localUpdateUserInfo } = useUserSettings()
+    const { setLoading, isLoading } = useUIStore()
+    const [manage, setManage] = useState(false)
+
 
     const getTokenStatus = () => {
         if (!linkedinData?.access_token) return { status: 'disconnected', color: 'bg-red-500', text: 'Not Connected' }
@@ -24,12 +26,30 @@ const LinkedIn = ({ linkedinData }: { linkedinData: Record<string, any> }) => {
 
     const tokenInfo = getTokenStatus()
 
+    const handleToggleAllowLinkedInPostActions = async (value: boolean) => {
+        setLoading("toggling_post_action", true)
+        try {
+            const postActionsRes = await toggleLinkedInActions()
+            localUpdateUserInfo({ allow_linkedin_post_actions: postActionsRes })
+        } catch (error) {
+            console.error('Failed to toggle LinkedIn post actions:', error)
+            // Revert the switch on error
+            localUpdateUserInfo({ allow_linkedin_post_actions: !value })
+        } finally {
+            setLoading("toggling_post_action", false)
+        }
+    }
+
+    const handleManageClick = async () => {
+        setManage(!manage)
+    }
+
     return (
         <div className="w-full space-y-3">
             {/* Header */}
             <div className="flex items-center justify-between pb-3 border-b border-gray-700">
                 <div className="flex items-center gap-2">
-                    <img className='w-8 h-8 object-cover' src="/socials/linkedin/in-logo/LI-In-Bug.png" />
+                    <img className='w-12 h-12 object-contain' src="/socials/linkedin/in-logo/LI-In-Bug.png" alt="LinkedIn" />
                     <div>
                         <p className="text-base font-league-600 text-foreground">LinkedIn</p>
                         <p className="text-xs text-gray-400 font-league-400">{tokenInfo.text}</p>
@@ -40,14 +60,18 @@ const LinkedIn = ({ linkedinData }: { linkedinData: Record<string, any> }) => {
                     {linkedinData?.sub && (
                         <span className="text-xs text-gray-500 hidden sm:block">ID: {linkedinData.sub}</span>
                     )}
-                    <Button
-                        onClick={() => {
-                            setLinkedActionsAllowed(!linkedInActionsAllowed)
-                            toggleLinkedInActions()
-                        }}
-                        text={linkedInActionsAllowed ? 'Lock' : 'Manage'}
-                        size='sm'
-                    />
+                    {
+                        tokenInfo.status === "disconnected" ? <OAuthButton
+                            provider="linkedin"
+                            redirect={true}
+                        /> :
+                            <Button
+                                onClick={handleManageClick}
+                                text={manage ? 'Close' : 'Manage'}
+                                size='sm'
+                                disabled={tokenInfo.status === 'disconnected'}
+                            />
+                    }
                 </div>
             </div>
 
@@ -64,21 +88,38 @@ const LinkedIn = ({ linkedinData }: { linkedinData: Record<string, any> }) => {
             )}
 
             {/* Actions */}
-            {linkedInActionsAllowed && (
+            {manage && (
                 <div className="flex flex-wrap gap-2">
-                    <Button
-                        onClick={() => {
-                            setRedirectUrl(pathname)
-                        }}
-                        text='Set redirect'
-                        size='sm'
-                    />
-                    <p><strong>Redirect: </strong> {redirectUrl}</p>
-                    <p><strong>Pathname: </strong> {pathname}</p>
-                    <OAuthButton
-                        provider="linkedin"
-                        redirect={true}
-                    />
+                    {tokenInfo.status !== 'active' ? (
+                        <OAuthButton
+                            provider="linkedin"
+                            redirect={true}
+                        />
+                    ) : (
+                        <div className='w-full flex items-center justify-between flex-wrap gap-3'>
+                            <p className='text-sm font-bold'>
+                                {`Automatically share new Portfolio Pro posts to your LinkedIn profile.`}
+                            </p>
+                            <Switch
+                                isSwitched={(userInfo?.allow_linkedin_post_actions || false)}
+                                onSwitch={handleToggleAllowLinkedInPostActions}
+                                showDescriptionOn="hover"
+                                direction="right"
+                                disabled={isLoading("toggling_post_action")}
+                                loading={isLoading("toggling_post_action")}
+                            />
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* Additional settings when connected */}
+            {manage && tokenInfo.status === 'active' && (
+                <div className="pt-2">
+                    <div className="flex items-center gap-2 text-xs text-gray-400">
+                        <div className={`w-2 h-2 rounded-full ${tokenInfo.color}`}></div>
+                        <span>Auto-posting is {(userInfo?.allow_linkedin_post_actions || false) ? 'enabled' : 'disabled'}</span>
+                    </div>
                 </div>
             )}
         </div>

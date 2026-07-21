@@ -71,7 +71,11 @@ const VercelButton = () => {
         }}
       >
         <form className="flex flex-col w-full gap-y-3" onSubmit={validateToken}>
-          <span className="text-xs text-[var(--accent)] ">show guide</span>
+          <Button
+            text="Show Guide"
+            size="sm"
+            type="button"
+          />
           <span>
             <Textinput
               value={token}

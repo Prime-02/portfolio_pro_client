@@ -216,6 +216,7 @@ const GitHubEmptyState = ({ onConnect, isLoading }: { onConnect: () => void; isL
                 size='sm'
                 variant='primary'
                 onClick={onConnect}
+                loading={isLoading}
                 disabled={isLoading}
             />
         </div>

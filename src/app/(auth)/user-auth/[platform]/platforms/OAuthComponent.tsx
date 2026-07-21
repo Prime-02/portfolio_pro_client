@@ -13,6 +13,7 @@ import PortfolioProLogo from "@/src/app/components/logo/PortfolioProTextLogo";
 import Modal from "@/src/app/components/containers/modals/Modal";
 import { Textinput } from "@/src/app/components/inputs/Textinput";
 import Button from "@/src/app/components/buttons/Buttons";
+import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 
 
 // Configuration for different OAuth providers
@@ -74,7 +75,7 @@ const PROVIDER_CONFIG = {
       `object-cover rounded-full ${!isDarkMode ? "bg-white" : "bg-black"} w-10 h-10`,
     unapprovedLogoClass: (isDarkMode: boolean) =>
       `object-cover rounded-full ${!isDarkMode ? "bg-white" : "bg-black"} w-32 h-32`,
-    params: ["code", "installation_id"],
+    params: ["code", "installation_id", "setup_action", "state"], // Added setup_action and state
   },
 } as const;
 
@@ -105,6 +106,7 @@ const OAuthComponent: React.FC<OAuthComponentProps> = ({
   // Manual retries (via canvaVerification) are NOT gated by this ref.
   const hasCalledOnMount = useRef(false);
   const [emailVerification, setEmailVerification] = useState(false);
+  const { userInfo } = useUserSettings()
   const verifiedEmail = checkParams("email");
   const [email, setEmail] = useState("");
 
@@ -123,10 +125,34 @@ const OAuthComponent: React.FC<OAuthComponentProps> = ({
       )
       : {};
 
-  const constructedURL =
-    mode === "approved"
-      ? PathUtil.buildUrlWithQuery(`/${config.endpoint}`, params)
-      : "";
+  // For GitHub, also check for user_id from state parameter
+  const constructedURL = (() => {
+    if (mode !== "approved") return "";
+
+    // Build base URL with params
+    let url = PathUtil.buildUrlWithQuery(`/${config.endpoint}`, params);
+
+    // For GitHub specifically, add user_id if available
+    if (provider === "github") {
+      const state = checkParams("state");
+      const userId = userInfo?.id;
+
+      // Check if user_id is embedded in state parameter (format: "installation_{id}_user_{userId}")
+      let extractedUserId = "";
+      if (state && state.includes("_user_")) {
+        extractedUserId = state.split("_user_")[1];
+      }
+
+      // Priority: 1) user_id from state, 2) current logged-in user, 3) userInfo
+      const finalUserId = extractedUserId || userId || userInfo?.id;
+
+      if (finalUserId) {
+        url += `${url.includes('?') ? '&' : '?'}user_id=${finalUserId}`;
+      }
+    }
+
+    return url;
+  })();
 
   // In OAuthComponent, update approveUser:
   const approveUser = async () => {

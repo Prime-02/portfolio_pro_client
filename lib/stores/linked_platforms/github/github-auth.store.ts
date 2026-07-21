@@ -77,6 +77,7 @@ export interface GitHubInstallationStatus {
   message?: string;
 }
 
+
 export interface GitHubUninstallResponse {
   message: string;
   installation_id: string;
@@ -168,7 +169,7 @@ interface GitHubAuthState {
   getUserProfile: () => Promise<void>;
   getSessions: () => Promise<void>;
   getIntegrations: () => Promise<void>;
-  uninstallApp: (installationId?: string) => Promise<void>;
+  uninstallApp: (installationId?: string) => Promise<GitHubUninstallResponse>;
   logout: () => Promise<void>;
   logoutAll: () => Promise<void>;
   processWebhookUninstall: (payload: any) => Promise<void>;
@@ -449,6 +450,7 @@ export const useGitHubAuthStore = create<GitHubAuthState>()(
               uninstallResponse: response.data,
               isUninstalling: false,
             });
+            return response.data
           } catch (error: any) {
             const errorMessage =
               error.response?.data?.detail ||

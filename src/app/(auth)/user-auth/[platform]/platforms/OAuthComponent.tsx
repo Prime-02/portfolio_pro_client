@@ -136,29 +136,24 @@ const OAuthComponent: React.FC<OAuthComponentProps> = ({
       if (data) {
         await fetchUserData();
 
-        // Handle success message first
         if (data.message) {
           toast.success(data.message);
         }
 
-        // Handle session token
         if (data.session_token) {
           console.log("Data retrieved after verification", data);
         }
 
-        // Handle routing based on user status
-        if (data.is_new) {
-          if (redirectUrl) {
-            navigateToRedirect()
-          } else {
-            router.replace(`/${data?.user?.username}?edit_profile=true`);
-          }
+        // Improved redirect logic with clear priority
+        if (redirectUrl) {
+          // Priority 1: Navigate to saved redirect URL
+          navigateToRedirect();
+        } else if (data.is_new) {
+          // Priority 2: New users go to edit profile
+          router.replace(`/${data?.user?.username}?edit_profile=true`);
         } else {
-          if (redirectUrl) {
-            navigateToRedirect()
-          } else {
-            router.replace(`/`);
-          }
+          // Priority 3: Existing users go to home
+          router.replace(`/`);
         }
       } else {
         toast.error("We were unable to verify you. Please try again", {

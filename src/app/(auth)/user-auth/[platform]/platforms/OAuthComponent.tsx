@@ -94,6 +94,8 @@ const OAuthComponent: React.FC<OAuthComponentProps> = ({
     checkParams,
     clearQueryParam,
     router,
+    redirectUrl,
+    navigateToRedirect
   } = useRouting()
   const { fetchUserData } = useUserStore()
   const { isLoading,
@@ -146,9 +148,17 @@ const OAuthComponent: React.FC<OAuthComponentProps> = ({
 
         // Handle routing based on user status
         if (data.is_new) {
-          router.replace(`/${data?.user?.username}?edit_profile=true`);
+          if (redirectUrl) {
+            navigateToRedirect()
+          } else {
+            router.replace(`/${data?.user?.username}?edit_profile=true`);
+          }
         } else {
-          router.replace(`/`);
+          if (redirectUrl) {
+            navigateToRedirect()
+          } else {
+            router.replace(`/`);
+          }
         }
       } else {
         toast.error("We were unable to verify you. Please try again", {

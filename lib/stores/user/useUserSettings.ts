@@ -16,7 +16,6 @@ import {
 } from "@/src/app/components/types and interfaces/loaderTypes";
 import { themePresets } from "@/lib/utilities/indices/Themes";
 import { UserResponse } from "./useUserAccountStore";
-import { extend } from "@react-three/fiber";
 
 // ---------------------------------------------------------------------------
 // Types

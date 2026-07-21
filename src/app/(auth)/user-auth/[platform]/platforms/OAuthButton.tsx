@@ -61,20 +61,25 @@ interface OAuthButtonProps {
   provider: OAuthProvider;
   className?: string;
   fullWidth?: boolean;
+  redirect?: boolean
 }
 
 const OAuthButton: React.FC<OAuthButtonProps> = ({
   provider,
   className = "",
   fullWidth = false,
+  redirect = false
 }) => {
   const { isDarkMode } = useTheme();
   const { isLoading, startLoading, stopLoading } = useUIStore();
-  const { router } = useRouting()
+  const { router, pathname, setRedirectUrl } = useRouting()
 
   const config = OAUTH_BUTTON_CONFIG[provider];
 
   const continueWithProvider = async () => {
+    if (redirect) {
+      setRedirectUrl(pathname)
+    }
     startLoading(config.loadingKey);
     try {
       const { data } = await api.get(`/${config.endpoint}`);

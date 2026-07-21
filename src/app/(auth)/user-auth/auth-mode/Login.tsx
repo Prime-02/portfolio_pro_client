@@ -9,7 +9,7 @@ import { useAuthStore } from "@/lib/stores/user/useAuthStore";
 
 const Login = () => {
   const { startLoading, stopLoading, isLoading } = useUIStore();
-  const { checkParams, router } = useRouting();
+  const { checkParams, router, redirectUrl, navigateToRedirect } = useRouting();
   const { login } = useAuthStore()
   const [formData, setFormData] = useState({
     email: "",
@@ -75,16 +75,24 @@ const Login = () => {
 
       const isNewUser = checkParams("new_user") === "true";
 
-      // Navigate based on user status
-      if (isNewUser) {
-        router.push(`/${loginRes.user.username}?edit_profile=true`);
-      } else {
-        router.push(`/`);
-      }
-
       toast.success("Login successful! Welcome back.", {
         title: "Login Success",
       });
+
+      // Navigate based on user status
+      if (isNewUser) {
+        if (redirectUrl) {
+          navigateToRedirect()
+        } else {
+          router.push(`/${loginRes.user.username}?edit_profile=true`);
+        }
+      } else {
+        if (redirectUrl) {
+          navigateToRedirect()
+        } else {
+          router.push(`/`);
+        }
+      }
     } catch (error) {
       console.error("Login error:", error);
       setErrors((prev) => ({

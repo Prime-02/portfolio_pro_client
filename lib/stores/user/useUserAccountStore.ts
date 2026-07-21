@@ -17,6 +17,7 @@ export interface UserResponse {
   profile_picture_id: string | null;
   phone_number: string | null;
   is_active: boolean;
+  allow_linkedin_post_actions: boolean;
   is_superuser: boolean;
   role: string;
   subscription_tier: SubscriptionTier | null;
@@ -38,6 +39,24 @@ export interface AdminUserFilters {
   is_superuser?: boolean;
   role?: string;
   search?: string;
+}
+
+// ---------------------------------------------------------------------------
+// Linked Platforms Types
+// ---------------------------------------------------------------------------
+
+export interface LinkedPlatformsResponse {
+  user_id: string;
+  linked_platforms: Record<string, Record<string, any>>;
+  total_platforms: number;
+  platforms_checked: string[];
+}
+
+export interface SpecificPlatformResponse {
+  user_id: string;
+  platform: string;
+  linked: boolean;
+  data: Record<string, any>;
 }
 
 // ---------------------------------------------------------------------------
@@ -76,18 +95,26 @@ interface UserAccountState {
   adminUsers: UserResponse[];
   adminUsersMeta: Omit<AdminUserListResponse, "items"> | null;
 
+  // Linked platforms
+  linkedPlatforms: LinkedPlatformsResponse | null;
+  specificPlatform: SpecificPlatformResponse | null;
+
   // Loading flags — one per action
   isChangingPassword: boolean;
   isRequestingReset: boolean;
   isResettingPassword: boolean;
   isDeactivating: boolean;
   isReactivating: boolean;
+  isTogglingLinkedInActions: boolean;
   isDeleting: boolean;
   isLoadingAdminUsers: boolean;
   isUpdatingRole: boolean;
   isAdminDeactivating: boolean;
   isAdminReactivating: boolean;
+  isAdminTogglingLinkedInActions: boolean;
   isAdminDeleting: boolean;
+  isLoadingLinkedPlatforms: boolean;
+  isLoadingSpecificPlatform: boolean;
 
   // Error — one per action (null = no error)
   changePasswordError: string | null;
@@ -95,12 +122,16 @@ interface UserAccountState {
   resetPasswordError: string | null;
   deactivateError: string | null;
   reactivateError: string | null;
+  toggleLinkedInActionsError: string | null;
   deleteError: string | null;
   adminUsersError: string | null;
   updateRoleError: string | null;
   adminDeactivateError: string | null;
   adminReactivateError: string | null;
+  adminToggleLinkedInActionsError: string | null;
   adminDeleteError: string | null;
+  linkedPlatformsError: string | null;
+  specificPlatformError: string | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -116,6 +147,7 @@ interface UserAccountActions {
   resetPassword: (payload: ResetPasswordPayload) => Promise<boolean>;
   deactivateAccount: () => Promise<boolean>;
   reactivateAccount: () => Promise<boolean>;
+  toggleLinkedInActions: () => Promise<boolean>;
   deleteAccount: (payload: DeleteAccountPayload) => Promise<boolean>;
 
   // Admin
@@ -126,10 +158,16 @@ interface UserAccountActions {
   ) => Promise<boolean>;
   adminDeactivateUser: (userId: string) => Promise<boolean>;
   adminReactivateUser: (userId: string) => Promise<boolean>;
+  adminToggleLinkedInActions: (userId: string) => Promise<boolean>;
   adminDeleteUser: (userId: string) => Promise<boolean>;
+
+  // Linked platforms
+  fetchLinkedPlatforms: () => Promise<void>;
+  fetchSpecificPlatform: (platformName: string) => Promise<void>;
 
   // Utilities
   clearErrors: () => void;
+  clearPlatformData: () => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -140,29 +178,40 @@ const initialState: UserAccountState = {
   adminUsers: [],
   adminUsersMeta: null,
 
+  linkedPlatforms: null,
+  specificPlatform: null,
+
   isChangingPassword: false,
   isRequestingReset: false,
   isResettingPassword: false,
   isDeactivating: false,
   isReactivating: false,
+  isTogglingLinkedInActions: false,
   isDeleting: false,
   isLoadingAdminUsers: false,
   isUpdatingRole: false,
   isAdminDeactivating: false,
   isAdminReactivating: false,
+  isAdminTogglingLinkedInActions: false,
   isAdminDeleting: false,
+  isLoadingLinkedPlatforms: false,
+  isLoadingSpecificPlatform: false,
 
   changePasswordError: null,
   requestResetError: null,
   resetPasswordError: null,
   deactivateError: null,
   reactivateError: null,
+  toggleLinkedInActionsError: null,
   deleteError: null,
   adminUsersError: null,
   updateRoleError: null,
   adminDeactivateError: null,
   adminReactivateError: null,
+  adminToggleLinkedInActionsError: null,
   adminDeleteError: null,
+  linkedPlatformsError: null,
+  specificPlatformError: null,
 };
 
 // ---------------------------------------------------------------------------
@@ -263,6 +312,39 @@ export const useUserAccountStore = create<
     }
   },
 
+  // ── Toggle LinkedIn post actions (own account) ───────────────────────────
+
+  toggleLinkedInActions: async () => {
+    set({
+      isTogglingLinkedInActions: true,
+      toggleLinkedInActionsError: null,
+    });
+    try {
+      const { data } = await api.patch<UserResponse>(
+        "/me/toggle-linkedin-actions",
+      );
+      // Update the linkedin post actions status from the response
+      set((state) => ({
+        adminUsers: state.adminUsers.map((u) =>
+          u.id === data.id
+            ? {
+                ...u,
+                allow_linkedin_post_actions: data.allow_linkedin_post_actions,
+              }
+            : u,
+        ),
+      }));
+      return true;
+    } catch (error) {
+      set({
+        toggleLinkedInActionsError: extractErrorMessage(error),
+      });
+      return false;
+    } finally {
+      set({ isTogglingLinkedInActions: false });
+    }
+  },
+
   // ── Delete own account ───────────────────────────────────────────────────
 
   deleteAccount: async (payload) => {
@@ -275,6 +357,42 @@ export const useUserAccountStore = create<
       return false;
     } finally {
       set({ isDeleting: false });
+    }
+  },
+
+  // ── Fetch all linked platforms ───────────────────────────────────────────
+
+  fetchLinkedPlatforms: async () => {
+    set({ isLoadingLinkedPlatforms: true, linkedPlatformsError: null });
+    try {
+      const { data } = await api.get<LinkedPlatformsResponse>(
+        "/platforms/linked-platforms",
+      );
+      set({ linkedPlatforms: data });
+    } catch (error) {
+      set({ linkedPlatformsError: extractErrorMessage(error) });
+    } finally {
+      set({ isLoadingLinkedPlatforms: false });
+    }
+  },
+
+  // ── Fetch specific linked platform ───────────────────────────────────────
+
+  fetchSpecificPlatform: async (platformName: string) => {
+    set({
+      isLoadingSpecificPlatform: true,
+      specificPlatformError: null,
+      specificPlatform: null,
+    });
+    try {
+      const { data } = await api.get<SpecificPlatformResponse>(
+        `/platforms/linked-platforms/${platformName}`,
+      );
+      set({ specificPlatform: data });
+    } catch (error) {
+      set({ specificPlatformError: extractErrorMessage(error) });
+    } finally {
+      set({ isLoadingSpecificPlatform: false });
     }
   },
 
@@ -359,6 +477,39 @@ export const useUserAccountStore = create<
     }
   },
 
+  // ── Admin: toggle LinkedIn post actions ─────────────────────────────────
+
+  adminToggleLinkedInActions: async (userId) => {
+    set({
+      isAdminTogglingLinkedInActions: true,
+      adminToggleLinkedInActionsError: null,
+    });
+    try {
+      const { data } = await api.patch<UserResponse>(
+        `/admin/users/${userId}/toggle-linkedin-actions`,
+      );
+      // Update the local admin user list with the new linkedin status
+      set((state) => ({
+        adminUsers: state.adminUsers.map((u) =>
+          u.id === userId
+            ? {
+                ...u,
+                allow_linkedin_post_actions: data.allow_linkedin_post_actions,
+              }
+            : u,
+        ),
+      }));
+      return true;
+    } catch (error) {
+      set({
+        adminToggleLinkedInActionsError: extractErrorMessage(error),
+      });
+      return false;
+    } finally {
+      set({ isAdminTogglingLinkedInActions: false });
+    }
+  },
+
   // ── Admin: delete user ───────────────────────────────────────────────────
 
   adminDeleteUser: async (userId) => {
@@ -389,11 +540,25 @@ export const useUserAccountStore = create<
       resetPasswordError: null,
       deactivateError: null,
       reactivateError: null,
+      toggleLinkedInActionsError: null,
       deleteError: null,
       adminUsersError: null,
       updateRoleError: null,
       adminDeactivateError: null,
       adminReactivateError: null,
+      adminToggleLinkedInActionsError: null,
       adminDeleteError: null,
+      linkedPlatformsError: null,
+      specificPlatformError: null,
+    }),
+
+  // ── Clear platform data ──────────────────────────────────────────────────
+
+  clearPlatformData: () =>
+    set({
+      linkedPlatforms: null,
+      specificPlatform: null,
+      linkedPlatformsError: null,
+      specificPlatformError: null,
     }),
 }));

@@ -1,9 +1,40 @@
+import { useState, useEffect, useCallback } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 export const useRouting = () => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+
+  // State for storing redirect URLs
+  const [redirectUrl, setRedirectUrl] = useState<string | null>(null);
+
+  // Initialize from sessionStorage on mount
+  useEffect(() => {
+    const storedRedirect = sessionStorage.getItem("redirectUrl");
+    if (storedRedirect) {
+      setRedirectUrl(storedRedirect);
+    }
+  }, []);
+
+  // Setter that syncs with sessionStorage
+  const setRedirectUrlWithStorage = useCallback((url: string | null) => {
+    setRedirectUrl(url);
+    if (url) {
+      sessionStorage.setItem("redirectUrl", url);
+    } else {
+      sessionStorage.removeItem("redirectUrl");
+    }
+  }, []);
+
+  // Navigate to stored redirect URL and clear it
+  const navigateToRedirect = useCallback(() => {
+    if (redirectUrl) {
+      router.push(redirectUrl);
+      setRedirectUrl(null);
+      sessionStorage.removeItem("redirectUrl");
+    }
+  }, [redirectUrl, router]);
 
   const currentPathWithQuery = searchParams.toString()
     ? `${pathname}?${searchParams.toString()}`
@@ -43,6 +74,9 @@ export const useRouting = () => {
     currentPath: pathname,
     currentPathWithQuery,
     searchParams,
+    redirectUrl,
+    setRedirectUrl: setRedirectUrlWithStorage,
+    navigateToRedirect,
     extendRoute,
     extendRouteWithQuery,
     clearQueryParam,

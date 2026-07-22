@@ -7,6 +7,8 @@ import {
   FaCog,
   FaBriefcase,
   FaCreditCard,
+  FaUserCircle,
+  FaUserCog,
 } from "react-icons/fa";
 import {
   FiMessageSquare,
@@ -19,7 +21,7 @@ import {
 } from "react-icons/fi";
 import { MdSchool } from "react-icons/md";
 import { GiSkills } from "react-icons/gi";
-import { IoAnalytics, IoSettingsSharp } from "react-icons/io5";
+import { IoAnalytics } from "react-icons/io5";
 
 interface Route {
   slug: string;
@@ -132,7 +134,7 @@ export const privateRoutes: Route[] = [
     slug: "account-settings",
     link: "/settings/account",
     name: "Account Settings",
-    icon: IoSettingsSharp,
+    icon: FaUserCog,
     description:
       "Manage your account security, password, and personal settings",
   },
@@ -154,7 +156,7 @@ export const privateRoutes: Route[] = [
     slug: "usage",
     link: "/billing/usage",
     name: "Usage & Analysis",
-    icon: FiBarChart2,
+    icon: IoAnalytics,
     description: "Monitor your resource usage and consumption metrics",
   },
 ];

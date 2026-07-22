@@ -13,6 +13,7 @@ import { useSocialLinks } from "../social_links/useSocialLinks";
 import { useTestimonialsStore } from "../testimonials/useTestimonial";
 import { useUserSettings } from "./useUserSettings";
 import { UserResponse } from "./useUserAccountStore";
+import { clearRedirectFromStorage } from "@/lib/hooks/routing/useRouting";
 
 export const logoutAll = async (revokeSession: boolean = true) => {
   useCertifications.getState().reset();
@@ -24,8 +25,8 @@ export const logoutAll = async (revokeSession: boolean = true) => {
   useUserSettings.getState().reset();
   useUserSettings.getState().reset();
   useSessionsStore.getState().reset();
-
-  if (revokeSession) await useSessionsStore.getState().revokeAllSessions();
+  clearRedirectFromStorage();
+  if (revokeSession) await useSessionsStore.getState().revokeSession();
 };
 
 // ---------------------------------------------------------------------------

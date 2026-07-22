@@ -8,9 +8,9 @@ import {
 import { useGitHubInstallationId } from '@/lib/stores/linked_platforms/github/github-integration.store'
 import { useUserSettings } from '@/lib/stores/user/useUserSettings'
 import Button from '@/src/app/components/buttons/Buttons'
+import Image from '@/src/app/components/ui/Image'
 import { useTheme } from '@/src/context/ThemeContext'
 import { toast } from '@/src/context/Toastify'
-import Image from 'next/image'
 import React, { useEffect, useState, useCallback, useMemo } from 'react'
 
 // ============ Types ============
@@ -83,6 +83,8 @@ const GitHubAccountCard = ({
                         className='w-9 h-9 rounded-full object-cover flex-shrink-0'
                         src={installation.display_photo_url}
                         alt={installation.github_username}
+                        width={36}
+                        height={36}
                     />
                 ) : (
                     <div className="w-9 h-9 rounded-full bg-[var(--foreground)]/10 flex items-center justify-center flex-shrink-0">
@@ -170,6 +172,8 @@ const GitHubHeader = ({
                     className='w-10 h-10 object-contain'
                     src={`/socials/github/github-mark/${themeVariant === "dark" ? "github-mark" : "github-mark-white"}.png`}
                     alt="GitHub"
+                    width={40}
+                    height={40}
                 />
                 <div>
                     <p className="text-base font-league-600 text-foreground">GitHub</p>
@@ -203,6 +207,8 @@ const GitHubEmptyState = ({ onConnect, isLoading }: { onConnect: () => void; isL
                 className='w-16 h-16 object-contain opacity-40'
                 src={`/socials/github/github-mark/${themeVariant === "dark" ? "github-mark" : "github-mark-white"}.png`}
                 alt="GitHub"
+                width={64}
+                height={64}
             />
             <div className="text-center space-y-1">
                 <p className="text-sm font-league-600 text-foreground">
@@ -243,6 +249,8 @@ const GitHubError = ({
                         className='w-10 h-10 object-contain opacity-50'
                         src={`/socials/github/github-mark/${themeVariant === "dark" ? "github-mark" : "github-mark-white"}.png`}
                         alt="GitHub"
+                        width={40}
+                        height={40}
                     />
                     <div>
                         <p className="text-base font-league-600 text-foreground">GitHub</p>

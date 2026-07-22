@@ -21,14 +21,6 @@ export const LinkedAccounts = () => {
             <ASSectionDesc>
                 {`Manage your social and professional accounts linked to Portfolio Pro`}
             </ASSectionDesc>
-            <ASSectionDesc>
-                <span className='text-amber-400'>
-                    <strong>
-                        Please Note:
-                    </strong>
-                    {`While we continue enhancing security, all platforms listed below must use the same email address associated with your Portfolio Pro account`}
-                </span>
-            </ASSectionDesc>
             <div className='flex flex-col mt-6 gap-y-3'>
                 <LinkedIn linkedinData={linkedPlatforms?.linked_platforms["linkedin"] as Record<string, any>} />
                 <GitHub />

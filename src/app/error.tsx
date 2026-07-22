@@ -36,15 +36,12 @@ export default function Error({ error, reset }: ErrorProps) {
         color: "var(--foreground)",
       }}
     >
-
       <div
         className={`relative z-10 text-center max-w-lg transition-all duration-700 ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
           }`}
       >
         {/* Error Icon - Fixed */}
-        <div
-          className="mx-auto mb-6 flex items-center justify-center w-20 h-20 rounded-2xl relative overflow-hidden"
-        >
+        <div className="mx-auto mb-6 flex items-center justify-center w-20 h-20 rounded-2xl relative overflow-hidden">
           {/* Background layer with low opacity */}
           <div
             className="absolute inset-0 rounded-2xl"
@@ -113,11 +110,23 @@ export default function Error({ error, reset }: ErrorProps) {
           again or contact support if the problem persists.
         </p>
 
+        {/* Error Message - NEW */}
+        <p
+          className="text-sm mb-4 leading-relaxed italic"
+          style={{
+            color: "var(--foreground)",
+            opacity: 0.5,
+            maxWidth: "420px",
+            marginLeft: "auto",
+            marginRight: "auto",
+          }}
+        >
+          &ldquo;{error.message || "An unknown error occurred"}&rdquo;
+        </p>
+
         {/* Error digest (Next.js error ID) - Fixed */}
         {error.digest && (
-          <div
-            className="inline-block mb-8 px-4 py-2 rounded-md text-xs font-mono relative overflow-hidden"
-          >
+          <div className="inline-block mb-8 px-4 py-2 rounded-md text-xs font-mono relative overflow-hidden">
             {/* Background layer with low opacity */}
             <div
               className="absolute inset-0 rounded-md"
@@ -139,6 +148,8 @@ export default function Error({ error, reset }: ErrorProps) {
           </div>
         )}
 
+        {!error.digest && <div className="mb-8" />}
+
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           {/* Retry Button */}
@@ -156,11 +167,7 @@ export default function Error({ error, reset }: ErrorProps) {
           >
             {isRetrying ? (
               <>
-                <RefreshCw
-                  size={18}
-                  strokeWidth={2}
-                  className="animate-spin"
-                />
+                <RefreshCw size={18} strokeWidth={2} className="animate-spin" />
                 Retrying...
               </>
             ) : (

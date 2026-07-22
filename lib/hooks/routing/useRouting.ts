@@ -39,6 +39,12 @@ export const useRouting = () => {
     }
   }, [router]); // Only depend on router, not redirectUrl
 
+  // Clear redirect URL without navigating
+  const clearRedirect = useCallback(() => {
+    localStorage.removeItem("redirectUrl");
+    setRedirectUrl(null);
+  }, []);
+
   const currentPathWithQuery = searchParams.toString()
     ? `${pathname}?${searchParams.toString()}`
     : pathname;
@@ -80,9 +86,14 @@ export const useRouting = () => {
     redirectUrl,
     setRedirectUrl: setRedirectUrlWithStorage,
     navigateToRedirect,
+    clearRedirect,
     extendRoute,
     extendRouteWithQuery,
     clearQueryParam,
     checkParams,
   };
+};
+
+export const clearRedirectFromStorage = () => {
+  localStorage.removeItem("redirectUrl");
 };

@@ -11,7 +11,7 @@ import { useTheme } from '@/src/context/ThemeContext'
 import { toast } from '@/src/context/Toastify'
 import React, { useEffect, useState, useCallback, useMemo } from 'react'
 import VercelButton from '@/src/app/(auth)/user-auth/[platform]/platforms/vercel/VercelButton'
-import Image from 'next/image'
+import Image from '@/src/app/components/ui/Image'
 
 
 // ============ Sub-components ============
@@ -69,6 +69,8 @@ const VercelAccountCard = ({
                         className='w-9 h-9 rounded-full object-cover flex-shrink-0'
                         src={installation.avatar_url}
                         alt={installation.display_name || installation.platform_username}
+                        width={36}
+                        height={36}
                     />
                 ) : (
                     <div className="w-9 h-9 rounded-full bg-[var(--foreground)]/10 flex items-center justify-center flex-shrink-0">
@@ -162,6 +164,8 @@ const VercelHeader = ({
                     className='w-10 h-10 object-contain'
                     src={`/socials/vercel/Vercel/icon/${themeVariant === "dark" ? "dark/vercel-icon-dark" : "light/vercel-icon-light"}.png`}
                     alt="Vercel"
+                    width={40}
+                    height={40}
                 />
                 <div>
                     <p className="text-base font-league-600 text-foreground">Vercel</p>
@@ -195,6 +199,8 @@ const VercelEmptyState = () => {
                 className='w-16 h-16 object-contain opacity-40'
                 src={`/socials/vercel/Vercel/icon/${themeVariant === "dark" ? "dark/vercel-icon-dark" : "light/vercel-icon-light"}.png`}
                 alt="Vercel"
+                width={64}
+                height={64}
             />
             <div className="text-center space-y-1">
                 <p className="text-sm font-league-600 text-foreground">
@@ -232,6 +238,8 @@ const VercelError = ({
                         className='w-10 h-10 object-contain opacity-50'
                         src={`/socials/vercel/Vercel/icon/${themeVariant === "dark" ? "dark/vercel-icon-dark" : "light/vercel-icon-light"}.png`}
                         alt="Vercel"
+                        width={40}
+                        height={40}
                     />
                     <div>
                         <p className="text-base font-league-600 text-foreground">Vercel</p>

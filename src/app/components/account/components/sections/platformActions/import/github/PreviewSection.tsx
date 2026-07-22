@@ -17,6 +17,7 @@ import {
   Separator,
 } from "./ui-components";
 import { PreviewSectionProps } from "./types";
+import CheckBox from "@/src/app/components/inputs/CheckBox";
 
 export const PreviewSection: React.FC<PreviewSectionProps> = ({
   previewData,
@@ -114,9 +115,9 @@ export const PreviewSection: React.FC<PreviewSectionProps> = ({
                   key={project.name}
                   className="flex items-center gap-3 p-3 rounded-lg border border-[var(--foreground)]/10 hover:bg-[var(--foreground)]/5 transition-colors"
                 >
-                  <Checkbox
-                    checked={selectedRepos.has(project.name)}
-                    onChange={(e) => onSelectRepo(project.name, e.target.checked)}
+                  <CheckBox
+                    isChecked={selectedRepos.has(project.name)}
+                    setIsChecked={(e) => onSelectRepo(project.name, e)}
                   />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">

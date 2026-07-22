@@ -1,5 +1,5 @@
 import React, { useRef, useMemo } from "react";
-import { FaCheck, FaInfoCircle } from "react-icons/fa";
+import { FaCheck, FaInfoCircle, FaSpinner } from "react-icons/fa";
 import { useTheme } from "../../../context/ThemeContext";
 
 export interface CheckBoxProps {
@@ -13,6 +13,8 @@ export interface CheckBoxProps {
   label?: string;
   className?: string;
   labelClassName?: string;
+  disabled?: boolean;
+  loading?: boolean;
 }
 
 const CheckBox: React.FC<CheckBoxProps> = ({
@@ -26,6 +28,8 @@ const CheckBox: React.FC<CheckBoxProps> = ({
   label = "",
   className = "",
   labelClassName = "",
+  disabled = false,
+  loading = false,
 }) => {
   const { theme, accentColor } = useTheme();
   const descriptionRef = useRef<HTMLDivElement>(null);
@@ -37,15 +41,19 @@ const CheckBox: React.FC<CheckBoxProps> = ({
   );
 
   const handleCheckboxChange = () => {
-    setIsChecked(!isChecked);
+    if (!disabled && !loading) {
+      setIsChecked(!isChecked);
+    }
   };
 
   const handleCheckboxTarget = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setIsChecked(e.target.checked);
+    if (!disabled && !loading) {
+      setIsChecked(e.target.checked);
+    }
   };
 
   const shouldShowDescription = (): boolean => {
-    if (!description) return false;
+    if (!description || disabled) return false;
     switch (showDescriptionOn) {
       case "checked":
         return isChecked;
@@ -118,7 +126,7 @@ const CheckBox: React.FC<CheckBoxProps> = ({
   // Modify popup styles for hover behavior
   const getHoverPopupStyles = (): React.CSSProperties => {
     const baseStyles = getPopupStyles();
-    if (showDescriptionOn === "hover") {
+    if (showDescriptionOn === "hover" && !disabled) {
       return {
         ...baseStyles,
         opacity: 0,
@@ -150,6 +158,11 @@ const CheckBox: React.FC<CheckBoxProps> = ({
       }
     }
     
+    @keyframes ${uniqueId}-spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
     .${uniqueId}-info-wrapper:hover .${uniqueId}-description-hover {
       opacity: 1 !important;
       visibility: visible !important;
@@ -158,7 +171,14 @@ const CheckBox: React.FC<CheckBoxProps> = ({
     .${uniqueId}-info-wrapper:hover .${uniqueId}-info-icon {
       opacity: 0.8;
     }
+
+    .${uniqueId}-disabled {
+      opacity: 0.5;
+      cursor: not-allowed !important;
+    }
   `;
+
+  const isInteractive = !disabled && !loading;
 
   return (
     <>
@@ -179,7 +199,7 @@ const CheckBox: React.FC<CheckBoxProps> = ({
               style={{
                 position: "absolute",
                 opacity: 0,
-                cursor: "pointer",
+                cursor: isInteractive ? "pointer" : "not-allowed",
                 width: "25px",
                 height: "25px",
                 margin: 0,
@@ -187,46 +207,67 @@ const CheckBox: React.FC<CheckBoxProps> = ({
               }}
               checked={isChecked}
               onChange={target ? handleCheckboxTarget : handleCheckboxChange}
+              disabled={disabled || loading}
               aria-checked={isChecked}
+              aria-disabled={disabled || loading}
               aria-describedby={description ? `${id}-description` : undefined}
             />
             <div
               style={{
-                backgroundColor: isChecked ? "var(--accent, " + accentColor.color + ")" : "var(--background, " + theme.background + ")",
+                backgroundColor: isChecked
+                  ? (disabled || loading ? "var(--muted-foreground, #9ca3af)" : "var(--accent, " + accentColor.color + ")")
+                  : "var(--background, " + theme.background + ")",
                 borderRadius: "5px",
                 width: "25px",
                 height: "25px",
-                border: "2px solid var(--accent, " + accentColor.color + ")",
+                border: `2px solid ${disabled || loading ? "var(--muted-foreground, #9ca3af)" : "var(--accent, " + accentColor.color + ")"}`,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                cursor: "pointer",
-                transition: "background-color 0.3s ease, transform 0.5s ease-out",
+                cursor: isInteractive ? "pointer" : "not-allowed",
+                transition: "background-color 0.3s ease, transform 0.5s ease-out, border-color 0.3s ease",
                 position: "relative",
                 overflow: "hidden",
                 transform: isChecked ? "scale(1)" : "scale(1)",
-                animation: isChecked ? `${uniqueId}-bounce 0.5s ease-out` : undefined,
+                animation: isChecked && isInteractive ? `${uniqueId}-bounce 0.5s ease-out` : undefined,
+                opacity: disabled || loading ? 0.5 : 1,
               }}
+              className={disabled || loading ? `${uniqueId}-disabled` : ""}
             >
-              <FaCheck
-                style={{
-                  position: "absolute",
-                  top: "50%",
-                  left: "50%",
-                  transform: "translate(-50%, -50%)",
-                  color: "var(--background, white)",
-                  fontSize: "14px",
-                  opacity: isChecked ? 1 : 0,
-                  animation: isChecked
-                    ? `${uniqueId}-checkAppear 0.3s ease-out 0.1s both`
-                    : "none",
-                  pointerEvents: "none",
-                }}
-              />
+              {loading ? (
+                <FaSpinner
+                  style={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    color: "var(--muted-foreground, #9ca3af)",
+                    fontSize: "14px",
+                    animation: `${uniqueId}-spin 1s linear infinite`,
+                    pointerEvents: "none",
+                  }}
+                />
+              ) : (
+                <FaCheck
+                  style={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    color: disabled ? "var(--muted, #d1d5db)" : "var(--background, white)",
+                    fontSize: "14px",
+                    opacity: isChecked ? 1 : 0,
+                    animation: isChecked && isInteractive
+                      ? `${uniqueId}-checkAppear 0.3s ease-out 0.1s both`
+                      : "none",
+                    pointerEvents: "none",
+                  }}
+                />
+              )}
             </div>
           </div>
 
-          {description && (
+          {description && !disabled && (
             <div
               className={`${uniqueId}-info-wrapper`}
               style={{
@@ -265,8 +306,11 @@ const CheckBox: React.FC<CheckBoxProps> = ({
         </div>
         {label && (
           <span
-            className={`text-xs ${labelClassName}`}
-            style={{ color: "var(--accent, " + accentColor.color + ")" }}
+            className={`text-xs ${labelClassName} ${disabled || loading ? `${uniqueId}-disabled` : ""}`}
+            style={{
+              color: disabled || loading ? "var(--muted-foreground, #9ca3af)" : "var(--accent, " + accentColor.color + ")",
+              cursor: disabled || loading ? "not-allowed" : "default",
+            }}
           >
             {label}
           </span>

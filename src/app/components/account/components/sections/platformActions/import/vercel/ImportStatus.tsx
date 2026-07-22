@@ -28,7 +28,7 @@ export const ImportStatus: React.FC<ImportStatusProps> = ({
     <div className="space-y-3">
       {/* Import Accepted / In Progress */}
       {importResponse && importResponse.status === "accepted" && !importResult && (
-        <Card className="border-blue-200 bg-blue-50/50">
+        <Card className="">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="relative">
@@ -52,7 +52,7 @@ export const ImportStatus: React.FC<ImportStatusProps> = ({
 
       {/* Import Progress */}
       {isImporting && !importResponse && (
-        <Card className="border-blue-200 bg-blue-50/50">
+        <Card className="">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="relative">
@@ -79,8 +79,8 @@ export const ImportStatus: React.FC<ImportStatusProps> = ({
         <Card
           className={cn(
             importResult.errors > 0
-              ? "border-yellow-200 bg-yellow-50/50"
-              : "border-green-200 bg-green-50/50"
+              ? "border-yellow-200"
+              : "border-green-200"
           )}
         >
           <CardContent className="p-4">
@@ -138,7 +138,7 @@ export const ImportStatus: React.FC<ImportStatusProps> = ({
 
       {/* Single Import Results Summary */}
       {hasSingleResults && !importResult && (
-        <Card className={errorCount > 0 ? "border-yellow-200 bg-yellow-50/50" : "border-green-200 bg-green-50/50"}>
+        <Card className={errorCount > 0 ? "border-yellow-200" : "border-green-200"}>
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
               <div className="mt-0.5">

@@ -34,7 +34,7 @@ export const ImportStatus: React.FC<ImportStatusProps> = ({
     <div className="space-y-3">
       {/* Batch Import Progress */}
       {isImportingBatch && (
-        <Card className="border-blue-200 bg-blue-50/50">
+        <Card className="border-blue-200 ">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="relative">
@@ -70,8 +70,8 @@ export const ImportStatus: React.FC<ImportStatusProps> = ({
         <Card
           className={cn(
             batchResult.errors > 0
-              ? "border-yellow-200 bg-yellow-50/50"
-              : "border-green-200 bg-green-50/50"
+              ? "border-yellow-200 "
+              : "border-green-200 "
           )}
         >
           <CardContent className="p-4">
@@ -126,7 +126,7 @@ export const ImportStatus: React.FC<ImportStatusProps> = ({
 
       {/* Single Import Results Summary */}
       {hasSingleResults && !batchResult && (
-        <Card className={errorCount > 0 ? "border-yellow-200 bg-yellow-50/50" : "border-green-200 bg-green-50/50"}>
+        <Card className={errorCount > 0 ? "border-yellow-200 " : "border-green-200 "}>
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
               <div className="mt-0.5">

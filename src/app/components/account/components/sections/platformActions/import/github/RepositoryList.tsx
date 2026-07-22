@@ -5,8 +5,9 @@
 
 import React from "react";
 import { RepositoryCard } from "./RepositoryCard";
-import { Checkbox, Separator } from "./ui-components";
+import { Separator } from "./ui-components";
 import { RepositoryListProps } from "./types";
+import CheckBox from "@/src/app/components/inputs/CheckBox";
 
 export const RepositoryList: React.FC<RepositoryListProps> = ({
   repositories,
@@ -27,9 +28,9 @@ export const RepositoryList: React.FC<RepositoryListProps> = ({
     <div className="space-y-3">
       {/* Select All Header */}
       <div className="flex items-center gap-3 px-1 py-2">
-        <Checkbox
-          checked={allSelected}
-          onChange={(e) => handleSelectAll(e.target.checked)}
+        <CheckBox
+          isChecked={allSelected}
+          setIsChecked={(e) => handleSelectAll(e)}
           label={allSelected ? "Deselect all" : "Select all"}
         />
         <Separator className="flex-1" />

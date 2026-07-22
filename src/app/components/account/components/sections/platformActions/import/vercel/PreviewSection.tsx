@@ -4,8 +4,9 @@
 // Shows preview of what will be imported before actual import
 
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, Button, Badge, Skeleton, Checkbox, Separator } from "./ui-components";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, Button, Badge, Skeleton, Separator } from "./ui-components";
 import { PreviewSectionProps } from "./types";
+import CheckBox from "@/src/app/components/inputs/CheckBox";
 
 export const PreviewSection: React.FC<PreviewSectionProps> = ({
   previewData,
@@ -102,9 +103,9 @@ export const PreviewSection: React.FC<PreviewSectionProps> = ({
                   key={project.id || project.name}
                   className="flex items-center gap-3 p-3 rounded-lg border border-[var(--foreground)]/10 hover:bg-[var(--foreground)]/5 transition-colors"
                 >
-                  <Checkbox
-                    checked={selectedProjects.has(project.name || "")}
-                    onChange={(e) => onSelectProject(project.name || "", e.target.checked)}
+                  <CheckBox
+                    isChecked={selectedProjects.has(project.name || "")}
+                    setIsChecked={(e) => onSelectProject(project.name || "", e)}
                   />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">

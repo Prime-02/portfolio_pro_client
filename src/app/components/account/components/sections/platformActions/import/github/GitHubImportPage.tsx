@@ -356,7 +356,7 @@ export const GitHubImportPage: React.FC = () => {
     <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-6">
       {/* Installation ID Banner */}
       {activeInstallationId && (
-        <div className="rounded-lg border border-blue-200 bg-blue-50/50 p-3">
+        <div className="rounded-lg border border-blue-200 p-3">
           <div className="flex items-center gap-2 text-sm text-[var(--foreground)]/70">
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -368,7 +368,7 @@ export const GitHubImportPage: React.FC = () => {
 
       {/* No Installation ID Warning */}
       {!activeInstallationId && !isLoading && (
-        <div className="rounded-lg border border-amber-200 bg-amber-50/50 p-4">
+        <div className="rounded-lg border border-amber-200 p-4">
           <div className="flex items-start gap-3">
             <svg className="h-5 w-5 text-amber-600 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
@@ -406,7 +406,7 @@ export const GitHubImportPage: React.FC = () => {
 
       {/* Installation Import Response */}
       {installationImportResponse && (
-        <div className="rounded-lg border border-green-200 bg-green-50/50 p-4">
+        <div className="rounded-lg border border-green-200 p-4">
           <div className="flex items-start gap-3">
             <svg className="h-5 w-5 text-green-600 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -424,7 +424,7 @@ export const GitHubImportPage: React.FC = () => {
       )}
 
       {installationImportError && (
-        <div className="rounded-lg border border-red-200 bg-red-50/50 p-4">
+        <div className="rounded-lg border border-red-200 p-4">
           <div className="flex items-start gap-3">
             <svg className="h-5 w-5 text-red-600 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />

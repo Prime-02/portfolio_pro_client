@@ -108,7 +108,7 @@ const OAuthButton: React.FC<OAuthButtonProps> = ({
       : config.logoSrc;
   };
 
-  if (provider === "vercel") return <VercelButton buttonText={buttonText} />
+  if (provider === "vercel") return <VercelButton />
 
   return (
     <div className={fullWidth ? "w-full" : ""}>

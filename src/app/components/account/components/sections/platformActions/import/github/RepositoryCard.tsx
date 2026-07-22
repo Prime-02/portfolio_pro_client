@@ -8,12 +8,12 @@ import {
   Card,
   CardContent,
   Button,
-  Checkbox,
   Badge,
   Tooltip,
 } from "./ui-components";
 import { RepositoryCardProps } from "./types";
 import { cn } from "@/lib/utilities/syncFunctions/syncs";
+import CheckBox from "@/src/app/components/inputs/CheckBox";
 
 // Language color mapping
 const languageColors: Record<string, string> = {
@@ -76,17 +76,17 @@ export const RepositoryCard: React.FC<RepositoryCardProps> = ({
       className={cn(
         "group relative transition-all duration-200",
         isSelected && "border-[var(--foreground)]/30 ring-1 ring-[var(--foreground)]/10",
-        isSuccess && "border-green-200 bg-green-50/50",
-        isError && "border-red-200 bg-red-50/50"
+        isSuccess && "border-green-200",
+        isError && "border-red-200"
       )}
     >
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
           {/* Checkbox */}
           <div className="pt-1">
-            <Checkbox
-              checked={isSelected}
-              onChange={(e) => onSelect(repo.name, e.target.checked)}
+            <CheckBox
+              isChecked={isSelected}
+              setIsChecked={(e) => onSelect(repo.name, e)}
               disabled={isImporting || isSuccess}
             />
           </div>

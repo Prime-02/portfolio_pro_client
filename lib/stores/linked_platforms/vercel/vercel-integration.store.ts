@@ -22,6 +22,34 @@ export interface VercelUserInfo {
   auth_provider: string;
 }
 
+export type VercelSyncStatus = "active" | "revoked" | "expired" | "error";
+
+export interface VercelInstallation {
+  id: string;
+  platform_username: string;
+  platform_user_id: string;
+  display_name: string;
+  avatar_url: string;
+  sync_status: VercelSyncStatus;
+  is_primary: boolean;
+  last_synced_at?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface VercelIntegrationInfo {
+  id: string;
+  platform_username: string;
+  platform_user_id: string;
+  display_name: string;
+  avatar_url: string;
+  sync_status: VercelSyncStatus;
+  is_primary: boolean;
+  last_synced_at?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface VercelUserCreateResponse {
   message: string;
   session_id: string;
@@ -32,6 +60,12 @@ export interface VercelUserCreateResponse {
   user_agent: string;
   is_new: boolean;
   user: VercelUserInfo;
+  vercel_integration?: {
+    id: string;
+    platform_username: string;
+    is_primary: boolean;
+    sync_status: string;
+  };
 }
 
 export interface VercelTokenValidationResponse {
@@ -111,6 +145,7 @@ export interface VercelImportResponse {
   status: "accepted";
   message: string;
   import_all: boolean;
+  integration_id?: string;
   repository_count: number | string;
 }
 
@@ -159,9 +194,57 @@ export interface VercelProjectDetails {
   deployment_count: number;
 }
 
+// Request types
+export interface VercelLoginRequest {
+  vercel_token: string;
+  user_id?: string;
+}
+
+export interface VercelLinkRequest {
+  vercel_token: string;
+  set_as_primary?: boolean;
+}
+
+export interface VercelValidateTokenRequest {
+  token: string;
+}
+
+// Response types for new endpoints
+export interface VercelLinkResponse {
+  message: string;
+  is_new: boolean;
+  integration: {
+    id: string;
+    platform_username: string;
+    platform_user_id: string;
+    display_name: string;
+    avatar_url: string;
+    sync_status: string;
+    is_primary: boolean;
+  };
+}
+
+export interface VercelIntegrationsListResponse {
+  integrations: VercelIntegrationInfo[];
+}
+
+export interface VercelSetPrimaryResponse {
+  message: string;
+  integration_id: string;
+}
+
+export interface VercelUnlinkResponse {
+  message: string;
+  removed_integration_id: string;
+  remaining_integrations: number;
+}
+
 // ============ Store State ============
 
 interface VercelIntegrationState {
+  // Active Integration State
+  activeIntegrationId: string | null;
+
   // Authentication State
   isAuthenticating: boolean;
   authError: string | null;
@@ -171,6 +254,25 @@ interface VercelIntegrationState {
   isValidatingToken: boolean;
   tokenValidationResult: VercelTokenValidationResponse | null;
   tokenValidationError: string | null;
+
+  // Account Linking State
+  isLinkingAccount: boolean;
+  linkAccountError: string | null;
+  linkAccountResult: VercelLinkResponse | null;
+
+  // Integrations List State
+  isLoadingIntegrations: boolean;
+  integrations: VercelIntegrationInfo[];
+  integrationsError: string | null;
+
+  // Set Primary State
+  isSettingPrimary: boolean;
+  setPrimaryError: string | null;
+
+  // Unlink State
+  isUnlinking: boolean;
+  unlinkError: string | null;
+  unlinkResult: VercelUnlinkResponse | null;
 
   // Projects List State
   isLoadingProjects: boolean;
@@ -195,29 +297,59 @@ interface VercelIntegrationState {
   selectedProjectDetails: VercelProjectDetails | null;
   projectDetailsError: string | null;
 
-  // Actions
-  createUserWithVercelToken: (code: string) => Promise<void>;
+  // Actions - Active Integration
+  setActiveIntegration: (integrationId: string | null) => void;
+  getActiveIntegrationId: () => string | null;
+
+  // Actions - Authentication
+  createUserWithVercelToken: (request: VercelLoginRequest) => Promise<void>;
+
+  // Actions - Token Validation
   validateVercelToken: (token: string) => Promise<void>;
+
+  // Actions - Account Management
+  linkVercelAccount: (request: VercelLinkRequest) => Promise<void>;
+  listVercelIntegrations: () => Promise<void>;
+  setPrimaryVercelIntegration: (integrationId: string) => Promise<void>;
+  unlinkVercelIntegration: (
+    integrationId?: string,
+  ) => Promise<VercelUnlinkResponse>;
+
+  // Actions - Projects
   listVercelProjects: (params?: {
     page?: number;
     limit?: number;
     until?: number;
+    integration_id?: string;
   }) => Promise<void>;
-  importVercelProjects: (request: VercelImportRequest) => Promise<void>;
-  previewVercelImport: (request: VercelImportRequest) => Promise<void>;
-  getVercelProjectDetails: (projectId: string, token: string) => Promise<void>;
+  importVercelProjects: (
+    request: VercelImportRequest,
+    integration_id?: string,
+  ) => Promise<void>;
+  previewVercelImport: (
+    request: VercelImportRequest,
+    integration_id?: string,
+  ) => Promise<void>;
+  getVercelProjectDetails: (
+    projectId: string,
+    integration_id?: string,
+  ) => Promise<void>;
 
   // Utility Actions
   resetAuthState: () => void;
+  resetLinkState: () => void;
   resetImportState: () => void;
   resetPreviewState: () => void;
   resetProjectsList: () => void;
+  resetIntegrationsList: () => void;
   resetStore: () => void;
 }
 
 // ============ Initial State ============
 
 const initialState = {
+  activeIntegrationId: null,
+
   isAuthenticating: false,
   authError: null,
   userData: null,
@@ -225,6 +357,21 @@ const initialState = {
   isValidatingToken: false,
   tokenValidationResult: null,
   tokenValidationError: null,
+
+  isLinkingAccount: false,
+  linkAccountError: null,
+  linkAccountResult: null,
+
+  isLoadingIntegrations: false,
+  integrations: [],
+  integrationsError: null,
+
+  isSettingPrimary: false,
+  setPrimaryError: null,
+
+  isUnlinking: false,
+  unlinkError: null,
+  unlinkResult: null,
 
   isLoadingProjects: false,
   projects: [],
@@ -254,13 +401,44 @@ export const useVercelIntegrationStore = create<VercelIntegrationState>()(
       (set, get) => ({
         ...initialState,
 
-        // Create/Login User with Vercel Token
-        createUserWithVercelToken: async (code: string) => {
+        // ========== Active Integration Management ==========
+
+        setActiveIntegration: (integrationId: string | null) => {
+          set({ activeIntegrationId: integrationId });
+
+          // Persist to localStorage
+          if (integrationId) {
+            localStorage.setItem("active_vercel_integration_id", integrationId);
+          } else {
+            localStorage.removeItem("active_vercel_integration_id");
+          }
+        },
+
+        getActiveIntegrationId: () => {
+          const state = get();
+
+          // Return explicitly set active integration if available
+          if (state.activeIntegrationId) {
+            return state.activeIntegrationId;
+          }
+
+          // Fallback to primary integration
+          const primaryIntegration = state.integrations.find(
+            (integration) => integration.is_primary,
+          );
+
+          return primaryIntegration?.id || null;
+        },
+
+        // ========== Authentication ==========
+
+        createUserWithVercelToken: async (request: VercelLoginRequest) => {
           set({ isAuthenticating: true, authError: null });
 
           try {
-            const response = await api.get<VercelUserCreateResponse>(
-              `/vercel/login?code=${encodeURIComponent(code)}`,
+            const response = await api.post<VercelUserCreateResponse>(
+              "/vercel/login",
+              request,
             );
 
             set({
@@ -279,6 +457,11 @@ export const useVercelIntegrationStore = create<VercelIntegrationState>()(
                 response.data.refresh_token,
               );
             }
+
+            // If a vercel integration was returned, set it as active
+            if (response.data.vercel_integration?.id) {
+              get().setActiveIntegration(response.data.vercel_integration.id);
+            }
           } catch (error: any) {
             const errorMessage =
               error.response?.data?.detail ||
@@ -295,15 +478,15 @@ export const useVercelIntegrationStore = create<VercelIntegrationState>()(
           }
         },
 
-        // Validate Vercel Token
+        // ========== Token Validation ==========
+
         validateVercelToken: async (token: string) => {
           set({ isValidatingToken: true, tokenValidationError: null });
 
           try {
             const response = await api.post<VercelTokenValidationResponse>(
               "/vercel/validate-token",
-              null,
-              { params: { token } },
+              { token } as VercelValidateTokenRequest,
             );
 
             set({
@@ -329,11 +512,164 @@ export const useVercelIntegrationStore = create<VercelIntegrationState>()(
           }
         },
 
-        // List Vercel Projects
+        // ========== Account Management ==========
+
+        linkVercelAccount: async (request: VercelLinkRequest) => {
+          set({ isLinkingAccount: true, linkAccountError: null });
+
+          try {
+            const response = await api.post<VercelLinkResponse>(
+              "/vercel/link",
+              request,
+            );
+
+            set({
+              linkAccountResult: response.data,
+              isLinkingAccount: false,
+            });
+
+            // Refresh integrations list after linking
+            await get().listVercelIntegrations();
+
+            // Set the newly linked integration as active
+            get().setActiveIntegration(response.data.integration.id);
+          } catch (error: any) {
+            const errorMessage =
+              error.response?.data?.detail ||
+              error.message ||
+              "Failed to link Vercel account";
+
+            set({
+              linkAccountError: errorMessage,
+              isLinkingAccount: false,
+            });
+
+            throw new Error(errorMessage);
+          }
+        },
+
+        listVercelIntegrations: async () => {
+          set({ isLoadingIntegrations: true, integrationsError: null });
+
+          try {
+            const response = await api.get<VercelIntegrationsListResponse>(
+              "/vercel/integrations",
+            );
+
+            set({
+              integrations: response.data.integrations,
+              isLoadingIntegrations: false,
+            });
+
+            // If no active integration is set, default to primary
+            const state = get();
+            if (!state.activeIntegrationId) {
+              const primaryIntegration = response.data.integrations.find(
+                (integration) => integration.is_primary,
+              );
+              if (primaryIntegration) {
+                get().setActiveIntegration(primaryIntegration.id);
+              }
+            }
+          } catch (error: any) {
+            const errorMessage =
+              error.response?.data?.detail ||
+              error.message ||
+              "Failed to fetch Vercel integrations";
+
+            set({
+              integrationsError: errorMessage,
+              isLoadingIntegrations: false,
+              integrations: [],
+            });
+
+            throw new Error(errorMessage);
+          }
+        },
+
+        setPrimaryVercelIntegration: async (integrationId: string) => {
+          set({ isSettingPrimary: true, setPrimaryError: null });
+
+          try {
+            await api.post<VercelSetPrimaryResponse>(
+              `/vercel/integrations/${integrationId}/primary`,
+            );
+
+            // Refresh integrations list after setting primary
+            await get().listVercelIntegrations();
+
+            // Set as active integration
+            get().setActiveIntegration(integrationId);
+
+            set({ isSettingPrimary: false });
+          } catch (error: any) {
+            const errorMessage =
+              error.response?.data?.detail ||
+              error.message ||
+              "Failed to set primary integration";
+
+            set({
+              setPrimaryError: errorMessage,
+              isSettingPrimary: false,
+            });
+
+            throw new Error(errorMessage);
+          }
+        },
+
+        unlinkVercelIntegration: async (integrationId?: string) => {
+          set({ isUnlinking: true, unlinkError: null });
+
+          try {
+            const params = integrationId
+              ? { integration_id: integrationId }
+              : {};
+
+            const response = await api.delete<VercelUnlinkResponse>(
+              "/vercel/integrations",
+              { params },
+            );
+
+            set({
+              unlinkResult: response.data,
+              isUnlinking: false,
+            });
+
+            // If the active integration was removed, clear it
+            const state = get();
+            if (
+              state.activeIntegrationId ===
+                response.data.removed_integration_id ||
+              integrationId === state.activeIntegrationId
+            ) {
+              get().setActiveIntegration(null);
+            }
+
+            // Refresh integrations list after unlinking
+            await get().listVercelIntegrations();
+            return response.data
+          } catch (error: any) {
+            const errorMessage =
+              error.response?.data?.detail ||
+              error.message ||
+              "Failed to unlink Vercel integration";
+
+            set({
+              unlinkError: errorMessage,
+              isUnlinking: false,
+            });
+
+            throw new Error(errorMessage);
+          }
+        },
+
+        // ========== Projects ==========
+
         listVercelProjects: async (params?: {
           page?: number;
           limit?: number;
           until?: number;
+          integration_id?: string;
         }) => {
           set({ isLoadingProjects: true, projectsError: null });
 
@@ -345,6 +681,13 @@ export const useVercelIntegrationStore = create<VercelIntegrationState>()(
               queryParams.append("limit", params.limit.toString());
             if (params?.until)
               queryParams.append("until", params.until.toString());
+
+            // Use provided integration_id or get active one
+            const activeIntegrationId =
+              params?.integration_id || get().getActiveIntegrationId();
+            if (activeIntegrationId) {
+              queryParams.append("integration_id", activeIntegrationId);
+            }
 
             const url = `/vercel/projects${queryParams.toString() ? `?${queryParams.toString()}` : ""}`;
             const response = await api.get<VercelProjectsListResponse>(url);
@@ -371,8 +714,10 @@ export const useVercelIntegrationStore = create<VercelIntegrationState>()(
           }
         },
 
-        // Import Vercel Projects
-        importVercelProjects: async (request: VercelImportRequest) => {
+        importVercelProjects: async (
+          request: VercelImportRequest,
+          integration_id?: string,
+        ) => {
           set({
             isImporting: true,
             importError: null,
@@ -381,9 +726,17 @@ export const useVercelIntegrationStore = create<VercelIntegrationState>()(
           });
 
           try {
+            // Use provided integration_id or get active one
+            const activeIntegrationId =
+              integration_id || get().getActiveIntegrationId();
+            const params = activeIntegrationId
+              ? { integration_id: activeIntegrationId }
+              : {};
+
             const response = await api.post<VercelImportResponse>(
               "/vercel/import",
               request,
+              { params },
             );
 
             set({
@@ -405,14 +758,24 @@ export const useVercelIntegrationStore = create<VercelIntegrationState>()(
           }
         },
 
-        // Preview Vercel Import
-        previewVercelImport: async (request: VercelImportRequest) => {
+        previewVercelImport: async (
+          request: VercelImportRequest,
+          integration_id?: string,
+        ) => {
           set({ isPreviewing: true, previewError: null });
 
           try {
+            // Use provided integration_id or get active one
+            const activeIntegrationId =
+              integration_id || get().getActiveIntegrationId();
+            const params = activeIntegrationId
+              ? { integration_id: activeIntegrationId }
+              : {};
+
             const response = await api.post<VercelPreviewResponse>(
               "/vercel/import/preview",
               request,
+              { params },
             );
 
             set({
@@ -434,14 +797,23 @@ export const useVercelIntegrationStore = create<VercelIntegrationState>()(
           }
         },
 
-        // Get Vercel Project Details
-        getVercelProjectDetails: async (projectId: string, token: string) => {
+        getVercelProjectDetails: async (
+          projectId: string,
+          integration_id?: string,
+        ) => {
           set({ isLoadingProjectDetails: true, projectDetailsError: null });
 
           try {
+            // Use provided integration_id or get active one
+            const activeIntegrationId =
+              integration_id || get().getActiveIntegrationId();
+            const params = activeIntegrationId
+              ? { integration_id: activeIntegrationId }
+              : {};
+
             const response = await api.get<VercelProjectDetails>(
               `/vercel/project/${projectId}`,
-              { params: { token } },
+              { params },
             );
 
             set({
@@ -463,12 +835,21 @@ export const useVercelIntegrationStore = create<VercelIntegrationState>()(
           }
         },
 
-        // Reset Actions
+        // ========== Reset Actions ==========
+
         resetAuthState: () => {
           set({
             isAuthenticating: false,
             authError: null,
             userData: null,
+          });
+        },
+
+        resetLinkState: () => {
+          set({
+            isLinkingAccount: false,
+            linkAccountError: null,
+            linkAccountResult: null,
           });
         },
 
@@ -499,8 +880,17 @@ export const useVercelIntegrationStore = create<VercelIntegrationState>()(
           });
         },
 
+        resetIntegrationsList: () => {
+          set({
+            isLoadingIntegrations: false,
+            integrations: [],
+            integrationsError: null,
+          });
+        },
+
         resetStore: () => {
           set(initialState);
+          localStorage.removeItem("active_vercel_integration_id");
         },
       }),
       {
@@ -509,6 +899,8 @@ export const useVercelIntegrationStore = create<VercelIntegrationState>()(
           // Only persist these fields
           userData: state.userData,
           tokenValidationResult: state.tokenValidationResult,
+          integrations: state.integrations,
+          activeIntegrationId: state.activeIntegrationId,
         }),
       },
     ),
@@ -517,6 +909,15 @@ export const useVercelIntegrationStore = create<VercelIntegrationState>()(
 );
 
 // ============ Selector Hooks ============
+
+export const useVercelActiveIntegration = () => {
+  const store = useVercelIntegrationStore();
+  return {
+    activeIntegrationId: store.activeIntegrationId,
+    setActiveIntegration: store.setActiveIntegration,
+    getActiveIntegrationId: store.getActiveIntegrationId,
+  };
+};
 
 export const useVercelAuth = () => {
   const store = useVercelIntegrationStore();
@@ -536,6 +937,29 @@ export const useVercelTokenValidation = () => {
     tokenValidationResult: store.tokenValidationResult,
     tokenValidationError: store.tokenValidationError,
     validateVercelToken: store.validateVercelToken,
+  };
+};
+
+export const useVercelAccountManagement = () => {
+  const store = useVercelIntegrationStore();
+  return {
+    isLinkingAccount: store.isLinkingAccount,
+    linkAccountError: store.linkAccountError,
+    linkAccountResult: store.linkAccountResult,
+    isLoadingIntegrations: store.isLoadingIntegrations,
+    integrations: store.integrations,
+    integrationsError: store.integrationsError,
+    isSettingPrimary: store.isSettingPrimary,
+    setPrimaryError: store.setPrimaryError,
+    isUnlinking: store.isUnlinking,
+    unlinkError: store.unlinkError,
+    unlinkResult: store.unlinkResult,
+    linkVercelAccount: store.linkVercelAccount,
+    listVercelIntegrations: store.listVercelIntegrations,
+    setPrimaryVercelIntegration: store.setPrimaryVercelIntegration,
+    unlinkVercelIntegration: store.unlinkVercelIntegration,
+    resetLinkState: store.resetLinkState,
+    resetIntegrationsList: store.resetIntegrationsList,
   };
 };
 

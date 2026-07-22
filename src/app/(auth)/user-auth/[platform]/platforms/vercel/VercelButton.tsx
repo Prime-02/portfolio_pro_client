@@ -2,7 +2,7 @@ import { api } from "@/lib/client/api";
 import { useRouting } from "@/lib/hooks/routing/useRouting";
 import { useUIStore } from "@/lib/stores/ui/useUIStore";
 import { PathUtil } from "@/lib/utilities/syncFunctions/syncs";
-import Button from "@/src/app/components/buttons/Buttons";
+import Button, { ButtonProps } from "@/src/app/components/buttons/Buttons";
 import Modal from "@/src/app/components/containers/modals/Modal";
 import { Textinput } from "@/src/app/components/inputs/Textinput";
 import { useTheme } from "@/src/context/ThemeContext";
@@ -10,16 +10,28 @@ import { toast } from "@/src/context/Toastify";
 import Image from "next/image";
 import React, { FormEvent, useState } from "react";
 import TokenGuideDropdown from "./TokenGuideDropdown";
+import { useVercelIntegrationStore, VercelUserCreateResponse } from "@/lib/stores/linked_platforms/vercel/vercel-integration.store";
+import { useUserSettings } from "@/lib/stores/user/useUserSettings";
 
-const VercelButton = ({ buttonText }: { buttonText?: string }) => {
+const VercelButton: React.FC<ButtonProps> = ({
+  icon,
+  text = "Continue with vercel",
+  variant = "outline",
+  size = "sm",
+  className = "w-full",
+  onClick,
+  ...restProps
+}) => {
   const { isDarkMode } = useTheme();
+  const { userInfo } = useUserSettings()
+  const { listVercelIntegrations } = useVercelIntegrationStore()
   const { startLoading, stopLoading, isLoading } = useUIStore()
   const {
     checkParams,
     clearQueryParam,
     router,
     currentPathWithQuery,
-    pathname
+    setRedirectUrl
   } = useRouting()
   const tokenModal = checkParams("token_modal");
   const [token, setToken] = useState("");
@@ -32,13 +44,16 @@ const VercelButton = ({ buttonText }: { buttonText?: string }) => {
     }
     startLoading("validating_token");
     try {
-      const { data: verificationRes } = await api.post(`/vercel/validate-token?token=${token.trim()}`);
+      const { data: verificationRes } = await api.post<VercelUserCreateResponse>(`/vercel/login`, {
+        vercel_token: token.trim(),
+        user_id: userInfo?.id
+      });
+      await listVercelIntegrations()
       const onSuccess = () => {
-        toast.info("Reloading")
-        router.replace(pathname)
+        clearQueryParam()
       }
-      if (verificationRes.valid) {
-        toast.success("Your Vercel token has been validated. You can now import your projects—newly created projects will also be automatically imported for the duration of your token's validity.", {
+      if (verificationRes.message) {
+        toast.success(verificationRes.message, {
           title: "Validation successful",
           onClose: () => onSuccess()
         });
@@ -64,6 +79,24 @@ const VercelButton = ({ buttonText }: { buttonText?: string }) => {
     }
   };
 
+  const defaultIcon = (
+    <img
+      src={`/socials/vercel/vercel-icon-${isDarkMode ? "dark" : "light"}.svg`}
+      width={15}
+      height={15}
+      alt={"Vercel Logo"}
+    />
+  );
+
+  const handleClick = () => {
+    router.push(
+      `${PathUtil.addQueryParams(currentPathWithQuery, {
+        token_modal: "true",
+        auth_mode: "login",
+      })}`
+    );
+  };
+
   return (
     <>
       <Modal
@@ -72,6 +105,8 @@ const VercelButton = ({ buttonText }: { buttonText?: string }) => {
         onClose={() => {
           clearQueryParam();
         }}
+        size="sm"
+        centered
       >
         <form className="flex flex-col w-full gap-y-3" onSubmit={validateToken}>
           <TokenGuideDropdown />
@@ -95,26 +130,13 @@ const VercelButton = ({ buttonText }: { buttonText?: string }) => {
         </form>
       </Modal>
       <Button
-        icon={
-          <img
-            src={`/socials/vercel/vercel-icon-${isDarkMode ? "dark" : "light"}.svg`}
-            width={15}
-            height={15}
-            alt={"Vercel Logo"}
-          />
-        }
-        text={buttonText ? buttonText : "Continue with vercel"}
-        variant="outline"
-        size="sm"
-        className="w-full"
-        onClick={() => {
-          router.push(
-            `${PathUtil.addQueryParams(currentPathWithQuery, {
-              token_modal: "true",
-              auth_mode: "login",
-            })}`
-          );
-        }}
+        icon={icon || defaultIcon}
+        text={text}
+        variant={variant}
+        size={size}
+        className={className}
+        onClick={onClick || handleClick}
+        {...restProps}
       />
     </>
   );

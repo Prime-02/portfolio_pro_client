@@ -31,8 +31,8 @@ export const LinkedAccounts = () => {
             </ASSectionDesc>
             <div className='flex flex-col mt-6 gap-y-3'>
                 <LinkedIn linkedinData={linkedPlatforms?.linked_platforms["linkedin"] as Record<string, any>} />
-                <GitHub  />
-                <Vercel vercelData={linkedPlatforms?.linked_platforms["vercel"] as Record<string, any>} />
+                <GitHub />
+                <Vercel />
             </div>
         </ASCard>
     )

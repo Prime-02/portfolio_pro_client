@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
+import Image from "@/src/app/components/ui/Image";
 import { motion } from "framer-motion";
 import {
     Pencil, Trash2, GraduationCap, Building2, Calendar, Clock,
@@ -52,7 +52,7 @@ export function EducationCard({ education, onEdit, onDelete, isOwner = false }: 
                             style={{ backgroundColor: `${accentColor}20` }}
                         >
                             {education.institution_logo_url ? (
-                                <img
+                                <Image
                                     src={education.institution_logo_url}
                                     alt={education.institution || "Institution logo"}
                                     width={32}

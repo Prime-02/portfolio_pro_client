@@ -1,5 +1,5 @@
 import { useRouting } from "@/lib/hooks/routing/useRouting";
-import Image from "next/image";
+import Image from "@/src/app/components/ui/Image";
 import { FormEvent, useEffect, useState } from "react";
 import TemplateStructure, { ComponentArrangement } from "./TemplateStructure";
 import { toast } from "@/src/context/Toastify";
@@ -133,7 +133,7 @@ const Step3 = () => {
       onSkip={handleSkip}
       additionalContent={
         <div className=" h-full w-full">
-          <img
+          <Image
             alt="Step 3"
             src={"/vectors/undraw_contact-us_kcoa.svg"}
             width={1000}

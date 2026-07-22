@@ -7,7 +7,7 @@
 "use client";
 
 import { useRef, useState, useCallback, useEffect } from "react";
-import Image from "next/image";
+import Image from "@/src/app/components/ui/Image";
 import Cropper from "react-easy-crop";
 import type { Area, Point } from "react-easy-crop";
 import imageCompression from "browser-image-compression";
@@ -48,7 +48,7 @@ interface ImageFieldProps {
 // ─── Crop helpers ─────────────────────────────────────────────────────────────
 
 /**
- * Given a loaded <img> element and the pixel crop area returned by
+ * Given a loaded <Image> element and the pixel crop area returned by
  * react-easy-crop, draws the cropped region onto a canvas and returns it as
  * a Blob (image/jpeg).
  */
@@ -534,7 +534,7 @@ export function ImageField({
                         <video src={url} controls className="max-w-full h-auto max-h-[400px] block" />
                     ) : (
                         <div className="relative max-w-full max-h-[400px]">
-                            <img
+                            <Image
                                 src={url}
                                 alt="Uploaded media"
                                 width={800}

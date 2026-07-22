@@ -6,7 +6,7 @@ import Link from "next/link";
 import Button from "../../buttons/Buttons";
 import Menu from "../../containers/cards/landing-page-nav-cards/Menu";
 import Profile from "../../containers/cards/landing-page-nav-cards/Profile";
-import Image from "next/image";
+import Image from "@/src/app/components/ui/Image";
 import NotificationsButton from "../../buttons/NotificationsButton";
 import { useUIStore } from "@/lib/stores/ui/useUIStore";
 import { getImageSrc } from "@/lib/utilities/syncFunctions/syncs";
@@ -161,7 +161,7 @@ const LandingPageNavbar = () => {
                     >
                       <span className="relative flex h-10 w-10 items-center justify-center object-cover rounded-full overflow-hidden flex-shrink-0">
                         {imageError ? (
-                          <img
+                          <Image
                             src={`https://avatar.oxro.io/avatar.svg?name=${fallbackLetter}`}
                             alt={`${userInfo?.username || "User"}'s Profile Picture`}
                             width={100}
@@ -171,7 +171,7 @@ const LandingPageNavbar = () => {
                             loading="lazy"
                           />
                         ) : (
-                          <img
+                          <Image
                             src={getImageSrc(
                               userInfo?.profile_picture,
                               userInfo?.username ?? ""

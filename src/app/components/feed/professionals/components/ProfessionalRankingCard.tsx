@@ -1,7 +1,7 @@
 "use client";
 
 import React, { JSX, useState } from "react";
-import Image from "next/image";
+import Image from "@/src/app/components/ui/Image";
 import Link from "next/link";
 import {
   Star,
@@ -91,7 +91,7 @@ export default function ProfessionalRankingCard({
             className="flex-shrink-0">
             <div className="w-14 h-14 rounded-full bg-[var(--accent)]/15 flex items-center justify-center overflow-hidden border-2 border-[var(--accent)]/20">
               {user.profile_picture ? (
-                <img
+                <Image
                   src={user.profile_picture}
                   alt={displayName || "User avatar"}
                   width={56}

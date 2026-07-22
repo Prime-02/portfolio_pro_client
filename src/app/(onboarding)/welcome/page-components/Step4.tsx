@@ -1,5 +1,5 @@
 import { useRouting } from "@/lib/hooks/routing/useRouting";
-import Image from "next/image";
+import Image from "@/src/app/components/ui/Image";
 import { FormEvent, useEffect, useState } from "react";
 import TemplateStructure, { ComponentArrangement } from "./TemplateStructure";
 import { isAuthenticated } from "@/lib/client/api";
@@ -143,7 +143,7 @@ const Step4 = () => {
       onSkip={handleSkip}
       additionalContent={
         <div className="h-full w-full">
-          <img
+          <Image
             alt="Step 4"
             src={"/vectors/undraw_my-notifications_fy5v.svg"}
             width={1000}

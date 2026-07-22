@@ -4,7 +4,7 @@ import { useUIStore } from "@/lib/stores/ui/useUIStore";
 import Button from "@/src/app/components/buttons/Buttons";
 import { useTheme } from "@/src/context/ThemeContext";
 import { toast } from "@/src/context/Toastify";
-import Image from "next/image";
+import Image from "@/src/app/components/ui/Image";
 import React from "react";
 import VercelButton from "./vercel/VercelButton";
 
@@ -114,7 +114,7 @@ const OAuthButton: React.FC<OAuthButtonProps> = ({
     <div className={fullWidth ? "w-full" : ""}>
       <Button
         icon={
-          <img
+          <Image
             src={getLogoSrc()}
             width={provider === "canva" ? 0 : 20}
             height={20}
@@ -122,7 +122,7 @@ const OAuthButton: React.FC<OAuthButtonProps> = ({
           />
         }
         icon2={
-          <img
+          <Image
             src={getLogoSrc()}
             width={provider === "canva" ? 35 : 0}
             height={20}

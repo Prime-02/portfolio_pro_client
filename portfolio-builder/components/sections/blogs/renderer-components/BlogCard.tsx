@@ -1,10 +1,10 @@
 // portfolio-builder/components/sections/blogs/renderer-components/BlogCard.tsx
 
-import Image from "next/image";
 import { ContentWithAuthor } from "@/lib/stores/contents/types/content.types";
 import type { CardConfig } from "./resolveCardOverride";
 import { ExternalLink, Calendar, Eye, MessageCircle, Heart, Share2, Bookmark, Clock, User } from "lucide-react";
 import MarkdownText from "@/src/app/components/markdown/MarkdownText";
+import Image from "@/src/app/components/ui/Image";
 
 interface BlogCardProps {
     blog: ContentWithAuthor;
@@ -131,7 +131,7 @@ export default function BlogCard({ blog, config, cardSize, fullWidth = true, ind
         return (
             <div className={`${widthClass} ${pad} rounded-lg border border-[var(--pb-border)] bg-[var(--pb-surface)] flex items-center gap-3 transition-all hover:border-[var(--pb-foreground-20)]`} style={accentStyle}>
                 {showImage && blog.cover_image_url && (
-                    <img
+                    <Image
                         src={blog.cover_image_url}
                         alt={blog.title || "Blog cover"}
                         width={48}
@@ -159,7 +159,7 @@ export default function BlogCard({ blog, config, cardSize, fullWidth = true, ind
         return (
             <div className={`${widthClass} ${pad} rounded-lg border border-[var(--pb-border)] bg-[var(--pb-surface)] flex items-center gap-3 transition-all hover:border-[var(--pb-foreground-20)]`} style={accentStyle}>
                 {showImage && blog.cover_image_url && (
-                    <img
+                    <Image
                         src={blog.cover_image_url}
                         alt={blog.title || "Blog cover"}
                         width={cardSize === "small" ? 48 : cardSize === "medium" ? 64 : 80}
@@ -202,7 +202,7 @@ export default function BlogCard({ blog, config, cardSize, fullWidth = true, ind
             <div className={`${widthClass} rounded-xl overflow-hidden border border-[var(--pb-border)] bg-[var(--pb-surface)] transition-all hover:border-[var(--pb-foreground-20)] group`} style={accentStyle}>
                 {showImage && blog.cover_image_url && (
                     <div className={`relative ${imgH} overflow-hidden`}>
-                        <img
+                        <Image
                             src={blog.cover_image_url}
                             alt={blog.title || "Blog cover"}
                             className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -235,7 +235,7 @@ export default function BlogCard({ blog, config, cardSize, fullWidth = true, ind
                         {showAuthor && (
                             <span className="text-xs text-[var(--pb-text-muted)] flex items-center gap-1">
                                 {authorImage ? (
-                                    <img
+                                    <Image
                                         src={authorImage}
                                         alt={authorName}
                                         width={16}
@@ -286,7 +286,7 @@ export default function BlogCard({ blog, config, cardSize, fullWidth = true, ind
             <div className={`${widthClass} ${pad} rounded-xl border border-[var(--pb-border)] bg-[var(--pb-surface)] space-y-3 transition-all hover:border-[var(--pb-foreground-20)]`} style={accentStyle}>
                 <div className="flex items-start gap-3">
                     {showImage && blog.cover_image_url && (
-                        <img
+                        <Image
                             src={blog.cover_image_url}
                             alt={blog.title || "Blog cover"}
                             width={80}
@@ -324,7 +324,7 @@ export default function BlogCard({ blog, config, cardSize, fullWidth = true, ind
                     {showAuthor && (
                         <span className="text-xs text-[var(--pb-text-muted)] flex items-center gap-1">
                             {authorImage ? (
-                                <img
+                                <Image
                                     src={authorImage}
                                     alt={authorName}
                                     width={16}
@@ -386,7 +386,7 @@ export default function BlogCard({ blog, config, cardSize, fullWidth = true, ind
             <div className={`${widthClass} ${pad} rounded-xl border border-[var(--pb-border)] bg-[var(--pb-surface)] space-y-3 transition-all hover:border-[var(--pb-foreground-20)]`} style={accentStyle}>
                 <div className="flex items-start gap-3">
                     {showImage && blog.cover_image_url && (
-                        <img
+                        <Image
                             src={blog.cover_image_url}
                             alt={blog.title || "Blog cover"}
                             width={64}
@@ -419,7 +419,7 @@ export default function BlogCard({ blog, config, cardSize, fullWidth = true, ind
                     {showAuthor && (
                         <span className="text-xs text-[var(--pb-text-muted)] flex items-center gap-1">
                             {authorImage ? (
-                                <img
+                                <Image
                                     src={authorImage}
                                     alt={authorName}
                                     width={16}
@@ -469,7 +469,7 @@ export default function BlogCard({ blog, config, cardSize, fullWidth = true, ind
         <div className={`${widthClass} ${pad} rounded-xl border border-[var(--pb-border)] bg-[var(--pb-surface)] space-y-2.5 transition-all hover:border-[var(--pb-foreground-20)]`} style={accentStyle}>
             {showImage && blog.cover_image_url && (
                 <div className={`${imgH} rounded-lg overflow-hidden mb-2 relative`}>
-                    <img
+                    <Image
                         src={blog.cover_image_url}
                         alt={blog.title || "Blog cover"}
                         className="object-cover"
@@ -495,7 +495,7 @@ export default function BlogCard({ blog, config, cardSize, fullWidth = true, ind
                     {showAuthor && (
                         <span className="text-xs text-[var(--pb-text-muted)] flex items-center gap-1">
                             {authorImage ? (
-                                <img
+                                <Image
                                     src={authorImage}
                                     alt={authorName}
                                     width={16}

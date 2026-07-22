@@ -1,4 +1,5 @@
 import { Image as LucideImage, X, FileText } from "lucide-react";
+import ImageComponent from "@/src/app/components/ui/Image";
 import { useState, useEffect, ChangeEvent, DragEvent, useRef, useId } from "react";
 
 // 1. First, define the allowed content types
@@ -334,7 +335,7 @@ export const FileInput: React.FC<FileInputProps> = ({
               {/* Image preview with original aspect ratio and minimum height */}
               {hasImagePreview && (
                 <div className="relative min-h-[160px] flex items-center justify-center">
-                  <img
+                  <ImageComponent
                     src={preview}
                     alt={fileName}
                     className="max-w-full h-auto rounded-lg"
@@ -423,7 +424,7 @@ export const FileInput: React.FC<FileInputProps> = ({
       {/* Disabled view — image with minimum height */}
       {disabled && hasImagePreview && (
         <div className="relative w-full rounded-lg overflow-hidden min-h-[160px] flex items-center justify-center bg-gray-100 dark:bg-gray-800">
-          <img
+          <ImageComponent
             src={preview}
             alt={fileName}
             className="max-w-full h-auto max-h-[400px] object-contain"

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, DragEvent, useCallback } from "react";
-import Image from "next/image";
+import Image from "@/src/app/components/ui/Image";
 import Cropper from "react-easy-crop";
 import type { Area, Point } from "react-easy-crop";
 import imageCompression from "browser-image-compression";
@@ -346,7 +346,7 @@ export const AvatarUpload = ({
                 >
                     {preview ? (
                         isLocalPreview ? (
-                            <img
+                            <Image
                                 src={preview}
                                 alt="Profile picture"
                                 width={dimension}
@@ -354,7 +354,7 @@ export const AvatarUpload = ({
                                 className="w-full h-full object-cover"
                             />
                         ) : (
-                            <img
+                            <Image
                                 src={preview}
                                 alt="Profile picture"
                                 className="object-cover"

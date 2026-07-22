@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react"
-import Image from "next/image"
+import Image from "@/src/app/components/ui/Image"
 import type { PortfolioResponse, PortfolioUpdate } from "@/portfolio-builder/store/usePortfolioStore"
 import Modal from "../containers/modals/Modal"
 import { TextArea } from "../inputs/TextArea"
@@ -234,7 +234,7 @@ const EditPortfolioModal = ({
                     {/* Current cover image preview (saved, or staged-but-not-yet-uploaded) */}
                     {coverImageUrl && snapshotMode === "none" && (
                         <div className="relative rounded-lg overflow-hidden border border-[var(--foreground)]/10 h-40">
-                            <img
+                            <Image
                                 src={coverImageUrl}
                                 alt="Cover preview"
                                 className="object-cover"
@@ -283,7 +283,7 @@ const EditPortfolioModal = ({
                     {snapshotMode === "generate" && (
                         <div className="space-y-3 rounded-lg border border-[var(--foreground)]/10 p-3">
                             <div className="rounded-lg overflow-hidden border border-[var(--foreground)]/10 bg-[var(--foreground)]/5 h-48 relative">
-                                <img
+                                <Image
                                     key={snapshotKey}
                                     src={`/api/snapshot?url=${encodeURIComponent(`${portfolioSnapshot()}&t=${snapshotKey}`)}`}
                                     alt="Portfolio snapshot preview"

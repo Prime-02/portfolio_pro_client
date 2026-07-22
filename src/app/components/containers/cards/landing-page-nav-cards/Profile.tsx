@@ -11,7 +11,7 @@ import FeedBackComponent from "./profile-components/FeedBackComponent";
 import HelpComponent from "./profile-components/HelpComponent";
 import LogOutComponent from "./LogOutComponent";
 import Link from "next/link";
-import Image from "next/image";
+import Image from "@/src/app/components/ui/Image";
 import { useTheme } from "../../../../../context/ThemeContext";
 import { getColorShade, getImageSrc } from "@/lib/utilities/syncFunctions/syncs";
 import Button from "../../../buttons/Buttons";
@@ -101,7 +101,7 @@ const Profile = () => {
             <div className="flex items-center justify-start gap-x-5">
               <span className="relative flex h-16 w-16 items-center justify-center object-cover rounded-full overflow-hidden ">
                 {imageError ? (
-                  <img
+                  <Image
                     src={`https://avatar.oxro.io/avatar.svg?name=${fallbackLetter}`}
                     alt={`${userInfo?.username || "User"}'s Profile Picture`}
                     width={100}
@@ -111,7 +111,7 @@ const Profile = () => {
                     loading="lazy"
                   />
                 ) : (
-                  <img
+                  <Image
                     src={getImageSrc(
                       userInfo?.profile_picture,
                       userInfo?.username ?? "user"

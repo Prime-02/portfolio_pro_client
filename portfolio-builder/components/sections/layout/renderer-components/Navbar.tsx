@@ -3,7 +3,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import Image from "next/image";
+import Image from "@/src/app/components/ui/Image";
 import { NavbarData } from "@/portfolio-builder/types/layout";
 import { getBackgroundStyle } from "@/portfolio-builder/components/shared/background/lib/sectionBackground";
 import { CTAButton } from "@/portfolio-builder/components/sections/bio/renderer-components/CTAButton";
@@ -246,7 +246,7 @@ export default function Navbar({ data }: NavbarProps) {
                 onClick={(e) => handleNavClick(e, "hero")}
             >
                 {data.logoType === "image" && data.logoImageUrl ? (
-                    <img
+                    <Image
                         src={data.logoImageUrl}
                         alt={data.logoText ?? "Logo"}
                         width={logoHeight * 3} // Assuming typical logo aspect ratio of 3:1

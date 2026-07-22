@@ -3,7 +3,7 @@
 "use client";
 
 import { useCallback } from "react";
-import Image from "next/image";
+import Image from "@/src/app/components/ui/Image";
 import { FooterData, NavbarData } from "@/portfolio-builder/types/layout";
 import { getBackgroundStyle } from "@/portfolio-builder/components/shared/background/lib/sectionBackground";
 import { socialMediaPlatforms } from "@/lib/utilities/indices/DropDownItems";
@@ -114,7 +114,7 @@ export default function Footer({ data, navbarData }: FooterProps) {
         return (
             <a href="#hero" onClick={(e) => handleLinkClick(e, "hero")} className="flex items-center shrink-0">
                 {data.logoType === "image" && data.logoImageUrl ? (
-                    <img
+                    <Image
                         src={data.logoImageUrl}
                         alt={data.logoText ?? "Logo"}
                         width={logoHeight * 3} // Assuming typical logo aspect ratio of 3:1

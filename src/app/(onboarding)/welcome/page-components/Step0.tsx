@@ -4,7 +4,7 @@ import { useRouting } from "@/lib/hooks/routing/useRouting";
 import { useUserStore } from "@/lib/stores/user/userStore";
 import { toast } from "@/src/context/Toastify";
 import { gettingStarted } from "@/lib/utilities/indices/MultiStepWriteUp";
-import Image from "next/image";
+import Image from "@/src/app/components/ui/Image";
 import Button from "@/src/app/components/buttons/Buttons";
 import { ChevronRight } from "lucide-react";
 
@@ -44,7 +44,7 @@ const Step0 = () => {
       onSkip={handleSkip}
       additionalContent={
         <div className="h-full w-full">
-          <img
+          <Image
             alt="Step 4"
             src={"/vectors/undraw_hello_ccwj.svg"}
             width={1000}

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useState, useEffect, useRef } from "react";
-import Image from "next/image";
+import Image from "@/src/app/components/ui/Image";
 import {
   Heart,
   MessageCircle,
@@ -138,7 +138,7 @@ export function BlogHero({ blog, isPost }: BlogHeroProps) {
       {blog.cover_image_url && (
         <div className="relative rounded-2xl overflow-hidden border border-[var(--foreground)]/10">
           <div className="relative aspect-[21/9] bg-[var(--foreground)]/5">
-            <img
+            <Image
               src={blog.cover_image_url}
               alt={blog.title || "Blog cover image"}
               className="object-cover"
@@ -163,7 +163,7 @@ export function BlogHero({ blog, isPost }: BlogHeroProps) {
               href={`/${blog.author.username}`}
               className="flex items-center gap-2">
               {blog.author.profile_picture ? (
-                <img
+                <Image
                   src={blog.author.profile_picture}
                   alt={blog.author.username || "Author avatar"}
                   width={24}

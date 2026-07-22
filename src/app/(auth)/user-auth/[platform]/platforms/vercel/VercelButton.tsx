@@ -7,7 +7,7 @@ import Modal from "@/src/app/components/containers/modals/Modal";
 import { Textinput } from "@/src/app/components/inputs/Textinput";
 import { useTheme } from "@/src/context/ThemeContext";
 import { toast } from "@/src/context/Toastify";
-import Image from "next/image";
+import Image from "@/src/app/components/ui/Image";
 import React, { FormEvent, useState } from "react";
 import TokenGuideDropdown from "./TokenGuideDropdown";
 import { useVercelIntegrationStore, VercelUserCreateResponse } from "@/lib/stores/linked_platforms/vercel/vercel-integration.store";
@@ -80,7 +80,7 @@ const VercelButton: React.FC<ButtonProps> = ({
   };
 
   const defaultIcon = (
-    <img
+    <Image
       src={`/socials/vercel/vercel-icon-${isDarkMode ? "dark" : "light"}.svg`}
       width={15}
       height={15}

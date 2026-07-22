@@ -1,7 +1,7 @@
 // portfolio-builder/components/sections/education/renderer-components/EducationCard.tsx
 
 import { useMemo } from "react";
-import Image from "next/image";
+import Image from "@/src/app/components/ui/Image";
 import type { EducationItem } from "./layoutProps";
 import type { CardConfig } from "./resolveCardOverride";
 import { GraduationCap, BookOpen, Calendar, School, Award, MapPin } from "lucide-react";
@@ -112,7 +112,7 @@ export default function EducationCard({
         style={accentStyle}
       >
         {showInstitutionLogo && education.institution_logo_url && (
-          <img
+          <Image
             src={education.institution_logo_url}
             alt={education.institution || "Institution logo"}
             width={logoSize}
@@ -145,7 +145,7 @@ export default function EducationCard({
         style={accentStyle}
       >
         {showInstitutionLogo && education.institution_logo_url && (
-          <img
+          <Image
             src={education.institution_logo_url}
             alt={education.institution || "Institution logo"}
             width={logoSize}
@@ -182,7 +182,7 @@ export default function EducationCard({
       >
         <div className="flex items-start gap-3">
           {showInstitutionLogo && education.institution_logo_url && (
-            <img
+            <Image
               src={education.institution_logo_url}
               alt={education.institution || "Institution logo"}
               width={logoSize}
@@ -247,7 +247,7 @@ export default function EducationCard({
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3">
             {showInstitutionLogo && education.institution_logo_url && (
-              <img
+              <Image
                 src={education.institution_logo_url}
                 alt={education.institution || "Institution logo"}
                 width={logoSize}
@@ -322,7 +322,7 @@ export default function EducationCard({
 
         <div className="flex items-start gap-3 relative z-10">
           {showInstitutionLogo && education.institution_logo_url && (
-            <img
+            <Image
               src={education.institution_logo_url}
               alt={education.institution || "Institution logo"}
               width={logoSize}
@@ -381,7 +381,7 @@ export default function EducationCard({
     >
       <div className="flex items-start gap-3">
         {showInstitutionLogo && education.institution_logo_url && (
-          <img
+          <Image
             src={education.institution_logo_url}
             alt={education.institution || "Institution logo"}
             width={logoSize}

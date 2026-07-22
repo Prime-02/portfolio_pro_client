@@ -4,6 +4,7 @@ import { useUserSettings } from '@/lib/stores/user/useUserSettings'
 import OAuthButton from '@/src/app/(auth)/user-auth/[platform]/platforms/OAuthButton'
 import Button from '@/src/app/components/buttons/Buttons'
 import Switch from '@/src/app/components/inputs/Switch'
+import Image from 'next/image'
 import React, { useState, useEffect } from 'react'
 
 const LinkedInSkeleton = () => {
@@ -74,7 +75,7 @@ const LinkedIn = ({ linkedinData }: { linkedinData: Record<string, any> }) => {
             {/* Header */}
             <div className="flex items-center justify-between pb-3 border-b border-[var(--foreground)]/30">
                 <div className="flex items-center gap-2">
-                    <img className='w-12 h-12 object-contain' src="/socials/linkedin/in-logo/LI-In-Bug.png" alt="LinkedIn" />
+                    <Image className='w-12 h-12 object-contain' src="/socials/linkedin/in-logo/LI-In-Bug.png" alt="LinkedIn" />
                     <div>
                         <p className="text-base font-league-600 text-foreground">LinkedIn</p>
                         <p className="text-xs text-gray-400 font-league-400">{tokenInfo.text}</p>

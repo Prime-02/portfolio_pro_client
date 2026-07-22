@@ -1,6 +1,6 @@
 // portfolio-builder/components/sections/projects/renderer-components/ProjectCard.tsx
 
-import Image from "next/image";
+import Image from "@/src/app/components/ui/Image";
 import { PortfolioProjectResponse } from "@/lib/stores/projects/types/project.types";
 import type { CardConfig } from "./resolveCardOverride";
 import { ExternalLink, Calendar, DollarSign, User, Layers, GitBranch } from "lucide-react";
@@ -125,7 +125,7 @@ export default function ProjectCard({ project, config, cardSize, fullWidth = tru
                 style={accentStyle}
             >
                 {showImage && project.project_image_url && (
-                    <img
+                    <Image
                         src={project.project_image_url}
                         alt={project.project_name || "Project image"}
                         width={48}
@@ -158,7 +158,7 @@ export default function ProjectCard({ project, config, cardSize, fullWidth = tru
             >
                 {/* Fixed-size thumbnail — never stretches with row height */}
                 {showImage && project.project_image_url && (
-                    <img
+                    <Image
                         src={project.project_image_url}
                         alt={project.project_name || "Project image"}
                         width={listImgDimension}
@@ -209,7 +209,7 @@ export default function ProjectCard({ project, config, cardSize, fullWidth = tru
             >
                 {showImage && project.project_image_url && (
                     <div className={`relative ${imgH} overflow-hidden`}>
-                        <img
+                        <Image
                             src={project.project_image_url}
                             alt={project.project_name || "Project image"}
                             className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -300,7 +300,7 @@ export default function ProjectCard({ project, config, cardSize, fullWidth = tru
             >
                 <div className="flex items-start gap-3">
                     {showImage && project.project_image_url && (
-                        <img
+                        <Image
                             src={project.project_image_url}
                             alt={project.project_name || "Project image"}
                             width={64}
@@ -390,7 +390,7 @@ export default function ProjectCard({ project, config, cardSize, fullWidth = tru
         >
             {showImage && project.project_image_url && (
                 <div className={`${imgH} rounded-lg overflow-hidden mb-2 relative`}>
-                    <img
+                    <Image
                         src={project.project_image_url}
                         alt={project.project_name || "Project image"}
                         className="object-cover"

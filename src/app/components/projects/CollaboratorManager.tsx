@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
+import Image from "@/src/app/components/ui/Image";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -230,7 +230,7 @@ export default function CollaboratorManagerPage() {
                       bg-[var(--background)] hover:border-[var(--accent)]/20 transition-colors"
                   >
                     {collaborator.profile_picture ? (
-                      <img
+                      <Image
                         src={collaborator.profile_picture}
                         alt={collaborator.username ?? `Collaborator ${i + 1}`}
                         width={40}

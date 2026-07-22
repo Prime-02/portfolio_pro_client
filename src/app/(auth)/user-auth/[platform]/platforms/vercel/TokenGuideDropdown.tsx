@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
+import Image from "@/src/app/components/ui/Image";
 import { ChevronDown, ExternalLink } from "lucide-react";
 import vercelTokenSteps from "./tokenGuide";
 

@@ -5,7 +5,7 @@
 // WYSIWYG editing engine — shipping that to every visitor of a public
 // portfolio page just to render text would be a big regression. This uses
 // react-markdown (+ remark-gfm for tables/strikethrough/task-lists, +
-// rehype-slug for heading anchor ids, + rehype-raw so literal <details>/<img
+// rehype-slug for heading anchor ids, + rehype-raw so literal <details>/<Image
 // width height> HTML the editor may have emitted still renders).
 //
 // npm install react-markdown remark-gfm rehype-slug rehype-raw
@@ -13,7 +13,7 @@
 "use client";
 
 import { memo, useEffect, useRef } from "react";
-import Image from "next/image";
+import Image from "@/src/app/components/ui/Image";
 import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeSlug from "rehype-slug";
@@ -51,7 +51,7 @@ const components: Components = {
         // If we have both width and height, use them directly
         if (numericWidth && numericHeight) {
             return (
-                <img
+                <Image
                     src={resolvedSrc}
                     alt={alt ?? ""}
                     width={numericWidth}
@@ -65,7 +65,7 @@ const components: Components = {
         if (numericWidth || numericHeight) {
             return (
                 <div style={{ position: 'relative', width: '100%', maxWidth: numericWidth || '100%' }}>
-                    <img
+                    <Image
                         src={resolvedSrc}
                         alt={alt ?? ""}
                         width={numericWidth || 1200}
@@ -78,7 +78,7 @@ const components: Components = {
 
         // Fallback: no dimensions specified, use a sensible default
         return (
-            <img
+            <Image
                 src={resolvedSrc}
                 alt={alt ?? ""}
                 width={1200}

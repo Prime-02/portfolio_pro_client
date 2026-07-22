@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import Image from "next/image";
+import Image from "@/src/app/components/ui/Image";
 import type { UserSummary } from "@/lib/stores/contents/types/content.types";
 
 interface CommentAvatarProps {
@@ -33,7 +33,7 @@ export default function CommentAvatar({ user, size = "md" }: CommentAvatarProps)
       className={`${SIZE_CLASSES[size]} rounded-full bg-[var(--accent)]/15 flex items-center justify-center flex-shrink-0 overflow-hidden`}
     >
       {user?.profile_picture ? (
-        <img
+        <Image
           src={user.profile_picture}
           alt={user.display_name || user.username || "User avatar"}
           width={dimension}

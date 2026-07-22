@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from "@/src/app/components/ui/Image";
 import React, { useEffect, useRef, useState } from "react";
 import OAuthButton from "./OAuthButton";
 import VercelButton from "./vercel/VercelButton";
@@ -325,7 +325,7 @@ const OAuthComponent: React.FC<OAuthComponentProps> = ({
               </div>
             </Modal>
             <div className={getLogoClass()}>
-              <img
+              <Image
                 src={getLogoSrc()}
                 width={1000}
                 height={1000}
@@ -365,7 +365,7 @@ const OAuthComponent: React.FC<OAuthComponentProps> = ({
     <div className="w-full min-h-screen h-auto flex items-center justify-center">
       <div className="flex rounded-2xl items-center justify-center p-3 border border-[var(--accent)]/20 flex-col h-auto max-w-md min-w-sm">
         <div className={getLogoClass()}>
-          <img
+          <Image
             src={getLogoSrc()}
             width={1000}
             height={1000}

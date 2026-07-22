@@ -1,6 +1,6 @@
 // portfolio-builder/components/sections/testimonials/renderer-components/TestimonialCard.tsx
 
-import Image from "next/image";
+import Image from "@/src/app/components/ui/Image";
 import { Testimonial } from "@/lib/stores/testimonials/useTestimonial";
 import type { CardConfig } from "./resolveCardOverride";
 import { Star, Quote, BadgeCheck } from "lucide-react";
@@ -116,7 +116,7 @@ function Avatar({
   return (
     <div className={`${AVATAR_SIZE[size]} ${shapeClass} shrink-0 overflow-hidden bg-[var(--pb-surface-elevated)] border border-[var(--pb-border)] flex items-center justify-center`}>
       {url ? (
-        <img
+        <Image
           src={url}
           alt={name || "Avatar"}
           width={dimension}

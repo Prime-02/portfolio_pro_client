@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
+import Image from "@/src/app/components/ui/Image";
 import { motion } from "framer-motion";
 import {
   Heart,
@@ -82,7 +82,7 @@ export function BlogCard({
       {/* Cover Image */}
       {hasCover && (
         <div className={`relative overflow-hidden ${featured ? "h-52 md:h-64" : "h-44"}`}>
-          <img
+          <Image
             src={blog.cover_image_url!}
             alt={blog.title || "Blog cover"}
             className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -146,7 +146,7 @@ export function BlogCard({
               {blog.author && (
                 <span className="flex items-center gap-1.5 text-xs text-[var(--foreground)]/50">
                   {blog.author.profile_picture ? (
-                    <img
+                    <Image
                       src={blog.author.profile_picture}
                       alt={blog.author.username || "Author avatar"}
                       width={16}

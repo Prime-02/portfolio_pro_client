@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
+import Image from "@/src/app/components/ui/Image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Pencil, Trash2, Zap, TrendingUp, Award } from "lucide-react";
 import type { ProfessionalSkill } from "@/lib/stores/skills/useSkills";
@@ -113,7 +113,7 @@ export function SkillBadge({ skill, onEdit, onDelete, index, isOwner = false }: 
                             style={{ backgroundColor: `${prof.color}15` }}
                         >
                             {skill.skill_logo_url ? (
-                                <img
+                                <Image
                                     src={skill.skill_logo_url}
                                     alt={skill.skill_name || "Skill logo"}
                                     width={48}

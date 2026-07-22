@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import Image from "next/image";
+import Image from "@/src/app/components/ui/Image";
 import { ThumbsUp, Pencil, Trash2, MoreHorizontal } from "lucide-react";
 import {
   useSuggestionsStore,
@@ -111,7 +111,7 @@ export default function SuggestionCard({ suggestion, isMine }: SuggestionCardPro
             className="flex-shrink-0">
             <div className="w-10 h-10 rounded-full bg-[var(--accent)]/15 flex items-center justify-center overflow-hidden border-2 border-[var(--accent)]/20">
               {author?.profile_picture ? (
-                <img
+                <Image
                   src={author.profile_picture}
                   alt={displayName || "User avatar"}
                   width={40}

@@ -1,6 +1,6 @@
 // app/install-app/components/InstallHero.tsx
 import React from "react";
-import Image from "next/image";
+import Image from "@/src/app/components/ui/Image";
 
 const InstallHero: React.FC = () => {
     return (
@@ -162,7 +162,7 @@ const InstallHero: React.FC = () => {
                                     boxShadow: "0 25px 50px -12px var(--foreground)",
                                 }}
                             >
-                                <img
+                                <Image
                                     src="/desktop-pwa.png"
                                     alt="Portfolio Pro App Preview"
                                     width={1080}
@@ -211,7 +211,7 @@ const InstallHero: React.FC = () => {
                                     boxShadow: "0 25px 50px -12px var(--foreground)",
                                 }}
                             >
-                                <img
+                                <Image
                                     src="/mobile-pwa.png"
                                     alt="Portfolio Pro Mobile App Preview"
                                     width={560}

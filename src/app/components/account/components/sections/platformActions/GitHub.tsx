@@ -10,6 +10,7 @@ import { useUserSettings } from '@/lib/stores/user/useUserSettings'
 import Button from '@/src/app/components/buttons/Buttons'
 import { useTheme } from '@/src/context/ThemeContext'
 import { toast } from '@/src/context/Toastify'
+import Image from 'next/image'
 import React, { useEffect, useState, useCallback, useMemo } from 'react'
 
 // ============ Types ============
@@ -78,7 +79,7 @@ const GitHubAccountCard = ({
             <div className="flex items-center gap-3 min-w-0 flex-1">
                 {/* Avatar or Initial */}
                 {installation.display_photo_url ? (
-                    <img
+                    <Image
                         className='w-9 h-9 rounded-full object-cover flex-shrink-0'
                         src={installation.display_photo_url}
                         alt={installation.github_username}
@@ -165,7 +166,7 @@ const GitHubHeader = ({
     return (
         <div className="flex items-center justify-between pb-3 border-b border-[var(--foreground)]/30">
             <div className="flex items-center gap-2">
-                <img
+                <Image
                     className='w-10 h-10 object-contain'
                     src={`/socials/github/github-mark/${themeVariant === "dark" ? "github-mark" : "github-mark-white"}.png`}
                     alt="GitHub"
@@ -198,7 +199,7 @@ const GitHubEmptyState = ({ onConnect, isLoading }: { onConnect: () => void; isL
 
     return (
         <div className="flex flex-col items-center gap-4 py-6">
-            <img
+            <Image
                 className='w-16 h-16 object-contain opacity-40'
                 src={`/socials/github/github-mark/${themeVariant === "dark" ? "github-mark" : "github-mark-white"}.png`}
                 alt="GitHub"
@@ -238,7 +239,7 @@ const GitHubError = ({
         <div className="space-y-3">
             <div className="flex items-center justify-between pb-3 border-b border-red-200">
                 <div className="flex items-center gap-2">
-                    <img
+                    <Image
                         className='w-10 h-10 object-contain opacity-50'
                         src={`/socials/github/github-mark/${themeVariant === "dark" ? "github-mark" : "github-mark-white"}.png`}
                         alt="GitHub"

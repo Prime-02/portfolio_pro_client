@@ -67,7 +67,7 @@ export default function InitializedMDXEditor({
                 imagePlugin({
                     imageUploadHandler,
                     // Explicit dimensions aren't part of plain markdown image
-                    // syntax; MDXEditor falls back to <Img width height> when
+                    // syntax; MDXEditor falls back to <Image width height> when
                     // the user resizes, which your MarkdownRenderer already
                     // needs to render (see resolveRendererImageSrc there).
                     disableImageResize: false,
@@ -103,7 +103,7 @@ export default function InitializedMDXEditor({
                             <BoldItalicUnderlineToggles />
                             <StrikeThroughSupSubToggles />
                             <Separator />
-                            <BlockTypeSelect  />
+                            <BlockTypeSelect />
                             <Separator />
                             <ListsToggle />
                             <Separator />

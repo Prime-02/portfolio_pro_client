@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
+import Image from "@/src/app/components/ui/Image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Heart,
@@ -229,7 +229,7 @@ export function EngagementSection({
                 >
                   <div className="w-5 h-5 rounded-full bg-[var(--accent)]/10 flex items-center justify-center overflow-hidden">
                     {like.profile_picture ? (
-                      <img
+                      <Image
                         src={like.profile_picture}
                         alt={like.username || "User avatar"}
                         width={20}

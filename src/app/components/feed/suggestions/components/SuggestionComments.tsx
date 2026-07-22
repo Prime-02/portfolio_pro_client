@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import Image from "next/image";
+import Image from "@/src/app/components/ui/Image";
 import { Send, Reply, Trash2 } from "lucide-react";
 import {
   useSuggestionsStore,
@@ -87,7 +87,7 @@ function CommentItem({
         <div className="flex-shrink-0">
           <div className="w-8 h-8 rounded-full bg-[var(--accent)]/15 flex items-center justify-center overflow-hidden border border-[var(--accent)]/20">
             {author?.profile_picture ? (
-              <img
+              <Image
                 src={author.profile_picture}
                 alt={displayName}
                 width={32}
@@ -224,7 +224,7 @@ export default function SuggestionComments({ suggestionId }: SuggestionCommentsP
           <div className="flex-shrink-0">
             <div className="w-8 h-8 rounded-full bg-[var(--accent)]/15 flex items-center justify-center overflow-hidden border border-[var(--accent)]/20">
               {userInfo.profile_picture ? (
-                <img
+                <Image
                   src={userInfo.profile_picture}
                   alt="Your avatar"
                   width={32}

@@ -11,6 +11,7 @@ import { useTheme } from '@/src/context/ThemeContext'
 import { toast } from '@/src/context/Toastify'
 import React, { useEffect, useState, useCallback, useMemo } from 'react'
 import VercelButton from '@/src/app/(auth)/user-auth/[platform]/platforms/vercel/VercelButton'
+import Image from 'next/image'
 
 
 // ============ Sub-components ============
@@ -64,7 +65,7 @@ const VercelAccountCard = ({
             <div className="flex items-center gap-3 min-w-0 flex-1">
                 {/* Avatar or Initial */}
                 {installation.avatar_url ? (
-                    <img
+                    <Image
                         className='w-9 h-9 rounded-full object-cover flex-shrink-0'
                         src={installation.avatar_url}
                         alt={installation.display_name || installation.platform_username}
@@ -162,7 +163,7 @@ const VercelHeader = ({
     return (
         <div className="flex items-center justify-between pb-3 border-b border-[var(--foreground)]/30">
             <div className="flex items-center gap-2">
-                <img
+                <Image
                     className='w-10 h-10 object-contain'
                     src={`/socials/vercel/Vercel/icon/${themeVariant === "dark" ? "dark/vercel-icon-dark" : "light/vercel-icon-light"}.png`}
                     alt="Vercel"
@@ -195,7 +196,7 @@ const VercelEmptyState = () => {
 
     return (
         <div className="flex flex-col items-center gap-4 py-6">
-            <img
+            <Image
                 className='w-16 h-16 object-contain opacity-40'
                 src={`/socials/vercel/Vercel/icon/${themeVariant === "dark" ? "dark/vercel-icon-dark" : "light/vercel-icon-light"}.png`}
                 alt="Vercel"
@@ -232,7 +233,7 @@ const VercelError = ({
         <div className="space-y-3">
             <div className="flex items-center justify-between pb-3 border-b border-red-200">
                 <div className="flex items-center gap-2">
-                    <img
+                    <Image
                         className='w-10 h-10 object-contain opacity-50'
                         src={`/socials/vercel/Vercel/icon/${themeVariant === "dark" ? "dark/vercel-icon-dark" : "light/vercel-icon-light"}.png`}
                         alt="Vercel"

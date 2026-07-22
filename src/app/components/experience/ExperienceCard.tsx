@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
+import Image from "@/src/app/components/ui/Image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Pencil,
@@ -106,7 +106,7 @@ export function ExperienceCard({
                                    bg-[var(--foreground)]/5 border border-[var(--foreground)]/10 overflow-hidden"
                     >
                         {experience.company_logo_url ? (
-                            <img
+                            <Image
                                 src={experience.company_logo_url}
                                 alt={experience.company_name || "Company logo"}
                                 width={32}

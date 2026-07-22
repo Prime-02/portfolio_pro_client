@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import Image from "next/image";
+import Image from "@/src/app/components/ui/Image";
 
 interface AvatarUserProps {
   username: string,
@@ -37,7 +37,7 @@ export default function ProjectCommentAvatar({ user, size = "md" }: ProjectComme
       className={`${SIZE_CLASSES[size]} rounded-full bg-[var(--accent)]/15 flex items-center justify-center flex-shrink-0 overflow-hidden`}
     >
       {user?.profile_picture ? (
-        <img
+        <Image
           src={user.profile_picture}
           alt={user.username || "User avatar"}
           width={dimension}

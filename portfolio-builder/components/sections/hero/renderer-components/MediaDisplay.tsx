@@ -1,6 +1,6 @@
 // portfolio-builder/components/sections/hero/renderer-components/MediaDisplay.tsx
 
-import Image from "next/image";
+import Image from "@/src/app/components/ui/Image";
 import type { CSSProperties } from "react";
 import type { HeroData, HeroMediaShape, HeroMediaSize } from "@/portfolio-builder/types/hero";
 
@@ -151,7 +151,7 @@ export function MediaDisplay({
                     className={`${sizeClass} ${aspectRatioClass} ${shapeClass} relative overflow-hidden ${fullHeight ? "" : "border-2 border-[var(--pb-border)] mx-auto shadow-lg"} ${className ?? ""}`}
                     style={edgeRadiusStyle}
                 >
-                    <img
+                    <Image
                         src={media.imageUrl}
                         alt={media.imageAlt || "Hero media"}
                         className="absolute inset-0 w-full h-full object-cover"
@@ -163,7 +163,7 @@ export function MediaDisplay({
 
         // For fixed square/circle shapes
         return (
-            <img
+            <Image
                 src={media.imageUrl}
                 alt={media.imageAlt || "Hero media"}
                 width={dimensions.width}

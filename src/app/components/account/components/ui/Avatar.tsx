@@ -1,3 +1,4 @@
+import Image from "@/src/app/components/ui/Image";
 
 export function ASAvatar({
     src,
@@ -30,7 +31,7 @@ export function ASAvatar({
             className={`${sizeClasses[size]} flex items-center justify-center rounded-full bg-(--accent)/15 text-(--accent) font-league-600 overflow-hidden`}
         >
             {src ? (
-                <img
+                <Image
                     src={src}
                     alt={fallback || "Profile picture"}
                     width={dimensions[size]}

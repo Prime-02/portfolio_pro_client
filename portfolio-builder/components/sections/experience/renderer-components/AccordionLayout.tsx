@@ -1,7 +1,7 @@
 // portfolio-builder/components/sections/experience/renderer-components/AccordionLayout.tsx
 
 import { useState } from "react";
-import Image from "next/image";
+import Image from "@/src/app/components/ui/Image";
 import { ChevronDown, Briefcase, MapPin, Calendar, Building2, Star } from "lucide-react";
 import { MotionItem } from "../../bio/renderer-components/MotionWrappers";
 import type { LayoutProps } from "./layoutProps";
@@ -56,7 +56,7 @@ export default function AccordionLayout({
                 className="w-full flex items-center gap-3 px-4 py-3 text-left"
               >
                 {data.showCompanyLogo && exp.company_logo_url && (
-                  <img
+                  <Image
                     src={exp.company_logo_url}
                     alt={exp.company_name || "Company logo"}
                     width={36}

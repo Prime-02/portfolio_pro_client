@@ -1,7 +1,7 @@
 // portfolio-builder/components/sections/experience/renderer-components/ExperienceCard.tsx
 
 import { useMemo } from "react";
-import Image from "next/image";
+import Image from "@/src/app/components/ui/Image";
 import type { ExperienceItem } from "./layoutProps";
 import type { CardConfig } from "./resolveCardOverride";
 import { Briefcase, MapPin, Calendar, Building2, Star } from "lucide-react";
@@ -112,7 +112,7 @@ export default function ExperienceCard({
         style={accentStyle}
       >
         {showCompanyLogo && experience.company_logo_url && (
-          <img
+          <Image
             src={experience.company_logo_url}
             alt={experience.company_name || "Company logo"}
             width={logoDimension}
@@ -145,7 +145,7 @@ export default function ExperienceCard({
         style={accentStyle}
       >
         {showCompanyLogo && experience.company_logo_url && (
-          <img
+          <Image
             src={experience.company_logo_url}
             alt={experience.company_name || "Company logo"}
             width={logoDimension}
@@ -196,7 +196,7 @@ export default function ExperienceCard({
       >
         <div className="flex items-start gap-3">
           {showCompanyLogo && experience.company_logo_url && (
-            <img
+            <Image
               src={experience.company_logo_url}
               alt={experience.company_name || "Company logo"}
               width={logoDimension}
@@ -285,7 +285,7 @@ export default function ExperienceCard({
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3">
             {showCompanyLogo && experience.company_logo_url && (
-              <img
+              <Image
                 src={experience.company_logo_url}
                 alt={experience.company_name || "Company logo"}
                 width={logoDimension}
@@ -391,7 +391,7 @@ export default function ExperienceCard({
     >
       <div className="flex items-start gap-3">
         {showCompanyLogo && experience.company_logo_url && (
-          <img
+          <Image
             src={experience.company_logo_url}
             alt={experience.company_name || "Company logo"}
             width={logoDimension}

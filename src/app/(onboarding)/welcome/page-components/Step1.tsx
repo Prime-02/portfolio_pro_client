@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import TemplateStructure, { ComponentArrangement } from "./TemplateStructure";
-import Image from "next/image";
+import Image from "@/src/app/components/ui/Image";
 import { useRouting } from "@/lib/hooks/routing/useRouting";
 import { isAuthenticated } from "@/lib/client/api";
 import { removeEmptyStringValues } from "@/lib/utilities/syncFunctions/syncs";
@@ -181,7 +181,7 @@ const Step1 = () => {
       pageWriteup={accountBasics.page_writeup}
       additionalContent={
         <div className=" h-full w-full">
-          <img
+          <Image
             alt="Step 1"
             src={"/vectors/undraw_applications_h0mq.svg"}
             width={1000}

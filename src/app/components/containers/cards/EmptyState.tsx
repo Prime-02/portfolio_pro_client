@@ -1,5 +1,5 @@
 import React from "react";
-import Image from "next/image";
+import Image from "@/src/app/components/ui/Image";
 import Button from "../../buttons/Buttons";
 
 interface EmptyStateProps {
@@ -33,7 +33,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
       className={`col-span-full  flex flex-col items-center justify-center py-12 `}
     >
       {imageUrl && (
-        <img
+        <Image
           width={imageWidth}
           height={imageHeight}
           alt="Nothing found"

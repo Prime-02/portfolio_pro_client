@@ -1,7 +1,7 @@
 // portfolio-builder/components/sections/education/renderer-components/TranscriptAccordionLayout.tsx
 
 import { useState } from "react";
-import Image from "next/image";
+import Image from "@/src/app/components/ui/Image";
 import { ChevronDown, BookOpen, Calendar, GraduationCap, School } from "lucide-react";
 import { MotionItem } from "../../bio/renderer-components/MotionWrappers";
 import type { LayoutProps } from "./layoutProps";
@@ -56,7 +56,7 @@ export default function TranscriptAccordionLayout({
                 className="w-full flex items-center gap-3 px-4 py-3 text-left"
               >
                 {data.showInstitutionLogo && edu.institution_logo_url && (
-                  <img
+                  <Image
                     src={edu.institution_logo_url}
                     alt={edu.institution || "Institution logo"}
                     width={36}

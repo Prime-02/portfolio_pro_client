@@ -1,6 +1,6 @@
 "use client"
 
-import Image from "next/image"
+import Image from "@/src/app/components/ui/Image"
 import { useRouter } from "next/navigation"
 import type { PortfolioResponse } from "@/portfolio-builder/store/usePortfolioStore"
 import { copyToClipboard } from "@/lib/utilities/syncFunctions/syncs"
@@ -65,7 +65,7 @@ const PortfolioCard = ({ portfolio, onEdit, onDelete }: PortfolioCardProps) => {
         <div className="card rounded-xl border border-[var(--foreground)]/10 p-5 hover:border-[var(--accent)]/50 transition-all duration-200 group">
             <div className="h-40 bg-[var(--foreground)]/5 rounded-lg mb-4 flex items-center justify-center overflow-hidden relative">
                 {portfolio.cover_image_url ? (
-                    <img
+                    <Image
                         src={portfolio.cover_image_url}
                         alt={portfolio.name || "Portfolio cover"}
                         className="object-cover"

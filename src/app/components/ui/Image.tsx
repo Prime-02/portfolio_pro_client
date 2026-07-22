@@ -8,14 +8,21 @@ interface ImageComponentProps extends Omit<NextImageProps, 'src'> {
 
 const Image = ({
     optimizeImg = true,
+    src,
+    alt,
     ...props
 }: ImageComponentProps) => {
+    // Check if the URL contains thum.io and proxy it through /api/snapshot
+    const processedSrc = src.includes('https://image.thum.io')
+        ? `/api/snapshot?url=${encodeURIComponent(src)}`
+        : src;
+
     if (!optimizeImg) {
-        const { src, alt, width, height, ...rest } = props;
+        const { width, height, ...rest } = props;
         // eslint-disable-next-line @next/next/no-img-element
         return (
             <img
-                src={src}
+                src={processedSrc}
                 alt={alt}
                 width={width}
                 height={height}
@@ -24,7 +31,13 @@ const Image = ({
         );
     }
 
-    return <NextImage {...props} />;
+    return (
+        <NextImage
+            {...props}
+            src={processedSrc}
+            alt={alt}
+        />
+    );
 };
 
 export default Image;

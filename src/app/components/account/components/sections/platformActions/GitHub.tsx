@@ -189,7 +189,6 @@ const GitHubHeader = ({
                 <Button
                     text='Link Another Account'
                     size='sm'
-                    variant='outline'
                     onClick={onConnect}
                     disabled={isLoading}
                 />

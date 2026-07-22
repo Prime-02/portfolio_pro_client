@@ -83,11 +83,6 @@ const VercelAccountCard = ({
                         <p className="text-sm font-league-600 text-foreground truncate">
                             {installation.display_name || installation.platform_username || 'Unknown'}
                         </p>
-                        {installation.is_primary && (
-                            <span className="text-[10px] font-league-500 px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 flex-shrink-0">
-                                Primary
-                            </span>
-                        )}
                         {isActive && (
                             <span className="text-[10px] font-league-500 px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 flex-shrink-0">
                                 Active

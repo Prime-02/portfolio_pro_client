@@ -30,7 +30,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ onRefresh, isLoading }) 
           No repositories found
         </h3>
         <p className="text-sm text-[var(--foreground)]/60 max-w-sm mb-6">
-          We couldn&apos;t find any repositories to import. This could mean your GitHub account has no public repositories, or the connection needs to be refreshed.
+          We couldn&apos;t find any repositories to import. This could mean your GitHub account has no projects, or the connection needs to be refreshed.
         </p>
         <Button
           variant="outline"

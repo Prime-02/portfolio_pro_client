@@ -476,6 +476,11 @@ export const useGitHubIntegrationStore = create<GitHubIntegrationState>()(
           try {
             const queryParams = new URLSearchParams();
             if (params.page) queryParams.append("page", params.page.toString());
+            if (params.installation_id)
+              queryParams.append(
+                "installation_id",
+                params.installation_id.toString(),
+              );
             if (params.per_page)
               queryParams.append("per_page", params.per_page.toString());
 

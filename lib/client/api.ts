@@ -99,6 +99,15 @@ export const tokenStore = {
     localStorage.removeItem(TOKEN_KEYS.EXPIRES_AT);
     localStorage.removeItem(TOKEN_KEYS.SESSION_ID);
   },
+
+  getSsionData(): Record<string, string | null> {
+    return {
+      session_token: tokenStore.getSessionToken(),
+      refresh_token: tokenStore.getRefreshToken(),
+      expires_at: tokenStore.getExpiresAt()?.toISOString() ?? null,
+      session_id: tokenStore.getSessionId(),
+    };
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -278,9 +287,7 @@ async function refreshSession(): Promise<string> {
 
     try {
       // No API key header here — the proxy attaches it server-side.
-      const headers: Record<string, string> = {
-        "ngrok-skip-browser-warning": "true",
-      };
+      const headers: Record<string, string> = {};
 
       if (sessionId) {
         headers["X-Session-Id"] = sessionId;
@@ -325,7 +332,6 @@ const api: AxiosInstance = axios.create({
   baseURL: PROXY_BASE_URL,
   headers: {
     "Content-Type": "application/json",
-    "ngrok-skip-browser-warning": "true",
   },
   paramsSerializer: (params) => qs.stringify(params, { arrayFormat: "repeat" }),
 });
@@ -454,7 +460,6 @@ export function sendKeepaliveRequest(
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    "ngrok-skip-browser-warning": "true",
   };
   if (sessionToken) headers.Authorization = `Bearer ${sessionToken}`;
   if (sessionId) headers["X-Session-Id"] = sessionId;

@@ -354,20 +354,8 @@ export const GitHubImportPage: React.FC = () => {
 
   return (
     <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-6">
-      {/* Installation ID Banner */}
-      {activeInstallationId && (
-        <div className="rounded-lg border border-blue-200 p-3">
-          <div className="flex items-center gap-2 text-sm text-[var(--foreground)]/70">
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-            </svg>
-            <span>Installation ID: {activeInstallationId}</span>
-          </div>
-        </div>
-      )}
-
       {/* No Installation ID Warning */}
-      {!activeInstallationId && !isLoading && (
+      {(!activeInstallationId && !isLoading) && (
         <div className="rounded-lg border border-amber-200 p-4">
           <div className="flex items-start gap-3">
             <svg className="h-5 w-5 text-amber-600 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -376,7 +364,7 @@ export const GitHubImportPage: React.FC = () => {
             <div>
               <p className="font-medium text-sm text-[var(--foreground)]">No Installation ID Found</p>
               <p className="text-xs text-[var(--foreground)]/60 mt-0.5">
-                Please provide an installation_id in the URL query parameters.
+                Please go to account settings to select a github account
               </p>
             </div>
           </div>

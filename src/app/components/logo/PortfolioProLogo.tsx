@@ -1,7 +1,5 @@
 import React from 'react';
 import { useTheme } from '../../../context/ThemeContext';
-import Image from '@/src/app/components/ui/Image'
-
 
 interface LoadingAnimationProps {
   scale?: number;
@@ -24,14 +22,14 @@ export const PortfolioProLogo: React.FC<LoadingAnimationProps> = ({
   const baseSize = 200;
   const size = baseSize * scale;
 
-  // Determine if we're using a banner variant for aspect ratio
   const isBanner = variant.includes('banner');
-  const width = isBanner ? size * 2 : size; // Banners are typically wider
+  const width = isBanner ? size * 2 : size;
   const height = size;
 
   return (
     <div className="flex w-fit items-center justify-center">
-      <Image
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
         src={images[variant]}
         alt="Portfolio Pro Logo"
         width={width}

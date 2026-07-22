@@ -77,7 +77,6 @@ export interface GitHubInstallationStatus {
   message?: string;
 }
 
-
 export interface GitHubUninstallResponse {
   message: string;
   installation_id: string;
@@ -158,7 +157,7 @@ interface GitHubAuthState {
   };
 
   // Actions
-  getAuthUrl: () => Promise<string>;
+  getAuthUrl: (user_id?: string) => Promise<string>;
   processCallback: (
     code: string,
     installationId: string,
@@ -244,12 +243,14 @@ export const useGitHubAuthStore = create<GitHubAuthState>()(
         ...initialState,
 
         // Get Auth URL
-        getAuthUrl: async () => {
+        getAuthUrl: async (user_id) => {
           set({ isLoadingAuthUrl: true, authUrlError: null });
 
           try {
-            const response =
-              await api.get<GitHubAuthUrlResponse>("/github-auth/login");
+            const query = user_id ? `?user_id=${user_id}` : "";
+            const response = await api.get<GitHubAuthUrlResponse>(
+              `/github-auth/login${query}`,
+            );
 
             set({
               authUrl: response.data.url,
@@ -450,7 +451,7 @@ export const useGitHubAuthStore = create<GitHubAuthState>()(
               uninstallResponse: response.data,
               isUninstalling: false,
             });
-            return response.data
+            return response.data;
           } catch (error: any) {
             const errorMessage =
               error.response?.data?.detail ||

@@ -137,10 +137,19 @@ const OAuthComponent: React.FC<OAuthComponentProps> = ({
       const state = checkParams("state");
       const userId = userInfo?.id;
 
-      // Check if user_id is embedded in state parameter (format: "installation_{id}_user_{userId}")
+      // Check if user_id is embedded in state parameter. Two supported formats:
+      //   "installation_{id}_user_{userId}" — legacy/explicit format
+      //   "user_{userId}"                    — used when installation_id is
+      //                                         already its own query param
+      // "user_auth" is the placeholder default with no embedded id and must
+      // not be mistaken for the "user_{userId}" format.
       let extractedUserId = "";
-      if (state && state.includes("_user_")) {
-        extractedUserId = state.split("_user_")[1];
+      if (state) {
+        if (state.includes("_user_")) {
+          extractedUserId = state.split("_user_")[1];
+        } else if (state.startsWith("user_") && state !== "user_auth") {
+          extractedUserId = state.slice("user_".length);
+        }
       }
 
       // Priority: 1) user_id from state, 2) current logged-in user, 3) userInfo

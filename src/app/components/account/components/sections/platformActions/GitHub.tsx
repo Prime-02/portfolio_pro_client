@@ -6,6 +6,7 @@ import {
     useGitHubUninstall
 } from '@/lib/stores/linked_platforms/github/github-auth.store'
 import { useGitHubInstallationId } from '@/lib/stores/linked_platforms/github/github-integration.store'
+import { useUserSettings } from '@/lib/stores/user/useUserSettings'
 import Button from '@/src/app/components/buttons/Buttons'
 import { useTheme } from '@/src/context/ThemeContext'
 import { toast } from '@/src/context/Toastify'
@@ -69,8 +70,8 @@ const GitHubAccountCard = ({
     return (
         <div
             className={`flex items-center justify-between p-3 rounded-lg border transition-all cursor-pointer ${isActive
-                    ? 'border-[var(--foreground)]/30 bg-[var(--foreground)]/5 shadow-sm ring-1 ring-[var(--foreground)]/10'
-                    : 'border-[var(--foreground)]/10 hover:border-[var(--foreground)]/20 hover:bg-[var(--foreground)]/[0.02]'
+                ? 'border-[var(--foreground)]/30 bg-[var(--foreground)]/5 shadow-sm ring-1 ring-[var(--foreground)]/10'
+                : 'border-[var(--foreground)]/10 hover:border-[var(--foreground)]/20 hover:bg-[var(--foreground)]/[0.02]'
                 }`}
             onClick={onSelect}
         >
@@ -108,10 +109,10 @@ const GitHubAccountCard = ({
                     </div>
                     <div className="flex items-center gap-2 mt-0.5">
                         <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${installation.sync_status === 'active'
-                                ? 'bg-green-500'
-                                : installation.sync_status === 'error'
-                                    ? 'bg-red-500'
-                                    : 'bg-yellow-500'
+                            ? 'bg-green-500'
+                            : installation.sync_status === 'error'
+                                ? 'bg-red-500'
+                                : 'bg-yellow-500'
                             }`} />
                         <span className="text-xs text-[var(--foreground)]/40 font-league-400 capitalize truncate">
                             {installation.sync_status || 'unknown'}
@@ -134,18 +135,17 @@ const GitHubAccountCard = ({
                         text='Import'
                         variant={isActive ? 'primary' : 'ghost'}
                         onClick={onImport}
+                        size='sm'
                     />
                 )}
-                <button
+                <Button
                     onClick={onDisconnect}
                     disabled={isDisconnecting}
-                    className="p-1.5 text-[var(--foreground)]/30 hover:text-red-500 transition-colors rounded-md hover:bg-red-50 dark:hover:bg-red-950/20 disabled:opacity-50"
                     title={`Disconnect ${installation.github_username}`}
-                >
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
+                    text={`Disconnect ${installation.github_username}`}
+                    variant='danger'
+                    size='sm'
+                />
             </div>
         </div>
     )
@@ -278,6 +278,7 @@ const GitHub = () => {
 
     // Auth store hooks
     const { getAuthUrl } = useGitHubAuthStore()
+    const { userInfo } = useUserSettings()
     const {
         getInstallationStatus,
         isLoadingInstallationStatus
@@ -352,7 +353,7 @@ const GitHub = () => {
     const handleConnect = useCallback(async () => {
         try {
             setRedirectUrl(pathname)
-            const url = await getAuthUrl()
+            const url = await getAuthUrl(userInfo?.id)
             if (url) {
                 window.location.href = url
             }

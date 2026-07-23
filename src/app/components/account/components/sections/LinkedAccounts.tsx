@@ -6,6 +6,7 @@ import LinkedIn from './platformActions/LinkedIn'
 import { useUserAccountStore } from '@/lib/stores/user/useUserAccountStore'
 import GitHub from './platformActions/GitHub'
 import Vercel from './platformActions/Vercel'
+import FigmaComingSoon from './platformActions/FigmaComingSoon'
 
 export const LinkedAccounts = () => {
     const { fetchLinkedPlatforms, linkedPlatforms } = useUserAccountStore()
@@ -25,6 +26,7 @@ export const LinkedAccounts = () => {
                 <LinkedIn linkedinData={linkedPlatforms?.linked_platforms["linkedin"] as Record<string, any>} />
                 <GitHub />
                 <Vercel />
+                <FigmaComingSoon/>
             </div>
         </ASCard>
     )

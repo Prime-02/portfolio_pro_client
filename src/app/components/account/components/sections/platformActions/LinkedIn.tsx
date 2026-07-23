@@ -89,9 +89,6 @@ const LinkedIn = ({ linkedinData }: { linkedinData: Record<string, any> }) => {
                 </div>
 
                 <div className="flex items-center gap-2">
-                    {linkedinData?.sub && (
-                        <span className="text-xs text-gray-500 hidden sm:block">ID: {linkedinData.sub}</span>
-                    )}
                     {
                         tokenInfo.status === "disconnected" ? <OAuthButton
                             provider="linkedin"

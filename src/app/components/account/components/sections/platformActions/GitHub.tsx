@@ -203,7 +203,7 @@ const GitHubEmptyState = ({ onConnect, isLoading }: { onConnect: () => void; isL
     return (
         <div className="flex flex-col items-center gap-4 py-6">
             <Image
-                className='w-16 h-16 object-contain opacity-40'
+                className='w-16 h-16 object-contain'
                 src={`/socials/github/github-mark/${themeVariant === "dark" ? "github-mark" : "github-mark-white"}.png`}
                 alt="GitHub"
                 width={64}
@@ -245,7 +245,7 @@ const GitHubError = ({
             <div className="flex items-center justify-between pb-3 border-b border-red-200">
                 <div className="flex items-center gap-2">
                     <Image
-                        className='w-10 h-10 object-contain opacity-50'
+                        className='w-10 h-10 object-contain'
                         src={`/socials/github/github-mark/${themeVariant === "dark" ? "github-mark" : "github-mark-white"}.png`}
                         alt="GitHub"
                         width={40}
